@@ -17,7 +17,13 @@ export function restart(el, cls = 'is-on') {
   el.classList.remove(cls);
   void el.offsetWidth;
   el.classList.add(cls);
-  el.addEventListener('animationend', () => el.classList.remove(cls), { once: true });
+  // 只聽這個元素自己的動畫結束；子元素的動畫結束事件會往上冒泡，不能被它們提早關掉
+  const done = (e) => {
+    if (e.target !== el) return;
+    el.classList.remove(cls);
+    el.removeEventListener('animationend', done);
+  };
+  el.addEventListener('animationend', done);
 }
 
 function layerImg(className, sources) {

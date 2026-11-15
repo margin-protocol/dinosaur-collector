@@ -2,7 +2,8 @@ import { EGGS, CHARACTERS, DUPLICATE_FOSSILS, rollHatch, characterSources, loadW
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, saveState, resetState, newEgg } from './state.js';
 import { createSiangActor } from './actors.js';
-import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
+import { WISH_REWARD, PASS_RATIO, wishesFor, wishCopy, todayKey, analyzePhoto } from './wishes.js';
+import { createBook, gemEl } from './book.js';
 
 const $ = (id) => document.getElementById(id);
 const TAP_ENERGY = 10; // 每點一下蛋，注入多少能量
@@ -41,18 +42,33 @@ eggButton.type = 'button';
 eggButton.className = 'egg-hit';
 incubator.el.append(eggButton);
 
+const wishBook = createBook({ book: $('book'), pager: $('pager'), onShoot: (wish, file) => onPhoto(wish, file) });
+let bookOpened = false; // 開書動畫每次開啟遊戲只播一次
+
 // 小湘：孵出來以後才出現，在地板上自己走動
 const siang = createSiangActor($('floor'));
 
 /* ---------- 願望 ---------- */
 
+// 目前的成長階段。遊戲現在只有「孵出原味小湘了沒」這個狀態；
+// 之後若新增成長規則，在這裡回傳 'grown' 就會改用成長後的語氣
+const growthStage = () => (state.dex['001'] ? 'young' : 'egg');
+
 function todaysWishes() {
   const date = todayKey();
   if (!state.wishes || state.wishes.date !== date) {
-    state.wishes = { date, done: [] };
+    state.wishes = { date, done: [], stage: growthStage() };
+    saveState(state);
+  } else if (!state.wishes.stage) {
+    // 舊存檔沒有記錄階段：補上，之後當天不再變動
+    state.wishes.stage = growthStage();
     saveState(state);
   }
-  return wishesFor(date).map((w) => ({ ...w, done: state.wishes.done.includes(w.id) }));
+  return wishesFor(date).map((w) => ({
+    ...w,
+    done: state.wishes.done.includes(w.id),
+    copy: wishCopy(w, date, state.wishes.stage),
+  }));
 }
 
 // 孵出原味小湘之前，願望來自蛋裡的聲音；之後由小湘提出
@@ -165,114 +181,28 @@ function say(text, mood, ms = 2200) {
   renderHome();
 }
 
-// 一顆切面寶石。顏色由 --gem 決定；未點亮時是暗的
-const GEM_SVG = `<svg viewBox="0 0 40 40" aria-hidden="true">
-  <path class="gemfx__base" d="M20 3 33 13 28 36H12L7 13z"/>
-  <path d="M20 3 33 13H7z" fill="#fff" fill-opacity=".38"/>
-  <path d="M7 13h26l-5 23H12z" fill="#000" fill-opacity=".12"/>
-  <path d="M20 13 28 36H12z" fill="#fff" fill-opacity=".16"/>
-  <path d="M20 3 15 13h10z" fill="#fff" fill-opacity=".3"/>
-  <path d="M20 3 33 13 28 36H12L7 13z" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1"/>
-</svg>`;
-
-function gemEl(wish, lit, extra = '') {
-  const el = document.createElement('span');
-  el.className = `gemfx${lit ? ' is-lit' : ''}${extra}`;
-  el.style.setProperty('--gem', wish.swatch);
-  el.innerHTML = GEM_SVG;
-  return el;
-}
-
-// 今日願望：魔法委託簿。justDone 是剛剛完成的願望 id，用來播放點亮與蓋章的演出
-function renderWishes(justDone = null, scanning = null) {
+// 今日願望：魔法書。effects.fresh 是剛完成的願望 id（播放點亮與蓋章），effects.scanning 是鑑定中的願望 id
+function renderWishes(effects = {}) {
   const wishes = todaysWishes();
   const done = wishes.filter((w) => w.done).length;
   const allDone = done === wishes.length;
   const now = new Date();
 
-  $('book-day').textContent = `DAY ${daysSince(state.egg.since) + 1} · ${now.getMonth() + 1}/${now.getDate()}`;
+  $('book-day').textContent = `${now.getFullYear()}.${pad(now.getMonth() + 1)}.${pad(now.getDate())}`;
   $('book-progress').textContent = `${done} / ${wishes.length}`;
   const gems = $('book-gems');
-  gems.setAttribute('aria-label', `今日委託完成 ${done} 個，共 ${wishes.length} 個`);
-  gems.className = `book__gems${allDone ? ' is-complete' : ''}${allDone && justDone ? ' is-resonate' : ''}`;
-  gems.replaceChildren(...wishes.map((w) => gemEl(w, w.done, w.id === justDone ? ' is-ignite' : '')));
+  gems.setAttribute('aria-label', `今日願望完成 ${done} 個，共 ${wishes.length} 個`);
+  gems.className = `book__gems${allDone && effects.fresh ? ' is-resonate' : ''}`;
+  gems.replaceChildren(...wishes.map((w) => gemEl(w, w.done, w.id === effects.fresh ? ' is-ignite' : '')));
 
-  $('wish-list').replaceChildren(
-    ...wishes.map((w, index) => {
-      const li = document.createElement('li');
-      li.className = `quest${w.done ? ' is-done' : ''}${w.id === justDone ? ' is-fresh' : ''}${w.id === scanning ? ' is-scanning' : ''}`;
-      li.dataset.wish = w.id;
+  wishBook.update(wishes, WISH_REWARD, effects);
 
-      const socket = document.createElement('div');
-      socket.className = 'quest__socket';
-      socket.append(gemEl(w, w.done, w.id === justDone ? ' is-ignite' : ''));
-
-      const body = document.createElement('div');
-      body.className = 'quest__body';
-      const no = document.createElement('div');
-      no.className = 'quest__no';
-      no.textContent = `委託 No.${pad(index + 1)}`;
-      const name = document.createElement('h2');
-      name.className = 'quest__name';
-      name.textContent = `尋找${w.color}`;
-      const line = document.createElement('p');
-      line.className = 'quest__line';
-      line.textContent = `「${w.line}」`;
-      const who = document.createElement('span');
-      who.className = 'quest__who';
-      who.textContent = `—— ${speaker()}`;
-      line.append(who);
-      const reward = document.createElement('div');
-      reward.className = 'quest__reward';
-      reward.textContent = `能量 +${WISH_REWARD}`;
-      body.append(no, name, line, reward);
-
-      const action = document.createElement('div');
-      action.className = 'quest__action';
-      if (w.done) {
-        const stamp = document.createElement('span');
-        stamp.className = 'stamp';
-        stamp.setAttribute('role', 'img');
-        stamp.setAttribute('aria-label', '已完成');
-        stamp.innerHTML = '<span>達成</span>';
-        action.append(stamp);
-      } else {
-        // 用 <label> 包住檔案輸入：點下去會直接開相機
-        const label = document.createElement('label');
-        label.className = 'quest__shoot';
-        const text = document.createElement('span');
-        text.textContent = w.id === scanning ? '鑑定中' : '拍照';
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = 'image/*';
-        input.capture = 'environment';
-        input.className = 'visually-hidden';
-        input.disabled = Boolean(scanning);
-        input.setAttribute('aria-label', `拍照完成委託：尋找${w.color}`);
-        input.addEventListener('change', () => {
-          const file = input.files && input.files[0];
-          input.value = '';
-          if (file) onPhoto(w, file);
-        });
-        label.append(text, input);
-        action.append(label);
-      }
-
-      const sweep = document.createElement('span');
-      sweep.className = 'quest__sweep';
-      li.append(socket, body, action, sweep);
-      return li;
-    }),
-  );
-
-  // 今日完成紀錄
-  const earned = done * WISH_REWARD;
   $('book-log-text').textContent = allDone
-    ? `三顆寶石都點亮了。今天獲得能量 +${earned}，明天會翻開新的一頁。`
+    ? '今天的願望都實現了。三顆寶石都點亮了，蛋裡傳來很輕、很開心的聲音。'
     : done
-      ? `今天已完成 ${done} 個委託，獲得能量 +${earned}。`
-      : `${speaker()}留下了三個委託。拍下它想看的顏色，寶石就會亮起來。`;
-  $('book-home').hidden = state.energy <= 0;
+      ? `已經實現 ${done} 個願望，今天獲得能量 +${done * WISH_REWARD}。`
+      : '翻開書頁，替小湘收集她還沒見過的顏色。';
+  $('book-home').classList.toggle('is-calm', !allDone && state.energy <= 0);
 }
 
 function renderDex() {
@@ -321,6 +251,13 @@ function showView(name) {
   // 角色只在首頁活動；離開首頁就停下來，省電
   if (name === 'home') siang.start();
   else siang.stop();
+  if (name === 'wish') {
+    wishBook.openAtFirstUndone();
+    if (!bookOpened) {
+      bookOpened = true;
+      wishBook.playOpening();
+    }
+  }
 }
 
 function toast(text) {
@@ -489,10 +426,30 @@ function flyOrbToChip(fromEl) {
   return anim.finished.catch(() => {}).then(() => orb.remove());
 }
 
-// 拍照完成委託。判定規則、獎勵與存檔都和原本一樣，只有演出不同：
-// 鑑定中 → 光掃過卡片 → 寶石點亮 → 蓋章 → 能量飛向資源列 →（三個都完成時）寶石共鳴
+// 書頁上散開的幾顆星光
+function pageSparks(anchor) {
+  if (reducedMotion() || !anchor) return;
+  const host = $('book');
+  const a = anchor.getBoundingClientRect();
+  const h = host.getBoundingClientRect();
+  for (let i = 0; i < 7; i += 1) {
+    const sp = document.createElement('i');
+    sp.className = 'spark';
+    const angle = (i / 7) * Math.PI * 2 + Math.random() * 0.5;
+    const dist = 34 + Math.random() * 26;
+    sp.style.left = `${a.left - h.left + a.width / 2}px`;
+    sp.style.top = `${a.top - h.top + a.height / 2}px`;
+    sp.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+    sp.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+    sp.addEventListener('animationend', () => sp.remove(), { once: true });
+    host.append(sp);
+  }
+}
+
+// 拍照完成願望。判定規則、獎勵與存檔都由原本的邏輯處理，這裡只負責演出：
+// 0ms 書頁發光 → 250ms 寶石點亮 → 650ms 印章落下、書頁一震 → 950ms 星光與「能量 +35」→ 1400ms 光點飛向能量計
 async function onPhoto(wish, file) {
-  renderWishes(null, wish.id);
+  renderWishes({ scanning: wish.id });
   let ratio;
   try {
     [ratio] = await Promise.all([analyzePhoto(file, wish, $('photo-thumb')), sleep(700)]);
@@ -516,16 +473,21 @@ async function onPhoto(wish, file) {
     return;
   }
 
+  // 先結算並存檔（只會執行這一次），之後才是動畫；動畫中途關掉也不會重複領獎
   state.wishes.done.push(wish.id);
   state.energy += WISH_REWARD;
   saveState(state);
   renderHome();
-  renderWishes(wish.id);
+  renderWishes({ fresh: wish.id });
+  restart($('book'), 'is-fresh');
   buzz([20, 40, 60]);
 
-  const card = document.querySelector(`.quest[data-wish="${wish.id}"]`);
-  const gem = card && card.querySelector('.gemfx');
-  await sleep(650); // 等寶石點亮、印章蓋下去
+  await sleep(950);
+  const gem = $('book').querySelector('.gemstand .gemfx');
+  pageSparks(gem);
+  $('page-gain').textContent = `能量 +${WISH_REWARD}`;
+  restart($('page-gain'));
+  await sleep(450);
   if (gem) await flyOrbToChip(gem);
   renderResources();
   restart($('chip-energy'), 'is-bump');

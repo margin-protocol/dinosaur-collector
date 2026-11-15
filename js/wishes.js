@@ -1,6 +1,8 @@
 // 願望：小湘（或蛋裡的聲音）想看某種顏色的東西，玩家拍照，程式分析照片顏色。
 // 照片只在手機上分析，不會上傳，也不會保存。
 
+import { WISH_COPY, STAGE_COLUMN, STAGE_SPEAKER } from './wish-copy.js';
+
 export const WISH_REWARD = 35; // 每個願望給的保溫能量
 export const WISHES_PER_DAY = 3;
 export const PASS_RATIO = 0.25; // 目標顏色要佔畫面至少 25%
@@ -94,4 +96,23 @@ export async function analyzePhoto(file, wish, previewCanvas) {
     previewCanvas.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
   }
   return hit / (N * N);
+}
+
+// 今天這個願望要顯示的名稱與台詞。
+// 由「日期」決定用文案池的第幾筆：同一天不管重整幾次都一樣，而且每種顏色要輪完整個文案池才會重複。
+// stage 是願望產生當下的成長階段（存在存檔裡），當天中途長大也不會換文案。
+export function wishCopy(wish, dateKey, stage) {
+  const pool = WISH_COPY[wish.id] || [];
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const day = Math.floor(Date.UTC(y, m - 1, d) / 86400000);
+  const colorIndex = WISH_POOL.findIndex((w) => w.id === wish.id);
+  // 每天往前跳 7 筆（7 與常見的池子大小互質），再依顏色錯開，避免同一天的名稱風格太像
+  const entry = pool.length ? pool[(day * 7 + colorIndex * 4) % pool.length] : null;
+  const column = STAGE_COLUMN[stage] || STAGE_COLUMN.egg;
+  return {
+    name: entry ? entry[0] : `尋找${wish.color}`,
+    line: entry ? entry[column] || entry[STAGE_COLUMN.young] || entry[STAGE_COLUMN.egg] : wish.line,
+    speaker: STAGE_SPEAKER[stage] || STAGE_SPEAKER.egg,
+    hint: `拍下含${wish.color}的東西`,
+  };
 }

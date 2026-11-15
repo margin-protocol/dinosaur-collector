@@ -110,12 +110,43 @@
         <span id="book-progress"></span>
       </div>
     </div>
-    <ul class="book__list" id="wish-list"></ul>
-    <section class="book__log" id="book-log" aria-live="polite">
+    <!-- 立體魔法書：左頁寶石、右頁願望；中間那張 .leaf 是翻頁用的書葉 -->
+    <div class="bookwrap">
+      <div class="book" id="book">
+        <div class="book__pages">
+          <div class="page page--left"></div>
+          <div class="page page--right"></div>
+          <div class="leaf" hidden aria-hidden="true">
+            <div class="leaf__face leaf__face--front page"></div>
+            <div class="leaf__face leaf__face--back page"></div>
+          </div>
+          <span class="page__gain" id="page-gain" aria-hidden="true"></span>
+        </div>
+        <div class="cover" aria-hidden="true">
+          <div class="cover__front">
+            <span class="cover__en">THE BOOK OF</span>
+            <span class="cover__title">WISHES</span>
+            <span class="cover__gem"></span>
+            <span class="cover__zh">今日願望</span>
+          </div>
+          <div class="cover__back"></div>
+        </div>
+      </div>
+    </div>
+    <div class="pager" id="pager">
+      <button class="pager__btn" type="button" data-dir="prev" aria-label="上一個願望">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
+      </button>
+      <span class="pager__no" aria-live="polite"></span>
+      <button class="pager__btn" type="button" data-dir="next" aria-label="下一個願望">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+    <section class="book__log" aria-live="polite">
       <p class="book__log-text" id="book-log-text"></p>
-      <button class="btn" type="button" id="book-home" hidden><span class="gem" aria-hidden="true"></span><span>回培育槽餵蛋</span><span class="gem" aria-hidden="true"></span></button>
+      <button class="btn" type="button" id="book-home"><span class="gem" aria-hidden="true"></span><span>返回培養架</span><span class="gem" aria-hidden="true"></span></button>
     </section>
-    <p class="fine">照片只在手機上分析顏色，不會上傳，也不會保存。<br>每天會翻開新的一頁，換三個新的委託。</p>
+    <p class="fine">照片只在手機上分析顏色，不會上傳，也不會保存。<br>每天會翻開新的一頁，換三個新的願望。</p>
   </main>
 
   <main class="view" data-view="dex" hidden>
