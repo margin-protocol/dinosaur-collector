@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#120d10">
+<meta name="theme-color" content="#101720">
 <title>小湘收集器 SIANG COLLECTOR</title>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -19,13 +19,14 @@
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/hud.css">
 <link rel="stylesheet" href="css/game.css">
-<link rel="stylesheet" href="css/wish.css">
+<link rel="stylesheet" href="css/mobile.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
 <div class="app">
   <!-- 資源列：所有分頁都看得到 -->
   <div class="topbar">
+    <button class="back-button" id="back-home" type="button" aria-label="返回培養架" hidden>‹</button>
     <div class="chip" id="chip-energy" role="img" aria-label="保溫能量">
       <span class="chip__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 4 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg></span>
       <span class="chip__k">能量</span><span class="chip__v" id="energy-value">0</span>
@@ -34,7 +35,7 @@
       <span class="chip__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 6-3 11H8L5 9zM5 9h14"/></svg></span>
       <span class="chip__k">化石</span><span class="chip__v" id="fossil-value">0</span>
     </div>
-    <div class="topbar__brand">SIANG<br>COLLECTOR</div>
+    <div class="topbar__brand">SIANG <span>COLLECTOR</span></div>
   </div>
 
   <header class="header" id="header">
@@ -43,6 +44,7 @@
   </header>
 
   <main class="view view--home" data-view="home">
+    <div class="habitat-label"><span>HABITAT / 01</span><span class="online">● 培育中</span></div>
     <div class="eggtitle">
       <span class="eggtitle__name" id="egg-name"></span>
       <span class="eggtitle__meta">
@@ -59,7 +61,7 @@
       <div class="side">
         <button class="fab" type="button" id="fab-wish" aria-label="今日願望">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.600 5.600 6 .700-4.500 4.100 1.300 6-5.400-3.100-5.400 3.100 1.300-6L3.400 9.300l6-.700z"/></svg>
-          <span class="fab__label">願望</span>
+          <span class="fab__label">今日願望</span>
           <span class="dot" id="wish-dot" hidden></span>
         </button>
         <button class="fab" type="button" id="fab-letter" aria-label="小湘的紙條">
@@ -97,12 +99,13 @@
         <span class="vitals__bpm"><span id="ecg-bpm">48</span> BPM</span>
       </div>
     </section>
+    <div class="home-actions"><button class="btn" type="button" id="cultivate">培養 · 注入能量</button><button class="wish-entry" type="button" id="home-wishes"><span>✧ 今日願望</span><span id="home-progress">0 / 3</span><span>›</span></button></div>
   </main>
 
   <!-- 今日願望：魔法委託簿 -->
   <main class="view view--wish" data-view="wish" hidden>
     <div class="book__head">
-      <div class="book__en">THE BOOK OF WISHES</div>
+      <div class="book__en">DAILY EXPLORATION</div>
       <h1 class="book__title">今日願望</h1>
       <div class="book__meta">
         <span id="book-day"></span>
@@ -110,55 +113,28 @@
         <span id="book-progress"></span>
       </div>
     </div>
-    <!-- 立體魔法書：左頁寶石、右頁願望；中間那張 .leaf 是翻頁用的書葉 -->
-    <div class="bookwrap">
-      <div class="book" id="book">
-        <div class="book__pages">
-          <div class="page page--left"></div>
-          <div class="page page--right"></div>
-          <div class="leaf" hidden aria-hidden="true">
-            <div class="leaf__face leaf__face--front page"></div>
-            <div class="leaf__face leaf__face--back page"></div>
-          </div>
-          <span class="page__gain" id="page-gain" aria-hidden="true"></span>
-        </div>
-        <div class="cover" aria-hidden="true">
-          <div class="cover__front">
-            <span class="cover__en">THE BOOK OF</span>
-            <span class="cover__title">WISHES</span>
-            <span class="cover__gem"></span>
-            <span class="cover__zh">今日願望</span>
-          </div>
-          <div class="cover__back"></div>
-        </div>
-      </div>
-    </div>
-    <div class="pager" id="pager">
-      <button class="pager__btn" type="button" data-dir="prev" aria-label="上一個願望">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7"/></svg>
-      </button>
-      <span class="pager__no" aria-live="polite"></span>
-      <button class="pager__btn" type="button" data-dir="next" aria-label="下一個願望">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>
-      </button>
-    </div>
+    <p class="wish-intro">把日常的顏色，變成一起成長的能量。</p>
+    <div class="mission-list" id="book"></div>
     <section class="book__log" aria-live="polite">
       <p class="book__log-text" id="book-log-text"></p>
       <button class="btn" type="button" id="book-home"><span class="gem" aria-hidden="true"></span><span>返回培養架</span><span class="gem" aria-hidden="true"></span></button>
     </section>
-    <p class="fine">照片只在手機上分析顏色，不會上傳，也不會保存。<br>每天會翻開新的一頁，換三個新的願望。</p>
+    <p class="fine">照片只在手機上分析顏色，不會上傳，也不會保存。<br>每天更新三個願望，每項完成可獲得 35 能量。</p>
   </main>
 
   <main class="view" data-view="dex" hidden>
     <p class="dex__count" id="dex-count"></p>
     <ul class="dex__grid" id="dex-grid"></ul>
-    <div style="margin-top: auto; text-align: center">
+    <div hidden>
       <button class="btn btn--quiet" id="reset-btn" type="button">重置進度（測試用）</button>
     </div>
   </main>
 
-  <nav class="nav" id="nav" aria-label="主要分頁">
-    <span class="nav__ink" aria-hidden="true"></span>
+  <footer class="game-footer"><span id="location-label">培養架 / HABITAT</span><button class="center-button" id="open-center" type="button" aria-haspopup="dialog" aria-controls="function-center">▦ <span>功能中心</span></button></footer>
+</div>
+
+<dialog id="function-center" class="function-center" aria-labelledby="center-title"><div class="drawer-handle" aria-hidden="true"></div><div class="drawer-heading"><div><small>YOUR LITTLE UNIVERSE</small><h2 id="center-title">功能中心</h2></div><button class="close-button" id="close-center" aria-label="關閉功能中心" type="button">×</button></div>  <nav class="nav" id="nav" aria-label="功能中心">
+
     <button class="nav__item" type="button" data-view="home">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.500 0 6 6 6 10a6 6 0 0 1-12 0c0-4 2.500-10 6-10z"/></svg>培育
     </button>
@@ -170,14 +146,13 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>圖鑑
     </button>
     <button class="nav__item" type="button" disabled>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3v6l-5 10a1.500 1.500 0 0 0 1.300 2h11.400a1.500 1.500 0 0 0 1.300-2L14 9V3M8 3h8"/></svg>研究
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3v6l-5 10a1.500 1.500 0 0 0 1.300 2h11.400a1.500 1.500 0 0 0 1.300-2L14 9V3M8 3h8"/></svg><span>研究 · 尚未開放</span>
     </button>
     <button class="nav__item" type="button" disabled>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v13H4zM4 10h16M9 6V4h6v2"/></svg>記憶
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v13H4zM4 10h16M9 6V4h6v2"/></svg><span>記憶 · 尚未開放</span>
     </button>
   </nav>
-</div>
-
+<p class="fine">每一點陪伴，都讓我們更靠近。</p></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">

@@ -3,7 +3,7 @@ import { createIncubator, createEggView, stageOf, restart, reducedMotion } from 
 import { loadState, saveState, resetState, newEgg } from './state.js';
 import { createSiangActor } from './actors.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, wishCopy, todayKey, analyzePhoto } from './wishes.js';
-import { createBook, gemEl } from './book.js';
+import { createMissions, gemEl } from './missions.js';
 
 const $ = (id) => document.getElementById(id);
 const TAP_ENERGY = 10; // 每點一下蛋，注入多少能量
@@ -42,8 +42,8 @@ eggButton.type = 'button';
 eggButton.className = 'egg-hit';
 incubator.el.append(eggButton);
 
-const wishBook = createBook({ book: $('book'), pager: $('pager'), onShoot: (wish, file) => onPhoto(wish, file) });
-let bookOpened = false; // 開書動畫每次開啟遊戲只播一次
+const wishBook = createMissions({ book: $('book'), onShoot: (wish, file) => onPhoto(wish, file) });
+let photoBusy = false;
 
 // 小湘：孵出來以後才出現，在地板上自己走動
 const siang = createSiangActor($('floor'));
@@ -99,6 +99,7 @@ function renderHome() {
   incubator.el.classList.toggle('is-ready', ready);
 
   $('egg-name').textContent = egg.name;
+  $('cultivate').textContent = ready ? '破殼 · 迎接小湘' : state.energy > 0 ? '培養 · 注入能量' : '培養 · 等待能量';
   $('egg-day').textContent = `DAY ${daysSince(state.egg.since) + 1}`;
   [...$('pips').children].forEach((pip, i) => pip.classList.toggle('is-on', i < s));
   $('pips').setAttribute('aria-label', `孵化階段 ${s}，共 4 階段`);
@@ -110,6 +111,7 @@ function renderHome() {
 
   const wishes = todaysWishes();
   const open = wishes.filter((w) => !w.done);
+  $('home-progress').textContent = `${wishes.length - open.length} / ${wishes.length}`;
   for (const id of ['wish-dot', 'nav-wish-dot']) {
     $(id).hidden = open.length === 0;
     $(id).textContent = open.length;
@@ -201,7 +203,7 @@ function renderWishes(effects = {}) {
     ? '今天的願望都實現了。三顆寶石都點亮了，蛋裡傳來很輕、很開心的聲音。'
     : done
       ? `已經實現 ${done} 個願望，今天獲得能量 +${done * WISH_REWARD}。`
-      : '翻開書頁，替小湘收集她還沒見過的顏色。';
+      : '替小湘收集她還沒見過的顏色。';
   $('book-home').classList.toggle('is-calm', !allDone && state.energy <= 0);
 }
 
@@ -243,7 +245,11 @@ function showView(name) {
     if (item.dataset.view === name) item.setAttribute('aria-current', 'page');
     else item.removeAttribute('aria-current');
   }
-  $('nav').style.setProperty('--i', String(VIEWS.indexOf(name)));
+  if ($('function-center').open) $('function-center').close();
+  $('back-home').hidden = name === 'home';
+  $('location-label').textContent = { home: '培養架 / HABITAT', wish: '今日願望 / DAILY', dex: '圖鑑 / COLLECTION' }[name];
+  const nextHash = name === 'home' ? '#home' : `#${name}`;
+  if (location.hash !== nextHash) history.pushState(null, '', nextHash);
   $('header').hidden = !TITLES[name];
   $('page-title').textContent = TITLES[name] || '';
   document.body.dataset.view = name;
@@ -253,10 +259,6 @@ function showView(name) {
   else siang.stop();
   if (name === 'wish') {
     wishBook.openAtFirstUndone();
-    if (!bookOpened) {
-      bookOpened = true;
-      wishBook.playOpening();
-    }
   }
 }
 
@@ -449,6 +451,17 @@ function pageSparks(anchor) {
 // 拍照完成願望。判定規則、獎勵與存檔都由原本的邏輯處理，這裡只負責演出：
 // 0ms 書頁發光 → 250ms 寶石點亮 → 650ms 印章落下、書頁一震 → 950ms 星光與「能量 +35」→ 1400ms 光點飛向能量計
 async function onPhoto(wish, file) {
+  if (photoBusy || todaysWishes().some(w => w.id === wish.id && w.done)) return;
+  const photoDate = todayKey();
+  photoBusy = true;
+  try {
+    const run = () => processPhoto(wish, file, photoDate);
+    if (navigator.locks) await navigator.locks.request('siang-wish-reward', run);
+    else await run();
+  } finally { photoBusy = false; renderWishes(); }
+}
+
+async function processPhoto(wish, file, photoDate) {
   renderWishes({ scanning: wish.id });
   let ratio;
   try {
@@ -474,6 +487,11 @@ async function onPhoto(wish, file) {
   }
 
   // 先結算並存檔（只會執行這一次），之後才是動畫；動畫中途關掉也不會重複領獎
+  if (photoDate !== todayKey()) { todaysWishes(); toast('新的一天開始了，請重新選擇願望。'); return; }
+  const latest = loadState();
+  if (latest.wishes?.date === photoDate && latest.wishes.done.includes(wish.id)) { state = latest; renderAll(); return; }
+  state = latest;
+  todaysWishes();
   state.wishes.done.push(wish.id);
   state.energy += WISH_REWARD;
   saveState(state);
@@ -483,10 +501,9 @@ async function onPhoto(wish, file) {
   buzz([20, 40, 60]);
 
   await sleep(950);
-  const gem = $('book').querySelector('.gemstand .gemfx');
+  const gem = $('book').querySelector(`[data-wish="${wish.id}"] .mission-color`);
   pageSparks(gem);
-  $('page-gain').textContent = `能量 +${WISH_REWARD}`;
-  restart($('page-gain'));
+  toast(`願望達成 · 能量 +${WISH_REWARD}`);
   await sleep(450);
   if (gem) await flyOrbToChip(gem);
   renderResources();
@@ -497,6 +514,14 @@ async function onPhoto(wish, file) {
 /* ---------- 事件 ---------- */
 
 eggButton.addEventListener('click', onEggTap);
+$('cultivate').addEventListener('click', onEggTap);
+$('home-wishes').addEventListener('click', () => showView('wish'));
+$('back-home').addEventListener('click', () => showView('home'));
+$('open-center').addEventListener('click', () => $('function-center').showModal());
+$('close-center').addEventListener('click', () => $('function-center').close());
+$('function-center').addEventListener('click', (event) => { if (event.target === $('function-center')) { const r = event.target.getBoundingClientRect(); if (event.clientY < r.top || event.clientX < r.left || event.clientX > r.right) event.target.close(); } });
+addEventListener('popstate', () => { const view = location.hash.slice(1); showView(VIEWS.includes(view) ? view : 'home'); });
+addEventListener('storage', (event) => { if (event.key === 'siang-collector:v1' && !busy && !photoBusy) { state = loadState(); eggView = null; renderAll(); } });
 $('nav').addEventListener('click', (e) => {
   const item = e.target.closest('.nav__item');
   if (item && !item.disabled) showView(item.dataset.view);
