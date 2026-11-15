@@ -106,7 +106,7 @@ body[data-view="dex"] .scene { filter: brightness(0.45) blur(2px); transform: sc
 .stage:has(.incubator.is-empty) .stage__empty { display: block; }
 
 /* --egg-x / --egg-y / --egg-scale：微調蛋在培養架裡的位置（以畫布百分比計） */
-.egg { position: absolute; inset: 0; transform: translate(var(--egg-x, 0%), var(--egg-y, 0%)) scale(var(--egg-scale, 1)); transform-origin: 50% 68.5%; }
+.egg { position: absolute; inset: 0; transform: translate(var(--egg-x, 1.5%), var(--egg-y, -3%)) scale(var(--egg-scale, 1)); transform-origin: 50% 68.5%; }
 .egg__layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 .egg__body { position: absolute; inset: 0; transform-origin: 50% 68.5%; animation: egg-breathe 3.6s ease-in-out infinite; }
 .egg__wobble { position: absolute; inset: 0; transform-origin: 50% 68.5%; }
