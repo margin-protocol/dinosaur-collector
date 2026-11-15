@@ -1,4 +1,4 @@
-import { EGG_LAYERS, eggLayerSources, loadWithFallback } from './eggs.js';
+import { EGG_LAYERS, eggLayerSources, incubatorSources, loadWithFallback } from './eggs.js';
 
 // 孵化階段：0 沉睡、1 有動靜、2 出現裂痕、3 快破殼、4 可以破殼
 export function stageOf(pct) {
@@ -10,7 +10,45 @@ export function stageOf(pct) {
 }
 
 const PULSE_SECONDS = [3, 2.2, 1.5, 0.9, 0.9];
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+function layerImg(className, sources) {
+  const img = document.createElement('img');
+  img.className = className;
+  img.alt = '';
+  img.decoding = 'async';
+  loadWithFallback(img, sources);
+  return img;
+}
+
+// 首頁固定的培養架。由下往上：後景架 → 蛋 → 前景環 → 破殼閃光
+export function createIncubator() {
+  const el = document.createElement('div');
+  el.className = 'incubator';
+
+  const back = layerImg('incubator__layer', incubatorSources('cradle-back'));
+  const slot = document.createElement('div');
+  slot.className = 'incubator__slot';
+  const front = layerImg('incubator__layer', incubatorSources('cradle-front'));
+  const flare = document.createElement('div');
+  flare.className = 'incubator__flare';
+  el.append(back, slot, front, flare);
+
+  return {
+    el,
+    setEgg(eggView) {
+      slot.replaceChildren(...(eggView ? [eggView.el] : []));
+      el.classList.toggle('is-empty', !eggView);
+    },
+    flare() {
+      flare.classList.remove('is-on');
+      void flare.offsetWidth; // 重新觸發動畫
+      flare.classList.add('is-on');
+    },
+  };
+}
+
+// 可替換的恐龍蛋：只有這組會呼吸、晃動、發光、破殼
 export function createEggView(egg) {
   const el = document.createElement('div');
   el.className = 'egg';
@@ -18,26 +56,16 @@ export function createEggView(egg) {
 
   const layers = {};
   for (const name of EGG_LAYERS) {
-    const img = document.createElement('img');
-    img.className = `egg__layer egg__layer--${name}`;
-    img.alt = '';
-    img.decoding = 'async';
-    loadWithFallback(img, eggLayerSources(egg.id, name));
-    layers[name] = img;
+    layers[name] = layerImg(`egg__layer egg__layer--${name}`, eggLayerSources(egg.id, name));
   }
 
-  // 底座不動；蛋殼、發光、裂痕一起呼吸與晃動
   const wobble = document.createElement('div');
   wobble.className = 'egg__wobble';
   const body = document.createElement('div');
   body.className = 'egg__body';
   body.append(layers.shell, layers.glow, layers.cracks);
   wobble.append(body);
-
-  const flare = document.createElement('div');
-  flare.className = 'egg__flare';
-
-  el.append(layers.cradle, wobble, flare);
+  el.append(wobble);
 
   return {
     el,
@@ -50,9 +78,8 @@ export function createEggView(egg) {
     },
     // 播放破殼動畫，結束後 resolve
     hatch() {
-      const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
       el.classList.add('is-hatching');
-      return new Promise((resolve) => setTimeout(resolve, reduced ? 0 : 1000));
+      return new Promise((resolve) => setTimeout(resolve, reducedMotion() ? 0 : 1000));
     },
   };
 }

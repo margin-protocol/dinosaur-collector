@@ -1,7 +1,8 @@
 // 恐龍蛋與小湘的資料表。新增蛋或角色只要在這裡加一筆，不用改其他程式。
 // 圖片路徑規則見 docs/ASSET_SPEC.md：檔案放對位置就會自動取代佔位圖。
 
-export const EGG_LAYERS = ['cradle', 'glow', 'shell', 'cracks'];
+// 蛋本身只有三層；培養架是首頁的固定裝置，所有蛋共用（見 incubatorSources）
+export const EGG_LAYERS = ['shell', 'glow', 'cracks'];
 
 export const EGGS = {
   origin: {
@@ -35,6 +36,14 @@ export function eggLayerSources(eggId, layer) {
   return [
     ...FORMATS.map((ext) => `assets/eggs/${eggId}/${layer}.${ext}`),
     `assets/eggs/_placeholder/${layer}.svg`,
+  ];
+}
+
+// 共用培養架：cradle-back 在蛋後面、cradle-front 蓋在蛋前面
+export function incubatorSources(part) {
+  return [
+    ...FORMATS.map((ext) => `assets/incubator/${part}.${ext}`),
+    `assets/incubator/_placeholder/${part}.svg`,
   ];
 }
 

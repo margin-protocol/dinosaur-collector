@@ -10,7 +10,7 @@
 
 ## 目前進度
 
-介面與孵化框架（佔位素材）：開場紙條、本源蛋四圖層、保溫進度與破殼、孵化揭曉、黑影圖鑑、本機存檔。
+介面與孵化框架（佔位素材）：開場紙條、共用培養架＋本源蛋三層結構、保溫進度與破殼、孵化揭曉、黑影圖鑑、本機存檔。
 任務、研究、記憶分頁尚未開放。
 
 ## 結構
@@ -20,10 +20,11 @@ index.html
 css/tokens.css      顏色、字體等設計代幣
 css/app.css         版面與動畫
 js/eggs.js          恐龍蛋與小湘的資料表、素材路徑規則
-js/egg-view.js      恐龍蛋圖層元件與孵化階段
+js/egg-view.js      培養架（固定）與恐龍蛋（可替換）元件、孵化階段
 js/state.js         本機存檔
 js/app.js           畫面邏輯
-assets/eggs/<id>/   每顆蛋的圖層（shell / glow / cracks / cradle）
+assets/incubator/   共用培養架（cradle-back / cradle-front）
+assets/eggs/<id>/   每顆蛋的圖層（shell / glow / cracks）
 assets/characters/  小湘
 assets/mascot/      小恐龍
 ```

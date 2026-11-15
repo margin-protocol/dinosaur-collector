@@ -1,5 +1,5 @@
 import { EGGS, CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
-import { createEggView, stageOf } from './egg-view.js';
+import { createIncubator, createEggView, stageOf } from './egg-view.js';
 import { loadState, saveState, resetState } from './state.js';
 
 const $ = (id) => document.getElementById(id);
@@ -15,6 +15,8 @@ const MESSAGES = [
 
 let state = loadState();
 let eggView = null;
+const incubator = createIncubator();
+$('stage-egg').replaceWith(incubator.el);
 let busy = false;
 
 function percent() {
@@ -23,7 +25,6 @@ function percent() {
 }
 
 function renderHome() {
-  const stage = $('stage-egg');
   const hasEgg = Boolean(state.egg);
   $('vitals').hidden = !hasEgg;
   $('warm-btn').hidden = !hasEgg;
@@ -31,12 +32,12 @@ function renderHome() {
 
   if (!hasEgg) {
     eggView = null;
-    stage.innerHTML = '<p class="stage__empty">培育槽是空的。<br>下一顆蛋還在準備中。</p>';
+    incubator.setEgg(null);
     return;
   }
   if (!eggView) {
     eggView = createEggView(EGGS[state.egg.id]);
-    stage.replaceChildren(eggView.el);
+    incubator.setEgg(eggView);
   }
   const pct = percent();
   const s = stageOf(pct);
@@ -84,6 +85,7 @@ async function onWarm() {
   }
 
   busy = true;
+  incubator.flare();
   await eggView.hatch();
   const character = CHARACTERS[egg.hatches];
   state.egg = null;
