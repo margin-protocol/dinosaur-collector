@@ -1,0 +1,12 @@
+{
+  "name": "小湘收集器 SIANG COLLECTOR",
+  "short_name": "小湘收集器",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#191518",
+  "theme_color": "#191518",
+  "icons": [{ "src": "assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}

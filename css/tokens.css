@@ -1,0 +1,21 @@
+/* 設計代幣：來自 docs/ART_DIRECTION_V0.7.md，實機測試後可調整 */
+:root {
+  --bg-deep: #191518;
+  --bg-panel: #231c20;
+  --line: #3a2e34;
+  --wine: #742f42;
+  --ivory: #f0e7df;
+  --rose-metal: #b99283;
+  --silver: #9da6ac;
+  --bio-cyan: #83c9c1;
+  --egg-glow: #ffd9c4;
+
+  --font-body: "Noto Sans TC", "Noto Sans CJK TC", system-ui, sans-serif;
+  --font-display: "Noto Serif TC", "Noto Serif CJK TC", "Songti TC", serif;
+
+  --radius: 14px;
+  --tap: 48px;
+  --gap: 16px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+}
