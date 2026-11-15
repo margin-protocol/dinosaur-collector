@@ -68,16 +68,17 @@
       </div>
     </div>
 
-    <!-- 小恐龍引導員：角色與對話框是一個按鈕 -->
-    <div class="guide-row">
-      <button class="guide" type="button" id="guide" data-mood="idle">
+    <!-- 地板：小恐龍站在左邊，小湘在右邊這一段自己走動。兩個角色都在培養架「前方」 -->
+    <div class="floor" id="floor">
+      <button class="guide" type="button" id="guide" data-mood="idle" aria-describedby="bubble-text">
+        <span class="guide__shadow" aria-hidden="true"></span>
         <img class="mascot" src="assets/mascot/dinosaur-idle.webp" alt="小恐龍" width="512" height="512" draggable="false">
-        <span class="bubble" id="bubble">
-          <span class="bubble__text" id="bubble-text" aria-live="polite"></span>
-          <span class="bubble__cta" id="bubble-cta" hidden>看今日願望 ›</span>
-        </span>
+        <span class="guide__alert" id="guide-alert" aria-hidden="true" hidden>!</span>
       </button>
-      <img class="companion" id="companion" alt="原味小湘" width="1024" height="1024" draggable="false" hidden>
+      <button class="bubble" type="button" id="bubble" tabindex="-1">
+        <span class="bubble__text" id="bubble-text" aria-live="polite"></span>
+        <span class="bubble__cta" id="bubble-cta" hidden>看今日願望 ›</span>
+      </button>
     </div>
 
     <section class="vitals card" id="vitals">

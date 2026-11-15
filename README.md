@@ -8,6 +8,7 @@
 - 美術方向：[docs/ART_DIRECTION_V0.7.md](docs/ART_DIRECTION_V0.7.md)
 - 素材規格（尺寸、對位、檔名）：[docs/ASSET_SPEC.md](docs/ASSET_SPEC.md)
 - 首頁 UI／UX 精修紀錄與雙平台適配：[docs/UI_HOME.md](docs/UI_HOME.md)
+- 第二階段技術盤點與改造計畫：[docs/UI_PHASE2_PLAN.md](docs/UI_PHASE2_PLAN.md)
 
 ## 目前進度
 
@@ -34,6 +35,7 @@ js/eggs.js          恐龍蛋與小湘的資料表、素材路徑規則
 js/egg-view.js      培養架（固定）與恐龍蛋（可替換）元件、孵化階段
 js/state.js         本機存檔
 js/wishes.js        願望與拍照取色
+js/actors.js        首頁會走動的角色（狀態機與逐格動畫）
 js/app.js           畫面與玩法邏輯
 assets/incubator/   共用培養架（cradle-back / cradle-front）
 assets/eggs/<id>/   每顆蛋的圖層（shell / glow / cracks）

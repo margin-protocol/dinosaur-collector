@@ -153,27 +153,38 @@ body[data-view="home"] .app { height: 100vh; height: 100svh; overflow: hidden; }
 .fab.is-nudge { animation: nudge 0.5s ease; }
 @keyframes nudge { 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
 
-/* ---------- 小恐龍引導員（角色與對話框是一個整體） ---------- */
-.guide-row { position: relative; z-index: 4; display: flex; align-items: flex-end; margin-top: -30px; min-height: 76px; }
-.guide { flex: 1; min-width: 0; display: flex; align-items: flex-end; border: 0; background: none; padding: 0; text-align: left; }
-.mascot { width: clamp(70px, 21vw, 92px); height: auto; flex: none; transform-origin: 50% 92%; animation: dino-idle 3.2s ease-in-out infinite; }
+/* ---------- 地板：角色活動區 ---------- */
+/* 圖層順序（後→前）：背景 → 培養架後景 → 蛋 → 培養架前景 → 角色（地板）→ 對話框 */
+.floor { position: relative; z-index: 4; height: var(--actor); margin-top: calc(var(--actor) * -0.42); pointer-events: none; --actor: clamp(100px, 29vw, 128px); }
+.floor > * { pointer-events: auto; }
+
+/* 小恐龍引導員 */
+.guide { position: absolute; left: -6px; bottom: 0; width: calc(var(--actor) * 0.74); border: 0; background: none; padding: 0; }
+.mascot { position: relative; display: block; width: 100%; height: auto; transform-origin: 50% 92%; animation: dino-idle 3.2s ease-in-out infinite; }
+.guide__shadow, .actor__shadow {
+  position: absolute; left: 18%; right: 18%; bottom: 3%; height: 12%; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0, 0, 0, 0.55), transparent);
+}
+.guide__alert { /* 對話框收起時，提醒玩家小恐龍有話要說 */
+  position: absolute; right: 4%; top: 0; width: 20px; height: 20px; border-radius: 50%;
+  display: grid; place-items: center; font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: #fff;
+  background: var(--crimson); border: 1px solid var(--rose-light);
+  animation: alert 1.4s ease-in-out infinite;
+}
+@keyframes alert { 50% { transform: translateY(-3px) scale(1.1); } }
+
+/* 對話框：有事才出現，幾秒後自動收起 */
 .bubble {
-  position: relative; flex: 0 1 auto; min-width: 0; margin: 0 0 16px -2px;
-  display: flex; flex-direction: column; gap: 2px;
-  padding: 8px 13px 9px; border-radius: 16px;
-  background: #f7eee7; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(201, 160, 147, 0.9);
-  transform-origin: 0 80%;
+  position: absolute; z-index: 2; left: calc(var(--actor) * 0.56); bottom: calc(var(--actor) * 0.62); max-width: min(66vw, 280px);
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left;
+  padding: 8px 13px 9px; border: 0; border-radius: 16px 16px 16px 4px;
+  background: #f7eee7; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45), inset 0 0 0 1px rgba(201, 160, 147, 0.9);
+  transform-origin: 0 100%; opacity: 0; transform: scale(0.6); visibility: hidden;
+  transition: opacity 0.2s ease, transform 0.28s cubic-bezier(0.3, 1.5, 0.5, 1), visibility 0s 0.28s;
 }
-.bubble::before { /* 指向小恐龍嘴巴的尖角 */
-  content: ""; position: absolute; left: -5px; bottom: 16px; width: 12px; height: 12px; transform: rotate(45deg);
-  background: #f7eee7; box-shadow: inset 1px -1px 0 rgba(201, 160, 147, 0.9);
-}
-.bubble__text { position: relative; font-family: var(--font-display); font-size: 13.500px; line-height: 1.5; color: #3a1620; }
-.bubble__cta { position: relative; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #a3213b; }
-.bubble.is-pop { animation: bubble-pop 0.35s cubic-bezier(0.3, 1.5, 0.5, 1); }
-@keyframes bubble-pop { from { transform: scale(0.85); opacity: 0.4; } }
-/* 小湘的圖四周有留白，所以用負邊距把留白收掉；實際看起來比小恐龍高一點 */
-.companion { flex: none; width: clamp(104px, 33vw, 140px); height: auto; margin: 0 -30px -8px -22px; animation: dino-idle 3.8s ease-in-out infinite; transform-origin: 50% 92%; pointer-events: none; }
+.bubble.is-open { opacity: 1; transform: scale(1); visibility: visible; transition-delay: 0s; }
+.bubble__text { font-family: var(--font-display); font-size: 13.500px; line-height: 1.5; color: #3a1620; }
+.bubble__cta { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: #a3213b; }
 
 /* 小恐龍的四種狀態 */
 @keyframes dino-idle { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.02, 0.98); } }
@@ -183,6 +194,27 @@ body[data-view="home"] .app { height: 100vh; height: 100svh; overflow: hidden; }
 @keyframes dino-remind { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(-9deg); } 75% { transform: rotate(9deg); } }
 .guide[data-mood="cheer"] .mascot { animation: dino-cheer 0.7s ease-in-out infinite; }
 @keyframes dino-cheer { 0%, 100% { transform: translateY(0) scale(1.04, 0.96); } 45% { transform: translateY(-9px) scale(0.97, 1.04); } }
+.guide.is-hop .mascot { animation: dino-happy 0.5s ease-in-out 1; }
+
+/* 小湘：會自己走動的角色。外層負責水平位移，中層負責左右翻面，內層是逐格播放的圖 */
+.actor {
+  position: absolute; left: 0; bottom: 0; width: var(--actor); height: var(--actor); pointer-events: none !important;
+  transition: transform 0s linear; will-change: transform;
+}
+.actor__flip { position: absolute; inset: 0; transform-origin: 50% 92%; }
+.actor__flip[data-dir="left"] { transform: scaleX(-1); }
+.actor__sprite { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 400% 200%; transform-origin: 50% 92%; }
+.actor__shadow { left: 26%; right: 26%; }
+.actor[data-state="idle"] .actor__sprite, .actor[data-state="inspect"] .actor__sprite { animation: dino-idle 3.6s ease-in-out infinite; }
+.actor[data-state="rest"] .actor__sprite { animation: actor-rest 4.6s ease-in-out infinite; }
+@keyframes actor-rest { 0%, 100% { transform: scale(1) rotate(0); } 50% { transform: scale(1.015, 0.975) rotate(2deg); } }
+.actor.is-cheer .actor__sprite { animation: dino-happy 0.5s ease-in-out 2; }
+.actor__emote { /* 看蛋時頭上冒出的小光點 */
+  position: absolute; left: 50%; top: 2%; width: 10px; height: 10px; margin-left: -5px; transform: rotate(45deg); opacity: 0;
+  background: var(--rose-light); box-shadow: 0 0 10px 2px rgba(248, 220, 205, 0.8);
+}
+.actor__emote.is-on { animation: emote 1.6s ease-out 0.3s; }
+@keyframes emote { 0% { opacity: 0; transform: translateY(6px) rotate(45deg) scale(0.4); } 25% { opacity: 1; transform: translateY(-4px) rotate(45deg) scale(1); } 100% { opacity: 0; transform: translateY(-18px) rotate(45deg) scale(0.8); } }
 
 /* ---------- 生命訊號：一條精簡的儀表 ---------- */
 .vitals { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 8px 14px; border-radius: 16px; }
@@ -201,14 +233,11 @@ body[data-view="home"] .app { height: 100vh; height: 100svh; overflow: hidden; }
 .vitals__max { font-size: 11px; color: var(--silver); }
 .vitals__bpm { font-size: 9px; letter-spacing: 0.14em; color: var(--hud); }
 
-/* 矮螢幕（瀏覽器工具列佔掉高度時）：縮小輔助元素，不縮蛋 */
+/* 矮螢幕（瀏覽器工具列佔掉高度時）：縮小角色與輔助元素，不縮蛋 */
 @media (max-height: 640px) {
   .view--home { gap: 5px; padding-top: 4px; }
   .eggtitle__name { font-size: 15px; }
-  .mascot { width: clamp(60px, 18vw, 76px); }
-  .companion { width: clamp(92px, 28vw, 116px); margin: 0 -26px -6px -20px; }
-  .guide-row { min-height: 64px; margin-top: -26px; }
-  .bubble { margin-bottom: 10px; padding: 6px 11px 7px; }
+  .floor { --actor: clamp(84px, 25vw, 104px); }
   .vitals { padding: 6px 12px; }
   .fab { width: 44px; height: 44px; }
 }

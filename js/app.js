@@ -1,6 +1,7 @@
 import { EGGS, CHARACTERS, DUPLICATE_FOSSILS, rollHatch, characterSources, loadWithFallback } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, saveState, resetState, newEgg } from './state.js';
+import { createSiangActor } from './actors.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 
 const $ = (id) => document.getElementById(id);
@@ -26,6 +27,7 @@ let eggView = null;
 let busy = false;
 let toastTimer = 0;
 let sayTimer = 0;
+let bubbleTimer = 0;
 let sayOverride = null; // 小恐龍暫時要說的話（提醒、歡呼），幾秒後回到平常的提示
 const VIEWS = ['home', 'wish', 'dex'];
 const STAGE_NAMES = ['', '蛋有動靜了', '蛋殼裂開了', '就快出來了', '可以破殼了'];
@@ -38,6 +40,9 @@ const eggButton = document.createElement('button');
 eggButton.type = 'button';
 eggButton.className = 'egg-hit';
 incubator.el.append(eggButton);
+
+// 小湘：孵出來以後才出現，在地板上自己走動
+const siang = createSiangActor($('floor'));
 
 /* ---------- 願望 ---------- */
 
@@ -94,14 +99,9 @@ function renderHome() {
     $(id).textContent = open.length;
   }
 
-  // 小湘孵出來以後，站在培養架右邊陪著
-  const companion = $('companion');
-  if (state.dex['001'] && companion.hidden) {
-    loadWithFallback(companion, characterSources(CHARACTERS['001'].image));
-    companion.hidden = false;
-  } else if (!state.dex['001']) {
-    companion.hidden = true;
-  }
+  // 小湘孵出來以後才出現（孵出前不劇透）
+  siang.show(Boolean(state.dex['001']));
+  if (document.body.dataset.view === 'home') siang.start();
 
   // 小恐龍：告訴玩家現在可以做什麼
   let text;
@@ -126,12 +126,32 @@ function renderHome() {
     mood = sayOverride.mood;
   }
   guide.dataset.mood = mood;
+  $('bubble-cta').hidden = mode !== 'wish';
   if ($('bubble-text').textContent !== text) {
     $('bubble-text').textContent = text;
-    restart($('bubble'), 'is-pop');
+    openBubble();
   }
-  $('bubble-cta').hidden = mode !== 'wish';
+  // 對話框收起時，如果玩家還有事可以做，小恐龍頭上顯示驚嘆號
+  $('guide-alert').hidden = $('bubble').classList.contains('is-open') || mode === 'rest';
   eggButton.setAttribute('aria-label', ready ? `讓${egg.name}破殼` : `幫${egg.name}注入能量，目前生命訊號 ${Math.round(pct)}%`);
+}
+
+// 對話框有事才出現：打開後依字數停留幾秒，自動收起
+function openBubble() {
+  const bubble = $('bubble');
+  bubble.classList.add('is-open');
+  $('guide-alert').hidden = true;
+  clearTimeout(bubbleTimer);
+  bubbleTimer = setTimeout(() => {
+    bubble.classList.remove('is-open');
+    $('guide-alert').hidden = $('guide').dataset.mode === 'rest';
+  }, 3200 + $('bubble-text').textContent.length * 120);
+}
+
+function guideAction() {
+  const mode = $('guide').dataset.mode;
+  if (mode === 'wish') showView('wish');
+  else if (mode === 'tap') onEggTap();
 }
 
 // 小恐龍暫時換一句話和表情，幾秒後恢復
@@ -241,6 +261,9 @@ function showView(name) {
   $('page-title').textContent = TITLES[name] || '';
   document.body.dataset.view = name;
   if (name !== 'home') window.scrollTo(0, 0);
+  // 角色只在首頁活動；離開首頁就停下來，省電
+  if (name === 'home') siang.start();
+  else siang.stop();
 }
 
 function toast(text) {
@@ -324,6 +347,8 @@ async function onEggTap() {
   renderHome();
   incubator.feed();
   showGain(`+${amount}`);
+  siang.cheer();
+  restart($('guide'), 'is-hop');
   if (after > before) celebrateStage(after);
 }
 
@@ -426,9 +451,16 @@ $('nav').addEventListener('click', (e) => {
   if (item && !item.disabled) showView(item.dataset.view);
 });
 $('fab-wish').addEventListener('click', () => showView('wish'));
+// 點小恐龍：對話框收著就先打開；已經打開就照牠說的去做
 $('guide').addEventListener('click', () => {
-  if ($('guide').dataset.mode === 'wish') showView('wish');
-  else if ($('guide').dataset.mode === 'tap') onEggTap();
+  if ($('bubble').classList.contains('is-open')) guideAction();
+  else openBubble();
+});
+$('bubble').addEventListener('click', guideAction);
+// 切到別的 App 或關螢幕時暫停角色
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) siang.stop();
+  else if (document.body.dataset.view === 'home') siang.start();
 });
 $('fab-letter').addEventListener('click', () => $('intro').showModal());
 $('intro-ok').addEventListener('click', () => {
