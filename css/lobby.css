@@ -64,7 +64,9 @@ body[data-view="home"] .app { min-height:max(760px,100svh); }
 .game-footer { padding:16px 0 calc(var(--safe-bottom) + 26px); min-height:80px; }
 #location-label { font:9px var(--font-body); color:var(--pearl); letter-spacing:.1em; }
 .center-button { min-height:44px; padding:8px 12px; border:1px solid #c5b4c362; border-radius:3px; color:var(--ivory); background:#181b2580; gap:8px; }
-.center-button span { font:13px var(--font-display); letter-spacing:.07em; }
+.center-button span { font:400 14px/1.4 var(--font-display); letter-spacing:.1em; }
+.journal-icon { width:21px; height:21px; flex:none; stroke:currentColor; stroke-width:1.35; stroke-linecap:round; stroke-linejoin:round; }
+.drawer-heading h2 { font:400 25px/1.5 var(--font-display); letter-spacing:.1em; }
 .btn,.mission-shoot { background:linear-gradient(135deg,#f3eded,#ded0e6); color:#302637; border-radius:4px; }
 .mission { background:#20232eef; border-color:#68616e66; border-radius:8px; }
 .mission.is-done { background:#2a2633; }
