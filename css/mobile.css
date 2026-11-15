@@ -119,3 +119,4 @@ button:active, .mission-shoot:active { transform: scale(.97); }
 /* Keep the art container measurable even when browser chrome reduces height. */
 .view--home { flex: 1 0 auto; }
 .stage { flex: none; height: clamp(265px, 40svh, 380px); }
+body[data-view="home"] .app { height: auto; min-height: 100svh; overflow: visible; }

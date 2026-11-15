@@ -34,6 +34,8 @@ const assert=require('node:assert/strict');
  assert.equal(await page.locator('#energy-value').textContent(),'95');
  await page.reload();assert.equal(await page.locator('#energy-value').textContent(),'95');
  await page.setViewportSize({width,height:612});await overflow();
+ assert(await page.evaluate(()=>document.querySelector('.game-footer').getBoundingClientRect().top >= document.querySelector('.home-actions').getBoundingClientRect().bottom),'footer must not cover actions');
+ await page.locator('#home-wishes').scrollIntoViewIfNeeded();await page.evaluate(()=>scrollTo(0,0));
  await page.waitForFunction(()=>Array.from(document.images).every(i=>i.complete));
  await page.screenshot({path:`docs/review/${engine}-short-${width}.png`,fullPage:true});
  // Existing progress fixture: exercise actual hatch and unchanged animated actor.
