@@ -29,6 +29,7 @@ index.html
 css/tokens.css      顏色、字體等設計代幣
 css/app.css         基礎：資源列、按鈕、對話框、分頁列、願望與圖鑑頁
 css/game.css        首頁：培養架與蛋、小恐龍、生命訊號、互動回饋
+css/wish.css        今日願望：魔法委託簿
 css/hud.css         全息反光與破殼分析過場
 sw.js               離線快取（加入主畫面後可離線開啟）
 js/eggs.js          恐龍蛋與小湘的資料表、素材路徑規則

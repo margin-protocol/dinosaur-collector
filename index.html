@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/hud.css">
 <link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/wish.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
@@ -98,10 +99,23 @@
     </section>
   </main>
 
-  <main class="view" data-view="wish" hidden>
-    <p class="lead" id="wish-lead"></p>
-    <ul class="wishes" id="wish-list"></ul>
-    <p class="fine">拍照後，程式會在手機上分析照片的顏色。照片不會上傳，也不會保存。<br>每天會換三個新的願望。</p>
+  <!-- 今日願望：魔法委託簿 -->
+  <main class="view view--wish" data-view="wish" hidden>
+    <div class="book__head">
+      <div class="book__en">THE BOOK OF WISHES</div>
+      <h1 class="book__title">今日願望</h1>
+      <div class="book__meta">
+        <span id="book-day"></span>
+        <span class="book__gems" id="book-gems" role="img"></span>
+        <span id="book-progress"></span>
+      </div>
+    </div>
+    <ul class="book__list" id="wish-list"></ul>
+    <section class="book__log" id="book-log" aria-live="polite">
+      <p class="book__log-text" id="book-log-text"></p>
+      <button class="btn" type="button" id="book-home" hidden><span class="gem" aria-hidden="true"></span><span>回培育槽餵蛋</span><span class="gem" aria-hidden="true"></span></button>
+    </section>
+    <p class="fine">照片只在手機上分析顏色，不會上傳，也不會保存。<br>每天會翻開新的一頁，換三個新的委託。</p>
   </main>
 
   <main class="view" data-view="dex" hidden>

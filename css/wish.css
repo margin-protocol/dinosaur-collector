@@ -1,0 +1,107 @@
+/* 今日願望：魔法委託簿。平常以可讀性為主，華麗的演出只在寶石點亮與蓋章時出現 */
+
+.view--wish { gap: 12px; padding-top: 14px; }
+
+/* ---------- 書名頁首 ---------- */
+.book__head { text-align: center; }
+.book__en { font-family: var(--font-latin); font-size: 11px; letter-spacing: 0.36em; padding-left: 0.36em; color: var(--rose-metal); }
+.book__title {
+  margin: 2px 0 8px; font-family: var(--font-display); font-weight: 700; font-size: 24px; line-height: 1.3; letter-spacing: 0.2em; padding-left: 0.2em;
+  background: var(--metal); -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.book__meta { display: flex; align-items: center; justify-content: center; gap: 14px; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.14em; color: var(--silver); }
+.book__meta::before, .book__meta::after { content: ""; flex: 1; height: 1px; }
+.book__meta::before { background: linear-gradient(90deg, transparent, rgba(210, 163, 145, 0.7)); }
+.book__meta::after { background: linear-gradient(90deg, rgba(210, 163, 145, 0.7), transparent); }
+.book__gems { display: flex; gap: 8px; }
+.book__gems .gemfx { width: 18px; height: 18px; }
+
+/* ---------- 寶石 ---------- */
+.gemfx { position: relative; display: block; width: 30px; height: 30px; transition: filter 0.4s ease; filter: grayscale(0.9) brightness(0.42); }
+.gemfx svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.gemfx__base { fill: var(--gem); }
+.gemfx.is-lit { filter: drop-shadow(0 0 5px var(--gem)); }
+.gemfx.is-ignite { animation: ignite 0.7s cubic-bezier(0.3, 1.4, 0.5, 1) both; }
+@keyframes ignite {
+  0% { transform: scale(0.6); filter: grayscale(0.9) brightness(0.42); }
+  45% { transform: scale(1.35); filter: brightness(1.9) drop-shadow(0 0 12px var(--gem)); }
+  100% { transform: scale(1); filter: drop-shadow(0 0 5px var(--gem)); }
+}
+/* 三顆寶石都點亮：一起共鳴（純視覺演出，沒有額外獎勵） */
+.book__gems.is-resonate .gemfx { animation: resonate 1.5s ease-in-out 0.9s 2 both; }
+.book__gems.is-resonate .gemfx:nth-child(2) { animation-delay: 1.05s; }
+.book__gems.is-resonate .gemfx:nth-child(3) { animation-delay: 1.2s; }
+@keyframes resonate { 0%, 100% { transform: scale(1) translateY(0); } 40% { transform: scale(1.45) translateY(-3px); filter: brightness(1.6) drop-shadow(0 0 10px var(--gem)); } }
+
+/* ---------- 委託卡：羊皮紙 ---------- */
+.book__list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.quest {
+  position: relative; overflow: hidden;
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px;
+  padding: 16px 16px 16px 18px; border-radius: 14px;
+  color: #3a1620;
+  background:
+    radial-gradient(120% 90% at 0% 0%, rgba(255, 255, 255, 0.5), transparent 55%),
+    radial-gradient(90% 80% at 100% 100%, rgba(170, 120, 95, 0.22), transparent 60%),
+    linear-gradient(160deg, #f6ebdd, #ebd9c7 65%, #e3cdb9);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+}
+.quest::before { /* 玫瑰金細線內框 */
+  content: ""; position: absolute; inset: 5px; border-radius: 10px; pointer-events: none;
+  border: 1px solid rgba(165, 112, 94, 0.5);
+}
+.quest__socket { /* 寶石座：外圈的刻度像小型魔法陣 */
+  position: relative; width: 52px; height: 52px; border-radius: 50%; display: grid; place-items: center;
+  background: radial-gradient(circle at 40% 35%, #3b2630, #1c1116);
+  box-shadow: 0 0 0 1.5px #b98a78, 0 0 0 5px rgba(246, 235, 221, 0.9), 0 0 0 6px rgba(165, 112, 94, 0.55);
+}
+.quest__body { min-width: 0; position: relative; }
+.quest__no { font-family: var(--font-mono); font-size: 9.500px; line-height: 1.2; letter-spacing: 0.2em; color: #8a5a4e; }
+.quest__name { margin: 3px 0 4px; font-family: var(--font-display); font-weight: 700; font-size: 17px; line-height: 1.3; letter-spacing: 0.06em; color: #3a1620; }
+.quest__line { margin: 0 0 6px; font-family: var(--font-display); font-size: 13px; line-height: 1.55; color: #5b3a3f; }
+.quest__who { display: block; font-size: 11px; color: #8a5a4e; }
+.quest__reward { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #8f1a31; }
+.quest__reward::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #ff8a9c, var(--crimson) 60%, var(--crimson-deep)); }
+.quest__action { position: relative; width: 76px; display: grid; place-items: center; }
+.quest__shoot {
+  min-width: 76px; min-height: 48px; padding: 0 12px; display: flex; align-items: center; justify-content: center;
+  border-radius: 99px; border: 1.5px solid #b98a78; cursor: pointer;
+  background: linear-gradient(180deg, #8f2740, #5a1123);
+  box-shadow: 0 3px 8px rgba(90, 17, 35, 0.4);
+  font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: 0.2em; padding-left: calc(12px + 0.2em); color: var(--ivory);
+}
+.quest__shoot:active { transform: scale(0.96); }
+.quest__shoot:focus-within { outline: 2px solid #2c6a63; outline-offset: 3px; }
+
+/* 完成印章 */
+.stamp {
+  width: 62px; height: 62px; border-radius: 50%; display: grid; place-items: center; transform: rotate(-14deg);
+  border: 2px solid #b3213c; box-shadow: inset 0 0 0 3px #efdfce, inset 0 0 0 4px rgba(179, 33, 60, 0.8);
+  font-family: var(--font-display); font-weight: 700; font-size: 17px; letter-spacing: 0.1em; padding-left: 0.1em; color: #b3213c; opacity: 0.9;
+}
+.quest.is-fresh .stamp { animation: stamp 0.42s cubic-bezier(0.3, 1.3, 0.5, 1) 0.4s both; }
+@keyframes stamp { from { opacity: 0; transform: rotate(-30deg) scale(2.4); } 70% { opacity: 1; transform: rotate(-12deg) scale(0.94); } to { opacity: 0.9; transform: rotate(-14deg) scale(1); } }
+
+/* 魔法光掃過卡片：鑑定中慢慢掃，完成時快速掃一次 */
+.quest__sweep {
+  position: absolute; inset: 0; pointer-events: none; opacity: 0;
+  background: linear-gradient(105deg, transparent 38%, rgba(255, 255, 255, 0.85) 50%, transparent 62%) no-repeat;
+  background-size: 260% 100%;
+}
+.quest.is-scanning .quest__sweep { opacity: 0.7; animation: sweep 1.1s ease-in-out infinite; }
+.quest.is-fresh .quest__sweep { animation: sweep 0.7s ease-out both, sweep-fade 0.7s ease-out both; }
+.quest.is-scanning .quest__shoot { opacity: 0.75; }
+@keyframes sweep { from { background-position: 130% 0; } to { background-position: -130% 0; } }
+@keyframes sweep-fade { 0% { opacity: 0.95; } 100% { opacity: 0; } }
+
+/* ---------- 今日完成紀錄 ---------- */
+.book__log { display: flex; flex-direction: column; gap: 12px; margin-top: 2px; }
+.book__log-text { margin: 0; text-align: center; font-family: var(--font-display); font-size: 14px; line-height: 1.8; color: var(--pearl); }
+
+@media (max-width: 374px) {
+  .quest { gap: 10px; padding: 14px 12px 14px 16px; }
+  .quest__socket { width: 46px; height: 46px; }
+  .quest__action, .quest__shoot { width: 68px; min-width: 68px; }
+  .quest__name { font-size: 16px; }
+  .stamp { width: 56px; height: 56px; font-size: 15px; }
+}
