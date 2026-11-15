@@ -9,9 +9,10 @@
 <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=Noto+Serif+TC:wght@500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Noto+Serif+TC:wght@500;700&amp;display=swap">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/hud.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
@@ -25,17 +26,37 @@
   <main class="view" data-view="home">
     <div class="stage">
       <div class="motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="stage__tag" id="egg-name"></div>
+      <div class="readouts" id="readouts">
+        <div class="readout">
+          <span class="readout__k">STAGE</span>
+          <span class="readout__v" id="ro-stage">00 · 04</span>
+        </div>
+        <div class="tag" id="egg-tag">
+          <span class="tag__code" id="egg-code"></span>
+          <span class="tag__name" id="egg-name"></span>
+        </div>
+        <div class="readout readout--right">
+          <span class="readout__k">DAY</span>
+          <span class="readout__v" id="ro-day">D+00</span>
+        </div>
+      </div>
       <div id="stage-egg"></div>
+      <span class="float-gain" id="float-gain" aria-hidden="true"></span>
       <p class="stage__empty" id="stage-empty">培育槽是空的，下一顆蛋還在準備中。</p>
       <!-- 預留位置：小湘與小恐龍的正式素材到了再顯示 -->
       <img class="stage__slot stage__slot--character" id="slot-character" alt="" hidden>
       <img class="stage__slot stage__slot--mascot" id="slot-mascot" alt="" hidden>
     </div>
-    <section class="vitals" id="vitals" aria-live="polite">
+    <section class="panel vitals" id="vitals" aria-live="polite">
       <div class="vitals__row">
-        <span class="vitals__label"><span class="gem" aria-hidden="true"></span>生命訊號</span>
-        <span class="vitals__value" id="vitals-value">0 / 100</span>
+        <span class="vitals__label"><span class="gem" aria-hidden="true"></span>生命訊號<span class="en">VITAL SIGN</span></span>
+        <span class="vitals__value"><span id="vitals-value">000</span><span class="vitals__max">/100</span></span>
+      </div>
+      <div class="ecg" aria-hidden="true">
+        <svg class="ecg__line" viewBox="0 0 400 40" preserveAspectRatio="none">
+          <path d="M0 22 H40 L46 22 L50 16 L54 22 L60 22 L64 26 L70 4 L76 36 L82 22 L90 22 L96 18 L104 22 H200 H240 L246 22 L250 16 L254 22 L260 22 L264 26 L270 4 L276 36 L282 22 L290 22 L296 18 L304 22 H400"/>
+        </svg>
+        <span class="ecg__bpm"><span id="ecg-bpm">48</span> BPM</span>
       </div>
       <div class="vial" aria-hidden="true">
         <span class="vial__cap"></span>
@@ -86,7 +107,19 @@
   <button class="btn" id="intro-ok" type="button">收下這顆蛋</button>
 </dialog>
 
-<dialog class="sheet" id="reveal" aria-label="孵化結果">
+<div class="analysis" id="analysis" hidden aria-live="assertive">
+  <div class="analysis__grid" aria-hidden="true"></div>
+  <div class="analysis__scan" aria-hidden="true"></div>
+  <div class="analysis__box">
+    <div class="analysis__en">LIFEFORM ANALYSIS</div>
+    <div class="analysis__title">生命體分析中</div>
+    <div class="analysis__bar"><div class="analysis__fill" id="analysis-fill"></div></div>
+    <div class="analysis__pct" id="analysis-pct">000%</div>
+  </div>
+</div>
+
+<dialog class="sheet sheet--reveal" id="reveal" aria-label="孵化結果">
+  <div class="sheet__en">NEW SPECIMEN REGISTERED</div>
   <img class="sheet__img" id="reveal-img" alt="">
   <div class="sheet__no" id="reveal-no"></div>
   <h2 class="sheet__name" id="reveal-name"></h2>

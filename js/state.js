@@ -3,7 +3,7 @@ const KEY = 'siang-collector:v1';
 
 const fresh = () => ({
   seenIntro: false,
-  egg: { id: 'origin', warmth: 0 }, // 目前培育中的蛋；null 代表培育槽是空的
+  egg: { id: 'origin', warmth: 0, since: new Date().toISOString() }, // 目前培育中的蛋；null 代表培育槽是空的
   dex: {}, // { '001': { at: ISO 時間 } }
 });
 

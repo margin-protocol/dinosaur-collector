@@ -21,6 +21,8 @@
   --font-body: "Noto Sans TC", "Noto Sans CJK TC", system-ui, sans-serif;
   --font-display: "Noto Serif TC", "Noto Serif CJK TC", "Songti TC", serif;
   --font-latin: "Cormorant Garamond", "Noto Serif TC", serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --hud: #9fe3d9;
 
   --radius: 16px;
   --tap: 52px;

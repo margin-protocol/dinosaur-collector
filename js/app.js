@@ -1,9 +1,23 @@
 import { EGGS, CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
-import { createIncubator, createEggView, stageOf } from './egg-view.js';
+import { createIncubator, createEggView, stageOf, restart } from './egg-view.js';
 import { loadState, saveState, resetState } from './state.js';
 
 const $ = (id) => document.getElementById(id);
 const TAP_WARMTH = 10; // 教學階段：每次保溫增加的能量。之後改由任務給予。
+const BPM = [48, 64, 82, 104, 120]; // 各階段的心跳，跟蛋的脈動同步
+const pad = (n, len = 2) => String(Math.round(n)).padStart(len, '0');
+const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+const sleep = (ms) => new Promise((r) => setTimeout(r, reducedMotion() ? 0 : ms));
+
+// Android 震動回饋；不支援的裝置會安靜略過
+function buzz(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
+function daysSince(iso) {
+  if (!iso) return 0;
+  return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
+}
 
 const MESSAGES = [
   '蛋很安靜，像在沉睡。',
@@ -28,7 +42,9 @@ function renderHome() {
   const hasEgg = Boolean(state.egg);
   $('vitals').hidden = !hasEgg;
   $('warm-btn').hidden = !hasEgg;
+  $('readouts').hidden = !hasEgg;
   $('egg-name').textContent = hasEgg ? EGGS[state.egg.id].name : '';
+  $('egg-code').textContent = hasEgg ? `SPECIMEN · ${EGGS[state.egg.id].code}` : '';
 
   if (!hasEgg) {
     eggView = null;
@@ -42,7 +58,12 @@ function renderHome() {
   const pct = percent();
   const s = stageOf(pct);
   eggView.setProgress(pct);
-  $('vitals-value').textContent = `${Math.round(pct)} / 100`;
+  $('vitals-value').textContent = pad(pct, 3);
+  $('ro-stage').textContent = `${pad(Math.min(s, 4))} · 04`;
+  $('ro-day').textContent = `D+${pad(daysSince(state.egg.since))}`;
+  $('ecg-bpm').textContent = BPM[s];
+  $('vitals').style.setProperty('--ecg-dur', `${(2 * 60) / BPM[s]}s`);
+  $('vitals').dataset.stage = String(s);
   $('vitals-fill').style.width = `${pct}%`;
   $('vitals-msg').textContent = MESSAGES[s];
   $('warm-label').textContent = s === 4 ? '破殼' : '幫蛋保溫';
@@ -64,6 +85,7 @@ function renderDex() {
       const no = document.createElement('div');
       no.className = 'dex__no';
       no.textContent = `No.${c.no}`;
+      if (has) li.classList.add('is-owned');
       const name = document.createElement('div');
       name.className = 'dex__name';
       name.textContent = has ? c.name : '???';
@@ -78,13 +100,20 @@ async function onWarm() {
   const egg = EGGS[state.egg.id];
 
   if (percent() < 100) {
+    const before = stageOf(percent());
     state.egg.warmth = Math.min(egg.warmthNeeded, state.egg.warmth + TAP_WARMTH);
+    if (!state.egg.since) state.egg.since = new Date().toISOString();
     saveState(state);
     renderHome();
+    incubator.pulse();
+    showGain(TAP_WARMTH);
+    buzz(stageOf(percent()) > before ? [18, 40, 28] : 12);
     return;
   }
 
   busy = true;
+  buzz([30, 50, 30, 50, 60]);
+  await runAnalysis();
   incubator.flare();
   await eggView.hatch();
   const character = CHARACTERS[egg.hatches];
@@ -97,6 +126,32 @@ async function onWarm() {
   if (character) showReveal(character);
 }
 
+function showGain(n) {
+  const el = $('float-gain');
+  el.textContent = `+${n}`;
+  restart(el);
+}
+
+// 破殼前的過場：畫面變暗、掃描、分析進度跑到 100%
+async function runAnalysis() {
+  const box = $('analysis');
+  box.hidden = false;
+  const total = reducedMotion() ? 0 : 1600;
+  const start = performance.now();
+  await new Promise((resolve) => {
+    const tick = (now) => {
+      const p = total ? Math.min(1, (now - start) / total) : 1;
+      $('analysis-fill').style.width = `${p * 100}%`;
+      $('analysis-pct').textContent = `${pad(p * 100, 3)}%`;
+      if (p < 1) requestAnimationFrame(tick);
+      else resolve();
+    };
+    requestAnimationFrame(tick);
+  });
+  await sleep(250);
+  box.hidden = true;
+}
+
 function showReveal(c) {
   loadWithFallback($('reveal-img'), characterSources(c.image));
   $('reveal-img').alt = c.name;
@@ -104,6 +159,7 @@ function showReveal(c) {
   $('reveal-name').textContent = c.name;
   $('reveal-line').textContent = c.line;
   $('reveal').showModal();
+  buzz([40, 60, 80]);
 }
 
 function showView(name) {

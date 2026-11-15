@@ -8,12 +8,14 @@ export const EGGS = {
   origin: {
     id: 'origin',
     name: '小湘本源蛋',
+    code: 'ORIGIN-001', // 標本編號，顯示在培育槽名牌上
     warmthNeeded: 100,
     hatches: '001', // 固定孵出原味小湘
   },
   ordinary: {
     id: 'ordinary',
     name: '普通蛋',
+    code: 'STD',
     warmthNeeded: 100,
     hatches: null, // 之後接蛋池
   },
