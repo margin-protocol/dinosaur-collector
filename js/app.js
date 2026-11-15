@@ -1,10 +1,12 @@
-import { EGGS, CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
+import { EGGS, CHARACTERS, DUPLICATE_FOSSILS, rollHatch, characterSources, loadWithFallback } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart } from './egg-view.js';
-import { loadState, saveState, resetState } from './state.js';
+import { loadState, saveState, resetState, newEgg } from './state.js';
+import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 
 const $ = (id) => document.getElementById(id);
-const TAP_WARMTH = 10; // 教學階段：每次保溫增加的能量。之後改由任務給予。
+const TAP_ENERGY = 10; // 每點一下蛋，注入多少能量
 const BPM = [48, 64, 82, 104, 120]; // 各階段的心跳，跟蛋的脈動同步
+const TITLES = { wish: '今日願望', dex: '圖鑑' };
 const pad = (n, len = 2) => String(Math.round(n)).padStart(len, '0');
 const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sleep = (ms) => new Promise((r) => setTimeout(r, reducedMotion() ? 0 : ms));
@@ -19,54 +21,144 @@ function daysSince(iso) {
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
 }
 
-const MESSAGES = [
-  '蛋很安靜，像在沉睡。',
-  '裡面有東西在動……',
-  '蛋殼裂開了，有光透出來。',
-  '快出來了！再一點點！',
-  '生命訊號達標，可以破殼了。',
-];
-
 let state = loadState();
+if (!state.egg) state.egg = newEgg('ordinary'); // 培育槽不留空：孵完就送來下一顆
 let eggView = null;
+let busy = false;
+let toastTimer = 0;
+
 const incubator = createIncubator();
 $('stage-egg').replaceWith(incubator.el);
-let busy = false;
+
+// 蛋本身就是按鈕：點它注入能量，滿了就破殼
+const eggButton = document.createElement('button');
+eggButton.type = 'button';
+eggButton.className = 'egg-hit';
+incubator.el.append(eggButton);
+
+/* ---------- 願望 ---------- */
+
+function todaysWishes() {
+  const date = todayKey();
+  if (!state.wishes || state.wishes.date !== date) {
+    state.wishes = { date, done: [] };
+    saveState(state);
+  }
+  return wishesFor(date).map((w) => ({ ...w, done: state.wishes.done.includes(w.id) }));
+}
+
+// 孵出原味小湘之前，願望來自蛋裡的聲音；之後由小湘提出
+const speaker = () => (state.dex['001'] ? '原味小湘' : '蛋裡的聲音');
+
+/* ---------- 畫面 ---------- */
 
 function percent() {
-  const egg = EGGS[state.egg.id];
-  return Math.min(100, (state.egg.warmth / egg.warmthNeeded) * 100);
+  return Math.min(100, (state.egg.warmth / EGGS[state.egg.id].warmthNeeded) * 100);
+}
+
+function renderResources() {
+  $('energy-value').textContent = state.energy;
+  $('fossil-value').textContent = state.fossils;
 }
 
 function renderHome() {
-  const hasEgg = Boolean(state.egg);
-  $('vitals').hidden = !hasEgg;
-  $('warm-btn').hidden = !hasEgg;
-  $('readouts').hidden = !hasEgg;
-  $('egg-name').textContent = hasEgg ? EGGS[state.egg.id].name : '';
-  $('egg-code').textContent = hasEgg ? `SPECIMEN · ${EGGS[state.egg.id].code}` : '';
-
-  if (!hasEgg) {
-    eggView = null;
-    incubator.setEgg(null);
-    return;
-  }
+  const egg = EGGS[state.egg.id];
   if (!eggView) {
-    eggView = createEggView(EGGS[state.egg.id]);
+    eggView = createEggView(egg);
     incubator.setEgg(eggView);
   }
   const pct = percent();
   const s = stageOf(pct);
+  const ready = s === 4;
   eggView.setProgress(pct);
-  $('vitals-value').textContent = pad(pct, 3);
-  $('ro-stage').textContent = `${pad(Math.min(s, 4))} · 04`;
-  $('ro-day').textContent = `D+${pad(daysSince(state.egg.since))}`;
+
+  $('egg-name').textContent = egg.name;
+  $('egg-code').textContent = `${egg.code} · STAGE ${s}/4 · D+${pad(daysSince(state.egg.since))}`;
+  $('vitals-value').textContent = pad(state.egg.warmth, 3);
+  $('vitals-max').textContent = `/${egg.warmthNeeded}`;
+  $('vitals-fill').style.width = `${pct}%`;
   $('ecg-bpm').textContent = BPM[s];
   $('vitals').style.setProperty('--ecg-dur', `${(2 * 60) / BPM[s]}s`);
-  $('vitals').dataset.stage = String(s);
-  $('vitals-fill').style.width = `${pct}%`;
-  $('vitals-msg').textContent = MESSAGES[s];
-  $('warm-label').textContent = s === 4 ? '破殼' : '幫蛋保溫';
+
+  const wishes = todaysWishes();
+  const open = wishes.filter((w) => !w.done);
+  for (const id of ['wish-dot', 'nav-wish-dot']) {
+    $(id).hidden = open.length === 0;
+    $(id).textContent = open.length;
+  }
+
+  // 對話泡泡與提示：告訴玩家現在可以做什麼
+  const hint = $('hint');
+  hint.dataset.mode = ready ? 'hatch' : state.energy > 0 ? 'tap' : 'wish';
+  if (ready) {
+    $('bubble-text').textContent = '蛋要出來了！快點它！';
+    hint.textContent = '點蛋破殼';
+  } else if (state.energy > 0) {
+    $('bubble-text').textContent = '有能量了！點蛋餵給它。';
+    hint.textContent = '點蛋注入能量';
+  } else if (open.length) {
+    $('bubble-text').textContent = `${state.dex['001'] ? '小湘' : '蛋'}說：${open[0].line}`;
+    hint.textContent = '';
+  } else {
+    $('bubble-text').textContent = '今天的願望都完成了，明天見！';
+    hint.textContent = '';
+  }
+  eggButton.setAttribute('aria-label', ready ? `讓${egg.name}破殼` : `幫${egg.name}注入能量，目前生命訊號 ${Math.round(pct)}%`);
+  incubator.el.classList.toggle('is-ready', ready);
+  incubator.el.classList.toggle('can-tap', ready || state.energy > 0);
+}
+
+function renderWishes() {
+  const wishes = todaysWishes();
+  const left = wishes.filter((w) => !w.done).length;
+  $('wish-lead').textContent = left
+    ? `${speaker()}有 ${left} 個願望。拍下它想看的顏色，每個願望可以換 ${WISH_REWARD} 點能量。`
+    : '今天的願望都完成了。明天會有新的願望。';
+  $('wish-list').replaceChildren(
+    ...wishes.map((w) => {
+      const li = document.createElement('li');
+      li.className = `wish panel${w.done ? ' is-done' : ''}`;
+      const sw = document.createElement('span');
+      sw.className = 'wish__swatch';
+      sw.style.background = w.swatch;
+      const body = document.createElement('div');
+      body.className = 'wish__body';
+      const line = document.createElement('div');
+      line.className = 'wish__line';
+      line.textContent = `「${w.line}」`;
+      const meta = document.createElement('div');
+      meta.className = 'wish__meta';
+      meta.textContent = `拍到${w.color} · 能量 +${WISH_REWARD}`;
+      body.append(line, meta);
+      li.append(sw, body);
+
+      if (w.done) {
+        const ok = document.createElement('span');
+        ok.className = 'wish__done';
+        ok.textContent = '已完成';
+        li.append(ok);
+      } else {
+        // 用 <label> 包住檔案輸入：點下去會直接開相機
+        const label = document.createElement('label');
+        label.className = 'wish__shoot';
+        label.textContent = '拍照';
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.capture = 'environment';
+        input.className = 'visually-hidden';
+        input.setAttribute('aria-label', `拍照完成願望：${w.color}`);
+        input.addEventListener('change', () => {
+          const file = input.files && input.files[0];
+          input.value = '';
+          if (file) onPhoto(w, file);
+        });
+        label.append(input);
+        li.append(label);
+      }
+      return li;
+    }),
+  );
 }
 
 function renderDex() {
@@ -77,7 +169,7 @@ function renderDex() {
     ...all.map((c) => {
       const has = Boolean(state.dex[c.no]);
       const li = document.createElement('li');
-      li.className = 'dex__card';
+      li.className = `dex__card${has ? ' is-owned' : ''}`;
       const img = document.createElement('img');
       img.className = `dex__img${has ? '' : ' is-locked'}`;
       img.alt = has ? c.name : '尚未收集的小湘';
@@ -85,7 +177,6 @@ function renderDex() {
       const no = document.createElement('div');
       no.className = 'dex__no';
       no.textContent = `No.${c.no}`;
-      if (has) li.classList.add('is-owned');
       const name = document.createElement('div');
       name.className = 'dex__name';
       name.textContent = has ? c.name : '???';
@@ -95,41 +186,88 @@ function renderDex() {
   );
 }
 
-async function onWarm() {
-  if (busy || !state.egg) return;
+function renderAll() {
+  renderResources();
+  renderHome();
+  renderWishes();
+  renderDex();
+}
+
+function showView(name) {
+  for (const view of document.querySelectorAll('.view')) view.hidden = view.dataset.view !== name;
+  for (const item of document.querySelectorAll('.nav__item')) {
+    if (item.dataset.view === name) item.setAttribute('aria-current', 'page');
+    else item.removeAttribute('aria-current');
+  }
+  $('header').hidden = name === 'home';
+  $('page-title').textContent = TITLES[name] || '';
+  document.body.dataset.view = name;
+}
+
+function toast(text) {
+  const el = $('toast');
+  el.textContent = text;
+  el.classList.add('is-on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('is-on'), 2600);
+}
+
+function showGain(text) {
+  const el = $('float-gain');
+  el.textContent = text;
+  restart(el);
+}
+
+/* ---------- 玩法 ---------- */
+
+// 點蛋：把能量注入蛋裡；生命訊號滿了就破殼
+async function onEggTap() {
+  if (busy) return;
   const egg = EGGS[state.egg.id];
 
-  if (percent() < 100) {
-    const before = stageOf(percent());
-    state.egg.warmth = Math.min(egg.warmthNeeded, state.egg.warmth + TAP_WARMTH);
-    if (!state.egg.since) state.egg.since = new Date().toISOString();
-    saveState(state);
-    renderHome();
-    incubator.pulse();
-    showGain(TAP_WARMTH);
-    buzz(stageOf(percent()) > before ? [18, 40, 28] : 12);
+  if (percent() >= 100) {
+    await hatch(egg);
+    return;
+  }
+  if (state.energy <= 0) {
+    restart($('bubble'), 'is-nudge');
+    restart($('fab-wish'), 'is-nudge');
+    buzz(8);
     return;
   }
 
+  const before = stageOf(percent());
+  const amount = Math.min(TAP_ENERGY, state.energy, egg.warmthNeeded - state.egg.warmth);
+  state.energy -= amount;
+  state.egg.warmth += amount;
+  saveState(state);
+  renderResources();
+  renderHome();
+  incubator.pulse();
+  showGain(`+${amount}`);
+  restart($('chip-energy'), 'is-bump');
+  buzz(stageOf(percent()) > before ? [18, 40, 28] : 12);
+}
+
+async function hatch(egg) {
   busy = true;
   buzz([30, 50, 30, 50, 60]);
   await runAnalysis();
   incubator.flare();
   await eggView.hatch();
-  const character = CHARACTERS[egg.hatches];
-  state.egg = null;
-  if (character) state.dex[character.no] = { at: new Date().toISOString() };
-  saveState(state);
-  busy = false;
-  renderHome();
-  renderDex();
-  if (character) showReveal(character);
-}
 
-function showGain(n) {
-  const el = $('float-gain');
-  el.textContent = `+${n}`;
-  restart(el);
+  const character = CHARACTERS[rollHatch(egg)];
+  const duplicate = Boolean(state.dex[character.no]);
+  if (duplicate) state.fossils += DUPLICATE_FOSSILS;
+  else state.dex[character.no] = { at: new Date().toISOString() };
+  state.hatched += 1;
+  state.egg = newEgg('ordinary');
+  saveState(state);
+
+  eggView = null;
+  busy = false;
+  renderAll();
+  showReveal(character, duplicate);
 }
 
 // 破殼前的過場：畫面變暗、掃描、分析進度跑到 100%
@@ -152,50 +290,94 @@ async function runAnalysis() {
   box.hidden = true;
 }
 
-function showReveal(c) {
+function showReveal(c, duplicate) {
   loadWithFallback($('reveal-img'), characterSources(c.image));
   $('reveal-img').alt = c.name;
+  $('reveal-en').textContent = duplicate ? 'DUPLICATE SPECIMEN' : 'NEW SPECIMEN REGISTERED';
   $('reveal-no').textContent = `No.${c.no} ｜ ${c.rarity}`;
   $('reveal-name').textContent = c.name;
   $('reveal-line').textContent = c.line;
+  $('reveal-bonus').hidden = !duplicate;
+  $('reveal-bonus').textContent = `已經有這隻小湘了，轉換成化石碎片 ×${DUPLICATE_FOSSILS}`;
+  $('reveal-ok').textContent = duplicate ? '收下化石' : '收進圖鑑';
+  $('reveal').dataset.next = duplicate ? 'home' : 'dex';
   $('reveal').showModal();
   buzz([40, 60, 80]);
 }
 
-function showView(name) {
-  for (const view of document.querySelectorAll('.view')) view.hidden = view.dataset.view !== name;
-  for (const item of document.querySelectorAll('.nav__item')) {
-    if (item.dataset.view === name) item.setAttribute('aria-current', 'page');
-    else item.removeAttribute('aria-current');
+// 拍照完成願望：分析顏色，達標就給能量
+async function onPhoto(wish, file) {
+  let ratio;
+  try {
+    ratio = await analyzePhoto(file, wish, $('photo-thumb'));
+  } catch {
+    toast('這張照片讀不出來，再拍一次試試。');
+    return;
   }
-  $('page-title').textContent = name === 'dex' ? '圖鑑' : '培育槽 01';
-  document.body.dataset.view = name;
+  const pct = Math.round(ratio * 100);
+  const need = Math.round(PASS_RATIO * 100);
+  const pass = ratio >= PASS_RATIO;
+  $('photo-fill').style.width = `${Math.min(100, pct)}%`;
+  $('photo-fill').style.background = wish.swatch;
+  $('photo').dataset.pass = String(pass);
+
+  if (pass) {
+    state.wishes.done.push(wish.id);
+    state.energy += WISH_REWARD;
+    saveState(state);
+    renderAll();
+    $('photo-title').textContent = '願望達成';
+    $('photo-text').textContent = `${wish.color}佔了畫面的 ${pct}%。能量 +${WISH_REWARD}`;
+    $('photo-ok').textContent = '去幫蛋保溫';
+    buzz([20, 40, 60]);
+  } else {
+    $('photo-title').textContent = '顏色不夠多';
+    $('photo-text').textContent = `${wish.color}只佔畫面的 ${pct}%，需要 ${need}%。靠近一點，讓它填滿畫面再拍一次。`;
+    $('photo-ok').textContent = '再試一次';
+    buzz(8);
+  }
+  $('photo').showModal();
 }
 
-$('warm-btn').addEventListener('click', onWarm);
+/* ---------- 事件 ---------- */
+
+eggButton.addEventListener('click', onEggTap);
 $('nav').addEventListener('click', (e) => {
   const item = e.target.closest('.nav__item');
   if (item && !item.disabled) showView(item.dataset.view);
 });
+$('fab-wish').addEventListener('click', () => showView('wish'));
+$('bubble').addEventListener('click', () => showView('wish'));
+$('hint').addEventListener('click', () => {
+  if ($('hint').dataset.mode === 'wish') showView('wish');
+  else onEggTap();
+});
+$('fab-letter').addEventListener('click', () => $('intro').showModal());
 $('intro-ok').addEventListener('click', () => {
   state.seenIntro = true;
   saveState(state);
   $('intro').close();
 });
+$('photo-ok').addEventListener('click', () => {
+  $('photo').close();
+  if ($('photo').dataset.pass === 'true') {
+    showView('home');
+    restart($('chip-energy'), 'is-bump');
+  }
+});
 $('reveal-ok').addEventListener('click', () => {
   $('reveal').close();
-  showView('dex');
+  showView($('reveal').dataset.next);
+  toast('新的蛋送到培育槽了。');
 });
 $('reset-btn').addEventListener('click', () => {
   state = resetState();
   eggView = null;
-  renderHome();
-  renderDex();
+  renderAll();
   showView('home');
   $('intro').showModal();
 });
 
-renderHome();
-renderDex();
+renderAll();
 showView('home');
 if (!state.seenIntro) $('intro').showModal();

@@ -1,0 +1,152 @@
+/* 遊戲版面：資源列、浮動按鈕、對話泡泡、點蛋互動、願望清單 */
+
+.visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.app { padding-top: calc(var(--safe-top) + 12px); }
+
+/* ---------- 資源列 ---------- */
+.topbar { display: flex; align-items: center; gap: 8px; position: relative; z-index: 5; }
+.topbar__brand { margin-left: auto; font-family: var(--font-latin); font-size: 11px; letter-spacing: 0.3em; color: var(--rose-metal); opacity: 0.85; }
+.chip {
+  display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 8px;
+  border-radius: 99px; border: 1px solid transparent;
+  background: linear-gradient(rgba(24, 16, 20, 0.78), rgba(24, 16, 20, 0.78)) padding-box, var(--metal) border-box;
+}
+.chip svg { width: 18px; height: 18px; fill: none; stroke: var(--hud); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+#chip-energy svg { stroke: #ff8a9c; fill: rgba(194, 31, 60, 0.45); }
+.chip__k { font-size: 11px; color: var(--silver); letter-spacing: 0.1em; }
+.chip__v { font-family: var(--font-mono); font-size: 15px; color: var(--ivory); min-width: 1.5ch; text-align: right; }
+.chip.is-bump { animation: bump 0.5s ease; }
+@keyframes bump { 30% { transform: scale(1.18); box-shadow: 0 0 16px rgba(255, 138, 156, 0.8); } }
+
+.header { margin-top: 14px; }
+
+/* ---------- 首頁 ---------- */
+.view--home { gap: 10px; padding-top: 8px; }
+.incubator { width: min(124%, 58dvh); }
+
+.dot {
+  position: absolute; top: -4px; right: -4px; min-width: 20px; height: 20px; padding: 0 5px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 99px; border: 1px solid var(--rose-light);
+  background: var(--crimson); color: #fff;
+  font-family: var(--font-mono); font-size: 11px; line-height: 1;
+  box-shadow: 0 0 10px rgba(194, 31, 60, 0.9);
+}
+
+/* 右側浮動按鈕 */
+.side { position: absolute; z-index: 4; right: 0; top: 64px; display: flex; flex-direction: column; gap: 12px; }
+.fab {
+  position: relative; width: 54px; height: 54px; border-radius: 50%; border: 1.5px solid transparent;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+  background: linear-gradient(180deg, rgba(52, 30, 40, 0.9), rgba(20, 13, 17, 0.9)) padding-box, var(--metal) border-box;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+}
+.fab svg { width: 20px; height: 20px; fill: none; stroke: var(--rose-light); stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.fab__label { font-size: 10px; letter-spacing: 0.1em; color: var(--pearl); line-height: 1.2; }
+.fab:active { transform: scale(0.95); }
+.is-nudge { animation: nudge 0.5s ease; }
+@keyframes nudge { 20% { transform: translateX(-5px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(3px); } }
+
+/* 小恐龍與對話泡泡：告訴玩家現在可以做什麼 */
+.guide {
+  position: absolute; z-index: 5; left: -8px; bottom: 30px; width: 30%; max-width: 132px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  border: 0; background: none; padding: 0; text-align: left;
+}
+.mascot { width: 100%; height: auto; transform-origin: 50% 92%; animation: hop 2.8s ease-in-out infinite; filter: drop-shadow(0 6px 8px rgba(0, 0, 0, 0.45)); }
+@keyframes hop { 0%, 100% { transform: scale(1); } 45% { transform: scale(1.03, 0.97); } 60% { transform: translateY(-5px) scale(0.98, 1.03); } 75% { transform: scale(1.02, 0.98); } }
+.bubble {
+  width: max-content; max-width: 168px; margin-left: 8px;
+  display: flex; flex-direction: column; gap: 1px;
+  padding: 7px 11px 8px; border-radius: 14px 14px 14px 4px; border: 1px solid transparent;
+  background: linear-gradient(rgba(246, 237, 230, 0.96), rgba(241, 223, 214, 0.96)) padding-box, var(--metal) border-box;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+}
+.bubble__who { font-family: var(--font-display); font-size: 10px; letter-spacing: 0.14em; color: #8a3a4c; }
+.bubble__text { font-family: var(--font-display); font-size: 13px; line-height: 1.5; color: #3a1620; }
+
+/* 蛋本身是按鈕 */
+.egg-hit {
+  position: absolute; z-index: 4; left: 33%; top: 19%; width: 38%; height: 49%;
+  border: 0; border-radius: 50%; background: none; padding: 0;
+}
+.incubator:not(.can-tap) .egg-hit { cursor: default; }
+.incubator.is-ready .incubator__slot { animation: ready-glow 1.2s ease-in-out infinite; }
+@keyframes ready-glow { 50% { filter: brightness(1.18) drop-shadow(0 0 18px rgba(255, 217, 196, 0.8)); } }
+
+.hint {
+  position: relative; z-index: 4; min-height: 36px; padding: 0 16px; margin-top: -6px;
+  border: 0; border-radius: 99px; background: rgba(18, 12, 15, 0.6);
+  font-family: var(--font-display); font-size: 13px; letter-spacing: 0.14em; color: var(--pearl);
+}
+.hint[data-mode="tap"] { color: var(--hud); animation: glowtext 1.6s ease-in-out infinite; }
+.hint[data-mode="hatch"] { color: #fff; background: rgba(194, 31, 60, 0.55); animation: glowtext 0.9s ease-in-out infinite; }
+.hint[data-mode="wish"] { color: var(--rose-light); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(248, 220, 205, 0.5); }
+@keyframes glowtext { 50% { opacity: 0.55; } }
+
+/* 生命訊號：縮成一條儀表 */
+.vitals { gap: 6px; padding: 10px 14px 10px; }
+.vitals__meter { display: flex; flex-direction: column; gap: 5px; }
+.ecg { height: 16px; border: 0; background-image: none; opacity: 0.85; }
+
+/* ---------- 願望 ---------- */
+.lead { margin: 4px 0 2px; text-align: center; font-family: var(--font-display); font-size: 15px; color: var(--pearl); line-height: 1.8; }
+.fine { margin: 6px 0 0; text-align: center; font-size: 12px; color: var(--silver); line-height: 1.8; }
+.wishes { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
+.wish { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 14px; padding: 14px 14px 14px 18px; }
+.wish__swatch { width: 22px; height: 22px; transform: rotate(45deg); border: 1.5px solid var(--rose-light); box-shadow: 0 0 12px rgba(255, 255, 255, 0.25); }
+.wish__line { font-family: var(--font-display); font-size: 15px; color: var(--ivory); line-height: 1.5; }
+.wish__meta { font-size: 12px; color: var(--hud); letter-spacing: 0.04em; margin-top: 2px; }
+.wish__shoot {
+  min-width: 72px; min-height: 44px; padding: 0 16px; display: flex; align-items: center; justify-content: center;
+  border-radius: 99px; border: 1.5px solid transparent; cursor: pointer;
+  background: linear-gradient(180deg, #8f2740, #4d0f1f) padding-box, var(--metal) border-box;
+  font-family: var(--font-display); font-weight: 700; font-size: 14px; letter-spacing: 0.2em; padding-left: calc(16px + 0.2em); color: var(--ivory);
+}
+.wish__shoot:focus-within { outline: 2px solid var(--bio-cyan); outline-offset: 3px; }
+.wish__done { font-family: var(--font-mono); font-size: 12px; letter-spacing: 0.1em; color: var(--hud); padding: 0 6px; }
+.wish.is-done { opacity: 0.6; }
+.wish.is-done .wish__line { text-decoration: line-through; text-decoration-color: rgba(246, 237, 230, 0.4); }
+
+.nav__item .dot { top: 2px; right: calc(50% - 26px); }
+
+/* ---------- 照片分析結果 ---------- */
+.photo__thumb { width: 150px; height: 150px; border-radius: 16px; border: 1.5px solid var(--rose-metal); margin: 6px auto 12px; display: block; }
+.photo__meter { position: relative; height: 8px; margin: 0 8px 14px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); }
+.photo__fill { height: 100%; width: 0; border-radius: 99px; }
+.photo__mark { position: absolute; left: 25%; top: -4px; bottom: -4px; width: 2px; background: var(--ivory); }
+.sheet__bonus { margin: -10px 0 20px; font-size: 13px; color: var(--hud); }
+
+/* ---------- 提示訊息 ---------- */
+.toast {
+  position: fixed; z-index: 40; left: 50%; bottom: calc(var(--safe-bottom) + 92px); translate: -50% 12px;
+  max-width: 86vw; padding: 10px 18px; border-radius: 99px; border: 1px solid var(--rose-metal);
+  background: rgba(24, 16, 20, 0.94); color: var(--ivory); font-size: 14px; text-align: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s ease, translate 0.3s ease;
+}
+.toast.is-on { opacity: 1; translate: -50% 0; }
+
+@media (max-height: 870px) {
+  .incubator { width: min(120%, 56dvh); }
+  .side { top: 58px; }
+  .guide { bottom: 24px; }
+}
+@media (max-width: 370px) {
+  .topbar__brand { display: none; }
+  .fab { width: 48px; height: 48px; }
+}
+
+/* 首頁排列：名牌在上、培養架在中間、提示在下 */
+.view--home .stage { justify-content: space-between; }
+.tag { position: relative; z-index: 2; }
+.side { top: 0; }
+.chip, .topbar__brand { white-space: nowrap; }
+.topbar__brand { letter-spacing: 0.2em; font-size: 10px; }
+.hint { align-self: flex-end; margin-right: 6%; }
+.hint:empty { visibility: hidden; }
+.hud__scan { opacity: 0.55; }
+body[data-view="wish"] .scene { filter: brightness(0.45) blur(2px); transform: scale(1.03); }
+@media (max-height: 870px) { .side { top: 0; } }
+.view--home .tag { max-width: calc(100% - 128px); }
+.view--home .tag__code { letter-spacing: 0.1em; white-space: nowrap; }

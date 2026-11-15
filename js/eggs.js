@@ -16,10 +16,28 @@ export const EGGS = {
     id: 'ordinary',
     name: '普通蛋',
     code: 'STD',
-    warmthNeeded: 100,
-    hatches: null, // 之後接蛋池
+    warmthNeeded: 200,
+    hatches: null, // 從 pool 依權重隨機孵出
+    pool: { '002': 35, '003': 30, '004': 15, '001': 20 },
+    // 暫用：正式的普通蛋素材還沒到，先借本源蛋的圖並改色。素材到了就刪掉這兩行。
+    art: 'origin',
+    tint: 'hue-rotate(150deg) saturate(0.75)',
   },
 };
+
+export const DUPLICATE_FOSSILS = 3; // 孵到已擁有的小湘時，轉換成幾個化石碎片
+
+// 依權重從蛋池抽一隻
+export function rollHatch(egg) {
+  if (egg.hatches) return egg.hatches;
+  const entries = Object.entries(egg.pool);
+  let r = Math.random() * entries.reduce((sum, [, w]) => sum + w, 0);
+  for (const [no, w] of entries) {
+    r -= w;
+    if (r < 0) return no;
+  }
+  return entries[0][0];
+}
 
 export const CHARACTERS = {
   '001': {
@@ -29,6 +47,10 @@ export const CHARACTERS = {
     line: '「欸？你就是我的飼養員嗎？」',
     image: 'siang-001-original',
   },
+  // 以下三隻是暫定名單（取自企劃書的舉例），等湘確認第一批小湘後再改
+  '002': { no: '002', name: '草莓小湘', rarity: 'R', line: '「紅紅的東西最可愛了。」', image: 'siang-002-strawberry' },
+  '003': { no: '003', name: '雨傘小湘', rarity: 'R', line: '「下雨天也要出門嗎？」', image: 'siang-003-umbrella' },
+  '004': { no: '004', name: '熬夜小湘', rarity: 'SR', line: '「再五分鐘……再五分鐘就睡。」', image: 'siang-004-nightowl' },
 };
 
 const FORMATS = ['webp', 'png'];

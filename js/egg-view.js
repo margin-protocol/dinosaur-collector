@@ -99,11 +99,10 @@ export function createIncubator() {
 export function createEggView(egg) {
   const el = document.createElement('div');
   el.className = 'egg';
-  el.setAttribute('role', 'img');
 
   const layers = {};
   for (const name of EGG_LAYERS) {
-    layers[name] = layerImg(`egg__layer egg__layer--${name}`, eggLayerSources(egg.id, name));
+    layers[name] = layerImg(`egg__layer egg__layer--${name}`, eggLayerSources(egg.art || egg.id, name));
   }
 
   const wobble = document.createElement('div');
@@ -112,6 +111,7 @@ export function createEggView(egg) {
   body.className = 'egg__body';
   body.append(layers.shell, layers.glow, layers.cracks);
   wobble.append(body);
+  if (egg.tint) body.style.filter = egg.tint;
   el.append(wobble);
 
   return {
@@ -121,7 +121,6 @@ export function createEggView(egg) {
       el.dataset.stage = String(stage);
       el.style.setProperty('--glow', String(0.12 + 0.43 * Math.min(pct, 100) / 100));
       el.style.setProperty('--pulse', `${PULSE_SECONDS[stage]}s`);
-      el.setAttribute('aria-label', `${egg.name}，生命訊號 ${Math.round(pct)}%`);
     },
     // 播放破殼動畫，結束後 resolve
     hatch() {
