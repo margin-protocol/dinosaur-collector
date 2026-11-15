@@ -113,6 +113,7 @@ function showView(name) {
     else item.removeAttribute('aria-current');
   }
   $('page-title').textContent = name === 'dex' ? '圖鑑' : '培育槽 01';
+  document.body.dataset.view = name;
 }
 
 $('warm-btn').addEventListener('click', onWarm);

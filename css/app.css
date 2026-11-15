@@ -13,14 +13,18 @@ button { font: inherit; color: inherit; cursor: pointer; }
 button:focus-visible { outline: 2px solid var(--bio-cyan); outline-offset: 3px; }
 [hidden] { display: none !important; }
 
-/* 背景：蛋後方的暖光＋底部的酒紅霧氣，固定不隨頁面捲動 */
+/* 背景場景：固定在視窗，依手機比例裁切（cover）。上下再壓一層暗色，確保文字可讀 */
+.scene {
+  position: fixed; inset: 0; z-index: -2; pointer-events: none;
+  background: var(--bg-deep) url("../assets/scene/home-bg.webp") center / cover no-repeat;
+}
 body::before {
   content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
   background:
-    radial-gradient(70% 42% at 50% 40%, rgba(226, 160, 150, 0.26), transparent 70%),
-    radial-gradient(90% 40% at 50% 104%, rgba(116, 47, 66, 0.5), transparent 70%),
-    radial-gradient(60% 30% at 50% -6%, rgba(210, 163, 145, 0.16), transparent 70%);
+    linear-gradient(180deg, rgba(18, 13, 16, 0.55) 0%, rgba(18, 13, 16, 0) 16%),
+    linear-gradient(0deg, rgba(18, 13, 16, 0.85) 0%, rgba(18, 13, 16, 0.35) 26%, rgba(18, 13, 16, 0) 40%);
 }
+body[data-view="dex"] .scene { filter: brightness(0.45) blur(2px); transform: scale(1.03); }
 
 .app {
   max-width: 480px;
@@ -86,7 +90,7 @@ body::before {
 
 /* ---------- 培養架（固定）＋恐龍蛋（可替換） ---------- */
 /* 培養架素材上方約 17% 是空的，所以放大並往上收，讓架子本體填滿培育區 */
-.incubator { position: relative; width: min(128%, 64dvh); aspect-ratio: 1; margin: -12% 0 -10%; }
+.incubator { position: relative; width: min(128%, 64dvh); aspect-ratio: 1; margin: -12% 0 -10%; transform: translateY(5%); } /* 往下 5%：底座落在背景地板的光點上 */
 .incubator::after { /* 底座下方的落地光 */
   content: ""; position: absolute; left: 22%; right: 22%; bottom: 7%; height: 10%; z-index: -1;
   background: radial-gradient(closest-side, rgba(248, 200, 190, 0.45), transparent);
@@ -101,7 +105,8 @@ body::before {
 .stage__empty { display: none; margin: 8px 0 0; }
 .stage:has(.incubator.is-empty) .stage__empty { display: block; }
 
-.egg { position: absolute; inset: 0; }
+/* --egg-x / --egg-y / --egg-scale：微調蛋在培養架裡的位置（以畫布百分比計） */
+.egg { position: absolute; inset: 0; transform: translate(var(--egg-x, 0%), var(--egg-y, 0%)) scale(var(--egg-scale, 1)); transform-origin: 50% 68.5%; }
 .egg__layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 .egg__body { position: absolute; inset: 0; transform-origin: 50% 68.5%; animation: egg-breathe 3.6s ease-in-out infinite; }
 .egg__wobble { position: absolute; inset: 0; transform-origin: 50% 68.5%; }
@@ -186,7 +191,8 @@ body::before {
   position: sticky; bottom: 0; margin: 0 -20px;
   display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));
   padding: 8px 8px calc(var(--safe-bottom) + 6px);
-  background: linear-gradient(180deg, rgba(18, 13, 16, 0.86), var(--bg-deep) 40%);
+  background: linear-gradient(180deg, rgba(18, 13, 16, 0.55), rgba(18, 13, 16, 0.92) 60%);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
   border-top: 1px solid transparent;
   border-image: linear-gradient(90deg, transparent, var(--rose-metal) 30%, var(--rose-metal) 70%, transparent) 1;
 }
