@@ -9,7 +9,7 @@ body { background:#151722; }
 .scene { background-color:#151722; background-position:center; filter:saturate(.62); }
 .scene::after { background:linear-gradient(180deg,#12172580,transparent 24%,#1b223344 55%,#13172466 100%),linear-gradient(90deg,#14203550,#14203565); }
 .app { padding:calc(var(--safe-top) + 26px) max(26px,env(safe-area-inset-right)) 0 max(26px,env(safe-area-inset-left)); }
-body[data-view="home"] .app { min-height:max(760px,100svh); }
+body[data-view="incubate"] .app { min-height:max(760px,100svh); }
 .topbar { min-height:40px; gap:12px; flex-wrap:nowrap; }
 .topbar__brand { font-family:var(--font-body); font-size:20px; font-weight:400; letter-spacing:.32em; }
 .topbar__brand span { color:var(--ivory); font-size:8px; font-weight:400; letter-spacing:.38em; margin-top:6px; }
@@ -19,7 +19,7 @@ body[data-view="home"] .app { min-height:max(760px,100svh); }
 #chip-energy .chip__icon svg,#chip-fossil .chip__icon svg { stroke:#e8c6bf; }
 .chip__v { font-family:var(--font-body); font-weight:300; font-size:16px; min-width:1ch; }
 #chip-fossil { border-left:1px solid #d8c9d44d; padding-left:12px; }
-.view--home { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto minmax(250px,1fr) 115px 36px 64px; gap:0; padding:38px 0 20px; min-height:620px; flex:1 0 auto; }
+.view--incubate { display:grid; grid-template-columns:minmax(0,1fr); grid-template-rows:auto auto minmax(300px,1fr) 36px 64px; gap:0; padding:38px 0 20px; min-height:620px; flex:1 0 auto; }
 .habitat-label { font:10px var(--font-body); letter-spacing:.23em; color:var(--pearl); padding-bottom:10px; }
 .online { font-size:9px; letter-spacing:.05em; color:#c7bccf; }
 .eggtitle { align-items:flex-start; gap:8px; }
@@ -78,7 +78,7 @@ body[data-view="home"] .app { min-height:max(760px,100svh); }
 .close-button { background:#35313f; }
 .sheet { background:#22222e; border-color:#756777; }
 .toast { background:#eee4ef; color:#362b3d; }
-@media(min-height:850px) { .view--home { padding-top:48px; } }
+@media(min-height:850px) { .view--incubate { padding-top:48px; } }
 @media(max-width:374px) { .app { padding-left:max(22px,env(safe-area-inset-left)); padding-right:max(22px,env(safe-area-inset-right)); } .topbar__brand { font-size:18px; } .topbar__brand span { font-size:7px; } .eggtitle__name { font-size:25px; } .online { font-size:8px; } }
 /* Paint the room on the document canvas, including scrollable short screens. */
 .scene { display:none; }

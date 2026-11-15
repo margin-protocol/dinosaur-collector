@@ -1,8 +1,8 @@
 /* 首頁：蛋是唯一主角。由上到下：資源列 → 蛋的名字與階段 → 培養架 → 小恐龍與對話 → 生命訊號 → 分頁列 */
 
 /* 首頁剛好填滿一個畫面、不捲動。用 svh（最小視窗高度）：網址列展開或收合都不會跳動 */
-body[data-view="home"] .app { height: 100vh; height: 100svh; overflow: hidden; }
-.view--home { gap: 8px; padding: 8px 0 10px; }
+body[data-view="incubate"] .app { height: 100vh; height: 100svh; overflow: hidden; }
+.view--incubate { gap: 8px; padding: 8px 0 10px; }
 
 /* ---------- 蛋的名字與孵化階段 ---------- */
 .eggtitle { display: flex; flex-direction: column; align-items: center; gap: 5px; position: relative; z-index: 2; }
@@ -235,7 +235,7 @@ body[data-view="home"] .app { height: 100vh; height: 100svh; overflow: hidden; }
 
 /* 矮螢幕（瀏覽器工具列佔掉高度時）：縮小角色與輔助元素，不縮蛋 */
 @media (max-height: 640px) {
-  .view--home { gap: 5px; padding-top: 4px; }
+  .view--incubate { gap: 5px; padding-top: 4px; }
   .eggtitle__name { font-size: 15px; }
   .floor { --actor: clamp(84px, 25vw, 104px); }
   .vitals { padding: 6px 12px; }

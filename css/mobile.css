@@ -23,7 +23,7 @@ body:not([data-view="home"]) .scene { filter: brightness(.25) saturate(.5); }
 #chip-energy .chip__icon svg { stroke: #e4c8a0; }
 #chip-fossil .chip__icon svg { stroke: #ace3d7; }
 .back-button { order: -2; width: 44px; height: 44px; border: 0; background: #22303d; border-radius: 12px; font-size: 28px; }
-.view--home { padding-top: 14px; gap: 12px; }
+.view--incubate { padding-top: 14px; gap: 12px; }
 .habitat-label { display: flex; justify-content: space-between; font: 10px var(--font-mono); letter-spacing: .12em; color: var(--silver); }
 .online { color: var(--bio-cyan); font-family: var(--font-body); letter-spacing: .04em; }
 .eggtitle { align-items: flex-start; gap: 4px; }
@@ -117,6 +117,6 @@ button:active, .mission-shoot:active { transform: scale(.97); }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; } }
 .toast { top: auto; width: max-content; max-width: min(86vw,400px); border-radius: 14px; }
 /* Keep the art container measurable even when browser chrome reduces height. */
-.view--home { flex: 1 0 auto; }
+.view--incubate { flex: 1 0 auto; }
 .stage { flex: none; height: clamp(265px, 40svh, 380px); }
-body[data-view="home"] .app { height: auto; min-height: 100svh; overflow: visible; }
+body[data-view="incubate"] .app { height: auto; min-height: 100svh; overflow: visible; }
