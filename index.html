@@ -3,39 +3,46 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#191518">
+<meta name="theme-color" content="#120d10">
 <title>小湘收集器 SIANG COLLECTOR</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=Noto+Serif+TC:wght@500;700&amp;display=swap">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/app.css">
 </head>
 <body>
 <div class="app">
   <header class="header">
-    <div>
-      <div class="header__brand">SIANG COLLECTOR</div>
-      <h1 class="header__title" id="page-title">培育槽 01</h1>
-    </div>
-    <div class="header__meta" id="egg-name"></div>
+    <div class="header__brand">SIANG COLLECTOR</div>
+    <h1 class="header__title" id="page-title">培育槽 01</h1>
+    <div class="rule" aria-hidden="true"><span class="gem"></span></div>
   </header>
 
   <main class="view" data-view="home">
     <div class="stage">
-      <!-- 預留位置：小湘與小恐龍的正式素材到了再放 -->
-      <div class="stage__slot stage__slot--character">小湘</div>
-      <div class="stage__slot stage__slot--mascot">小恐龍</div>
+      <div class="motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div class="stage__tag" id="egg-name"></div>
       <div id="stage-egg" style="display: contents"></div>
+      <!-- 預留位置：小湘與小恐龍的正式素材到了再顯示 -->
+      <img class="stage__slot stage__slot--character" id="slot-character" alt="" hidden>
+      <img class="stage__slot stage__slot--mascot" id="slot-mascot" alt="" hidden>
     </div>
     <section class="vitals" id="vitals" aria-live="polite">
       <div class="vitals__row">
-        <span class="vitals__label">生命訊號</span>
+        <span class="vitals__label"><span class="gem" aria-hidden="true"></span>生命訊號</span>
         <span class="vitals__value" id="vitals-value">0 / 100</span>
       </div>
-      <div class="vitals__bar"><div class="vitals__fill" id="vitals-fill"></div></div>
+      <div class="vial" aria-hidden="true">
+        <span class="vial__cap"></span>
+        <div class="vial__tube"><div class="vial__fill" id="vitals-fill"></div></div>
+        <span class="vial__cap"></span>
+      </div>
       <p class="vitals__msg" id="vitals-msg"></p>
     </section>
-    <button class="btn" id="warm-btn" type="button">幫蛋保溫</button>
+    <button class="btn" id="warm-btn" type="button"><span class="gem" aria-hidden="true"></span><span id="warm-label">幫蛋保溫</span><span class="gem" aria-hidden="true"></span></button>
   </main>
 
   <main class="view" data-view="dex" hidden>
@@ -65,7 +72,8 @@
   </nav>
 </div>
 
-<dialog class="sheet" id="intro" aria-label="小湘留下的紙條">
+<dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">
+  <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
   <p class="sheet__note">致親愛的飼養員：
 
 這顆蛋就交給你了。

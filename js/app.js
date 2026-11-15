@@ -42,9 +42,9 @@ function renderHome() {
   const s = stageOf(pct);
   eggView.setProgress(pct);
   $('vitals-value').textContent = `${Math.round(pct)} / 100`;
-  $('vitals-fill').style.transform = `scaleX(${pct / 100})`;
+  $('vitals-fill').style.width = `${pct}%`;
   $('vitals-msg').textContent = MESSAGES[s];
-  $('warm-btn').textContent = s === 4 ? '破殼' : '幫蛋保溫';
+  $('warm-label').textContent = s === 4 ? '破殼' : '幫蛋保溫';
 }
 
 function renderDex() {

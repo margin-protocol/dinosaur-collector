@@ -1,20 +1,29 @@
-/* 設計代幣：來自 docs/ART_DIRECTION_V0.7.md，實機測試後可調整 */
+/* 設計代幣：以 ART_DIRECTION_V0.7 為基礎，並依本源蛋正式素材的色彩調整 */
 :root {
-  --bg-deep: #191518;
-  --bg-panel: #231c20;
-  --line: #3a2e34;
+  --bg-deep: #120d10;
+  --bg-panel: #1f171b;
+  --line: #3d2d33;
   --wine: #742f42;
-  --ivory: #f0e7df;
-  --rose-metal: #b99283;
-  --silver: #9da6ac;
+  --crimson: #c21f3c;
+  --crimson-deep: #6d0f22;
+  --ivory: #f6ede6;
+  --pearl: #f6dde6;
+  --rose-metal: #d2a391;
+  --rose-light: #f8dccd;
+  --rose-dark: #8a5a4e;
+  --silver: #b3a9ab;
   --bio-cyan: #83c9c1;
   --egg-glow: #ffd9c4;
 
+  /* 玫瑰金屬：用在邊框與標題 */
+  --metal: linear-gradient(135deg, #f8dccd 0%, #c58d7a 38%, #f6d5c5 62%, #8a5a4e 100%);
+
   --font-body: "Noto Sans TC", "Noto Sans CJK TC", system-ui, sans-serif;
   --font-display: "Noto Serif TC", "Noto Serif CJK TC", "Songti TC", serif;
+  --font-latin: "Cormorant Garamond", "Noto Serif TC", serif;
 
-  --radius: 14px;
-  --tap: 48px;
+  --radius: 16px;
+  --tap: 52px;
   --gap: 16px;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
