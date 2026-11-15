@@ -44,7 +44,7 @@ export function createEggView(egg) {
     setProgress(pct) {
       const stage = stageOf(pct);
       el.dataset.stage = String(stage);
-      el.style.setProperty('--glow', String(0.25 + 0.75 * Math.min(pct, 100) / 100));
+      el.style.setProperty('--glow', String(0.12 + 0.43 * Math.min(pct, 100) / 100));
       el.style.setProperty('--pulse', `${PULSE_SECONDS[stage]}s`);
       el.setAttribute('aria-label', `${egg.name}，生命訊號 ${Math.round(pct)}%`);
     },
