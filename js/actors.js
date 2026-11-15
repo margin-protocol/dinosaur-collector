@@ -4,11 +4,12 @@
 
 import { reducedMotion } from './egg-view.js';
 
-const SHEET = 'assets/characters/siang-001-walk-sheet-256.webp'; // 4 欄 × 2 列，共 8 格
+// 4 欄 × 2 列，共 8 格。素材更新時把 ?v= 的數字加一，手機才會抓新圖而不是用快取
+const SHEET = 'assets/characters/siang-001-walk-sheet-256.webp?v=2';
 const FRAME_MS = 140;
 const FRAMES = 8;
 const STAND_FRAME = 0; // 雙腳併攏的那一格，當作站姿
-const REST_FRAME = 6; // 閉眼微笑的那一格，當作休息
+const REST_FRAME = 5; // 閉眼微笑的那一格（v0.2 素材只有這格閉眼），當作休息
 const SPEED = 0.26; // 每秒走多少「個角色寬」：配合步伐，腳才不會滑
 const LANE = [0.36, 0.9]; // 可活動範圍（佔地板寬度的比例）；左邊留給小恐龍
 const INSPECT_AT = 0.7; // 看蛋時站的位置：培養架紅寶石的右邊，不擋蛋
