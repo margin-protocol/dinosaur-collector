@@ -29,13 +29,15 @@ index.html
 css/tokens.css      顏色、字體等設計代幣
 css/app.css         基礎：資源列、按鈕、對話框、分頁列、願望與圖鑑頁
 css/game.css        首頁：培養架與蛋、小恐龍、生命訊號、互動回饋
-css/wish.css        今日願望：魔法委託簿
+css/wish.css        今日願望：皮革魔法書與翻頁
 css/hud.css         全息反光與破殼分析過場
 sw.js               離線快取（加入主畫面後可離線開啟）
 js/eggs.js          恐龍蛋與小湘的資料表、素材路徑規則
 js/egg-view.js      培養架（固定）與恐龍蛋（可替換）元件、孵化階段
 js/state.js         本機存檔
-js/wishes.js        願望與拍照取色
+js/wishes.js        願望與拍照取色、每日文案選擇
+js/wish-copy.js     願望文案池（名稱與台詞，可直接增修）
+js/book.js          今日願望的翻頁魔法書
 js/actors.js        首頁會走動的角色（狀態機與逐格動畫）
 js/app.js           畫面與玩法邏輯
 assets/incubator/   共用培養架（cradle-back / cradle-front）
