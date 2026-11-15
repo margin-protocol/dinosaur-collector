@@ -20,6 +20,7 @@
 <link rel="stylesheet" href="css/hud.css">
 <link rel="stylesheet" href="css/game.css">
 <link rel="stylesheet" href="css/mobile.css">
+<link rel="stylesheet" href="css/lobby.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
@@ -29,11 +30,11 @@
     <button class="back-button" id="back-home" type="button" aria-label="返回培養架" hidden>‹</button>
     <div class="chip" id="chip-energy" role="img" aria-label="保溫能量">
       <span class="chip__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 4 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg></span>
-      <span class="chip__k">能量</span><span class="chip__v" id="energy-value">0</span>
+      <span class="chip__k visually-hidden">能量</span><span class="chip__v" id="energy-value">0</span>
     </div>
     <div class="chip" id="chip-fossil" role="img" aria-label="化石碎片">
       <span class="chip__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 6-3 11H8L5 9zM5 9h14"/></svg></span>
-      <span class="chip__k">化石</span><span class="chip__v" id="fossil-value">0</span>
+      <span class="chip__k visually-hidden">化石</span><span class="chip__v" id="fossil-value">0</span>
     </div>
     <div class="topbar__brand">SIANG <span>COLLECTOR</span></div>
   </div>
@@ -44,7 +45,7 @@
   </header>
 
   <main class="view view--home" data-view="home">
-    <div class="habitat-label"><span>HABITAT / 01</span><span class="online">● 培育中</span></div>
+    <div class="habitat-label"><span>HABITAT 01</span><span class="online">● 培育中</span></div>
     <div class="eggtitle">
       <span class="eggtitle__name" id="egg-name"></span>
       <span class="eggtitle__meta">
@@ -99,7 +100,7 @@
         <span class="vitals__bpm"><span id="ecg-bpm">48</span> BPM</span>
       </div>
     </section>
-    <div class="home-actions"><button class="btn" type="button" id="cultivate">培養 · 注入能量</button><button class="wish-entry" type="button" id="home-wishes"><span>✧ 今日願望</span><span id="home-progress">0 / 3</span><span>›</span></button></div>
+    <div class="home-actions"><button class="btn" type="button" id="cultivate">培養 · 注入能量</button><button class="wish-entry" type="button" id="home-wishes"><span class="wish-entry__star" aria-hidden="true">✦</span><span class="wish-entry__title">今日願望</span><span id="home-progress">0 / 3</span></button></div>
   </main>
 
   <!-- 今日願望：魔法委託簿 -->

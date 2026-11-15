@@ -99,7 +99,7 @@ function renderHome() {
   incubator.el.classList.toggle('is-ready', ready);
 
   $('egg-name').textContent = egg.name;
-  $('cultivate').textContent = ready ? '破殼 · 迎接小湘' : state.energy > 0 ? '培養 · 注入能量' : '培養 · 等待能量';
+  $('cultivate').textContent = ready ? '破殼' : '培養';
   $('egg-day').textContent = `DAY ${daysSince(state.egg.since) + 1}`;
   [...$('pips').children].forEach((pip, i) => pip.classList.toggle('is-on', i < s));
   $('pips').setAttribute('aria-label', `孵化階段 ${s}，共 4 階段`);

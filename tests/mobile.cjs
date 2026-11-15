@@ -9,7 +9,7 @@ const assert=require('node:assert/strict');
  await page.goto('http://127.0.0.1:8000'); await page.locator('#intro-ok').click();
  await page.waitForFunction(()=>Array.from(document.images).every(i=>i.complete));
  await page.screenshot({path:`docs/review/${engine}-home-${width}.png`,fullPage:true});
- async function overflow(){assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`${engine} ${width} overflow`)}
+ async function overflow(){assert(await page.evaluate(expected=>document.documentElement.scrollWidth<=expected && innerWidth<=expected,width),`${engine} ${width} overflow`)}
  await overflow(); await page.locator('#open-center').click();assert(await page.locator('#function-center').isVisible());
  await page.waitForFunction(()=>Array.from(document.images).every(i=>i.complete));
  await page.screenshot({path:`docs/review/${engine}-center-${width}.png`,fullPage:true});
