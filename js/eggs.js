@@ -74,7 +74,7 @@ export function incubatorSources(part) {
 export function characterSources(image) {
   return [
     ...FORMATS.map((ext) => `assets/characters/${image}.${ext}`),
-    'assets/characters/_placeholder.svg',
+    'assets/characters/_placeholder.png',
   ];
 }
 

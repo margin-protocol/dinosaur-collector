@@ -18,7 +18,9 @@ const LANE = [0.36, 0.9]; // 可活動範圍（佔地板寬度的比例）；左
 const INSPECT_AT = 0.7; // 看蛋時站的位置：培養架紅寶石的右邊，不擋蛋
 const rand = (a, b) => a + Math.random() * (b - a);
 
-export function createSiangActor(lane) {
+export function createSiangActor(lane, options = {}) {
+  const bounds = options.bounds || LANE;
+  const inspectAt = options.inspectAt ?? INSPECT_AT;
   const el = document.createElement('div');
   el.className = 'actor';
   el.hidden = true;
@@ -46,7 +48,7 @@ export function createSiangActor(lane) {
   el.append(shadow, flip, emote);
   lane.append(el);
 
-  let x = 0.78; // 腳底中心在地板上的位置（0–1）
+  let x = options.initialX ?? 0.78; // 腳底中心在地板上的位置（0–1）
   let state = 'idle';
   let anim = 'idle';
   let frame = 0;
@@ -137,11 +139,11 @@ export function createSiangActor(lane) {
   function choose() {
     const r = Math.random();
     if (r < 0.55) {
-      let target = rand(LANE[0], LANE[1]);
-      if (Math.abs(target - x) < 0.18) target = x < (LANE[0] + LANE[1]) / 2 ? rand(0.68, LANE[1]) : rand(LANE[0], 0.52);
+      let target = rand(bounds[0], bounds[1]);
+      if (Math.abs(target - x) < 0.18) target = x < (bounds[0] + bounds[1]) / 2 ? rand((bounds[0] + bounds[1]) / 2, bounds[1]) : rand(bounds[0], (bounds[0] + bounds[1]) / 2);
       walkTo(target);
     } else if (r < 0.72) {
-      walkTo(INSPECT_AT, 'inspect');
+      walkTo(inspectAt, 'inspect');
     } else if (r < 0.87) {
       enter('rest');
     } else {
@@ -174,9 +176,10 @@ export function createSiangActor(lane) {
     play('idle', false);
   }
 
-  addEventListener('resize', () => {
+  const onResize = () => {
     if (!el.hidden && state !== 'walk') place(0);
-  });
+  };
+  addEventListener('resize', onResize);
 
   return {
     el,
@@ -187,6 +190,7 @@ export function createSiangActor(lane) {
     },
     start,
     stop,
+    destroy() { stop(); removeEventListener('resize', onResize); el.remove(); },
     // 蛋有反應時，小湘開心跳一下（走路或休息中就不打斷）
     cheer() {
       if (el.hidden || state !== 'idle' || reducedMotion()) return;

@@ -1,7 +1,7 @@
 import { EGGS, CHARACTERS, DUPLICATE_FOSSILS, rollHatch, characterSources, loadWithFallback } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, saveState, resetState, newEgg } from './state.js';
-import { createSiangActor } from './actors.js';
+import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, wishCopy, todayKey, analyzePhoto } from './wishes.js';
 import { createMissions, gemEl } from './missions.js';
 
@@ -30,7 +30,7 @@ let toastTimer = 0;
 let sayTimer = 0;
 let bubbleTimer = 0;
 let sayOverride = null; // 小恐龍暫時要說的話（提醒、歡呼），幾秒後回到平常的提示
-const VIEWS = ['home', 'wish', 'dex'];
+const VIEWS = ['home', 'incubate', 'wish', 'dex'];
 const STAGE_NAMES = ['', '蛋有動靜了', '蛋殼裂開了', '就快出來了', '可以破殼了'];
 
 const incubator = createIncubator();
@@ -46,7 +46,11 @@ const wishBook = createMissions({ book: $('book'), onShoot: (wish, file) => onPh
 let photoBusy = false;
 
 // 小湘：孵出來以後才出現，在地板上自己走動
-const siang = createSiangActor($('floor'));
+const room = createRoom($('resident-lanes'), character => say(character.line, 'happy', 4000));
+
+function syncRoomActivity() {
+  room.setActive(document.body.dataset.view === 'home' && !document.hidden && !document.querySelector('dialog[open]'));
+}
 
 /* ---------- 願望 ---------- */
 
@@ -112,24 +116,32 @@ function renderHome() {
   const wishes = todaysWishes();
   const open = wishes.filter((w) => !w.done);
   $('home-progress').textContent = `${wishes.length - open.length} / ${wishes.length}`;
+  $('incubate-wish-progress').textContent = $('home-progress').textContent;
+  $('incubation-status').textContent = ready ? '可以破殼了 · 迎接新夥伴' : `孵化進度 ${Math.round(pct)}%`;
+  $('enter-incubator').classList.toggle('is-ready', ready);
   for (const id of ['wish-dot', 'nav-wish-dot']) {
     $(id).hidden = open.length === 0;
     $(id).textContent = open.length;
   }
 
-  // 小湘孵出來以後才出現（孵出前不劇透）
-  siang.show(Boolean(state.dex['001']));
-  if (document.body.dataset.view === 'home') siang.start();
+  const ids = room.update(state.dex);
+  const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
+  $('resident-count').textContent = `${ids.length} / ${ROOM_LIMIT}`;
+  $('home-subtitle').textContent = !owned.length ? '一起等待，初次相遇。' : ids.length > 1 ? '今天也很熱鬧呢。' : '今日也請多多指教。';
+  $('room-empty').hidden = ids.length > 0;
+  $('room-empty').firstChild.textContent = owned.length ? '今天想邀請誰，一起在這裡生活？' : '第一位小湘，正等著與你相遇。';
+  $('room-empty').lastElementChild.textContent = owned.length ? '從入住安排選擇已收集的小湘。' : '完成願望，前往培育迎接她。';
+  syncRoomActivity();
 
   // 小恐龍：告訴玩家現在可以做什麼
   let text;
   let mood = 'idle';
   let mode = 'tap';
   if (ready) {
-    text = '蛋要出來了！快點它！';
+    text = '準備好見面了！一起去培育室吧。';
     mood = 'cheer';
   } else if (state.energy > 0) {
-    text = '有能量了！點蛋餵給它。';
+    text = '有能量了，一起去培育新夥伴吧。';
   } else if (open.length) {
     text = `${state.dex['001'] ? '小湘' : '蛋'}想看${open[0].color}的東西。`;
     mode = 'wish';
@@ -169,7 +181,7 @@ function openBubble() {
 function guideAction() {
   const mode = $('guide').dataset.mode;
   if (mode === 'wish') showView('wish');
-  else if (mode === 'tap') onEggTap();
+  else if (mode === 'tap') showView('incubate');
 }
 
 // 小恐龍暫時換一句話和表情，幾秒後恢復
@@ -232,14 +244,48 @@ function renderDex() {
   );
 }
 
+function renderResidents() {
+  const selected = residentsFor(state.dex);
+  const owned = Object.values(CHARACTERS).filter(character => state.dex[character.no]);
+  $('residents-summary').textContent = `已收集 ${owned.length} 位 · 已入住 ${selected.length} / ${ROOM_LIMIT}`;
+  $('residents-list').replaceChildren(...owned.map(character => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'resident-choice';
+    button.dataset.no = character.no;
+    button.setAttribute('aria-pressed', String(selected.includes(character.no)));
+    const image = document.createElement('img');
+    image.alt = '';
+    loadWithFallback(image, characterSources(character.image));
+    const name = document.createElement('span');
+    name.textContent = character.name;
+    const action = document.createElement('span');
+    action.className = 'resident-choice__action';
+    action.textContent = selected.includes(character.no) ? '✓ 入住中' : '安排入住';
+    button.append(image, name, action);
+    return button;
+  }));
+  if (!owned.length) {
+    const text = document.createElement('p');
+    text.textContent = '第一位小湘還在等待孵化，先去培育室迎接她吧。';
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'btn'; button.textContent = '前往培育';
+    button.addEventListener('click', () => showView('incubate'));
+    $('residents-list').append(text, button);
+  }
+}
+
 function renderAll() {
   renderResources();
   renderHome();
   renderWishes();
   renderDex();
+  if ($('residents').open) renderResidents();
 }
 
-function showView(name) {
+function showView(name, options = {}) {
+  if (!VIEWS.includes(name)) name = 'home';
+  for (const dialog of document.querySelectorAll('dialog[open]')) dialog.close();
   for (const view of document.querySelectorAll('.view')) view.hidden = view.dataset.view !== name;
   for (const item of document.querySelectorAll('.nav__item')) {
     if (item.dataset.view === name) item.setAttribute('aria-current', 'page');
@@ -247,16 +293,14 @@ function showView(name) {
   }
   if ($('function-center').open) $('function-center').close();
   $('back-home').hidden = name === 'home';
-  $('location-label').textContent = { home: '培養架 / HABITAT', wish: '今日願望 / DAILY', dex: '圖鑑 / COLLECTION' }[name];
+  $('location-label').textContent = { home: '日常 / HOME', incubate: '培育 / INCUBATION', wish: '今日願望 / DAILY', dex: '圖鑑 / COLLECTION' }[name];
   const nextHash = name === 'home' ? '#home' : `#${name}`;
-  if (location.hash !== nextHash) history.pushState(null, '', nextHash);
+  if (location.hash !== nextHash) history[options.replace ? 'replaceState' : 'pushState'](null, '', nextHash);
   $('header').hidden = !TITLES[name];
   $('page-title').textContent = TITLES[name] || '';
   document.body.dataset.view = name;
-  if (name !== 'home') window.scrollTo(0, 0);
-  // 角色只在首頁活動；離開首頁就停下來，省電
-  if (name === 'home') siang.start();
-  else siang.stop();
+  window.scrollTo(0, 0);
+  syncRoomActivity();
   if (name === 'wish') {
     wishBook.openAtFirstUndone();
   }
@@ -322,7 +366,9 @@ async function onEggTap() {
   }
   if (state.energy <= 0) {
     const open = todaysWishes().filter((w) => !w.done);
-    say(open.length ? '能量用完了。先去完成願望，再回來餵它吧！' : '能量用完了，明天再來餵它吧。', 'remind', 2600);
+    const message = open.length ? '能量不足，完成今日願望就能繼續培育。' : '能量用完了，明天再來完成願望吧。';
+    say(message, 'remind', 2600);
+    toast(message);
     if (open.length) restart($('fab-wish'), 'is-nudge');
     buzz(8);
     return;
@@ -343,7 +389,7 @@ async function onEggTap() {
   renderHome();
   incubator.feed();
   showGain(`+${amount}`);
-  siang.cheer();
+  room.cheer();
   restart($('guide'), 'is-hop');
   if (after > before) celebrateStage(after);
 }
@@ -358,7 +404,10 @@ async function hatch(egg) {
   const character = CHARACTERS[rollHatch(egg)];
   const duplicate = Boolean(state.dex[character.no]);
   if (duplicate) state.fossils += DUPLICATE_FOSSILS;
-  else state.dex[character.no] = { at: new Date().toISOString() };
+  else {
+    state.dex[character.no] = { at: new Date().toISOString() };
+    welcomeResident(character.no, state.dex);
+  }
   state.hatched += 1;
   state.egg = newEgg('ordinary');
   saveState(state);
@@ -399,9 +448,10 @@ function showReveal(c, duplicate) {
   $('reveal-line').textContent = c.line;
   $('reveal-bonus').hidden = !duplicate;
   $('reveal-bonus').textContent = `已經有這隻小湘了，轉換成化石碎片 ×${DUPLICATE_FOSSILS}`;
-  $('reveal-ok').textContent = duplicate ? '收下化石' : '收進圖鑑';
-  $('reveal').dataset.next = duplicate ? 'home' : 'dex';
+  $('reveal-ok').textContent = duplicate ? '收下化石' : '一起回家';
+  $('reveal').dataset.next = 'home';
   $('reveal').showModal();
+  syncRoomActivity();
   buzz([40, 60, 80]);
 }
 
@@ -516,12 +566,35 @@ async function processPhoto(wish, file, photoDate) {
 eggButton.addEventListener('click', onEggTap);
 $('cultivate').addEventListener('click', onEggTap);
 $('home-wishes').addEventListener('click', () => showView('wish'));
+$('incubate-wishes').addEventListener('click', () => showView('wish'));
+$('enter-incubator').addEventListener('click', () => showView('incubate'));
+$('home-letter').addEventListener('click', () => { $('intro').showModal(); syncRoomActivity(); });
+$('open-residents').addEventListener('click', () => { renderResidents(); $('residents-feedback').textContent = ''; $('residents').showModal(); syncRoomActivity(); });
+$('close-residents').addEventListener('click', () => $('residents').close());
+$('residents-done').addEventListener('click', () => $('residents').close());
+$('residents-list').addEventListener('click', event => {
+  const button = event.target.closest('button[data-no]');
+  if (!button) return;
+  const no = button.dataset.no;
+  const latest = loadState();
+  if (!CHARACTERS[no] || !latest.dex[no]) return;
+  state = latest;
+  let ids = residentsFor(state.dex);
+  if (ids.includes(no)) ids = ids.filter(id => id !== no);
+  else if (ids.length < ROOM_LIMIT) ids.push(no);
+  else { $('residents-feedback').textContent = '首頁最多入住三位，先讓一位休息，再邀請她吧。'; return; }
+  if (!saveResidents(ids)) { $('residents-feedback').textContent = '這次安排無法儲存，請再試一次。'; return; }
+  $('residents-feedback').textContent = '';
+  renderHome(); renderResidents();
+  $('residents-list').querySelector(`[data-no="${no}"]`)?.focus({ preventScroll: true });
+});
+for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('close', syncRoomActivity);
 $('back-home').addEventListener('click', () => showView('home'));
-$('open-center').addEventListener('click', () => $('function-center').showModal());
+$('open-center').addEventListener('click', () => { $('function-center').showModal(); syncRoomActivity(); });
 $('close-center').addEventListener('click', () => $('function-center').close());
 $('function-center').addEventListener('click', (event) => { if (event.target === $('function-center')) { const r = event.target.getBoundingClientRect(); if (event.clientY < r.top || event.clientX < r.left || event.clientX > r.right) event.target.close(); } });
-addEventListener('popstate', () => { const view = location.hash.slice(1); showView(VIEWS.includes(view) ? view : 'home'); });
-addEventListener('storage', (event) => { if (event.key === 'siang-collector:v1' && !busy && !photoBusy) { state = loadState(); eggView = null; renderAll(); } });
+addEventListener('popstate', () => { const view = location.hash.slice(1); showView(VIEWS.includes(view) ? view : 'home', { replace: true }); });
+addEventListener('storage', (event) => { if ([ROOM_KEY, 'siang-collector:v1'].includes(event.key) && !busy && !photoBusy) { state = loadState(); eggView = null; renderAll(); } });
 $('nav').addEventListener('click', (e) => {
   const item = e.target.closest('.nav__item');
   if (item && !item.disabled) showView(item.dataset.view);
@@ -535,10 +608,9 @@ $('guide').addEventListener('click', () => {
 $('bubble').addEventListener('click', guideAction);
 // 切到別的 App 或關螢幕時暫停角色
 document.addEventListener('visibilitychange', () => {
-  if (document.hidden) siang.stop();
-  else if (document.body.dataset.view === 'home') siang.start();
+  syncRoomActivity();
 });
-$('fab-letter').addEventListener('click', () => $('intro').showModal());
+$('fab-letter').addEventListener('click', () => { $('intro').showModal(); syncRoomActivity(); });
 $('intro-ok').addEventListener('click', () => {
   state.seenIntro = true;
   saveState(state);
@@ -546,16 +618,17 @@ $('intro-ok').addEventListener('click', () => {
 });
 $('photo-ok').addEventListener('click', () => $('photo').close());
 $('book-home').addEventListener('click', () => {
-  showView('home');
+  showView('incubate');
   say('太棒了！拿到能量了，點蛋餵給它！', 'happy', 2400);
 });
 $('reveal-ok').addEventListener('click', () => {
   $('reveal').close();
   showView($('reveal').dataset.next);
-  toast('新的蛋送到培育槽了。');
+  toast('新的蛋已送達培育室。');
 });
 $('reset-btn').addEventListener('click', () => {
   state = resetState();
+  try { localStorage.removeItem(ROOM_KEY); } catch {}
   eggView = null;
   sayOverride = null;
   renderAll();
@@ -564,5 +637,5 @@ $('reset-btn').addEventListener('click', () => {
 });
 
 renderAll();
-showView('home');
-if (!state.seenIntro) $('intro').showModal();
+showView(VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home', { replace: true });
+if (!state.seenIntro) { $('intro').showModal(); syncRoomActivity(); }

@@ -14,20 +14,21 @@
 <link rel="icon" href="assets/icons/icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Noto+Serif+TC:wght@500;700&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Noto+Serif+TC:wght@400;500;700&amp;display=swap">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/hud.css">
 <link rel="stylesheet" href="css/game.css">
 <link rel="stylesheet" href="css/mobile.css">
 <link rel="stylesheet" href="css/lobby.css">
+<link rel="stylesheet" href="css/companion.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
 <div class="app">
   <!-- 資源列：所有分頁都看得到 -->
   <div class="topbar">
-    <button class="back-button" id="back-home" type="button" aria-label="返回培養架" hidden>‹</button>
+    <button class="back-button" id="back-home" type="button" aria-label="返回日常首頁" hidden>‹</button>
     <div class="chip" id="chip-energy" role="img" aria-label="保溫能量">
       <span class="chip__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 4 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg></span>
       <span class="chip__k visually-hidden">能量</span><span class="chip__v" id="energy-value">0</span>
@@ -45,6 +46,30 @@
   </header>
 
   <main class="view view--home" data-view="home">
+    <div class="home-heading"><div class="home-eyebrow">HOME / 01</div><h1>小湘的日常</h1><p id="home-subtitle">一起等待，初次相遇。</p></div>
+    <div class="companion-room" id="companion-room" data-active="false">
+      <button class="residents-entry" id="open-residents" type="button" aria-haspopup="dialog" aria-controls="residents"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v15H4zM8 5V3m8 2V3M4 10h16"/><path d="m9 15 2 2 4-4"/></svg><span>入住安排<small id="resident-count">0 / 3</small></span></button>
+      <button class="room-letter" id="home-letter" type="button" aria-label="小湘的紙條"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 7 9-7"/></svg><span>紙條</span></button>
+      <div id="resident-lanes" class="resident-lanes"></div>
+      <p class="room-empty" id="room-empty">第一位小湘，正等著與你相遇。<span>完成願望，前往培育迎接她。</span></p>
+    <!-- 首頁的引導角色與日常台詞；入住角色由獨立活動區呈現。 -->
+    <div class="floor" id="floor">
+      <button class="guide" type="button" id="guide" data-mood="idle" aria-describedby="bubble-text">
+        <span class="guide__shadow" aria-hidden="true"></span>
+        <img class="mascot" src="assets/mascot/dinosaur-idle.webp" alt="小恐龍" width="512" height="512" draggable="false">
+        <span class="guide__alert" id="guide-alert" aria-hidden="true" hidden>!</span>
+      </button>
+      <button class="bubble" type="button" id="bubble" tabindex="-1">
+        <span class="bubble__text" id="bubble-text" aria-live="polite"></span>
+        <span class="bubble__cta" id="bubble-cta" hidden>看今日願望 ›</span>
+      </button>
+    </div>
+
+    </div>
+    <div class="home-actions"><div class="incubate-entry"><button class="btn" id="enter-incubator" type="button">培育<span aria-hidden="true">⟶</span></button><span id="incubation-status" aria-live="polite">孵化進度 0%</span></div><button class="wish-entry" id="home-wishes" type="button"><span class="wish-entry__star" aria-hidden="true">✦</span><span class="wish-entry__title">今日願望</span><span id="home-progress">0 / 3</span></button></div>
+  </main>
+
+  <main class="view view--incubate" data-view="incubate" hidden>
     <div class="habitat-label"><span>HABITAT 01</span><span class="online">● 培育中</span></div>
     <div class="eggtitle">
       <span class="eggtitle__name" id="egg-name"></span>
@@ -72,19 +97,6 @@
       </div>
     </div>
 
-    <!-- 地板：小恐龍站在左邊，小湘在右邊這一段自己走動。兩個角色都在培養架「前方」 -->
-    <div class="floor" id="floor">
-      <button class="guide" type="button" id="guide" data-mood="idle" aria-describedby="bubble-text">
-        <span class="guide__shadow" aria-hidden="true"></span>
-        <img class="mascot" src="assets/mascot/dinosaur-idle.webp" alt="小恐龍" width="512" height="512" draggable="false">
-        <span class="guide__alert" id="guide-alert" aria-hidden="true" hidden>!</span>
-      </button>
-      <button class="bubble" type="button" id="bubble" tabindex="-1">
-        <span class="bubble__text" id="bubble-text" aria-live="polite"></span>
-        <span class="bubble__cta" id="bubble-cta" hidden>看今日願望 ›</span>
-      </button>
-    </div>
-
     <section class="vitals card" id="vitals">
       <div class="vitals__id"><span class="vitals__en">VITAL SIGN</span><span class="vitals__zh">生命訊號</span></div>
       <div class="vitals__meter" aria-hidden="true">
@@ -100,7 +112,7 @@
         <span class="vitals__bpm"><span id="ecg-bpm">48</span> BPM</span>
       </div>
     </section>
-    <div class="home-actions"><button class="btn" type="button" id="cultivate">培養 · 注入能量</button><button class="wish-entry" type="button" id="home-wishes"><span class="wish-entry__star" aria-hidden="true">✦</span><span class="wish-entry__title">今日願望</span><span id="home-progress">0 / 3</span></button></div>
+    <div class="home-actions"><button class="btn" type="button" id="cultivate">培養 · 注入能量</button><button class="wish-entry" type="button" id="incubate-wishes"><span class="wish-entry__star" aria-hidden="true">✦</span><span class="wish-entry__title">今日願望</span><span id="incubate-wish-progress">0 / 3</span></button></div>
   </main>
 
   <!-- 今日願望：魔法委託簿 -->
@@ -118,7 +130,7 @@
     <div class="mission-list" id="book"></div>
     <section class="book__log" aria-live="polite">
       <p class="book__log-text" id="book-log-text"></p>
-      <button class="btn" type="button" id="book-home"><span class="gem" aria-hidden="true"></span><span>返回培養架</span><span class="gem" aria-hidden="true"></span></button>
+      <button class="btn" type="button" id="book-home"><span class="gem" aria-hidden="true"></span><span>前往培育</span><span class="gem" aria-hidden="true"></span></button>
     </section>
     <p class="fine">照片只在手機上分析顏色，不會上傳，也不會保存。<br>每天更新三個願望，每項完成可獲得 35 能量。</p>
   </main>
@@ -131,12 +143,13 @@
     </div>
   </main>
 
-  <footer class="game-footer"><span id="location-label">培養架 / HABITAT</span><button class="center-button" id="open-center" type="button" aria-haspopup="dialog" aria-controls="function-center"><svg class="journal-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7a2.5 2.5 0 0 1-2.5-2.5V6A2.5 2.5 0 0 1 7 3.5Z"/><path d="M8 3.5v17M11.5 8h4.5M11.5 11.5H15M4.5 17.5H8"/></svg><span>研究者手記</span></button></footer>
+  <footer class="game-footer"><span id="location-label">日常 / HOME</span><button class="center-button" id="open-center" type="button" aria-haspopup="dialog" aria-controls="function-center"><svg class="journal-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7a2.5 2.5 0 0 1-2.5-2.5V6A2.5 2.5 0 0 1 7 3.5Z"/><path d="M8 3.5v17M11.5 8h4.5M11.5 11.5H15M4.5 17.5H8"/></svg><span>研究者手記</span></button></footer>
 </div>
 
 <dialog id="function-center" class="function-center" aria-labelledby="center-title"><div class="drawer-handle" aria-hidden="true"></div><div class="drawer-heading"><div><small>RESEARCHER’S JOURNAL</small><h2 id="center-title">研究者手記</h2></div><button class="close-button" id="close-center" aria-label="關閉研究者手記" type="button">×</button></div>  <nav class="nav" id="nav" aria-label="研究者手記">
 
-    <button class="nav__item" type="button" data-view="home">
+    <button class="nav__item" type="button" data-view="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M5 9v12h5v-7h4v7h5V9"/></svg>日常</button>
+    <button class="nav__item" type="button" data-view="incubate">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.500 0 6 6 6 10a6 6 0 0 1-12 0c0-4 2.500-10 6-10z"/></svg>培育
     </button>
     <button class="nav__item" type="button" data-view="wish">
@@ -155,6 +168,8 @@
   </nav>
 <p class="fine">每一點陪伴，都讓我們更靠近。</p></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<dialog class="residents-dialog sheet" id="residents" aria-labelledby="residents-title"><div class="drawer-heading"><div><small>MAKE YOURSELF AT HOME</small><h2 id="residents-title">入住安排</h2></div><button class="close-button" type="button" id="close-residents" aria-label="關閉入住安排">×</button></div><p class="residents-intro">選擇最多三位已收集的小湘，一起在首頁生活。</p><p id="residents-summary"></p><div id="residents-list" class="residents-list"></div><p class="residents-feedback" id="residents-feedback" role="status" aria-live="polite"></p><button class="btn" type="button" id="residents-done">完成安排</button></dialog>
 
 <dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">
   <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
