@@ -67,13 +67,14 @@ body[data-view="home"] .app { min-height:max(760px,100svh); }
 .center-button span { font:400 14px/1.4 var(--font-display); letter-spacing:.1em; }
 .journal-icon { width:21px; height:21px; flex:none; stroke:currentColor; stroke-width:1.35; stroke-linecap:round; stroke-linejoin:round; }
 .drawer-heading h2 { font:400 25px/1.5 var(--font-display); letter-spacing:.1em; }
+.function-center .nav__item, .function-center .fine { font-family:var(--font-display); font-weight:400; }
 .btn,.mission-shoot { background:linear-gradient(135deg,#f3eded,#ded0e6); color:#302637; border-radius:4px; }
 .mission { background:#20232eef; border-color:#68616e66; border-radius:8px; }
 .mission.is-done { background:#2a2633; }
 .mission-reward,.mission-complete { color:#dfcee9; }
 .nav__item { border-radius:8px; background:#282834; border-color:#514b59; }
 .nav__item[aria-current="page"] { background:#3e344b; border-color:#aa90ba; color:#f5e9fa; }
-.function-center { background:#20212d; border-color:#6a5f73; border-radius:18px 18px 0 0; }
+.function-center { font-family:var(--font-display); background:#20212d; border-color:#6a5f73; border-radius:18px 18px 0 0; }
 .close-button { background:#35313f; }
 .sheet { background:#22222e; border-color:#756777; }
 .toast { background:#eee4ef; color:#362b3d; }
