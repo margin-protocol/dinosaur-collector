@@ -150,3 +150,8 @@ body[data-view="wish"] .scene { filter: brightness(0.45) blur(2px); transform: s
 @media (max-height: 870px) { .side { top: 0; } }
 .view--home .tag { max-width: calc(100% - 128px); }
 .view--home .tag__code { letter-spacing: 0.1em; white-space: nowrap; }
+
+/* 連點蛋時不要觸發瀏覽器的「點兩下放大」，也不要選到文字或跳出長按選單 */
+html { touch-action: manipulation; }
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+.egg-hit, .fab, .guide, .hint, .nav__item, .btn, .wish__shoot { touch-action: manipulation; }

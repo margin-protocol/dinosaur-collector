@@ -34,7 +34,7 @@
 .hud { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
 .hud__ring { transform-box: view-box; transform-origin: 646px 540px; animation: hud-spin 50s linear infinite; }
 .hud__ring--rev { animation-duration: 80s; animation-direction: reverse; }
-.hud__scan { animation: hud-scan 6s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+.hud__scan { animation: hud-scan 11s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
 .incubator.is-empty .hud { opacity: 0.35; }
 .incubator.is-empty .hud__scan { display: none; }
 @keyframes hud-spin { to { transform: rotate(360deg); } }
@@ -136,7 +136,7 @@
 .analysis__scan {
   position: absolute; left: 0; right: 0; height: 120px; top: -120px;
   background: linear-gradient(180deg, transparent, rgba(159, 227, 217, 0.18) 80%, rgba(233, 255, 251, 0.6));
-  animation: analysis-scan 1.1s linear infinite;
+  animation: analysis-scan 2.6s ease-in-out infinite;
 }
 .analysis__box { position: relative; width: min(72vw, 300px); text-align: center; display: flex; flex-direction: column; gap: 10px; }
 .analysis__en { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.32em; color: var(--hud); }

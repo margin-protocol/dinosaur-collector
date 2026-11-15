@@ -274,7 +274,7 @@ async function hatch(egg) {
 async function runAnalysis() {
   const box = $('analysis');
   box.hidden = false;
-  const total = reducedMotion() ? 0 : 1600;
+  const total = reducedMotion() ? 0 : 2600;
   const start = performance.now();
   await new Promise((resolve) => {
     const tick = (now) => {
