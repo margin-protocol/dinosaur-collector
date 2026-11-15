@@ -55,7 +55,7 @@ body::before {
 .view { flex: 1; display: flex; flex-direction: column; gap: var(--gap); padding: 10px 0 20px; }
 
 /* ---------- 培育槽 ---------- */
-.stage { position: relative; flex: 1; min-height: 340px; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.stage { position: relative; flex: 1; min-height: 340px; overflow-x: clip; overflow-y: visible; display: flex; flex-direction: column; align-items: center; justify-content: center; }
 .stage__tag {
   position: relative; z-index: 1; margin-bottom: -6px;
   padding: 4px 16px; border-radius: 99px; border: 1px solid transparent;
@@ -85,15 +85,16 @@ body::before {
 @keyframes mote { 0%, 100% { opacity: 0; transform: translateY(8px); } 50% { opacity: 0.9; transform: translateY(-10px); } }
 
 /* ---------- 培養架（固定）＋恐龍蛋（可替換） ---------- */
-.incubator { position: relative; width: min(100%, 52dvh); aspect-ratio: 1; }
+/* 培養架素材上方約 17% 是空的，所以放大並往上收，讓架子本體填滿培育區 */
+.incubator { position: relative; width: min(128%, 64dvh); aspect-ratio: 1; margin: -12% 0 -10%; }
 .incubator::after { /* 底座下方的落地光 */
-  content: ""; position: absolute; left: 14%; right: 14%; bottom: -3%; height: 12%; z-index: -1;
+  content: ""; position: absolute; left: 22%; right: 22%; bottom: 7%; height: 10%; z-index: -1;
   background: radial-gradient(closest-side, rgba(248, 200, 190, 0.45), transparent);
 }
 .incubator__layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
 .incubator__slot { position: absolute; inset: 0; }
 .incubator__flare {
-  position: absolute; inset: 8%; border-radius: 50%; opacity: 0; pointer-events: none;
+  position: absolute; inset: 14% 22% 22%; border-radius: 50%; opacity: 0; pointer-events: none;
   background: radial-gradient(closest-side, #fff 0%, var(--egg-glow) 35%, transparent 100%);
 }
 .incubator__flare.is-on { animation: egg-flare 1.1s ease-out forwards; }
@@ -102,8 +103,8 @@ body::before {
 
 .egg { position: absolute; inset: 0; }
 .egg__layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; user-select: none; }
-.egg__body { position: absolute; inset: 0; transform-origin: 50% 86%; animation: egg-breathe 3.6s ease-in-out infinite; }
-.egg__wobble { position: absolute; inset: 0; transform-origin: 50% 86%; }
+.egg__body { position: absolute; inset: 0; transform-origin: 50% 68.5%; animation: egg-breathe 3.6s ease-in-out infinite; }
+.egg__wobble { position: absolute; inset: 0; transform-origin: 50% 68.5%; }
 .egg__layer--glow { mix-blend-mode: screen; opacity: var(--glow, 0.12); animation: egg-pulse var(--pulse, 3s) ease-in-out infinite; }
 .egg__layer--cracks { opacity: 0; transition: opacity 0.6s ease, clip-path 0.8s ease; clip-path: inset(0 0 100% 0); }
 
