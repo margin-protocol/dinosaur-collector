@@ -10,7 +10,7 @@ export function stageOf(pct) {
 }
 
 const PULSE_SECONDS = [3, 2.2, 1.5, 0.9, 0.9];
-const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+export const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 // 播放一次性的 CSS 動畫，播完就移除，免得切換分頁時重播
 export function restart(el, cls = 'is-on') {
@@ -25,93 +25,78 @@ function layerImg(className, sources) {
   img.className = className;
   img.alt = '';
   img.decoding = 'async';
+  img.draggable = false;
   loadWithFallback(img, sources);
   return img;
 }
 
-// 掃描儀 HUD（座標與素材相同的 1254 畫布，中心對準蛋）
-const HUD_SVG = `
-<svg class="hud" viewBox="0 0 1254 1254" aria-hidden="true">
-  <defs>
-    <linearGradient id="hudScan" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#9fe3d9" stop-opacity="0"/>
-      <stop offset=".85" stop-color="#9fe3d9" stop-opacity=".35"/>
-      <stop offset="1" stop-color="#e9fffb" stop-opacity=".9"/>
-    </linearGradient>
-    <clipPath id="hudEggBox"><rect x="380" y="200" width="532" height="680" rx="40"/></clipPath>
-  </defs>
-  <g class="hud__ring">
-    <circle cx="646" cy="540" r="415" fill="none" stroke="#9fe3d9" stroke-opacity=".28" stroke-width="2" stroke-dasharray="2 14"/>
-    <path d="M646 125 A415 415 0 0 1 1005 332" fill="none" stroke="#9fe3d9" stroke-opacity=".75" stroke-width="3" stroke-linecap="round"/>
-    <path d="M287 748 A415 415 0 0 1 240 600" fill="none" stroke="#9fe3d9" stroke-opacity=".55" stroke-width="3" stroke-linecap="round"/>
-  </g>
-  <g class="hud__ring hud__ring--rev">
-    <circle cx="646" cy="540" r="440" fill="none" stroke="#d2a391" stroke-opacity=".3" stroke-width="1.5" stroke-dasharray="60 10 4 10"/>
-  </g>
-  <g fill="none" stroke="#9fe3d9" stroke-opacity=".8" stroke-width="3" stroke-linecap="round">
-    <path d="M380 250 V200 H430"/><path d="M862 200 H912 V250"/>
-    <path d="M912 830 V880 H862"/><path d="M430 880 H380 V830"/>
-  </g>
-  <g fill="#9fe3d9" fill-opacity=".8">
-    <rect x="640" y="186" width="12" height="3"/><rect x="640" y="891" width="12" height="3"/>
-    <rect x="366" y="537" width="3" height="12"/><rect x="923" y="537" width="3" height="12"/>
-  </g>
-  <g clip-path="url(#hudEggBox)">
-    <rect class="hud__scan" x="380" y="100" width="532" height="110" fill="url(#hudScan)"/>
-  </g>
-</svg>`;
-
-// 首頁固定的培養架。由下往上：後景架 → 蛋 → 前景環 → HUD → 破殼閃光
-export function createIncubator() {
+function div(className) {
   const el = document.createElement('div');
-  el.className = 'incubator';
+  el.className = className;
+  return el;
+}
 
-  const back = layerImg('incubator__layer', incubatorSources('cradle-back'));
-  const slot = document.createElement('div');
-  slot.className = 'incubator__slot';
-  const front = layerImg('incubator__layer', incubatorSources('cradle-front'));
-  const flare = document.createElement('div');
-  flare.className = 'incubator__flare';
-  const ripple = document.createElement('div');
-  ripple.className = 'incubator__ripple';
-  el.append(back, slot, front, ripple, flare);
-  el.insertAdjacentHTML('beforeend', HUD_SVG);
-  el.insertBefore(el.lastElementChild, ripple);
+// 首頁固定的培養架。由下往上：呼吸光 → 後景架 → 蛋 → 前景環 → 特效
+export function createIncubator() {
+  const el = div('incubator');
+  const halo = div('incubator__halo');
+  const back = layerImg('incubator__layer incubator__layer--cradle', incubatorSources('cradle-back'));
+  const slot = div('incubator__slot');
+  const front = layerImg('incubator__layer incubator__layer--cradle', incubatorSources('cradle-front'));
+  const ring = div('incubator__ring');
+  const flare = div('incubator__flare');
+  el.append(halo, back, slot, front, ring, flare);
 
   return {
     el,
     setEgg(eggView) {
       slot.replaceChildren(...(eggView ? [eggView.el] : []));
-      el.classList.toggle('is-empty', !eggView);
+    },
+    setProgress(ratio) {
+      el.style.setProperty('--p', String(ratio));
+    },
+    // 手指點下去的瞬間：蛋被壓一下再彈回來
+    press() {
+      restart(slot, 'is-press');
+    },
+    // 能量抵達：蛋亮一下，噴出幾顆光點
+    feed() {
+      restart(slot, 'is-fed');
+      if (reducedMotion()) return;
+      const size = el.clientWidth;
+      for (let i = 0; i < 8; i += 1) {
+        const s = document.createElement('i');
+        s.className = 'spark';
+        const angle = (i / 8) * Math.PI * 2 + Math.random() * 0.6;
+        const dist = size * (0.16 + Math.random() * 0.1);
+        s.style.setProperty('--dx', `${Math.cos(angle) * dist}px`);
+        s.style.setProperty('--dy', `${Math.sin(angle) * dist}px`);
+        s.addEventListener('animationend', () => s.remove(), { once: true });
+        el.append(s);
+      }
+    },
+    // 進入新的孵化階段：光環擴散
+    stageUp() {
+      restart(ring);
     },
     flare() {
       restart(flare);
-    },
-    // 按下保溫時：一圈光波傳進蛋裡
-    pulse() {
-      restart(ripple);
-      restart(slot, 'is-fed');
     },
   };
 }
 
 // 可替換的恐龍蛋：只有這組會呼吸、晃動、發光、破殼
 export function createEggView(egg) {
-  const el = document.createElement('div');
-  el.className = 'egg';
-
+  const el = div('egg');
   const layers = {};
   for (const name of EGG_LAYERS) {
     layers[name] = layerImg(`egg__layer egg__layer--${name}`, eggLayerSources(egg.art || egg.id, name));
   }
-
-  const wobble = document.createElement('div');
-  wobble.className = 'egg__wobble';
-  const body = document.createElement('div');
-  body.className = 'egg__body';
+  const wobble = div('egg__wobble');
+  const body = div('egg__body');
   body.append(layers.shell, layers.glow, layers.cracks);
-  wobble.append(body);
   if (egg.tint) body.style.filter = egg.tint;
+  wobble.append(body);
   el.append(wobble);
 
   return {

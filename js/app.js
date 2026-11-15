@@ -1,5 +1,5 @@
 import { EGGS, CHARACTERS, DUPLICATE_FOSSILS, rollHatch, characterSources, loadWithFallback } from './eggs.js';
-import { createIncubator, createEggView, stageOf, restart } from './egg-view.js';
+import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, saveState, resetState, newEgg } from './state.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 
@@ -8,7 +8,6 @@ const TAP_ENERGY = 10; // 每點一下蛋，注入多少能量
 const BPM = [48, 64, 82, 104, 120]; // 各階段的心跳，跟蛋的脈動同步
 const TITLES = { wish: '今日願望', dex: '圖鑑' };
 const pad = (n, len = 2) => String(Math.round(n)).padStart(len, '0');
-const reducedMotion = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 const sleep = (ms) => new Promise((r) => setTimeout(r, reducedMotion() ? 0 : ms));
 
 // Android 震動回饋；不支援的裝置會安靜略過
@@ -26,6 +25,10 @@ if (!state.egg) state.egg = newEgg('ordinary'); // 培育槽不留空：孵完�
 let eggView = null;
 let busy = false;
 let toastTimer = 0;
+let sayTimer = 0;
+let sayOverride = null; // 小恐龍暫時要說的話（提醒、歡呼），幾秒後回到平常的提示
+const VIEWS = ['home', 'wish', 'dex'];
+const STAGE_NAMES = ['', '蛋有動靜了', '蛋殼裂開了', '就快出來了', '可以破殼了'];
 
 const incubator = createIncubator();
 $('stage-egg').replaceWith(incubator.el);
@@ -71,9 +74,13 @@ function renderHome() {
   const s = stageOf(pct);
   const ready = s === 4;
   eggView.setProgress(pct);
+  incubator.setProgress(pct / 100);
+  incubator.el.classList.toggle('is-ready', ready);
 
   $('egg-name').textContent = egg.name;
-  $('egg-code').textContent = `${egg.code} · STAGE ${s}/4 · D+${pad(daysSince(state.egg.since))}`;
+  $('egg-day').textContent = `DAY ${daysSince(state.egg.since) + 1}`;
+  [...$('pips').children].forEach((pip, i) => pip.classList.toggle('is-on', i < s));
+  $('pips').setAttribute('aria-label', `孵化階段 ${s}，共 4 階段`);
   $('vitals-value').textContent = pad(state.egg.warmth, 3);
   $('vitals-max').textContent = `/${egg.warmthNeeded}`;
   $('vitals-fill').style.width = `${pct}%`;
@@ -87,25 +94,55 @@ function renderHome() {
     $(id).textContent = open.length;
   }
 
-  // 對話泡泡與提示：告訴玩家現在可以做什麼
-  const hint = $('hint');
-  hint.dataset.mode = ready ? 'hatch' : state.energy > 0 ? 'tap' : 'wish';
-  if (ready) {
-    $('bubble-text').textContent = '蛋要出來了！快點它！';
-    hint.textContent = '點蛋破殼';
-  } else if (state.energy > 0) {
-    $('bubble-text').textContent = '有能量了！點蛋餵給它。';
-    hint.textContent = '點蛋注入能量';
-  } else if (open.length) {
-    $('bubble-text').textContent = `${state.dex['001'] ? '小湘' : '蛋'}說：${open[0].line}`;
-    hint.textContent = '';
-  } else {
-    $('bubble-text').textContent = '今天的願望都完成了，明天見！';
-    hint.textContent = '';
+  // 小湘孵出來以後，站在培養架右邊陪著
+  const companion = $('companion');
+  if (state.dex['001'] && companion.hidden) {
+    loadWithFallback(companion, characterSources(CHARACTERS['001'].image));
+    companion.hidden = false;
+  } else if (!state.dex['001']) {
+    companion.hidden = true;
   }
+
+  // 小恐龍：告訴玩家現在可以做什麼
+  let text;
+  let mood = 'idle';
+  let mode = 'tap';
+  if (ready) {
+    text = '蛋要出來了！快點它！';
+    mood = 'cheer';
+  } else if (state.energy > 0) {
+    text = '有能量了！點蛋餵給它。';
+  } else if (open.length) {
+    text = `${state.dex['001'] ? '小湘' : '蛋'}想看${open[0].color}的東西。`;
+    mode = 'wish';
+  } else {
+    text = '今天的願望都完成了，明天見！';
+    mode = 'rest';
+  }
+  const guide = $('guide');
+  guide.dataset.mode = mode;
+  if (sayOverride) {
+    text = sayOverride.text;
+    mood = sayOverride.mood;
+  }
+  guide.dataset.mood = mood;
+  if ($('bubble-text').textContent !== text) {
+    $('bubble-text').textContent = text;
+    restart($('bubble'), 'is-pop');
+  }
+  $('bubble-cta').hidden = mode !== 'wish';
   eggButton.setAttribute('aria-label', ready ? `讓${egg.name}破殼` : `幫${egg.name}注入能量，目前生命訊號 ${Math.round(pct)}%`);
-  incubator.el.classList.toggle('is-ready', ready);
-  incubator.el.classList.toggle('can-tap', ready || state.energy > 0);
+}
+
+// 小恐龍暫時換一句話和表情，幾秒後恢復
+function say(text, mood, ms = 2200) {
+  sayOverride = { text, mood };
+  clearTimeout(sayTimer);
+  sayTimer = setTimeout(() => {
+    sayOverride = null;
+    renderHome();
+  }, ms);
+  renderHome();
 }
 
 function renderWishes() {
@@ -117,7 +154,7 @@ function renderWishes() {
   $('wish-list').replaceChildren(
     ...wishes.map((w) => {
       const li = document.createElement('li');
-      li.className = `wish panel${w.done ? ' is-done' : ''}`;
+      li.className = `wish card${w.done ? ' is-done' : ''}`;
       const sw = document.createElement('span');
       sw.className = 'wish__swatch';
       sw.style.background = w.swatch;
@@ -169,7 +206,7 @@ function renderDex() {
     ...all.map((c) => {
       const has = Boolean(state.dex[c.no]);
       const li = document.createElement('li');
-      li.className = `dex__card${has ? ' is-owned' : ''}`;
+      li.className = `dex__card card${has ? ' is-owned' : ''}`;
       const img = document.createElement('img');
       img.className = `dex__img${has ? '' : ' is-locked'}`;
       img.alt = has ? c.name : '尚未收集的小湘';
@@ -199,9 +236,11 @@ function showView(name) {
     if (item.dataset.view === name) item.setAttribute('aria-current', 'page');
     else item.removeAttribute('aria-current');
   }
+  $('nav').style.setProperty('--i', String(VIEWS.indexOf(name)));
   $('header').hidden = name === 'home';
   $('page-title').textContent = TITLES[name] || '';
   document.body.dataset.view = name;
+  if (name !== 'home') window.scrollTo(0, 0);
 }
 
 function toast(text) {
@@ -220,33 +259,72 @@ function showGain(text) {
 
 /* ---------- 玩法 ---------- */
 
+// 能量球從資源列飛到蛋上；抵達時 resolve
+function flyOrb() {
+  const from = $('chip-energy').getBoundingClientRect();
+  const to = eggButton.getBoundingClientRect();
+  const orb = document.createElement('div');
+  orb.className = 'orb';
+  if (reducedMotion() || !orb.animate) return Promise.resolve();
+  document.body.append(orb);
+  const x0 = from.left + 16;
+  const y0 = from.top + from.height / 2;
+  const x1 = to.left + to.width / 2;
+  const y1 = to.top + to.height / 2;
+  const anim = orb.animate(
+    [
+      { transform: `translate(${x0}px, ${y0}px) scale(0.6)`, opacity: 0.6 },
+      { transform: `translate(${x0 + (x1 - x0) * 0.35}px, ${y0 + (y1 - y0) * 0.15 - 20}px) scale(1.2)`, opacity: 1, offset: 0.4 },
+      { transform: `translate(${x1}px, ${y1}px) scale(0.7)`, opacity: 1 },
+    ],
+    { duration: 380, easing: 'cubic-bezier(0.4, 0, 0.6, 1)' },
+  );
+  return anim.finished.catch(() => {}).then(() => orb.remove());
+}
+
+function celebrateStage(stage) {
+  $('banner-en').textContent = `STAGE ${stage} / 4`;
+  $('banner-zh').textContent = STAGE_NAMES[stage];
+  restart($('banner'));
+  incubator.stageUp();
+  say(`${STAGE_NAMES[stage]}！`, stage === 4 ? 'cheer' : 'happy', 2000);
+  buzz([18, 40, 28]);
+}
+
 // 點蛋：把能量注入蛋裡；生命訊號滿了就破殼
 async function onEggTap() {
   if (busy) return;
   const egg = EGGS[state.egg.id];
+  incubator.press();
 
   if (percent() >= 100) {
     await hatch(egg);
     return;
   }
   if (state.energy <= 0) {
-    restart($('bubble'), 'is-nudge');
-    restart($('fab-wish'), 'is-nudge');
+    const open = todaysWishes().filter((w) => !w.done);
+    say(open.length ? '能量用完了。先去完成願望，再回來餵它吧！' : '能量用完了，明天再來餵它吧。', 'remind', 2600);
+    if (open.length) restart($('fab-wish'), 'is-nudge');
     buzz(8);
     return;
   }
 
+  // 規則不變：能量與生命訊號立刻結算並存檔；畫面等能量球飛到蛋上再更新
   const before = stageOf(percent());
   const amount = Math.min(TAP_ENERGY, state.energy, egg.warmthNeeded - state.egg.warmth);
   state.energy -= amount;
   state.egg.warmth += amount;
   saveState(state);
+  const after = stageOf(percent());
   renderResources();
-  renderHome();
-  incubator.pulse();
-  showGain(`+${amount}`);
   restart($('chip-energy'), 'is-bump');
-  buzz(stageOf(percent()) > before ? [18, 40, 28] : 12);
+  buzz(12);
+
+  await flyOrb();
+  renderHome();
+  incubator.feed();
+  showGain(`+${amount}`);
+  if (after > before) celebrateStage(after);
 }
 
 async function hatch(egg) {
@@ -266,6 +344,7 @@ async function hatch(egg) {
 
   eggView = null;
   busy = false;
+  sayOverride = null;
   renderAll();
   showReveal(character, duplicate);
 }
@@ -347,10 +426,9 @@ $('nav').addEventListener('click', (e) => {
   if (item && !item.disabled) showView(item.dataset.view);
 });
 $('fab-wish').addEventListener('click', () => showView('wish'));
-$('bubble').addEventListener('click', () => showView('wish'));
-$('hint').addEventListener('click', () => {
-  if ($('hint').dataset.mode === 'wish') showView('wish');
-  else onEggTap();
+$('guide').addEventListener('click', () => {
+  if ($('guide').dataset.mode === 'wish') showView('wish');
+  else if ($('guide').dataset.mode === 'tap') onEggTap();
 });
 $('fab-letter').addEventListener('click', () => $('intro').showModal());
 $('intro-ok').addEventListener('click', () => {
@@ -363,6 +441,7 @@ $('photo-ok').addEventListener('click', () => {
   if ($('photo').dataset.pass === 'true') {
     showView('home');
     restart($('chip-energy'), 'is-bump');
+    say('太棒了！拿到能量了，點蛋餵給它！', 'happy', 2400);
   }
 });
 $('reveal-ok').addEventListener('click', () => {
@@ -373,6 +452,7 @@ $('reveal-ok').addEventListener('click', () => {
 $('reset-btn').addEventListener('click', () => {
   state = resetState();
   eggView = null;
+  sayOverride = null;
   renderAll();
   showView('home');
   $('intro').showModal();

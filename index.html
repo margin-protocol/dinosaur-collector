@@ -5,8 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#120d10">
 <title>小湘收集器 SIANG COLLECTOR</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="小湘收集器">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="assets/icons/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icons/icon-180.png">
+<link rel="icon" href="assets/icons/icon-192.png" type="image/png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Noto+Serif+TC:wght@500;700&amp;display=swap">
@@ -20,15 +25,15 @@
 <div class="app">
   <!-- 資源列：所有分頁都看得到 -->
   <div class="topbar">
-    <div class="chip" id="chip-energy" title="保溫能量">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 4 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg>
+    <div class="chip" id="chip-energy" role="img" aria-label="保溫能量">
+      <span class="chip__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 4 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg></span>
       <span class="chip__k">能量</span><span class="chip__v" id="energy-value">0</span>
     </div>
-    <div class="chip" id="chip-fossil" title="化石碎片">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 6-3 11H8L5 9zM5 9h14M12 3v17"/></svg>
+    <div class="chip" id="chip-fossil" role="img" aria-label="化石碎片">
+      <span class="chip__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 6-3 11H8L5 9zM5 9h14"/></svg></span>
       <span class="chip__k">化石</span><span class="chip__v" id="fossil-value">0</span>
     </div>
-    <div class="topbar__brand">SIANG COLLECTOR</div>
+    <div class="topbar__brand">SIANG<br>COLLECTOR</div>
   </div>
 
   <header class="header" id="header">
@@ -37,15 +42,21 @@
   </header>
 
   <main class="view view--home" data-view="home">
-    <div class="stage">
-      <div class="motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-      <div class="tag" id="egg-tag">
-        <span class="tag__code" id="egg-code"></span>
-        <span class="tag__name" id="egg-name"></span>
-      </div>
+    <div class="eggtitle">
+      <span class="eggtitle__name" id="egg-name"></span>
+      <span class="eggtitle__meta">
+        <span class="pips" id="pips" role="img"><i></i><i></i><i></i><i></i></span>
+        <span id="egg-day"></span>
+      </span>
+    </div>
 
+    <div class="stage">
+      <div class="motes" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+      <div id="stage-egg"></div>
+      <span class="float-gain" id="float-gain" aria-hidden="true"></span>
+      <div class="banner" id="banner" aria-hidden="true"><span class="banner__en" id="banner-en"></span><span class="banner__zh" id="banner-zh"></span></div>
       <div class="side">
-        <button class="fab" type="button" id="fab-wish" aria-label="願望">
+        <button class="fab" type="button" id="fab-wish" aria-label="今日願望">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l2.600 5.600 6 .700-4.500 4.100 1.300 6-5.400-3.100-5.400 3.100 1.300-6L3.400 9.300l6-.700z"/></svg>
           <span class="fab__label">願望</span>
           <span class="dot" id="wish-dot" hidden></span>
@@ -55,38 +66,33 @@
           <span class="fab__label">紙條</span>
         </button>
       </div>
-
-      <div id="stage-egg"></div>
-
-      <!-- 小恐龍：站在培養架左邊，用對話泡泡告訴玩家現在該做什麼 -->
-      <button class="guide" type="button" id="bubble">
-        <span class="bubble">
-          <span class="bubble__who">小恐龍</span>
-          <span class="bubble__text" id="bubble-text"></span>
-        </span>
-        <img class="mascot" src="assets/mascot/dinosaur-idle.webp" alt="" width="512" height="512">
-      </button>
-      <span class="float-gain" id="float-gain" aria-hidden="true"></span>
-      <button class="hint" type="button" id="hint"></button>
     </div>
 
-    <section class="panel vitals" id="vitals">
-      <div class="vitals__row">
-        <span class="vitals__label"><span class="gem" aria-hidden="true"></span>生命訊號<span class="en">VITAL SIGN</span></span>
-        <span class="vitals__value"><span id="vitals-value">000</span><span class="vitals__max" id="vitals-max">/100</span></span>
-      </div>
+    <!-- 小恐龍引導員：角色與對話框是一個按鈕 -->
+    <div class="guide-row">
+      <button class="guide" type="button" id="guide" data-mood="idle">
+        <img class="mascot" src="assets/mascot/dinosaur-idle.webp" alt="小恐龍" width="512" height="512" draggable="false">
+        <span class="bubble" id="bubble">
+          <span class="bubble__text" id="bubble-text" aria-live="polite"></span>
+          <span class="bubble__cta" id="bubble-cta" hidden>看今日願望 ›</span>
+        </span>
+      </button>
+      <img class="companion" id="companion" alt="原味小湘" width="1024" height="1024" draggable="false" hidden>
+    </div>
+
+    <section class="vitals card" id="vitals">
+      <div class="vitals__id"><span class="vitals__en">VITAL SIGN</span><span class="vitals__zh">生命訊號</span></div>
       <div class="vitals__meter" aria-hidden="true">
-        <div class="vial">
-          <span class="vial__cap"></span>
-          <div class="vial__tube"><div class="vial__fill" id="vitals-fill"></div></div>
-          <span class="vial__cap"></span>
-        </div>
         <div class="ecg">
           <svg class="ecg__line" viewBox="0 0 400 40" preserveAspectRatio="none">
             <path d="M0 22 H40 L46 22 L50 16 L54 22 L60 22 L64 26 L70 4 L76 36 L82 22 L90 22 L96 18 L104 22 H200 H240 L246 22 L250 16 L254 22 L260 22 L264 26 L270 4 L276 36 L282 22 L290 22 L296 18 L304 22 H400"/>
           </svg>
-          <span class="ecg__bpm"><span id="ecg-bpm">48</span> BPM</span>
         </div>
+        <div class="bar"><div class="bar__fill" id="vitals-fill"></div></div>
+      </div>
+      <div class="vitals__num">
+        <span><span class="vitals__value" id="vitals-value">000</span><span class="vitals__max" id="vitals-max">/100</span></span>
+        <span class="vitals__bpm"><span id="ecg-bpm">48</span> BPM</span>
       </div>
     </section>
   </main>
@@ -106,6 +112,7 @@
   </main>
 
   <nav class="nav" id="nav" aria-label="主要分頁">
+    <span class="nav__ink" aria-hidden="true"></span>
     <button class="nav__item" type="button" data-view="home">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.500 0 6 6 6 10a6 6 0 0 1-12 0c0-4 2.500-10 6-10z"/></svg>培育
     </button>
@@ -170,5 +177,6 @@
 </dialog>
 
 <script type="module" src="js/app.js"></script>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});</script>
 </body>
 </html>
