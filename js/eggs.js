@@ -18,7 +18,12 @@ export const EGGS = {
     code: 'STD',
     warmthNeeded: 200,
     hatches: null, // 從 pool 依權重隨機孵出
-    pool: { '002': 35, '003': 30, '004': 15, '001': 20 },
+    // 前期池：No.001–009。N 每隻 15、R 每隻 8，合計 100。
+    // No.010 星塵（SR）暫不放入，No.011–015 保留特殊取得（配方、約會、壽星等），都不進一般池。
+    pool: {
+      '001': 15, '005': 15, '007': 15, '008': 15, // N
+      '002': 8, '003': 8, '004': 8, '006': 8, '009': 8, // R
+    },
     // 暫用：正式的普通蛋素材還沒到，先借本源蛋的圖並改色。素材到了就刪掉這兩行。
     art: 'origin',
     tint: 'hue-rotate(150deg) saturate(0.75)',
@@ -47,10 +52,22 @@ export const CHARACTERS = {
     line: '「欸？你就是我的飼養員嗎？」',
     image: 'siang-001-original',
   },
-  // 以下三隻是暫定名單（取自企劃書的舉例），等湘確認第一批小湘後再改
-  '002': { no: '002', name: '草莓小湘', rarity: 'R', line: '「紅紅的東西最可愛了。」', image: 'siang-002-strawberry' },
-  '003': { no: '003', name: '雨傘小湘', rarity: 'R', line: '「下雨天也要出門嗎？」', image: 'siang-003-umbrella' },
-  '004': { no: '004', name: '熬夜小湘', rarity: 'SR', line: '「再五分鐘……再五分鐘就睡。」', image: 'siang-004-nightowl' },
+  // 第一批正式名單（2026-11-16 湘定案）
+  '002': { no: '002', name: '草莓小湘', rarity: 'R', line: '「今天找到紅色的東西了嗎？我要最甜的那個！」', image: 'siang-002-strawberry' },
+  '003': { no: '003', name: '雨傘小湘', rarity: 'R', line: '「過來一點，傘都歪到你那邊了啦。」', image: 'siang-003-umbrella' },
+  '004': { no: '004', name: '夜貓小湘', rarity: 'R', line: '「我還沒睡……但你不准陪我熬夜喔。」', image: 'siang-004-nightowl' },
+  '005': { no: '005', name: '甜點小湘', rarity: 'N', line: '「只分你一口喔……好啦，兩口！」', image: 'siang-005-dessert' },
+  '006': { no: '006', name: '園丁小湘', rarity: 'R', line: '「花要慢慢養，喜歡的人也是。」', image: 'siang-006-gardener' },
+  '007': { no: '007', name: '書頁小湘', rarity: 'N', line: '「這一頁先不要翻，我還想跟你待一下。」', image: 'siang-007-bookpage' },
+  '008': { no: '008', name: '晴空小湘', rarity: 'N', line: '「今天的天空好漂亮！我們把它收藏起來吧。」', image: 'siang-008-clearsky' },
+  '009': { no: '009', name: '膠卷小湘', rarity: 'R', line: '「等一下！這張不准刪，我還沒看夠呢。」', image: 'siang-009-film' },
+  '010': { no: '010', name: '星塵小湘', rarity: 'SR', line: '「把手伸出來，我分你一小片宇宙。」', image: 'siang-010-stardust' },
+  // 以下為特殊取得，不進一般蛋池
+  '011': { no: '011', name: '草莓蛋糕小湘', rarity: 'SR', line: '「草莓是我的，蛋糕是你的……不對，都是我的！」', image: 'siang-011-strawberry-cake', special: true },
+  '012': { no: '012', name: '雨中花園小湘', rarity: 'SSR', line: '「你看，雨停之前，我們的花已經開了。」', image: 'siang-012-rain-garden', special: true },
+  '013': { no: '013', name: '琥珀小湘', rarity: 'SR', line: '「有些心事藏得太久，會變成亮晶晶的寶物。」', image: 'siang-013-amber', special: true },
+  '014': { no: '014', name: '約會小湘', rarity: 'SSR', line: '「今天的回憶，我偷偷幫你存了一份喔♡」', image: 'siang-014-date', special: true },
+  '015': { no: '015', name: '壽星小湘', rarity: 'UR', line: '「今天我最大！所以你要陪我一整天！」', image: 'siang-015-birthday', special: true },
 };
 
 const FORMATS = ['webp', 'png'];
