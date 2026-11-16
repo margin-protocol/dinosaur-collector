@@ -11,7 +11,7 @@ async function colorFile(page,id){const value=await page.evaluate(async id=>{con
  for(const width of [360,390,430]){
   const context=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.goto('http://127.0.0.1:8000');await page.locator('#intro-ok').click();await page.locator('#home-wishes').click();
+  await page.goto('http://127.0.0.1:8000');await page.locator('#intro-ok').click();await page.locator('#intro').waitFor({state:'hidden'});await page.locator('#home-wishes').click();
   assert.equal(await page.locator('#wish-portrait').getAttribute('data-presenter'),'egg');
   await screenshot(page,'egg',width);
   await page.locator('#open-presenter').click();assert.equal(await page.locator('.presenter-choice').count(),0);await page.locator('#close-presenter').click();
@@ -29,7 +29,7 @@ async function colorFile(page,id){const value=await page.evaluate(async id=>{con
   await page.locator('#tab-daily').focus();await page.keyboard.press('ArrowRight');assert(await page.locator('#panel-growth').isVisible());
   assert.equal(await page.locator('.growth-goal').count(),3);await screenshot(page,'growth',width);
   await page.locator('[data-goal="growth:1:1"]').click();await page.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).player.xp===100,key);assert.equal((await save(page)).player.xp,100);await page.waitForFunction(()=>document.activeElement?.dataset.goalRow==='growth:1:1');assert.match(await page.locator('#player-rank').textContent(),/Lv.2/);
-  assert.equal((await save(page)).energy,70);assert.equal(await page.locator('[data-goal="growth:1:1"]').count(),0);
+  assert.equal((await save(page)).energy,90);assert.equal(await page.locator('[data-goal="growth:1:1"]').count(),0);
   await page.locator('#chapter-select').selectOption('2');assert.equal(await page.locator('.growth-goal').count(),3);await screenshot(page,'level-two',width);
   await page.locator('#chapter-select').selectOption('1');assert.equal(await page.locator('[data-goal="growth:1:2"]').count(),1,'earlier unclaimed goals remain available');
   await page.reload();await page.locator('#tab-growth').click();await page.locator('#chapter-select').selectOption('1');assert.equal(await page.locator('[data-goal="growth:1:1"]').count(),0,'claimed reward remains claimed');
@@ -43,14 +43,14 @@ async function colorFile(page,id){const value=await page.evaluate(async id=>{con
    await page.evaluate(()=>window.releaseTestLock());
    await page.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).wishes.done.length===1,key);
    await page.waitForTimeout(250);
-   const completed=await save(page);assert.equal(completed.energy,105);assert.equal(completed.player.xp,110,'parallel photo claims award only one XP reward');assert.equal(completed.player.stats.wishes,5);
+   const completed=await save(page);assert.equal(completed.energy,125);assert.equal(completed.player.xp,110,'parallel photo claims award only one XP reward');assert.equal(completed.player.stats.wishes,5);
    await page.locator('#tab-growth').click();await page.locator('#chapter-select').selectOption('1');
    await second.goto('http://127.0.0.1:8000/#incubate');
    await Promise.all([page.locator('[data-goal="growth:1:2"]').click(),second.locator('#cultivate').click()]);
-   await page.waitForFunction(k=>{const s=JSON.parse(localStorage.getItem(k));return s.energy===95&&s.player.xp===130},key);
+   await page.waitForFunction(k=>{const s=JSON.parse(localStorage.getItem(k));return s.energy===135&&s.player.xp===130},key);
    const concurrent=await save(page);assert.equal(concurrent.player.xp,130);assert.equal(concurrent.egg.warmth,60);assert.equal(concurrent.player.stats.fed,60);
    await second.goto('http://127.0.0.1:8000/#wish');await second.locator('#tab-growth').click();await second.locator('#chapter-select').selectOption('1');
-   const outcomes=await Promise.all([page,second].map(tab=>tab.evaluate(async()=>{const {updateState}=await import('./js/state.js');const {claimGrowth}=await import('./js/progression.js');return (await updateState(s=>claimGrowth(s,1,'growth:1:3'))).result.awarded;})));assert.equal(outcomes.filter(Boolean).length,1);
+   const outcomes=await Promise.all([page,second].map(tab=>tab.evaluate(async()=>{const {updateState}=await import('./js/state.js');const {claimGrowth}=await import('./js/progression.js');return (await updateState(s=>claimGrowth(s,1,'growth:1:3'))).result.awarded;})));assert.equal(outcomes.filter(Boolean).length,1);assert.equal((await save(page)).energy,155,'growth energy is paid once across tabs');
    await page.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).player.xp===150,key);
    await second.close();
    await page.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.wishes.date='2000-01-01';localStorage.setItem(k,JSON.stringify(s));},key);

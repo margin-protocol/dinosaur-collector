@@ -1,6 +1,7 @@
 import { todayKey, wishesFor, WISH_REWARD, WISH_POOL } from './wishes.js';
 export const DAILY_XP = 10;
 export const GROWTH_XP = 20;
+export const GROWTH_ENERGY = 20;
 export const XP_PER_LEVEL = 100;
 const count = value => Number.isSafeInteger(value) && value >= 0 ? value : 0;
 const unique = values => [...new Set(Array.isArray(values) ? values.filter(v => typeof v === 'string') : [])];
@@ -20,9 +21,9 @@ export function hydrateProgression(state) {
   const oldDone = state.wishes?.date === todayKey() ? unique(state.wishes.done).filter(id => wishesFor(todayKey()).some(w => w.id === id)) : [];
   const old = state.player;
   if (!old || old.version !== 1) {
-    state.player = { version: 1, xp: 0, claimed: [], stats: { wishes: oldDone.length, fed: Math.max(count(state.egg?.warmth), state.hatched > 0 ? 10 : 0), colors: oldDone, days: oldDone.length ? [todayKey()] : [] } };
+    state.player = { version: 1, xp: 0, claimed: [], energyClaimed: [], stats: { wishes: oldDone.length, fed: Math.max(count(state.egg?.warmth), state.hatched > 0 ? 10 : 0), colors: oldDone, days: oldDone.length ? [todayKey()] : [] } };
   } else {
-    state.player = { ...old, xp: count(old.xp), claimed: unique(old.claimed), stats: { wishes: count(old.stats?.wishes), fed: count(old.stats?.fed), colors: unique(old.stats?.colors).filter(id => WISH_POOL.some(w => w.id === id)), days: unique(old.stats?.days) } };
+    state.player = { ...old, xp: count(old.xp), claimed: unique(old.claimed), energyClaimed: unique(old.energyClaimed), stats: { wishes: count(old.stats?.wishes), fed: count(old.stats?.fed), colors: unique(old.stats?.colors).filter(id => WISH_POOL.some(w => w.id === id)), days: unique(old.stats?.days) } };
   }
   ensureDaily(state);
   return state;
@@ -59,6 +60,15 @@ export function goalProgress(state, goal) {
   else current = count(state.player.stats[goal.metric]);
   return { current: Math.min(current, goal.target), complete: current >= goal.target, claimed: state.player.claimed.includes(goal.id) };
 }
+// Called inside the shared save lock, never as a side effect of reading a save.
+export function reconcileGrowthEnergy(state) {
+  const paid = new Set(state.player.energyClaimed);
+  const missing = state.player.claimed.filter(id => /^growth:[1-9]\d*:[1-3]$/.test(id) && !paid.has(id));
+  state.player.energyClaimed.push(...missing);
+  const amount = missing.length * GROWTH_ENERGY;
+  state.energy += amount;
+  return amount;
+}
 export function claimGrowth(state, level, id) {
   if (!Number.isSafeInteger(level) || level < 1 || level > playerLevel(state)) return { awarded: false };
   const goal = growthGoals(level).goals.find(g => g.id === id);
@@ -68,5 +78,9 @@ export function claimGrowth(state, level, id) {
   const levelBefore = playerLevel(state);
   state.player.claimed.push(id);
   state.player.xp += GROWTH_XP;
+  if (!state.player.energyClaimed.includes(id)) {
+    state.energy += GROWTH_ENERGY;
+    state.player.energyClaimed.push(id);
+  }
   return { awarded: true, levelBefore };
 }

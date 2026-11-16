@@ -1,4 +1,4 @@
-import { hydrateProgression } from './progression.js';
+import { hydrateProgression, reconcileGrowthEnergy } from './progression.js';
 // 遊戲進度存在手機本機（Phase 2 會加上備份到私人 repo）
 const KEY = 'siang-collector:v1';
 let volatileState = null;
@@ -50,9 +50,10 @@ export function resetState() {
 export async function updateState(mutator) {
   const commit = () => {
     const state = loadState();
+    const growthEnergyAdded = reconcileGrowthEnergy(state);
     const result = mutator(state);
     saveState(state);
-    return { state, result };
+    return { state, result, growthEnergyAdded };
   };
   return globalThis.navigator?.locks ? navigator.locks.request('siang-game-save', commit) : commit();
 }

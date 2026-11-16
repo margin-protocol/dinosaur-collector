@@ -4,7 +4,7 @@ import { loadState, updateState, resetState, newEgg } from './state.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 import { createMissions } from './missions.js';
-import { DAILY_XP, GROWTH_XP, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth } from './progression.js';
+import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth } from './progression.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -24,7 +24,8 @@ function daysSince(iso) {
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
 }
 
-let state = (await updateState(() => {})).state;
+const initialSave = await updateState(() => {});
+let state = initialSave.state;
 if (!state.egg) state.egg = newEgg('ordinary'); // 培育槽不留空：孵完就送來下一顆
 let eggView = null;
 let displayedEggId = null;
@@ -250,8 +251,9 @@ function renderGrowth() {
     const count = document.createElement('p'); count.className = 'growth-goal__progress'; count.textContent = `${progress.current} / ${goal.target}`; content.append(count);
     if (progress.claimed) { const label = document.createElement('span'); label.textContent = '✓ 已領取'; status.append(label); }
     else if (progress.complete) {
-      const claim = document.createElement('button'); claim.type = 'button'; claim.className = 'growth-claim'; claim.dataset.goal = goal.id; claim.setAttribute('aria-label', `領取 ${goal.title}的 ${GROWTH_XP} XP 獎勵`);
+      const claim = document.createElement('button'); claim.type = 'button'; claim.className = 'growth-claim'; claim.dataset.goal = goal.id; claim.setAttribute('aria-label', `領取 ${goal.title}的 ${GROWTH_XP} XP 與 ${GROWTH_ENERGY} 能量獎勵`);
       const reward = document.createElement('span'); reward.className = 'growth-claim__reward'; reward.textContent = `+${GROWTH_XP} XP`;
+      const energy = document.createElement('span'); energy.className = 'growth-claim__energy'; energy.textContent = `+${GROWTH_ENERGY} 能量`; reward.append(energy);
       const action = document.createElement('span'); action.className = 'growth-claim__action'; action.textContent = '領取';
       const arrow = document.createElement('span'); arrow.className = 'growth-claim__arrow'; arrow.textContent = '↗'; arrow.setAttribute('aria-hidden', 'true');
       action.append(arrow); claim.append(action, reward); claim.disabled = claimBusy; status.append(claim);
@@ -687,7 +689,7 @@ $('growth-list').addEventListener('click', async event => {
   try {
     const transaction = await updateState(current => claimGrowth(current, chapter, button.dataset.goal));
     state = transaction.state; renderAll();
-    if (transaction.result.awarded) { $('growth-feedback').textContent = `心願達成，獲得 ${GROWTH_XP} XP。`; announceLevel(transaction.result); buzz([15, 30, 25]); }
+    if (transaction.result.awarded) { $('growth-feedback').textContent = `心願達成，獲得 ${GROWTH_XP} XP 與 ${GROWTH_ENERGY} 能量。`; announceLevel(transaction.result); buzz([15, 30, 25]); }
   } finally { claimBusy = false; state = loadState(); renderAll(); $('growth-list').querySelector(`[data-goal-row="${button.dataset.goal}"]`)?.focus({ preventScroll: true }); }
 });
 $('growth-action').addEventListener('click', () => {
@@ -811,6 +813,10 @@ $('reset-btn').addEventListener('click', () => {
 
 renderAll();
 showView(VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home', { replace: true });
+if (initialSave.growthEnergyAdded > 0) {
+  $('growth-feedback').textContent = `先前已完成的成長願望，已補發 ${initialSave.growthEnergyAdded} 能量。`;
+  toast(`成長願望獎勵更新，已補發 ${initialSave.growthEnergyAdded} 能量。`);
+}
 if (!state.seenIntro) { $('intro').showModal(); syncRoomActivity(); }
 
 setInterval(() => { if (!document.hidden && state.wishes.date !== todayKey()) void updateState(() => {}).then(transaction => { state = transaction.state; renderAll(); }); }, 30000);
