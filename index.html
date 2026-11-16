@@ -23,6 +23,7 @@
 <link rel="stylesheet" href="css/lobby.css">
 <link rel="stylesheet" href="css/companion.css">
 <link rel="stylesheet" href="css/wishes-game.css">
+<link rel="stylesheet" href="css/incubation.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
@@ -71,7 +72,7 @@
   </main>
 
   <main class="view view--incubate" data-view="incubate" hidden>
-    <div class="habitat-label"><span>HABITAT 01</span><span class="online">● 培育中</span></div>
+    <div class="habitat-label"><span>INCUBATION / 01</span><span class="online" id="incubator-status">安靜生長中</span></div>
     <div class="eggtitle">
       <span class="eggtitle__name" id="egg-name"></span>
       <span class="eggtitle__meta">
@@ -98,8 +99,9 @@
       </div>
     </div>
 
-    <section class="vitals card" id="vitals">
-      <div class="vitals__id"><span class="vitals__en">VITAL SIGN</span><span class="vitals__zh">生命訊號</span></div>
+    <p class="incubation-message" id="incubation-message" aria-live="polite"></p>
+    <section class="vitals card" id="vitals" role="progressbar" aria-label="孵化進度" aria-valuemin="0" aria-valuemax="100">
+      <div class="vitals__id"><span class="vitals__en">VITAL SIGN</span><span class="vitals__zh">孵化進度 <strong id="incubation-percent">0%</strong></span></div>
       <div class="vitals__meter" aria-hidden="true">
         <div class="ecg">
           <svg class="ecg__line" viewBox="0 0 400 40" preserveAspectRatio="none">
@@ -113,7 +115,7 @@
         <span class="vitals__bpm"><span id="ecg-bpm">48</span> BPM</span>
       </div>
     </section>
-    <div class="home-actions"><button class="btn" type="button" id="cultivate">培養 · 注入能量</button><button class="wish-entry" type="button" id="incubate-wishes"><span class="wish-entry__star" aria-hidden="true">✦</span><span class="wish-entry__title">今日願望</span><span id="incubate-wish-progress">0 / 3</span></button></div>
+    <div class="incubation-controls"><p id="incubation-cost"></p><button class="btn" type="button" id="cultivate">注入能量</button><button type="button" id="incubate-wishes">尋找今日的能量 <span id="incubate-wish-progress">0 / 3</span><span aria-hidden="true">⟶</span></button></div>
   </main>
 
   <main class="view view--wish" data-view="wish" hidden>
