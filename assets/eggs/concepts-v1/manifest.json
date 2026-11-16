@@ -1,0 +1,145 @@
+[
+  {
+    "id": "ordinary",
+    "name": "普通蛋",
+    "line": "暖白珍珠 · 細緻生命紋路",
+    "image": "../../assets/eggs/concepts-v1/ordinary.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      395,
+      285,
+      851,
+      889
+    ],
+    "source": "exec-f543c97e-9dbd-4152-8d8c-9b07adf9dccf.png",
+    "status": "concept"
+  },
+  {
+    "id": "regional",
+    "name": "縣市蛋",
+    "line": "青玉礦層 · 地形等高紋",
+    "image": "../../assets/eggs/concepts-v1/regional.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      363,
+      218,
+      888,
+      964
+    ],
+    "source": "exec-d5cc6981-ff2f-4a2f-b5fc-2283c6cc0a92.png",
+    "status": "concept"
+  },
+  {
+    "id": "weather",
+    "name": "天氣蛋",
+    "line": "晨曦雲霧 · 透明露光",
+    "image": "../../assets/eggs/concepts-v1/weather.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      383,
+      283,
+      866,
+      918
+    ],
+    "source": "exec-54b929a9-f779-48f9-ac2f-5bf0da5034d1.png",
+    "status": "concept"
+  },
+  {
+    "id": "date",
+    "name": "約會蛋",
+    "line": "玫瑰薄膜 · 交織心光",
+    "image": "../../assets/eggs/concepts-v1/date.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      299,
+      172,
+      948,
+      1055
+    ],
+    "source": "exec-a201fe53-69f6-41cb-bb25-7deb1dbaba29.png",
+    "status": "concept"
+  },
+  {
+    "id": "cipher",
+    "name": "暗號蛋",
+    "line": "煙紫殼面 · 抽象密紋",
+    "image": "../../assets/eggs/concepts-v1/cipher.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      343,
+      240,
+      911,
+      1013
+    ],
+    "source": "exec-d16fc308-db9a-4596-bd8b-429ebb5705a8.png",
+    "status": "concept"
+  },
+  {
+    "id": "wish",
+    "name": "願望蛋",
+    "line": "月白層膜 · 小小願光",
+    "image": "../../assets/eggs/concepts-v1/wish.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      333,
+      206,
+      904,
+      990
+    ],
+    "source": "exec-62665520-dcdc-4384-99bc-7425fcaf47bc.png",
+    "status": "concept"
+  },
+  {
+    "id": "mystery",
+    "name": "神秘蛋",
+    "line": "深靛蛋殼 · 幽微星雲",
+    "image": "../../assets/eggs/concepts-v1/mystery.webp",
+    "size": [
+      1254,
+      1254
+    ],
+    "bounds": [
+      383,
+      282,
+      868,
+      941
+    ],
+    "source": "exec-a9863d7a-b7a6-495e-805a-73d530c1b50e.png",
+    "status": "concept"
+  },
+  {
+    "id": "origin",
+    "name": "小湘本源蛋",
+    "line": "首次相遇 · 保留原版",
+    "image": "../../assets/eggs/origin/shell.webp",
+    "size": [
+      1024,
+      1024
+    ],
+    "bounds": [
+      329,
+      236,
+      695,
+      701
+    ],
+    "status": "existing"
+  }
+]

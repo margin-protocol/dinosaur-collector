@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-Hant">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#171722">
+<title>小湘收集器｜蛋的美術預覽</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500&display=swap">
+<style>
+*{box-sizing:border-box}body{margin:0;background:#171722;color:#f5edf3;font-family:'Noto Serif TC','Songti TC',serif}main{max-width:520px;margin:auto;padding:calc(env(safe-area-inset-top) + 20px) max(22px,env(safe-area-inset-right)) calc(env(safe-area-inset-bottom) + 30px) max(22px,env(safe-area-inset-left))}a{display:inline-flex;align-items:center;min-height:44px;color:#d5c4dd;font-size:12px;text-decoration:none}small{display:block;font:9px system-ui;letter-spacing:.2em;color:#bda9c8;margin:16px 0}h1{font:400 25px/1.7 'Noto Serif TC',serif;margin:6px 0}p{color:#c9bdcf;font-size:12px;line-height:1.9}.stage{position:relative;aspect-ratio:1;margin:8px -10px -8px;isolation:isolate;overflow:hidden;background:radial-gradient(ellipse at 50% 50%,#43324955,transparent 65%)}.cradle{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none}.shell-box{position:absolute;inset:0;z-index:1;pointer-events:none}.shell{position:absolute;max-width:none;height:auto}.front{z-index:2}.selected-name{font-size:24px;font-weight:400;text-align:center;letter-spacing:.1em;margin:0 0 4px}.selected-line{text-align:center;margin:0 0 12px}.stage-toggle{display:block;margin:0 auto 24px;min-height:44px;padding:8px 18px;border:1px solid #a68eaf66;border-radius:24px;background:#302839;color:#e6d8ed;font:inherit;font-size:12px}.collection{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.egg-choice{display:flex;flex-direction:column;align-items:center;gap:6px;width:100%;min-width:0;min-height:210px;padding:10px 8px 14px;color:#f1e8f1;background:#24212e;border:1px solid #8d769d44;border-radius:14px;cursor:pointer;font-family:inherit;touch-action:manipulation;-webkit-tap-highlight-color:transparent}.egg-choice[aria-pressed=true]{background:#393044;border-color:#c1a6cf}.thumb{position:relative;width:100%;aspect-ratio:1.1;overflow:hidden}.thumb .canvas{position:absolute;inset:0 0 auto;aspect-ratio:1}.egg-choice strong{font-size:16px;font-weight:400}.egg-choice span:last-child{font-size:10px;line-height:1.6;color:#cbbbd4;text-align:center}.preview-note{margin-top:24px;font-size:11px}.stage-toggle:active,.egg-choice:active{opacity:.8}button:focus-visible,a:focus-visible{outline:2px solid #efd5ee;outline-offset:4px}[hidden]{display:none!important}@media(min-width:480px){.egg-choice{min-height:245px}}@media(prefers-reduced-motion:no-preference){.shell-box .shell{animation:breath 5s ease-in-out infinite;transform-origin:50% 90%}@keyframes breath{50%{transform:scale(1.005,1.009)}}}
+</style>
+<main>
+<a href="../../">‹ 返回小湘的日常</a>
+<small>SIANG · EGG COLLECTION / ART PREVIEW</small>
+<h1>每一顆，都藏著新的相遇。</h1>
+<p>普通蛋與六款特殊蛋的新外觀。點選下方的蛋，看看它在熟悉的培養架上是什麼樣子。</p>
+<section aria-label="目前選擇的蛋">
+<div class="stage"><img class="cradle" id="back" src="../../assets/incubator/cradle-back.webp" alt=""><div class="shell-box" id="shell-box"></div><img class="cradle front" id="front" src="../../assets/incubator/cradle-front.webp" alt=""></div>
+<h2 class="selected-name" id="name"></h2><p class="selected-line" id="line"></p>
+<button type="button" class="stage-toggle" id="toggle" aria-pressed="true">隱藏培養架</button>
+</section>
+<div id="collection" class="collection" role="group" aria-label="選擇蛋的美術預覽"></div>
+<p class="preview-note">本源蛋與培養架保留原版。這頁只預覽新外觀；取得方式、遊戲進度、能量與孵化機率沿用正式遊戲的設定。</p>
+<p id="error" role="alert" hidden>圖片暫時無法載入，請重新整理。</p>
+</main>
+<script type="module">
+const $=id=>document.getElementById(id);
+function shell(egg,height,bottom,center){
+ const image=new Image();image.className='shell';image.src=egg.image;image.alt=egg.name;
+ const [w,h]=egg.size,[x0,y0,x1,y1]=egg.bounds;
+ const width=height*w/(y1-y0);
+ image.style.width=width+'%';image.style.left=(center-(x0+x1)/2/w*width)+'%';image.style.top=(bottom-y1/h*width)+'%';return image;
+}
+try{
+ const eggs=await fetch('../../assets/eggs/concepts-v1/manifest.json').then(r=>{if(!r.ok)throw Error(r.status);return r.json()});
+ function select(egg){$('shell-box').replaceChildren(shell(egg,45.5,65.5,51.5));$('name').textContent=egg.name;$('line').textContent=egg.line;document.querySelectorAll('[data-egg]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.egg===egg.id)));}
+ for(const egg of eggs){const button=document.createElement('button');button.type='button';button.className='egg-choice';button.dataset.egg=egg.id;button.setAttribute('aria-pressed','false');const thumb=document.createElement('span');thumb.className='thumb';thumb.setAttribute('aria-hidden','true');const canvas=document.createElement('span');canvas.className='canvas';canvas.append(shell(egg,75,87.5,50));thumb.append(canvas);const title=document.createElement('strong');title.textContent=egg.name;const note=document.createElement('span');note.textContent=egg.id==='origin'?'原版參考 · 不變更':'新外觀 · 美術預覽';button.append(thumb,title,note);button.onclick=()=>select(egg);$('collection').append(button);}
+ select(eggs[0]);$('toggle').onclick=()=>{const show=$('back').hidden;$('back').hidden=$('front').hidden=!show;$('toggle').setAttribute('aria-pressed',String(show));$('toggle').textContent=show?'隱藏培養架':'顯示培養架'};
+}catch(error){$('error').hidden=false;console.error(error)}
+</script>
+</html>
