@@ -42,9 +42,7 @@ export const EGGS = {
       '002': 12, '003': 12, '004': 12, '006': 12, '009': 12, // R
       '010': 8, '013': 8, // SR
     },
-    // 暫用：正式的願望蛋素材還沒到，先借本源蛋的圖並改色
-    art: 'origin',
-    tint: 'hue-rotate(70deg) saturate(1.35) brightness(1.05)',
+    // 正式三層素材：assets/eggs/wish/{shell,glow,cracks}.webp
   },
   county: {
     id: 'county',
