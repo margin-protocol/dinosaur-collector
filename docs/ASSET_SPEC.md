@@ -21,7 +21,7 @@
 | 5 | 前景環形架 | `assets/incubator/cradle-front.png` | 固定，蓋在蛋前面 |
 | 6 | 破殼閃光 | 程式產生 | 最上層 |
 
-每個檔案可以用 `.png` 或 `.webp`。目前已登記的蛋 id：`origin`（小湘本源蛋）、`ordinary`（普通蛋）。新蛋種請先告訴工程要用的 id。
+每個檔案可以用 `.png` 或 `.webp`。目前已登記的蛋 id：`origin`（小湘本源蛋）、`ordinary`（普通蛋）、`wish`（願望蛋）、`county`（縣市蛋）。縣市蛋正式素材資料夾必須用 `county`，不是概念圖名稱 `regional`。新蛋種請先告訴工程要用的 id。
 
 ### 共同座標系統（最重要）
 

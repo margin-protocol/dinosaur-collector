@@ -25,9 +25,7 @@ export const EGGS = {
       '002': 8, '003': 8, '004': 8, '006': 8, '009': 8, // R
       '010': 2, '013': 2, // SR
     },
-    // 暫用：正式的普通蛋素材還沒到，先借本源蛋的圖並改色。素材到了就刪掉這兩行。
-    art: 'origin',
-    tint: 'hue-rotate(150deg) saturate(0.75)',
+    // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
   wish: {
     id: 'wish',
@@ -52,9 +50,7 @@ export const EGGS = {
     hatches: null,
     stocked: true, // 在新縣市打卡取得，每個縣市一顆
     byCounty: true, // 固定孵出該縣市的小湘（見 rollFor）
-    // 暫用：正式的縣市蛋素材還沒到，先借本源蛋的圖並改色
-    art: 'origin',
-    tint: 'hue-rotate(185deg) saturate(1.1)',
+    // 正式三層素材：assets/eggs/county/{shell,glow,cracks}.webp
   },
 };
 

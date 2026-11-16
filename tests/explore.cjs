@@ -34,7 +34,10 @@ await p.locator('#cultivate').click();await p.locator('#reveal').waitFor();await
 assert.equal(await p.locator('#reveal-name').textContent(),'臺中市小湘');
 s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.ok(s.dex['023']);
 // Penghu → no signal
-await c.setGeolocation({latitude:23.57,longitude:119.58});await p.locator('#reveal-ok').click();
+await c.setGeolocation({latitude:23.57,longitude:119.58});
+// Refresh Chromium's location cache after simulated travel; production allows a 10-minute cached sample.
+await p.evaluate(()=>new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(()=>resolve(),reject,{maximumAge:0})));
+await p.locator('#reveal-ok').click();
 await p.evaluate(()=>location.hash='home');await p.waitForTimeout(300);
 await p.locator('#explore').click();await p.locator('#county-call[open]').waitFor();
 assert.match(await p.locator('#county-title').textContent(),/還沒有小湘的訊號/);await p.locator('#county-ok').click();
