@@ -1,5 +1,8 @@
 export const THEME_KEY = 'siang-collector:theme:v1';
 export const THEMES = [
+  { id: 'cream', name: '晨光奶油', caption: '暖暖陽光，柔柔地醒來', color: '#f9f2e6' },
+  { id: 'sakura', name: '櫻花汽水', caption: '一點粉紅，今天也可愛', color: '#fff0f3' },
+  { id: 'daylight', name: '晴空藍', caption: '把好心情，交給晴朗天空', color: '#eef6fc' },
   { id: 'lilac', name: '月霧紫', caption: '溫柔月光，最初的相遇', color: '#151722' },
   { id: 'mint', name: '薄荷星海', caption: '清透綠意，安靜地陪伴', color: '#101e20' },
   { id: 'blue', name: '靜夜藍', caption: '把每個心願，留給星空', color: '#111b2b' },

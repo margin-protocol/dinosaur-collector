@@ -1,9 +1,9 @@
-/* Palette tokens are shared by the game and the four live chooser previews. */
+/* Palette tokens are shared by the game and the live chooser previews. */
 :root, [data-palette="lilac"] {
   --t-bg:#151722; --t-panel:#24232f; --t-raised:#302b3c; --t-selected:#44374f;
   --t-line:#6d6079; --t-text:#f8f0f6; --t-muted:#d6cadc; --t-accent:#dac1ed;
   --t-button:#584768; --t-button-end:#3c3448; --t-light:#eee0f4; --t-ink:#302637;
-  --t-scene:#15172270; --t-page:#151722ed;
+  --t-mode:dark; --t-cta-end:var(--t-accent); --t-scene:#15172270; --t-page:#151722ed;
 }
 :root[data-theme="mint"], [data-palette="mint"] {
   --t-bg:#101e20; --t-panel:#1b2d30; --t-raised:#233b3c; --t-selected:#2b4d4b;
@@ -23,8 +23,27 @@
   --t-button:#785363; --t-button-end:#523b48; --t-light:#f7dfe4; --t-ink:#492c38;
   --t-scene:#391e2b70; --t-page:#24191fed;
 }
+/* Daylight palettes use dark ink on genuinely light surfaces. */
+:root[data-theme="cream"], [data-palette="cream"] {
+  --t-bg:#f9f2e6; --t-panel:#fffaf1; --t-raised:#f1e5d4; --t-selected:#e9d4b9;
+  --t-line:#aa8c6e; --t-text:#46352a; --t-muted:#6e5745; --t-accent:#795135;
+  --t-button:#ead5b7; --t-button-end:#dfc4a2; --t-light:#f1dfc5; --t-ink:#46352a;
+  --t-mode:light; --t-cta-end:#e6cda9; --t-scene:#fff5e4e3; --t-page:#fffaf1f5;
+}
+:root[data-theme="sakura"], [data-palette="sakura"] {
+  --t-bg:#fff0f3; --t-panel:#fff8fa; --t-raised:#f9e4eb; --t-selected:#f1ccd9;
+  --t-line:#b98094; --t-text:#4e3040; --t-muted:#795465; --t-accent:#914e6a;
+  --t-button:#f1cbd9; --t-button-end:#eab9cd; --t-light:#f8dfe8; --t-ink:#4e3040;
+  --t-mode:light; --t-cta-end:#f0c7d7; --t-scene:#fff0f5e3; --t-page:#fff8faf5;
+}
+:root[data-theme="daylight"], [data-palette="daylight"] {
+  --t-bg:#eef6fc; --t-panel:#f8fcff; --t-raised:#dfedf8; --t-selected:#c9dfef;
+  --t-line:#789bb8; --t-text:#293e52; --t-muted:#4f6a81; --t-accent:#36638b;
+  --t-button:#cce1f1; --t-button-end:#b7d2e8; --t-light:#deedf8; --t-ink:#293e52;
+  --t-mode:light; --t-cta-end:#c6dff1; --t-scene:#eff8ffe3; --t-page:#f8fcfff5;
+}
 :root[data-theme] {
-  color-scheme:dark; --bg-deep:var(--t-bg); --bg-panel:var(--t-panel); --line:var(--t-line);
+  color-scheme:var(--t-mode); --bg-deep:var(--t-bg); --bg-panel:var(--t-panel); --line:var(--t-line);
   --ivory:var(--t-text); --pearl:var(--t-muted); --silver:var(--t-muted);
   --bio-cyan:var(--t-accent); --hud:var(--t-accent); --accent:var(--t-accent);
   --rose-metal:var(--t-accent); --rose-light:var(--t-light); --crimson:var(--t-button); --crimson-deep:var(--t-button-end);
@@ -39,7 +58,7 @@ body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var
 .hatch-scene::backdrop { background:var(--t-bg); }
 .nav__item,.letter-item,.resident-choice,.research-partner,.egg-choice,.egg-cat,.offer-egg,.commission,.memory,.fossil-offer,.fossil-pick,.ach-tile,.bingo-cell,.snap-card,.postcard-pick,.ach-info { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
 .nav__item[aria-current="page"],.resident-choice[aria-pressed="true"],.presenter-choice[aria-pressed="true"],.research-partner[aria-pressed="true"],.egg-cat[aria-pressed="true"],.egg-choice.is-selected,.letter-item.is-mail,.ach-tile.is-claimed,.bingo-cell.is-done,.bingo-cell.is-line { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
-.btn,.mission-shoot,.ach__claim,.dino-task__btn { background:linear-gradient(135deg,var(--t-light),var(--t-accent)); color:var(--t-ink); border-color:var(--t-light); }
+.btn,.mission-shoot,.ach__claim,.dino-task__btn { background:linear-gradient(135deg,var(--t-light),var(--t-cta-end)); color:var(--t-ink); border-color:var(--t-light); }
 .view--incubate #cultivate,#reveal-ok,.research-primary,.growth-claim,#tutorial-action { background:linear-gradient(135deg,var(--t-button),var(--t-button-end)); color:var(--t-text); border-color:var(--t-line); }
 .view--incubate #cultivate:active,.research-primary:active:not(:disabled),.growth-claim:active:not(:disabled),#tutorial-action:active { background:var(--t-selected); border-color:var(--t-accent); }
 @media(hover:hover) { .growth-claim:hover:not(:disabled) { background:var(--t-selected); border-color:var(--t-accent); } }
@@ -83,3 +102,20 @@ body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var
 .theme-status { margin:16px 0 12px; min-height:2em; }#theme-done { width:100%; min-height:48px; font-family:var(--font-display); }
 @media(max-width:374px) { .theme-dialog { padding:20px 18px; }.theme-dialog .drawer-heading h2 { font-size:19px; }.theme-choices { gap:9px; } }
 @media(prefers-reduced-motion:reduce) { .theme-choice { transition:none; } }
+
+/* Keep stage labels legible over the softly lit room, including nighttime ambience. */
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .companion-room.is-night::before { background:linear-gradient(#d9e8f322,transparent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.room-empty,.resident-name,.bubble__text,.wish-dialogue p) { text-shadow:none; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.ach-tile.is-ready,.bingo-cell.is-line) { background:var(--t-selected); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .ach-tile.is-ready small { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.room-gift,.letter-new,.incubation-omen) { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .topbar__brand { color:var(--t-text); }
+
+.online { color:var(--t-muted); }
+.resident-dex { background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .pips i.is-on { background:var(--t-accent); }
+/* Give the document its own canvas so the room keeps painting on tall screens. */
+html { background:var(--t-bg); }
+.egg-select-entry { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
+.egg-select-entry:active { background:var(--t-selected); }
+#cultivate svg { stroke:currentColor; }
