@@ -6,6 +6,7 @@ import { ensureGifts } from './gifts.js';
 import { ensureShelf } from './eggs.js';
 import { ensureBonus } from './energy.js';
 import { ensureLetters } from './letters.js';
+import { ensureDino } from './dino.js';
 export const DAILY_XP = 10;
 export const GROWTH_XP = 20;
 export const GROWTH_ENERGY = 20;
@@ -40,6 +41,7 @@ export function hydrateProgression(state) {
   ensureShelf(state);
   ensureBonus(state);
   ensureLetters(state);
+  ensureDino(state, todayKey());
   return state;
 }
 export function completeDaily(state, date, id) {

@@ -25,6 +25,10 @@ export const EGGS = {
       '002': 8, '003': 8, '004': 8, '006': 8, '009': 8, // R
       '010': 2, '013': 2, // SR
       '036': 2, '037': 2, '038': 2, '039': 2, '040': 2, '041': 2, // SR 摯友小湘
+      '044': 8, '048': 8, '053': 8, // N 動物
+      '045': 5, '046': 5, '047': 5, '050': 5, '054': 5, // R 動物
+      '049': 2, '052': 2, '055': 2, // SR 動物
+      '051': 0.6, // SSR 恐龍小湘
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -41,6 +45,9 @@ export const EGGS = {
       '002': 12, '003': 12, '004': 12, '006': 12, '009': 12, // R
       '010': 8, '013': 8, // SR
       '043': 3, // SSR 戀愛小湘（聞止水ver），只在願望蛋
+      '045': 6, '046': 6, '047': 6, '050': 6, '054': 6, // R 動物
+      '049': 5, '052': 5, '055': 5, // SR 動物
+      '051': 2, // SSR 恐龍小湘
     },
     // 正式三層素材：assets/eggs/wish/{shell,glow,cracks}.webp
   },
@@ -169,6 +176,19 @@ export const CHARACTERS = {
   '042': { no: '042', name: '蝰蝰♡', rarity: 'SSR', line: '「蝰蝰今天有想我嗎🥺」', image: 'siang-042-kuikui', series: 'date', special: true },
   // 特別：願望蛋可開出
   '043': { no: '043', name: '戀愛小湘（聞止水ver）', rarity: 'SSR', line: '「我老婆超漂亮❤️」', image: 'siang-043-love-wen', series: 'special' },
+  // 動物小湘系列（台詞為德寶初稿）：普通蛋、願望蛋可開出
+  '044': { no: '044', name: '貓咪小湘', rarity: 'N', line: '「喵～快點摸摸我的頭，不然要咬你了喔。」', image: 'siang-044-cat', series: 'animals' },
+  '045': { no: '045', name: '小丑魚小湘', rarity: 'R', line: '「不管游多遠，我都找得到回家的路，因為家裡有你。」', image: 'siang-045-clownfish', series: 'animals' },
+  '046': { no: '046', name: '螃蟹小湘', rarity: 'R', line: '「我會橫著走，但喜歡你這件事是直直走的！」', image: 'siang-046-crab', series: 'animals' },
+  '047': { no: '047', name: '無尾熊小湘', rarity: 'R', line: '「讓我抱一下下就好……好吧，抱一整天。」', image: 'siang-047-koala', series: 'animals' },
+  '048': { no: '048', name: '狗狗小湘', rarity: 'N', line: '「汪！你回來了！我等你好久好久了！」', image: 'siang-048-puppy', series: 'animals' },
+  '049': { no: '049', name: '狐狸小湘', rarity: 'SR', line: '「狐狸會一直記得帶給牠溫暖的人喔。」', image: 'siang-049-fox', series: 'animals' },
+  '050': { no: '050', name: '浣熊小湘', rarity: 'R', line: '「洗乾淨的點心最好吃，第一個給你！」', image: 'siang-050-raccoon', series: 'animals' },
+  '051': { no: '051', name: '恐龍小湘', rarity: 'SSR', line: '「嗷嗚！我是孵化室最強的恐龍，要好好照顧我喔！」', image: 'siang-051-dino', series: 'animals' },
+  '052': { no: '052', name: '守宮小湘', rarity: 'SR', line: '「我會黏在你身邊，甩都甩不掉的那種。」', image: 'siang-052-gecko', series: 'animals' },
+  '053': { no: '053', name: '老鼠小湘', rarity: 'N', line: '「起司我偷偷藏了一塊，要分你一半嗎？」', image: 'siang-053-mouse', series: 'animals' },
+  '054': { no: '054', name: '企鵝小湘', rarity: 'R', line: '「天氣再冷，跟你擠在一起就不冷了。」', image: 'siang-054-penguin', series: 'animals' },
+  '055': { no: '055', name: '兔兔小湘', rarity: 'SR', line: '「兔兔公主駕到！今天要被寵一整天喔。」', image: 'siang-055-bunny', series: 'animals' },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序
@@ -180,6 +200,7 @@ export const SERIES = {
   memorial: { name: '紀念限定', short: '限定' },
   county: { name: '縣市系列', short: '縣市' },
   friends: { name: '摯友系列', short: '摯友' },
+  animals: { name: '動物小湘', short: '動物' },
   special: { name: '特別收藏', short: '特別' },
 };
 

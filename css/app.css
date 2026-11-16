@@ -122,6 +122,7 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex__tag--county { background: #b9e0cf; }
 .dex__tag--friends { background: #e8cdb0; }
 .dex__tag--special { background: #f6b6d6; }
+.dex__tag--animals { background: #f3d98b; }
 
 /* ---------- 底部分頁列 ---------- */
 .nav {

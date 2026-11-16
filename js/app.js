@@ -3,6 +3,7 @@ import { createIncubator, createEggView, stageOf, restart, reducedMotion } from 
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
 import { unlockedMilestones, allLetters, unreadCount, lockedMilestones } from './letters.js';
+import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
 import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet } from './energy.js';
 import { checkIn } from './travel.js';
 import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
@@ -12,7 +13,7 @@ import { applyReward, validReward, describeReward } from './gifts.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
-import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
+import { WISH_REWARD, PASS_RATIO, WISH_POOL, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 import { createMissions } from './missions.js';
 import { createResearch } from './research.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth } from './progression.js';
@@ -41,6 +42,8 @@ if (!state.egg) state.egg = newEgg('ordinary'); // 培育槽不留空：孵完�
 let eggView = null;
 let displayedEggId = null;
 let exploring = false;
+let lastChat = '';
+let taskBusy = false;
 let busy = false;
 let toastTimer = 0;
 let sayTimer = 0;
@@ -71,6 +74,8 @@ const room = createRoom($('resident-lanes'), character => {
   void updateState(current => greet(current, character.no, todayKey())).then(t => {
     state = t.state;
     if (t.result) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`${character.name}很開心！+${t.result} 能量（每位每天一次）`); }
+    const task = state.dino.task;
+    if (task?.type === 'greet' && task.target === character.no) void finishTask();
   });
 });
 const research = createResearch({ root: $('research-root'), getState: loadState, onCollect: () => showView('incubate') });
@@ -182,17 +187,20 @@ function renderHome() {
     mode = 'rest';
   }
   const guide = $('guide');
-  guide.dataset.mode = mode;
   if (sayOverride) {
     text = sayOverride.text;
     mood = sayOverride.mood;
+    if (sayOverride.mode) mode = sayOverride.mode;
   }
+  guide.dataset.mode = mode;
   guide.dataset.mood = mood;
   $('bubble-cta').hidden = !['wish', 'gift', 'explore'].includes(mode);
   $('bubble-cta').textContent = mode === 'gift' ? '領取見面禮 ›' : mode === 'explore' ? '探索附近 ›' : '看今日願望 ›';
   $('daily-gift').hidden = !(state.seenIntro && giftReady(state, todayKey()));
   const exploredToday = state.bonus.explored === todayKey();
   $('explore').classList.toggle('is-fresh', firstHatched && !exploredToday);
+  $('explore').classList.toggle('is-compact', exploredToday && !exploring);
+  $('explore').setAttribute('aria-label', exploredToday ? '再探索一次附近' : '探索附近');
   if (!exploring) $('explore-sub').textContent = exploredToday ? '今天探索過了，換個地方再試試' : '看看這裡有沒有小湘的訊號';
   if ($('bubble-text').textContent !== text) {
     $('bubble-text').textContent = text;
@@ -221,11 +229,13 @@ function guideAction() {
   else if (mode === 'tap') showView('incubate');
   else if (mode === 'gift') void collectGift();
   else if (mode === 'explore') startExplore();
+  else if (mode === 'task-offer') void acceptTask();
+  else if (mode === 'rest' || mode === 'chat') dinoChat();
 }
 
 // 小恐龍暫時換一句話和表情，幾秒後恢復
-function say(text, mood, ms = 2200) {
-  sayOverride = { text, mood };
+function say(text, mood, ms = 2200, mode) {
+  sayOverride = { text, mood, mode };
   clearTimeout(sayTimer);
   sayTimer = setTimeout(() => {
     sayOverride = null;
@@ -548,6 +558,7 @@ function renderResidents() {
 }
 
 function renderAll() {
+  if (document.getElementById('dino-task')) renderDinoTask();
   if (document.getElementById('letter-badge')) renderLetterBadge();
   if (document.getElementById('snap-count')) renderSnap();
   if (document.getElementById('explore')) $('explore').hidden = !(state.hatched > 0 || Boolean(state.dex['001']));
@@ -1092,6 +1103,70 @@ $('explore-intro').addEventListener('close', syncRoomActivity);
 $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
+
+/* ---------- 小恐龍：閒聊與小委託 ---------- */
+const firstHatchedState = () => state.hatched > 0 || Boolean(state.dex['001']);
+const taskCtx = () => ({ today: todayKey(), residents: residentsFor(state.dex), todaysWishIds: todaysWishes().map(w => w.id), snapsToday: snapsToday(state, todayKey()), snapCap: SNAP.perDay, firstHatched: firstHatchedState(), chars: CHARACTERS });
+
+function dinoChat() {
+  if (firstHatchedState() && canOffer(state, todayKey()) && Math.random() < 0.4) { offerTask(); return; }
+  lastChat = chatterLine(state, CHARACTERS, { today: todayKey(), residents: residentsFor(state.dex), last: lastChat });
+  say(lastChat, 'happy', 5000, 'chat');
+}
+function offerTask() { say('我有一個小委託……可以幫我嗎？點我看看！', 'happy', 8000, 'task-offer'); }
+
+async function acceptTask() {
+  if (taskBusy) return;
+  taskBusy = true;
+  try {
+    const ctx = taskCtx();
+    const t = await updateState(current => { if (current.dino.task || !canOffer(current, ctx.today)) return null; current.dino.task = makeTask(current, ctx); return current.dino.task; });
+    state = t.state; sayOverride = null; renderAll();
+    if (t.result) say(`${t.result.text}（完成給你 ${TASK_REWARD} 能量）`, 'happy', 5000, 'chat');
+  } finally { taskBusy = false; }
+}
+
+async function finishTask() {
+  if (taskBusy) return;
+  taskBusy = true;
+  try {
+    const t = await updateState(current => completeTask(current));
+    state = t.state; renderAll();
+    if (t.result) { restart($('chip-energy'), 'is-bump'); say(`謝謝你！這是我的謝禮 +${t.result} 能量`, 'cheer', 3500); toast(`小恐龍的委託完成 · +${t.result} 能量`); }
+  } finally { taskBusy = false; }
+}
+
+function renderDinoTask() {
+  const task = state.dino?.task;
+  $('dino-task').hidden = !task;
+  if (!task) return;
+  const progress = taskProgress(state, task, { today: todayKey(), snapsToday: snapsToday(state, todayKey()) });
+  $('dino-task-text').textContent = task.text;
+  $('dino-task-progress').textContent = task.goal > 1 ? `${Math.max(0, progress)} / ${task.goal}` : '';
+  $('dino-task-photo').hidden = task.type !== 'color';
+  if (task.type !== 'color' && task.type !== 'greet' && progress >= task.goal) void finishTask();
+}
+$('dino-task-skip').addEventListener('click', async () => {
+  const t = await updateState(current => { current.dino.task = null; });
+  state = t.state; renderAll(); say('沒關係，下次再拜託你！', 'idle', 2500);
+});
+$('dino-task-input').addEventListener('change', async () => {
+  const file = $('dino-task-input').files?.[0];
+  $('dino-task-input').value = '';
+  const task = state.dino.task;
+  if (!file || task?.type !== 'color') return;
+  const wish = WISH_POOL.find(w => w.id === task.target);
+  let ratio = 0;
+  try { ratio = await analyzePhoto(file, wish, $('photo-thumb')); } catch { toast('這張照片讀不出來，再拍一次試試。'); return; }
+  if (ratio >= PASS_RATIO) void finishTask();
+  else say(`嗯……${wish.color}只佔了 ${Math.round(ratio * 100)}%，再靠近一點拍拍看！`, 'remind', 4000, 'chat');
+});
+// 首頁閒置時，小恐龍偶爾自己說話或提出委託
+setInterval(() => {
+  if (document.hidden || document.body.dataset.view !== 'home' || document.querySelector('dialog[open]') || sayOverride || $('bubble').classList.contains('is-open')) return;
+  if (!state.seenIntro) return;
+  dinoChat();
+}, 25 * 1000);
 
 /* ---------- 紙條收藏 ---------- */
 const LETTER_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 7 9-7"/></svg>';
