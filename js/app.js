@@ -8,6 +8,7 @@ import { loadCounties, countyAt, currentPosition, geoPermission } from './geo.js
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 import { createMissions } from './missions.js';
+import { createResearch } from './research.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth } from './progression.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
@@ -38,7 +39,7 @@ let toastTimer = 0;
 let sayTimer = 0;
 let bubbleTimer = 0;
 let sayOverride = null; // 小恐龍暫時要說的話（提醒、歡呼），幾秒後回到平常的提示
-const VIEWS = ['home', 'incubate', 'wish', 'dex'];
+const VIEWS = ['home', 'incubate', 'wish', 'dex', 'research'];
 const STAGE_NAMES = ['', '蛋有動靜了', '蛋殼裂開了', '就快出來了', '可以破殼了'];
 
 const incubator = createIncubator();
@@ -59,6 +60,7 @@ let activePhotoId = null;
 
 // 小湘：孵出來以後才出現，在地板上自己走動
 const room = createRoom($('resident-lanes'), character => say(character.line, 'happy', 4000));
+const research = createResearch({ root: $('research-root'), getState: loadState, onCollect: () => showView('incubate') });
 
 function syncRoomActivity() {
   room.setActive(document.body.dataset.view === 'home' && !document.hidden && !document.querySelector('dialog[open]'));
@@ -472,6 +474,7 @@ function renderAll() {
   renderHome();
   renderWishes();
   renderDex();
+  research.update();
   if ($('residents').open) renderResidents();
 }
 
@@ -485,12 +488,13 @@ function showView(name, options = {}) {
   }
   if ($('function-center').open) $('function-center').close();
   $('back-home').hidden = name === 'home';
-  $('location-label').textContent = { home: '日常 / HOME', incubate: '培育 / INCUBATION', wish: '願望 / WISHES', dex: '圖鑑 / COLLECTION' }[name];
+  $('location-label').textContent = { home: '日常 / HOME', incubate: '培育 / INCUBATION', wish: '願望 / WISHES', dex: '圖鑑 / COLLECTION', research: '研究 / RESEARCH' }[name];
   const nextHash = name === 'home' ? '#home' : `#${name}`;
   if (location.hash !== nextHash) history[options.replace ? 'replaceState' : 'pushState'](null, '', nextHash);
   $('header').hidden = !TITLES[name];
   $('page-title').textContent = TITLES[name] || '';
   document.body.dataset.view = name;
+  if (name === 'research') research.update();
   window.scrollTo(0, 0);
   syncRoomActivity();
   if (name === 'wish') {

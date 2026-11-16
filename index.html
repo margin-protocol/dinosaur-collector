@@ -25,6 +25,7 @@
 <link rel="stylesheet" href="css/wishes-game.css">
 <link rel="stylesheet" href="css/incubation.css">
 <link rel="stylesheet" href="css/hatching.css">
+<link rel="stylesheet" href="css/research.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
@@ -153,6 +154,8 @@
     </div>
   </main>
 
+  <main class="view view--research" data-view="research" id="research-root" hidden></main>
+
   <footer class="game-footer"><span id="location-label">日常 / HOME</span><button class="center-button" id="open-center" type="button" aria-haspopup="dialog" aria-controls="function-center"><svg class="journal-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7a2.5 2.5 0 0 1-2.5-2.5V6A2.5 2.5 0 0 1 7 3.5Z"/><path d="M8 3.5v17M11.5 8h4.5M11.5 11.5H15M4.5 17.5H8"/></svg><span>研究者手記</span></button></footer>
 </div>
 
@@ -169,8 +172,8 @@
     <button class="nav__item" type="button" data-view="dex">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z"/></svg>圖鑑
     </button>
-    <button class="nav__item" type="button" disabled>
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3v6l-5 10a1.500 1.500 0 0 0 1.300 2h11.400a1.500 1.500 0 0 0 1.300-2L14 9V3M8 3h8"/></svg><span>研究 · 尚未開放</span>
+    <button class="nav__item" type="button" data-view="research">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3v6l-5 10a1.500 1.500 0 0 0 1.300 2h11.400a1.500 1.500 0 0 0 1.300-2L14 9V3M8 3h8"/></svg><span>研究 · 預覽</span>
     </button>
     <button class="nav__item" type="button" disabled>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v13H4zM4 10h16M9 6V4h6v2"/></svg><span>記憶 · 尚未開放</span>
