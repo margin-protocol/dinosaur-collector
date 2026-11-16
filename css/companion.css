@@ -201,7 +201,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .memory-view small { font:11px var(--font-mono); color:var(--rose-metal); }
 .memory-view h2 { margin:4px 0 8px; font:400 19px var(--font-display); }
 .memory-view__note { margin:0; padding:10px 12px; border-left:2px solid #c9a8ff; border-radius:4px; background:#c9a8ff12; font:13px/1.8 var(--font-display); text-align:left; white-space:pre-line; }
-.memory-view__note::before { content:'首席研究員的批註'; display:block; font:10px var(--font-mono); letter-spacing:.14em; color:var(--rose-metal); margin-bottom:2px; }
+.memory-view__note::before { content:attr(data-label); display:block; font:10px var(--font-mono); letter-spacing:.14em; color:var(--rose-metal); margin-bottom:2px; }
 
 #chip-fossil { cursor:pointer; font:inherit; color:inherit; }
 .fossil-dialog { max-height:86vh; overflow:auto; }
@@ -214,3 +214,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .fossil-pick-list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
 .fossil-pick { padding:6px 4px; border:1px solid #4a4155; border-radius:10px; background:#221f2a; color:var(--ivory); font:11px var(--font-display); }
 .fossil-pick img { display:block; width:100%; aspect-ratio:1; object-fit:contain; filter:brightness(0); opacity:.85; }
+
+.postcard-dialog { max-height:86vh; overflow:auto; }
+.postcard-pick { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; min-height:140px; border:1px dashed #8e7d98; border-radius:12px; background:#1d1a24; color:var(--pearl); cursor:pointer; overflow:hidden; }
+.postcard-pick img { width:100%; max-height:260px; object-fit:contain; }
+#postcard-text { width:100%; padding:10px 12px; border:1px solid #65576f; border-radius:8px; background:#16131b; color:var(--ivory); font:14px/1.6 var(--font-body); resize:vertical; }
+.memory--postcard img { background:#1d2a2a; }

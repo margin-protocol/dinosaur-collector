@@ -85,7 +85,7 @@ function renderCloud(message = '') {
   $('cloud-status').textContent = message || (c && !adding ? `目前：${c.name}` : '');
   document.querySelectorAll('[data-player-name]').forEach(el => { el.textContent = c ? c.name : '玩家'; });
 }
-function switched() { void refreshCodes(); void refreshLetters(); void refreshMissions(); $('date-qr').hidden = true; }
+function switched() { void refreshCodes(); void refreshLetters(); void refreshMissions(); void refreshPostcards(); $('date-qr').hidden = true; }
 $('player-select').addEventListener('change', () => { players.active = Number($('player-select').value); adding = false; savePlayers(); renderCloud(); switched(); });
 $('player-add').addEventListener('click', () => { adding = true; renderCloud('輸入新玩家的名字、他的私人資料庫，以及妳那把審核員 token。'); });
 $('player-cancel').addEventListener('click', () => { adding = false; renderCloud(); });
@@ -337,6 +337,52 @@ $('date-form').addEventListener('submit', async (e) => {
   finally { $('date-create').disabled = !privateKey; }
 });
 
+/* ---------- 他寄來的照片 ---------- */
+const postcardUrls = [];
+async function refreshPostcards() {
+  if (!config()) return;
+  postcardUrls.splice(0).forEach((u) => URL.revokeObjectURL(u));
+  try {
+    const c = cloud();
+    const [cards, replies] = await Promise.all([c.list('postcards'), c.list('postcard-replies')]);
+    const replied = new Set(replies.map((f) => f.name));
+    const metas = cards.filter((f) => f.name.endsWith('.json')).sort((a, b) => b.name.localeCompare(a.name)).slice(0, 30);
+    const lis = [];
+    for (const f of metas) {
+      const id = f.name.slice(0, -5);
+      const meta = (await c.getJSON(f.path))?.data || {};
+      const li = document.createElement('li');
+      const b = document.createElement('b'); b.textContent = meta.at ? new Date(meta.at).toLocaleString('zh-TW') : id;
+      const bytes = await c.getBytes(`postcards/${id}.jpg`);
+      const img = document.createElement('img'); img.className = 'review-photo'; img.alt = '他寄來的照片';
+      if (bytes) { const url = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })); postcardUrls.push(url); img.src = url; }
+      li.append(b, img);
+      if (meta.text) { const pre = document.createElement('pre'); pre.textContent = meta.text; li.append(pre); }
+      if (replied.has(`${id}.json`)) {
+        const r = (await c.getJSON(`postcard-replies/${id}.json`))?.data?.payload;
+        const sm = document.createElement('small'); sm.textContent = `妳回覆了：${r?.note || ''}`; li.append(sm);
+      } else {
+        const note = document.createElement('textarea'); note.rows = 2; note.maxLength = 600; note.placeholder = '回他一句話';
+        const row = document.createElement('div'); row.className = 'row';
+        const send = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: '蓋章回覆' });
+        send.addEventListener('click', async () => {
+          if (!privateKey) { $('postcard-status').textContent = '請先在第 2 步準備好印章。'; return; }
+          if (!note.value.trim()) { $('postcard-status').textContent = '先寫一句話吧。'; return; }
+          send.disabled = true;
+          const payload = { v: 1, type: 'postcard-reply', id, note: note.value.trim(), createdAt: new Date().toISOString() };
+          await c.putJSON(`postcard-replies/${id}.json`, await signPayload(privateKey, payload), 'reply postcard');
+          $('postcard-status').textContent = '回覆了！他下次打開遊戲就會看到。';
+          void refreshPostcards();
+        });
+        row.append(send); li.append(note, row);
+      }
+      lis.push(li);
+    }
+    $('postcard-list').replaceChildren(...(lis.length ? lis : [Object.assign(document.createElement('li'), { textContent: '還沒有收到照片。' })]));
+  } catch (err) { $('postcard-status').textContent = `讀取照片失敗：${err.message}`; }
+}
+$('postcard-refresh').addEventListener('click', refreshPostcards);
+
 /* ---------- 啟動 ---------- */
 renderCloud();
 await setKey((await loadJwk()) || null);
@@ -344,3 +390,4 @@ renderKey();
 void refreshCodes();
 void refreshLetters();
 void refreshMissions();
+void refreshPostcards();

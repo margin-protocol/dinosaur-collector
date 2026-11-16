@@ -1644,7 +1644,7 @@ $('mission-input').addEventListener('change', async () => {
 // 記憶檔案
 function openMemories() {
   const list = [...state.memories].sort((a, b) => String(b.at).localeCompare(String(a.at)));
-  $('memories-intro').textContent = list.length ? `一共 ${list.length} 份記憶。` : '完成湘的委託、跟湘約會，回憶就會收在這裡。';
+  $('memories-intro').textContent = list.length ? `一共 ${list.length} 份記憶。` : '完成湘的委託、跟湘約會、寄照片給湘，回憶就會收在這裡。';
   $('memories-grid').replaceChildren(...list.map(m => {
     const el = document.createElement('button'); el.type = 'button'; el.className = `memory memory--${m.kind}`;
     const img = document.createElement('img'); img.alt = ''; if (m.thumb) img.src = m.thumb; else if (m.character) loadWithFallback(img, characterSources(CHARACTERS[m.character]?.image || 'siang-014-date'));
@@ -1657,16 +1657,17 @@ function openMemories() {
 async function openMemory(m) {
   const img = $('memory-view-img');
   img.removeAttribute('src'); if (m.thumb) img.src = m.thumb; else loadWithFallback(img, characterSources(CHARACTERS[m.character]?.image || 'siang-014-date'));
-  $('memory-view-date').textContent = `${m.kind === 'date' ? '約會紀念' : '委託'} · ${new Date(m.at).toLocaleDateString('zh-TW')}`;
-  $('memory-view-title').textContent = m.title;
+  $('memory-view-date').textContent = `${{ date: '約會紀念', postcard: '寄給湘的照片' }[m.kind] || '委託'} · ${new Date(m.at).toLocaleDateString('zh-TW')}`;
+  $('memory-view-title').textContent = m.kind === 'postcard' ? (m.text || '寄給湘的照片') : m.title;
   $('memory-view-note').textContent = m.note || '';
   $('memory-view-note').hidden = !m.note;
+  $('memory-view-note').dataset.label = m.kind === 'postcard' ? '湘的回覆' : '首席研究員的批註';
   $('memory-view').showModal();
   if (m.photo && cloudConfig()) {
     try { const bytes = await createCloud(cloudConfig()).getBytes(m.photo); if (bytes) img.src = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })); } catch {}
   }
 }
-$('open-memories').addEventListener('click', () => { $('function-center').close(); openMemories(); });
+$('open-memories').addEventListener('click', () => { $('function-center').close(); openMemories(); void syncPostcardReplies().then(n => { if (n && $('memories-dialog').open) openMemories(); }).catch(() => {}); });
 $('close-memories').addEventListener('click', () => $('memories-dialog').close());
 $('memories-dialog').addEventListener('close', syncRoomActivity);
 $('close-memory-view').addEventListener('click', () => $('memory-view').close());
@@ -1701,6 +1702,63 @@ async function handleDateHash(url = location.href) {
   if (/date=/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search);
   const code = m[1].toUpperCase();
   try { toast((await redeemDate(code)) || '這個約會碼不對喔。'); } catch (err) { toast(`約會碼讀取失敗：${err.message}`); }
+}
+
+/* ---------- 寄照片給湘（明信片） ---------- */
+// postcards/<id>.jpg、.json：玩家寄出；postcard-replies/<id>.json：湘蓋章的回覆
+let postcardFile = null;
+$('open-postcard').addEventListener('click', () => {
+  $('function-center').close();
+  postcardFile = null; $('postcard-preview').hidden = true; $('postcard-pick-text').hidden = false; $('postcard-text').value = '';
+  $('postcard-status').textContent = cloudConfig() ? '' : '要先到「雲端與備份」連上資料庫，才能寄照片給湘。';
+  $('postcard-dialog').showModal(); syncRoomActivity();
+});
+$('close-postcard').addEventListener('click', () => $('postcard-dialog').close());
+$('postcard-dialog').addEventListener('close', syncRoomActivity);
+$('postcard-input').addEventListener('change', () => {
+  const file = $('postcard-input').files?.[0]; $('postcard-input').value = '';
+  if (!file) return;
+  postcardFile = file;
+  const url = URL.createObjectURL(file); $('postcard-preview').src = url; $('postcard-preview').hidden = false; $('postcard-pick-text').hidden = true;
+});
+$('postcard-form').addEventListener('submit', async event => {
+  event.preventDefault();
+  if (!cloudConfig()) { $('postcard-status').textContent = '要先到「雲端與備份」連上資料庫。'; return; }
+  if (!postcardFile) { $('postcard-status').textContent = '先選一張照片吧。'; return; }
+  $('postcard-send').disabled = true; $('postcard-status').textContent = '寄送中…';
+  try {
+    const [bytes, thumb] = await Promise.all([compressPhoto(postcardFile), thumbnail(postcardFile)]);
+    const id = `${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`;
+    const text = $('postcard-text').value.trim().slice(0, 300);
+    const cloud = createCloud(cloudConfig());
+    await cloud.putBytes(`postcards/${id}.jpg`, bytes, 'send postcard');
+    await cloud.putJSON(`postcards/${id}.json`, { id, text, at: new Date().toISOString() }, 'send postcard');
+    const t = await updateState(current => { current.memories.push({ id: `p-${id}`, kind: 'postcard', title: text ? text.split('\n')[0].slice(0, 30) : '寄給湘的照片', text, note: '', at: new Date().toISOString(), thumb, photo: `postcards/${id}.jpg`, postcard: id }); });
+    state = t.state; renderAll();
+    postcardFile = null; $('postcard-preview').hidden = true; $('postcard-pick-text').hidden = false; $('postcard-text').value = '';
+    $('postcard-status').textContent = '寄出了！湘回覆的話會出現在記憶檔案裡。';
+    say('照片寄出去了！湘一定會很開心♡', 'happy', 3000);
+  } catch (err) { $('postcard-status').textContent = `寄送失敗：${err.message}`; }
+  finally { $('postcard-send').disabled = false; }
+});
+async function syncPostcardReplies() {
+  if (!cloudConfig() || !REVIEWER_PUBLIC_JWK) return 0;
+  const waiting = state.memories.filter(m => m.kind === 'postcard' && !m.note);
+  if (!waiting.length) return 0;
+  const cloud = createCloud(cloudConfig());
+  const files = new Set((await cloud.list('postcard-replies')).map(f => f.name));
+  const replies = [];
+  for (const m of waiting) {
+    if (!files.has(`${m.postcard}.json`)) continue;
+    const file = await cloud.getJSON(`postcard-replies/${m.postcard}.json`); const p = file?.data?.payload;
+    if (p?.type !== 'postcard-reply' || p.id !== m.postcard || typeof p.note !== 'string' || !(await verifySigned(REVIEWER_PUBLIC_JWK, file.data))) continue;
+    replies.push({ id: m.id, note: p.note.slice(0, 600) });
+  }
+  if (!replies.length) return 0;
+  const t = await updateState(current => { for (const r of replies) { const m = current.memories.find(x => x.id === r.id); if (m && !m.note) m.note = r.note; } });
+  state = t.state; renderAll();
+  toast(replies.length > 1 ? `湘回覆了 ${replies.length} 張照片！到記憶檔案看看。` : '湘回覆了你寄的照片！到記憶檔案看看。');
+  return replies.length;
 }
 
 /* ---------- 化石交換所 ---------- */
@@ -1922,7 +1980,7 @@ attachSnackDrag($('snack'), {
 
 renderAll();
 renderExplore();
-void autoBackup().then(() => fetchMail()).then(() => syncMissions()).catch(() => {});
+void autoBackup().then(() => fetchMail()).then(() => syncMissions()).then(() => syncPostcardReplies()).catch(() => {});
 void handleDateHash();
 addEventListener('hashchange', event => { if (/date=/.test(event.newURL)) void handleDateHash(event.newURL); });
 void tickPassive().then(added => { if (added) toast(`你不在的時候，培養架幫蛋保溫了 +${added}`); });
