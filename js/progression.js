@@ -50,6 +50,9 @@ export function hydrateProgression(state) {
   ensureRecipes(state);
   ensureBingo(state);
   ensureMissions(state);
+  // 三選一只給剛換上的普通蛋；蛋已經換了或開始孵，就收起選單
+  if (state.eggOffer && !(Array.isArray(state.eggOffer) && state.egg?.id === 'ordinary' && !state.egg.warmth && !state.egg.flavor)) state.eggOffer = null;
+  if (!state.cradle || !(state.cradle.slots >= 1)) state.cradle = { slots: 1 };
   return state;
 }
 export function completeDaily(state, date, id) {

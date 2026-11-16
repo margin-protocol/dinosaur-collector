@@ -65,3 +65,31 @@ body[data-view="incubate"] { background-image:linear-gradient(180deg,#151722c9,#
 .egg-cat[aria-pressed="true"] { background:#393044; border-color:#b79bc4; }
 .egg-cat:disabled { opacity:.55; }
 .egg-back { align-self:flex-start; min-height:40px; padding:0 4px; border:0; background:none; color:var(--pearl); font:14px var(--font-display); }
+
+.egg-offer { text-align:center; }
+.egg-offer h2 { margin:4px 0; font:400 21px var(--font-display); }
+.egg-offer__list { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin-top:8px; }
+.offer-egg { display:flex; flex-direction:column; align-items:center; gap:3px; padding:8px 4px 10px; border:1px solid #8e7d984d; border-radius:12px; background:#25232f; color:var(--ivory); }
+.offer-egg .egg-choice__art { width:72px; height:88px; }
+.offer-egg .egg-choice__art .egg { width:160px; height:160px; }
+.offer-egg b { font:400 13px var(--font-display); }
+.offer-egg small { font-size:10px; line-height:1.5; color:var(--pearl); }
+.offer-egg.is-shiny { border-color:#ffd27a; box-shadow:0 0 14px #ffd27a55; }
+.offer-egg.is-shiny .egg-choice__art { filter:drop-shadow(0 0 8px #ffe7a6); }
+.offer-egg.is-naughty { border-color:#9fe3d9aa; }
+.offer-egg.is-naughty .egg-choice__art { animation:naughty-wobble 1.4s ease-in-out infinite; }
+@keyframes naughty-wobble { 0%,100% { transform:rotate(0); } 20% { transform:rotate(-6deg); } 40% { transform:rotate(5deg); } 60% { transform:rotate(-3deg); } }
+.stage.is-shiny .incubator { filter:drop-shadow(0 0 18px #ffe7a6aa); }
+.stage.is-shiny .egg { animation:shiny-pulse 2.4s ease-in-out infinite; }
+@keyframes shiny-pulse { 50% { filter:brightness(1.18) saturate(1.2); } }
+.stage.is-naughty .egg { animation:naughty-wobble 2.6s ease-in-out infinite; transform-origin:50% 68%; }
+.egg-request { display:flex; align-items:center; gap:10px; margin:0 0 12px; padding:10px 12px; border:1px solid #9fe3d988; border-radius:12px; background:#1b2a2a; font:13px/1.6 var(--font-display); color:var(--ivory); }
+.egg-request span { flex:1; }
+.egg-request__btn { width:auto !important; min-height:38px; padding:0 14px; display:inline-flex; align-items:center; white-space:nowrap; cursor:pointer; }
+@media (prefers-reduced-motion:reduce) { .stage.is-shiny .egg, .stage.is-naughty .egg, .offer-egg.is-naughty .egg-choice__art { animation:none; } }
+
+/* 放到主畫面 */
+.install-dialog { text-align: center; }
+.install-dialog__icon { width: 72px; height: 72px; border-radius: 18px; margin: 4px auto 10px; display: block; box-shadow: 0 6px 18px rgba(0,0,0,.25); }
+.install-steps { text-align: left; margin: 4px 0 14px; padding-left: 1.4em; line-height: 1.7; }
+.install-steps b { color: var(--accent, #f0b03a); font-weight: 700; }

@@ -9,7 +9,8 @@ import { INTROS } from './intros.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
-import { FOSSIL_OFFERS, pickable, exchange } from './fossils.js';
+import { offersFor, pickable, exchange } from './fossils.js';
+import { FLAVORS, makeOffer, eggLabel, naughtyRequest, NAUGHTY_BONUS } from './egg-traits.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
 import { RECIPES, tickRecipes } from './recipes.js';
 import { ensureBingo, bingoStatus, bingoReady, claimBingo, REWARDS as BINGO_REWARDS } from './bingo.js';
@@ -26,6 +27,7 @@ import { WISH_REWARD, PASS_RATIO, WISH_POOL, wishesFor, todayKey, analyzePhoto }
 import { createMissions } from './missions.js';
 import { createResearch } from './research.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth } from './progression.js';
+import * as install from './install.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -139,7 +141,11 @@ function renderHome() {
   incubator.setProgress(pct / 100);
   incubator.el.classList.toggle('is-ready', ready);
 
-  $('egg-name').textContent = state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
+  $('egg-name').textContent = state.egg.county ? `${egg.name} · ${state.egg.county}` : eggLabel(state.egg, egg.name);
+  const stage = document.querySelector('.stage');
+  stage.classList.toggle('is-shiny', Boolean(state.egg.shiny));
+  stage.classList.toggle('is-naughty', Boolean(state.egg.naughty) && !naughtyDone());
+  renderEggRequest();
   $('cultivate-label').textContent = ready ? '迎接新夥伴' : '注入能量';
   $('cultivate').disabled = busy;
   $('incubator-status').textContent = ['安靜生長中', '感受到小小的動靜', '生命正在甦醒', '快要見面了', '準備好相遇了'][s];
@@ -150,7 +156,11 @@ function renderHome() {
     if (rainingToday(state, todayKey()) && egg.pool[RAIN_BOOST.no]) omens.push('今天下雨了……雨傘小湘好像比較容易出現');
     if (isNight() && egg.pool[NIGHT_BOOST.no]) omens.push('深夜了……好像有誰還醒著（夜貓小湘比較容易出現）');
   }
+  if (FLAVORS[state.egg.flavor]) omens.push(`${FLAVORS[state.egg.flavor].hint}……${FLAVORS[state.egg.flavor].tip}`);
+  if (state.egg.shiny) omens.push('✨ 閃亮的蛋：稀有的小湘更容易出現');
   if (state.egg.warmth < egg.warmthNeeded) omens.push(`培養架自動保溫中：每小時 +${PASSIVE.perHour}（離開最多累積 ${PASSIVE.maxHours} 小時）`);
+  const side = state.shelf.slice(0, Math.max(0, (state.cradle?.slots || 1) - 1));
+  if (side.length) omens.push(`副架保溫中：${side.map(e => `${e.county ? `${EGGS[e.id].name}·${e.county}` : eggLabel(e, EGGS[e.id].name)} ${Math.round(100 * e.warmth / EGGS[e.id].warmthNeeded)}%`).join('、')}`);
   $('incubation-omen').textContent = omens.join('\n');
   $('incubation-omen').hidden = !omens.length;
   $('vitals').setAttribute('aria-valuenow', String(Math.round(pct)));
@@ -406,8 +416,8 @@ function shelfCard(saved, index) {
   const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice egg-choice--shelf'; card.dataset.shelf = String(index); card.disabled = busy || shelfFull(state);
   const pct = Math.min(100, Math.round(100 * saved.warmth / egg.warmthNeeded));
   const content = document.createElement('div');
-  const title = document.createElement('h3'); title.textContent = saved.county ? `${egg.name} · ${saved.county}` : egg.name;
-  const detail = document.createElement('p'); detail.textContent = `暫放中 · 孵化進度 ${pct}%（${saved.warmth} / ${egg.warmthNeeded}）`;
+  const title = document.createElement('h3'); title.textContent = saved.county ? `${egg.name} · ${saved.county}` : eggLabel(saved, egg.name);
+  const detail = document.createElement('p'); detail.textContent = `${index < (state.cradle?.slots || 1) - 1 ? '副架保溫中' : '暫放中'} · 孵化進度 ${pct}%（${saved.warmth} / ${egg.warmthNeeded}）`;
   const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = shelfFull(state) ? '暫放架滿了，先孵完一顆' : '繼續培育這顆';
   content.append(title, detail, label); card.append(eggArt(egg, pct), content); return card;
 }
@@ -668,6 +678,7 @@ function showView(name, options = {}) {
   $('page-title').textContent = TITLES[name] || '';
   document.body.dataset.view = name;
   if (name === 'research') research.update();
+  if (name === 'incubate') setTimeout(showEggOffer, 60);
   window.scrollTo(0, 0);
   syncRoomActivity();
   if (name === 'wish') {
@@ -727,6 +738,7 @@ function celebrateStage(stage) {
 // 點蛋：把能量注入蛋裡；生命訊號滿了就破殼
 async function onEggTap() {
   if (busy) return;
+  if (state.eggOffer) { showEggOffer(); return; }
   busy = true;
   $('cultivate').disabled = true;
   incubator.press();
@@ -793,7 +805,7 @@ async function hatch(expected) {
     const duplicate = Boolean(current.dex[character.no]);
     if (duplicate) current.fossils += DUPLICATE_FOSSILS;
     else current.dex[character.no] = { at: new Date().toISOString(), story: meetingStory(current) };
-    current.hatched += 1; if (isNight()) current.bonus.total.nightHatch += 1; current.egg = current.shelf.shift() || newEgg('ordinary');
+    current.hatched += 1; if (isNight()) current.bonus.total.nightHatch += 1; const resumed = current.shelf.shift(); current.egg = resumed || newEgg('ordinary'); current.eggOffer = resumed ? null : makeOffer();
     return { character, duplicate };
   });
   state = transaction.state; eggView = null; sayOverride = null;
@@ -1128,7 +1140,7 @@ $('reveal-arrange').addEventListener('click', () => {
 $('reveal-ok').addEventListener('click', () => {
   $('reveal').close();
   showView($('reveal').dataset.next);
-  toast(state.egg.warmth > 0 ? '暫放的蛋回到培養架上了，繼續加油！' : '新的蛋已送達培育室。');
+  toast(state.egg.warmth > 0 ? '暫放的蛋回到培養架上了，繼續加油！' : state.eggOffer ? '小恐龍找到三顆新蛋，到培育室挑一顆吧！' : '新的蛋已送達培育室。');
 });
 $('reset-btn').addEventListener('click', () => {
   state = resetState();
@@ -1761,10 +1773,75 @@ async function syncPostcardReplies() {
   return replies.length;
 }
 
+/* ---------- 挑蛋（三選一）、調皮的蛋 ---------- */
+function showEggOffer() {
+  const offer = state.eggOffer;
+  if (!offer || $('egg-offer').open || document.querySelector('dialog[open]')) return;
+  $('egg-offer-list').replaceChildren(...offer.map((o, i) => {
+    const f = FLAVORS[o.flavor];
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = `offer-egg${o.shiny ? ' is-shiny' : ''}${o.naughty ? ' is-naughty' : ''}`; btn.dataset.offer = String(i);
+    const art = document.createElement('div'); art.className = 'egg-choice__art'; const v = createEggView(EGGS.ordinary); v.setProgress(0); art.append(v.el);
+    const b = document.createElement('b'); b.textContent = eggLabel(o, f.name);
+    const sm = document.createElement('small'); sm.textContent = o.shiny ? '閃閃發光！' : o.naughty ? '一直在晃，好像有話想說' : f.hint;
+    btn.append(art, b, sm); return btn;
+  }));
+  $('egg-offer').showModal(); syncRoomActivity();
+}
+$('egg-offer').addEventListener('cancel', event => event.preventDefault());
+$('egg-offer').addEventListener('close', syncRoomActivity);
+$('egg-offer-list').addEventListener('click', async event => {
+  const btn = event.target.closest('[data-offer]'); if (!btn) return;
+  const t = await updateState(current => {
+    const o = current.eggOffer?.[Number(btn.dataset.offer)];
+    if (!o) return null;
+    if (current.egg.id !== 'ordinary' || current.egg.warmth > 0 || current.egg.flavor) { current.eggOffer = null; return null; }
+    Object.assign(current.egg, o, { asks: [] }); current.eggOffer = null;
+    current.bonus.passiveAt = new Date().toISOString();
+    return o;
+  });
+  state = t.state; $('egg-offer').close(); renderAll();
+  if (t.result) toast(t.result.shiny ? '你選了閃亮的蛋！好像會有好事發生✨' : t.result.naughty ? '這顆蛋好調皮……孵化途中它可能會提出要求喔。' : `${FLAVORS[t.result.flavor].name}放上培養架了。`);
+});
+
+function naughtyDone() { const asks = state.egg.asks || []; return asks.includes(1) && asks.includes(2); }
+let eggPets = 0;
+function currentRequest() { return naughtyRequest(state.egg, EGGS[state.egg.id].warmthNeeded, WISH_POOL); }
+function renderEggRequest() {
+  const req = currentRequest();
+  $('egg-request').hidden = !req;
+  if (!req) return;
+  $('egg-request-text').textContent = req.type === 'pet' ? `調皮的蛋想被摸摸！點蛋 5 下（${eggPets} / 5）` : `調皮的蛋想看${req.color.color}的東西！拍給它看`;
+  $('egg-request-photo').hidden = req.type !== 'color';
+}
+async function grantRequest(step) {
+  const t = await updateState(current => {
+    if (!current.egg.naughty || (current.egg.asks || []).includes(step)) return 0;
+    current.egg.asks = [...(current.egg.asks || []), step];
+    const need = EGGS[current.egg.id].warmthNeeded; const add = Math.min(NAUGHTY_BONUS, need - current.egg.warmth);
+    current.egg.warmth += add; return add;
+  });
+  state = t.state; eggPets = 0; renderAll();
+  if (t.result >= 0) { showGain(`+${t.result}`); toast(`調皮的蛋很滿意！溫度 +${t.result}`); }
+}
+incubator.el.addEventListener('click', () => {
+  const req = currentRequest();
+  if (req?.type !== 'pet') return;
+  eggPets += 1; incubator.press(); renderEggRequest();
+  if (eggPets >= 5) void grantRequest(req.step);
+});
+$('egg-request-input').addEventListener('change', async () => {
+  const file = $('egg-request-input').files?.[0]; $('egg-request-input').value = '';
+  const req = currentRequest(); if (!file || req?.type !== 'color') return;
+  let ratio = 0;
+  try { ratio = await analyzePhoto(file, req.color, $('photo-thumb')); } catch { toast('這張照片讀不出來，再試一次。'); return; }
+  if (ratio >= PASS_RATIO) void grantRequest(req.step);
+  else toast(`蛋晃了晃……${req.color.color}好像不夠多（${Math.round(ratio * 100)}%），再找找看。`);
+});
+
 /* ---------- 化石交換所 ---------- */
 function openFossils() {
   $('fossil-have').textContent = `你有 ${state.fossils} 個化石碎片。抽到重複的小湘，每次會得到 ${DUPLICATE_FOSSILS} 個。`;
-  $('fossil-offers').replaceChildren(...FOSSIL_OFFERS.map(o => {
+  $('fossil-offers').replaceChildren(...offersFor(state).map(o => {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fossil-offer'; btn.dataset.offer = o.id;
     btn.disabled = state.fossils < o.cost || (o.id === 'pick' && !pickable(state, EGGS, CHARACTERS).length);
     const text = document.createElement('div'); const b = document.createElement('b'); b.textContent = o.name; const sm = document.createElement('small'); sm.textContent = o.desc; text.append(b, sm);
@@ -1779,7 +1856,7 @@ async function doExchange(offerId, no) {
   state = t.state; renderAll();
   if (!t.result) { $('fossil-status').textContent = '化石不夠喔。'; return; }
   restart($('chip-fossil'), 'is-bump');
-  $('fossil-status').textContent = offerId === 'energy' ? '換到 30 能量了！' : offerId === 'pick' ? `換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
+  $('fossil-status').textContent = offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！暫放架最前面的蛋也會一起保溫。` : offerId === 'energy' ? '換到 30 能量了！' : offerId === 'pick' ? `換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
   openFossils();
 }
 $('chip-fossil').addEventListener('click', openFossils);
@@ -1995,3 +2072,43 @@ if (initialSave.growthEnergyAdded > 0) {
 if (!state.seenIntro) { $('intro').showModal(); syncRoomActivity(); }
 
 setInterval(() => { if (!document.hidden && state.wishes.date !== todayKey()) void updateState(() => {}).then(transaction => { state = transaction.state; renderAll(); }); }, 30000);
+
+// ── 放到主畫面（Android 跳安裝卡；其他瀏覽器顯示手動步驟）
+const INSTALL_STEPS = {
+  ios: ['用 <b>Safari</b> 打開這個網頁', '點下方的<b>分享</b>按鈕（方框加箭頭）', '往下滑，選<b>加入主畫面</b>'],
+  android: ['點右上角的 <b>⋮</b> 選單', '選<b>安裝應用程式</b>或<b>加到主畫面</b>', '按<b>安裝</b>，桌面就會出現小湘收集器'],
+  other: ['打開瀏覽器選單', '找<b>安裝</b>或<b>加到主畫面</b>', '照著提示完成就好'],
+};
+function openInstall(auto = false) {
+  const prompt = install.canPrompt();
+  const steps = $('install-steps');
+  steps.hidden = prompt;
+  steps.innerHTML = prompt ? '' : INSTALL_STEPS[install.platform()].map(t => `<li>${t}</li>`).join('');
+  $('install-go').textContent = prompt ? '放到主畫面' : '知道了';
+  $('install-later').hidden = !auto && !prompt;
+  if (!$('install-dialog').open) $('install-dialog').showModal();
+}
+$('open-install').addEventListener('click', () => {
+  $('function-center').close();
+  if (install.isInstalled()) { toast('小湘收集器已經在主畫面上了！'); return; }
+  openInstall();
+});
+$('install-go').addEventListener('click', async () => {
+  if (!install.canPrompt()) { $('install-dialog').close(); return; }
+  const outcome = await install.promptInstall();
+  $('install-dialog').close();
+  if (outcome === 'dismissed') install.snooze();
+});
+$('install-later').addEventListener('click', () => { install.snooze(); $('install-dialog').close(); });
+$('install-dialog').addEventListener('cancel', () => install.snooze());
+let installTries = 0;
+function maybeOfferInstall() {
+  if (!install.canPrompt() || install.isInstalled() || install.snoozed()) return;
+  if (!state.seenIntro || document.querySelector('dialog[open]')) { if (installTries++ < 24) setTimeout(maybeOfferInstall, 5000); return; }
+  openInstall(true);
+}
+install.onChange(type => {
+  if (type === 'available') setTimeout(maybeOfferInstall, 1500);
+  if (type === 'installed') { if ($('install-dialog').open) $('install-dialog').close(); toast('小湘收集器放到主畫面囉！之後點圖示就能打開～'); }
+});
+if (install.isInstalled()) $('open-install').hidden = true;

@@ -1,3 +1,4 @@
+import { traitPool } from './egg-traits.js';
 // 恐龍蛋與小湘的資料表。新增蛋或角色只要在這裡加一筆，不用改其他程式。
 // 圖片路徑規則見 docs/ASSET_SPEC.md：檔案放對位置就會自動取代佔位圖。
 
@@ -242,8 +243,9 @@ export function rollFor(eggState, boosts = []) {
   const egg = EGGS[eggState.id];
   if (eggState.character && CHARACTERS[eggState.character]) return eggState.character;
   if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
-  if (!egg.pool || !boosts.length) return rollHatch(egg);
-  const pool = { ...egg.pool };
+  const base = traitPool(egg.pool || {}, eggState, CHARACTERS);
+  if (!egg.pool || (!boosts.length && base === egg.pool)) return rollHatch(egg);
+  const pool = { ...base };
   for (const b of boosts) if (pool[b.no]) pool[b.no] *= b.times;
   return rollHatch({ ...egg, pool });
 }

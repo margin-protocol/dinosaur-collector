@@ -35,9 +35,13 @@ export function accruePassive(state, eggs, now = Date.now()) {
   if (!Number.isFinite(since) || since > now) { b.passiveAt = new Date(now).toISOString(); return 0; }
   const hours = Math.floor((now - since) / HOUR);
   if (hours < 1) return 0;
-  const need = eggs[state.egg.id]?.warmthNeeded || 0;
-  const add = Math.max(0, Math.min(Math.min(hours, PASSIVE.maxHours) * PASSIVE.perHour, need - state.egg.warmth));
-  state.egg.warmth += add;
+  const amount = Math.min(hours, PASSIVE.maxHours) * PASSIVE.perHour;
+  const warm = (egg) => { const need = eggs[egg.id]?.warmthNeeded || 0; const add = Math.max(0, Math.min(amount, need - egg.warmth)); egg.warmth += add; return add; };
+  // 還在三選一時，培養架上沒有真正的蛋，不保溫
+  const add = state.eggOffer ? 0 : warm(state.egg);
+  // 副架上的蛋也會保溫（蛋架升級後）
+  const extra = Math.max(0, (state.cradle?.slots || 1) - 1);
+  (state.shelf || []).slice(0, extra).forEach(warm);
   b.passiveAt = new Date(hours > PASSIVE.maxHours ? now : since + hours * HOUR).toISOString();
   return add;
 }
