@@ -94,6 +94,7 @@ export function createIncubator() {
 // 可替換的恐龍蛋：只有這組會呼吸、晃動、發光、破殼
 export function createEggView(egg) {
   const el = div('egg');
+  el.dataset.egg = egg.art || egg.id;
   const layers = {};
   for (const name of EGG_LAYERS) {
     layers[name] = layerImg(`egg__layer egg__layer--${name}`, eggLayerSources(egg.art || egg.id, name));

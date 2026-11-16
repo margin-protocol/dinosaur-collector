@@ -38,7 +38,11 @@ body[data-view="incubate"] .app { height: 100vh; height: 100svh; overflow: hidde
 .incubator.is-ready .incubator__halo { animation-duration: 1.4s; opacity: 1; }
 @keyframes halo { 0%, 100% { transform: scale(0.92); } 50% { transform: scale(1.06); } }
 
-.egg { position: absolute; inset: 0; transform: translate(var(--egg-x, 1.5%), var(--egg-y, -3%)); }
+.egg { position: absolute; inset: 0; transform: translate(var(--egg-x, 1.5%), var(--egg-y, 0.8%)); }
+/* 蛋穩穩坐進培養架：往下放一點，底部加接觸陰影與托盤反光 */
+.egg[data-egg="weather"], .egg[data-egg="keepsake"] { --egg-y: 3.6%; }
+.egg::before { content: ''; position: absolute; left: 39%; right: 39%; top: 66.5%; height: 4.5%; border-radius: 50%; background: radial-gradient(closest-side, #000c, #0006 55%, transparent); filter: blur(1px); }
+.egg::after { content: ''; position: absolute; left: 34%; right: 34%; top: 66%; height: 6%; border-radius: 50%; background: radial-gradient(closest-side, var(--egg-glow, #ffd9c4)66, transparent); opacity: var(--glow, .12); mix-blend-mode: screen; }
 .egg__layer { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 .egg__wobble, .egg__body { position: absolute; inset: 0; transform-origin: 50% 68.5%; }
 .egg__body { animation: egg-breathe 3.6s ease-in-out infinite; }
@@ -128,16 +132,17 @@ body[data-view="incubate"] .app { height: 100vh; height: 100svh; overflow: hidde
 
 /* 階段完成的短暫提示 */
 .banner {
-  position: absolute; z-index: 6; left: 50%; top: 6%; transform: translateX(-50%); pointer-events: none; opacity: 0;
-  display: flex; flex-direction: column; align-items: center; gap: 2px; white-space: nowrap;
-  padding: 8px 22px 9px; border-radius: 99px; border: 1px solid var(--rose-light);
-  background: linear-gradient(180deg, rgba(143, 39, 64, 0.95), rgba(77, 15, 31, 0.95));
-  box-shadow: 0 0 26px rgba(194, 31, 60, 0.7);
+  position: absolute; z-index: 6; left: 50%; top: 4%; transform: translateX(-50%); pointer-events: none; opacity: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px; white-space: nowrap; padding: 6px 0;
 }
-.banner__en { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.3em; color: var(--rose-light); }
-.banner__zh { font-family: var(--font-display); font-weight: 700; font-size: 16px; letter-spacing: 0.2em; color: #fff; }
-.banner.is-on { animation: banner 1.7s ease both; }
-@keyframes banner { 0% { opacity: 0; transform: translateX(-50%) scale(0.7); } 14% { opacity: 1; transform: translateX(-50%) scale(1.06); } 22% { transform: translateX(-50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-10px); } }
+.banner::before, .banner::after { content: ''; position: absolute; top: 50%; width: 46px; height: 1px; background: linear-gradient(90deg, transparent, #e7d4f2cc); }
+.banner::before { right: calc(100% + 10px); }
+.banner::after { left: calc(100% + 10px); transform: scaleX(-1); }
+.banner__en { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.34em; color: #cdb8dc; }
+.banner__zh { font-family: var(--font-display); font-weight: 400; font-size: 17px; letter-spacing: 0.24em; color: #fbf3ff; text-shadow: 0 0 12px #c9a8ffcc, 0 0 2px #fff; }
+.banner__zh::before, .banner__zh::after { content: '✦'; margin: 0 8px; font-size: 9px; color: #e7cdf2; vertical-align: middle; }
+.banner.is-on { animation: banner 2.2s ease both; }
+@keyframes banner { 0% { opacity: 0; transform: translateX(-50%) translateY(6px); filter: blur(3px); } 18% { opacity: 1; transform: translateX(-50%) translateY(0); filter: blur(0); } 78% { opacity: 1; } 100% { opacity: 0; transform: translateX(-50%) translateY(-6px); } }
 
 /* 右側浮動按鈕 */
 .side { position: absolute; z-index: 5; right: 0; top: 2px; display: flex; flex-direction: column; gap: 10px; }
