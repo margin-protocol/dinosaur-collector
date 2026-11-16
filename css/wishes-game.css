@@ -87,3 +87,11 @@ body[data-view="wish"] .game-footer { min-height:70px; padding-top:8px; padding-
 @media(max-height:700px) { .wish-character-scene { height:200px; } }
 
 .growth-claim .growth-claim__energy { display:block; margin:3px 0 0; color:inherit; font:inherit; letter-spacing:.04em; }
+
+.snap-card { display:flex; align-items:center; gap:12px; margin:14px 0 6px; padding:12px 14px; border:1px solid #ad96b13d; border-radius:14px; background:#1d1a24; }
+.snap-card > div { flex:1; min-width:0; }
+.snap-card b { font:400 15px var(--font-display); letter-spacing:.08em; margin-right:8px; }
+.snap-card span { font:11px var(--font-mono); color:var(--rose-metal); }
+.snap-card p { margin:2px 0 0; font-size:11px; color:var(--pearl); }
+.snap-btn { width:auto !important; min-height:44px; padding:0 16px; display:inline-flex; align-items:center; white-space:nowrap; cursor:pointer; }
+.snap-btn.is-done { opacity:.5; pointer-events:none; }

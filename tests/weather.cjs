@@ -6,7 +6,7 @@ const ctx=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasT
 await ctx.route('https://api.open-meteo.com/**',route=>fail?route.abort():route.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({current:{weather_code:weather.code,precipitation:weather.precip}})}));
 const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.clock.install({time:new Date('2026-11-16T14:00:00+08:00')});
-await p.goto('http://127.0.0.1:8000');await p.locator('#intro-ok').click();
+await p.goto('http://127.0.0.1:8000');await p.locator('#intro-ok').click();await p.evaluate(()=>localStorage.setItem('siang-collector:explore-intro:v1','1'));
 const save=()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
 // boosts unit check
 const stats=await p.evaluate(async()=>{const {rollFor}=await import('/js/eggs.js');const c={plain:0,night:0};for(let i=0;i<20000;i++){if(rollFor({id:'ordinary'})==='004')c.plain++;if(rollFor({id:'ordinary'},[{no:'004',times:4}])==='004')c.night++;}return c;});

@@ -11,8 +11,15 @@ body[data-view="home"] .app { height:auto; min-height:max(760px,100svh); overflo
 .residents-entry svg,.room-letter svg { width:23px; height:23px; stroke:currentColor; stroke-width:1.3; stroke-linecap:round; stroke-linejoin:round; }
 .room-letter { top:68px; right:0; font-size:11px; }
 .room-letter svg { width:20px; height:20px; }
-.room-explore { top:114px; }
-.room-explore:disabled { opacity:.6; }
+.room-gift { top:114px; color:#ffd9a8; animation:gift-glow 2.4s ease-in-out infinite; }
+@keyframes gift-glow { 50% { filter:drop-shadow(0 0 6px #ffcf8a); } }
+.explore-pill { position:absolute; z-index:6; left:0; top:8px; display:flex; align-items:center; gap:8px; min-height:46px; padding:6px 14px 6px 10px; border:1px solid #c9a8ff66; border-radius:999px; background:#2a2236cc; color:var(--ivory); text-align:left; box-shadow:0 0 14px #b48cff33; }
+.explore-pill svg { width:22px; height:22px; stroke:#d9c2ff; stroke-width:1.4; flex:none; }
+.explore-pill b { display:block; font:400 14px var(--font-display); letter-spacing:.08em; }
+.explore-pill small { display:block; font:10px var(--font-body); color:var(--pearl); letter-spacing:.04em; }
+.explore-pill.is-fresh { animation:gift-glow 2.4s ease-in-out infinite; }
+.explore-pill:disabled { opacity:.6; }
+@media (prefers-reduced-motion:reduce) { .room-gift, .explore-pill.is-fresh { animation:none; } }
 .residents-dialog.county-call { text-align:center; }
 .county-call__eyebrow { display:block; font:9px var(--font-body); letter-spacing:.22em; color:var(--pearl); }
 .county-call__img { display:block; width:150px; height:150px; margin:10px auto 2px; object-fit:contain; }

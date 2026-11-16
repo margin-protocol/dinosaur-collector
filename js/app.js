@@ -2,6 +2,7 @@ import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, COUNTY
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
+import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet } from './energy.js';
 import { checkIn } from './travel.js';
 import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
 import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
@@ -38,6 +39,7 @@ let state = initialSave.state;
 if (!state.egg) state.egg = newEgg('ordinary'); // 培育槽不留空：孵完就送來下一顆
 let eggView = null;
 let displayedEggId = null;
+let exploring = false;
 let busy = false;
 let toastTimer = 0;
 let sayTimer = 0;
@@ -63,7 +65,13 @@ let photoBusy = false;
 let activePhotoId = null;
 
 // 小湘：孵出來以後才出現，在地板上自己走動
-const room = createRoom($('resident-lanes'), character => say(character.line, 'happy', 4000));
+const room = createRoom($('resident-lanes'), character => {
+  say(character.line, 'happy', 4000);
+  void updateState(current => greet(current, character.no, todayKey())).then(t => {
+    state = t.state;
+    if (t.result) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`${character.name}很開心！+${t.result} 能量（每位每天一次）`); }
+  });
+});
 const research = createResearch({ root: $('research-root'), getState: loadState, onCollect: () => showView('incubate') });
 
 function syncRoomActivity() {
@@ -115,6 +123,7 @@ function renderHome() {
     if (rainingToday(state, todayKey()) && egg.pool[RAIN_BOOST.no]) omens.push('今天下雨了……雨傘小湘好像比較容易出現');
     if (isNight() && egg.pool[NIGHT_BOOST.no]) omens.push('深夜了……好像有誰還醒著（夜貓小湘比較容易出現）');
   }
+  if (state.egg.warmth < egg.warmthNeeded) omens.push(`培養架自動保溫中：每小時 +${PASSIVE.perHour}（離開最多累積 ${PASSIVE.maxHours} 小時）`);
   $('incubation-omen').textContent = omens.join('\n');
   $('incubation-omen').hidden = !omens.length;
   $('vitals').setAttribute('aria-valuenow', String(Math.round(pct)));
@@ -152,9 +161,16 @@ function renderHome() {
   let text;
   let mood = 'idle';
   let mode = 'tap';
+  const firstHatched = state.hatched > 0 || Boolean(state.dex['001']);
   if (ready) {
     text = '準備好見面了！一起去培育室吧。';
     mood = 'cheer';
+  } else if (state.seenIntro && giftReady(state, todayKey())) {
+    text = `我幫你準備了今天的見面禮！點我領 ${DAILY_GIFT} 能量。`;
+    mood = 'happy'; mode = 'gift';
+  } else if (firstHatched && state.bonus.explored !== todayKey() && !state.energy) {
+    text = '這附近好像有小湘的訊號……要不要去探索看看？';
+    mode = 'explore';
   } else if (state.energy > 0) {
     text = '有能量了，一起去培育新夥伴吧。';
   } else if (open.length) {
@@ -171,7 +187,12 @@ function renderHome() {
     mood = sayOverride.mood;
   }
   guide.dataset.mood = mood;
-  $('bubble-cta').hidden = mode !== 'wish';
+  $('bubble-cta').hidden = !['wish', 'gift', 'explore'].includes(mode);
+  $('bubble-cta').textContent = mode === 'gift' ? '領取見面禮 ›' : mode === 'explore' ? '探索附近 ›' : '看今日願望 ›';
+  $('daily-gift').hidden = !(state.seenIntro && giftReady(state, todayKey()));
+  const exploredToday = state.bonus.explored === todayKey();
+  $('explore').classList.toggle('is-fresh', firstHatched && !exploredToday);
+  if (!exploring) $('explore-sub').textContent = exploredToday ? '今天探索過了，換個地方再試試' : '看看這裡有沒有小湘的訊號';
   if ($('bubble-text').textContent !== text) {
     $('bubble-text').textContent = text;
     openBubble();
@@ -197,6 +218,8 @@ function guideAction() {
   const mode = $('guide').dataset.mode;
   if (mode === 'wish') showView('wish');
   else if (mode === 'tap') showView('incubate');
+  else if (mode === 'gift') void collectGift();
+  else if (mode === 'explore') startExplore();
 }
 
 // 小恐龍暫時換一句話和表情，幾秒後恢復
@@ -502,6 +525,7 @@ function renderResidents() {
 }
 
 function renderAll() {
+  if (document.getElementById('snap-count')) renderSnap();
   if (document.getElementById('explore')) $('explore').hidden = !(state.hatched > 0 || Boolean(state.dex['001']));
   renderResources();
   renderHome();
@@ -957,7 +981,6 @@ $('reset-btn').addEventListener('click', () => {
 });
 
 /* ---------- 探索：定位所在縣市，讓那裡的小湘出現 ---------- */
-let exploring = false;
 const firstHatchedNow = () => state.hatched > 0 || Boolean(state.dex['001']);
 
 function renderExplore() {
@@ -1005,7 +1028,7 @@ async function explore({ silent = false } = {}) {
   if (exploring || !firstHatchedNow()) return;
   exploring = true;
   $('explore').disabled = true;
-  $('explore-label').textContent = '感應中…';
+  $('explore-label').textContent = '感應中…'; $('explore-sub').textContent = '正在確認你在哪裡';
   try {
     let pos;
     try { pos = await currentPosition(); }
@@ -1013,6 +1036,7 @@ async function explore({ silent = false } = {}) {
     let counties;
     try { counties = await loadCounties(); } catch { if (!silent) showCountyCall({ error: 'failed' }); return; }
     const county = spotAt(pos.lon, pos.lat) || countyAt(counties, pos.lon, pos.lat);
+    state = (await updateState(current => { current.bonus.explored = todayKey(); })).state;
     const weather = await checkWeather(pos);
     if (!county) { if (!silent) showCountyCall({ county: null, weather }); else announceWeather(weather); return; }
     const transaction = await updateState(current => checkIn(current, county, todayKey()));
@@ -1020,14 +1044,55 @@ async function explore({ silent = false } = {}) {
     if (!silent || transaction.result.egg) showCountyCall({ county, result: transaction.result, weather });
     else announceWeather(weather);
   } finally {
-    exploring = false; $('explore').disabled = false; $('explore-label').textContent = '探索';
+    exploring = false; $('explore').disabled = false; $('explore-label').textContent = '探索附近'; renderHome();
   }
 }
 
-$('explore').addEventListener('click', () => explore());
+const EXPLORE_INTRO_KEY = 'siang-collector:explore-intro:v1';
+function startExplore() {
+  let seen = false; try { seen = Boolean(localStorage.getItem(EXPLORE_INTRO_KEY)); } catch {}
+  if (seen) { void explore(); return; }
+  $('explore-intro').showModal(); syncRoomActivity();
+}
+$('explore').addEventListener('click', startExplore);
+$('explore-intro-ok').addEventListener('click', () => { try { localStorage.setItem(EXPLORE_INTRO_KEY, '1'); } catch {} $('explore-intro').close(); void explore(); });
+$('explore-intro-later').addEventListener('click', () => $('explore-intro').close());
+$('explore-intro').addEventListener('close', syncRoomActivity);
 $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
+
+/* ---------- 額外能量：見面禮、隨手收藏、自動保溫 ---------- */
+async function collectGift() {
+  const t = await updateState(current => claimGift(current, todayKey()));
+  state = t.state; renderAll();
+  if (t.result) { restart($('chip-energy'), 'is-bump'); say(`見面禮送到了！+${t.result} 能量`, 'happy', 2600); toast(`每日見面禮 +${t.result} 能量`); }
+}
+$('daily-gift').addEventListener('click', collectGift);
+
+function renderSnap() {
+  const n = snapsToday(state, todayKey());
+  $('snap-count').textContent = `今天 ${n} / ${SNAP.perDay}`;
+  $('snap-label').classList.toggle('is-done', n >= SNAP.perDay);
+  $('snap-label').firstChild.textContent = n >= SNAP.perDay ? '明天再拍' : '拍一張';
+}
+$('snap-input').addEventListener('change', async () => {
+  const file = $('snap-input').files?.[0];
+  $('snap-input').value = '';
+  if (!file) return;
+  try { const bmp = await createImageBitmap(file); bmp.close?.(); } catch { toast('這張照片讀不出來，再拍一次試試。'); return; }
+  const t = await updateState(current => takeSnap(current, todayKey()));
+  state = t.state; renderAll();
+  if (t.result) { restart($('chip-energy'), 'is-bump'); toast(`收藏起來了！+${t.result} 能量`); }
+  else toast('今天的隨手收藏已經滿了，明天再拍吧。');
+});
+
+async function tickPassive() {
+  const t = await updateState(current => accruePassive(current, EGGS));
+  state = t.state;
+  if (t.result) { renderAll(); if (document.body.dataset.view === 'incubate') showGain(`+${t.result}`); }
+  return t.result;
+}
 
 /* ---------- 雲端：備份、還原與暗號 ---------- */
 const BACKUP_KEYS = ['siang-collector:v1', ROOM_KEY, PRESENTER_KEY, 'siang-collector:dex-mode:v1'];
@@ -1150,6 +1215,8 @@ $('code-form').addEventListener('submit', async (event) => {
 renderAll();
 renderExplore();
 void autoBackup();
+void tickPassive().then(added => { if (added) toast(`你不在的時候，培養架幫蛋保溫了 +${added}`); });
+setInterval(() => { if (!document.hidden) void tickPassive(); }, 60 * 1000);
 // 已經允許過定位的話，打開遊戲時自動感應；只有第一次來到的縣市才會跳出來
 void geoPermission().then(p => { if (p === 'granted') setTimeout(() => explore({ silent: true }), 1200); });
 showView(VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home', { replace: true });

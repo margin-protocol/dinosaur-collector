@@ -16,7 +16,7 @@ export const EGGS = {
     id: 'ordinary',
     name: '普通蛋',
     code: 'STD',
-    warmthNeeded: 200,
+    warmthNeeded: 150,
     hatches: null, // 從 pool 依權重隨機孵出
     // 前期池：N 每隻 14、R 每隻 8、SR 每隻 2，合計 100。
     // No.010 星塵、No.013 琥珀是比較難抽的 SR；No.011、012、014、015 保留特殊取得，不進一般池。
