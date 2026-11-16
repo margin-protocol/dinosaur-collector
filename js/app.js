@@ -90,6 +90,7 @@ function homeAmbience() {
 const PET_LINES = ['好舒服～', '再摸一下嘛！', '嘿嘿，好害羞……', '最喜歡被你摸頭了！', '呼嚕呼嚕～'];
 const room = createRoom($('resident-lanes'), character => {
   say(character.line, 'happy', 4000);
+  room.peek(character.no, no => openDexDetail(no));
   void updateState(current => greet(current, character.no, todayKey())).then(t => {
     state = t.state;
     if (t.result) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`${character.name}很開心！+${t.result} 能量（每位每天一次）`); }

@@ -109,6 +109,19 @@ export function createRoom(host, onGreet, onPet = () => {}) {
     l.lane.append(b);
     setTimeout(() => b.remove(), ms);
   }
+  // 打招呼後在小湘旁邊冒出「看圖鑑」小按鈕，幾秒後消失
+  function peek(no, onOpen, ms = 4000) {
+    const l = laneOf(no); if (!l) return;
+    host.querySelector('.resident-dex')?.remove();
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'resident-dex'; b.dataset.character = no;
+    b.textContent = '看圖鑑 ›'; b.setAttribute('aria-label', `打開${CHARACTERS[no].name}的圖鑑`);
+    const anchor = l.portrait.getBoundingClientRect(); const box = host.getBoundingClientRect();
+    b.style.left = `${Math.min(box.width - 44, anchor.left - box.left + anchor.width * 0.78)}px`;
+    b.style.top = `${anchor.top - box.top + anchor.height * 0.42}px`;
+    b.addEventListener('click', (e) => { e.stopPropagation(); b.remove(); onOpen(no); });
+    host.append(b);
+    clearTimeout(b.timer); setTimeout(() => b.remove(), ms);
+  }
   function happy(no) {
     const l = laneOf(no); if (!l) return;
     if (l.doll) { l.portrait.classList.remove('is-happy'); void l.portrait.offsetWidth; l.portrait.classList.add('is-happy'); }
@@ -169,6 +182,6 @@ export function createRoom(host, onGreet, onPet = () => {}) {
     cheer() { actors.forEach(actor => actor.cheer?.()); },
     residents: () => lanes.map(l => l.no),
     isActive: () => active,
-    hearts, bubble, happy,
+    hearts, bubble, happy, peek,
   };
 }
