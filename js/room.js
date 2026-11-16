@@ -1,6 +1,5 @@
 // Home display preferences are separate from the unchanged game save.
 import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
-import { createSiangActor } from './actors.js';
 
 export const ROOM_KEY = 'siang-collector:residents:v1';
 export const ROOM_LIMIT = 3;
@@ -131,12 +130,7 @@ export function createRoom(host, onGreet, onPet = () => {}) {
         lane.className = `resident-slot resident-slot--${index}`;
         lane.dataset.character = no;
         let portrait; let doll = null;
-        if (no === '001') {
-          const actor = createSiangActor(lane, { initialX: .5, bounds: [.43, .57], inspectAt: .46 });
-          actor.show(true);
-          actors.push(actor);
-          portrait = actor.el;
-        } else {
+        {
           portrait = document.createElement('button');
           portrait.type = 'button';
           portrait.className = 'resident-static';

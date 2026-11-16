@@ -84,7 +84,7 @@ export function attachSnackDrag(button, { canDrag, onDrop, onTap }) {
     if (!dragging && Math.hypot(e.clientX - start.x, e.clientY - start.y) > 8) {
       if (!canDrag()) { start = null; return; }
       dragging = true;
-      ghost = document.createElement('div'); ghost.className = 'snack-ghost'; ghost.textContent = button.dataset.snack || '🍓';
+      ghost = document.createElement('div'); ghost.className = 'snack-ghost'; ghost.textContent = button.dataset.snack || '🍮';
       document.body.append(ghost);
     }
     if (ghost) { ghost.style.left = `${e.clientX}px`; ghost.style.top = `${e.clientY}px`; }

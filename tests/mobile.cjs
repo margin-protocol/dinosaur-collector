@@ -48,7 +48,7 @@ const assert=require('node:assert/strict');
  await page.evaluate(()=>{const key='siang-collector:v1';const s=JSON.parse(localStorage.getItem(key));s.egg.warmth=100;localStorage.setItem(key,JSON.stringify(s));});
  await page.reload();await page.locator('#enter-incubator').click();await page.locator('#cultivate').click();await page.locator('#reveal-ok').waitFor();
  assert.equal(await page.locator('#reveal-name').textContent(),'原味小湘');await page.locator('#reveal-ok').click();
- assert.equal(await page.locator('body').getAttribute('data-view'),'home');assert(await page.locator('.actor').isVisible());
+ assert.equal(await page.locator('body').getAttribute('data-view'),'home');assert(await page.locator('.resident-static').isVisible());
  await page.waitForFunction(()=>Array.from(document.images).every(i=>i.complete));
  await page.screenshot({path:`docs/review/${engine}-hatched-${width}.png`,fullPage:true});
  await page.locator('#home-wishes').click();

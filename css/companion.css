@@ -118,9 +118,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .dino-task__btn { min-height:36px; padding:0 12px; display:inline-flex; align-items:center; border-radius:10px; background:#e9e2ee; color:#2a2333; font:13px var(--font-display); white-space:nowrap; cursor:pointer; }
 .dino-task__skip { width:28px; height:28px; border:0; background:none; color:var(--silver); font-size:18px; }
 
-.room-snack { top:160px; touch-action:none; }
-.room-gift:not([hidden]) ~ .room-snack { top:206px; }
-.snack-icon { font-size:18px; line-height:1; }
+.room-snack { top:112px; right:6px; width:46px; height:46px; min-height:46px; justify-content:center; gap:0; padding:0; border-radius:50%; background:#2a2236cc; border:1px solid #c9a8ff55; touch-action:none; }
+.room-snack small { position:absolute; top:-2px; right:-2px; }
+.snack-icon { font-size:24px; line-height:1; }
 .room-snack small { min-width:16px; height:16px; padding:0 4px; border-radius:999px; background:#ffffff22; font:10px/16px var(--font-body); text-align:center; }
 .snack-ghost { position:fixed; z-index:60; font-size:34px; transform:translate(-50%,-60%); pointer-events:none; filter:drop-shadow(0 4px 8px #0008); }
 .ambience { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
@@ -154,3 +154,4 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .ach__num { font:10px var(--font-mono) !important; color:var(--silver) !important; }
 .ach__claim { min-height:36px; padding:0 12px; border:0; border-radius:10px; background:#e9e2ee; color:#2a2333; font:13px var(--font-display); white-space:nowrap; }
 .ach__reward { font:11px var(--font-mono); color:var(--rose-metal); white-space:nowrap; }
+.room-gift:not([hidden]) ~ .room-snack { top:160px; }

@@ -1591,13 +1591,13 @@ $('code-form').addEventListener('submit', async (event) => {
 startChats(room, () => homeAmbience());
 attachSnackDrag($('snack'), {
   canDrag: () => snacksLeft(state, todayKey()) > 0 && room.residents().length > 0,
-  onTap: () => toast(snacksLeft(state, todayKey()) > 0 ? '按住點心，拖到小湘身上餵她吃吧！' : '今天的點心吃完了，明天再來～'),
+  onTap: () => toast(snacksLeft(state, todayKey()) > 0 ? '按住布丁，拖到小湘身上餵她吃吧！' : '今天的布丁吃完了，明天再來～'),
   onDrop: async (no) => {
-    if (!no) { toast('要把點心放到小湘身上喔。'); return; }
+    if (!no) { toast('要把布丁放到小湘身上喔。'); return; }
     const t = await updateState(current => feedSnack(current, todayKey()));
     state = t.state; renderAll();
-    if (!t.result) { toast('今天的點心吃完了，明天再來～'); return; }
-    room.happy(no); room.hearts(no, 6); room.bubble(no, ['好好吃！謝謝你～', '是我最喜歡的口味！', '再一口……就一口！'][Math.floor(Math.random() * 3)]);
+    if (!t.result) { toast('今天的布丁吃完了，明天再來～'); return; }
+    room.happy(no); room.hearts(no, 6); room.bubble(no, ['布丁好好吃！謝謝你～', '是我最喜歡的焦糖口味！', '再一口……就一口！'][Math.floor(Math.random() * 3)]);
     restart($('chip-energy'), 'is-bump'); toast(`${CHARACTERS[no].name}吃得好開心！+${t.result} 能量`);
   },
 });
