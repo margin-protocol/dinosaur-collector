@@ -1,6 +1,7 @@
 import { EGGS, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollHatch, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
+import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 import { createMissions } from './missions.js';
@@ -224,7 +225,7 @@ function renderWishes(effects = {}) {
   $('book-progress').textContent = `今日 ${done} / 3`;
   const feedback = photoBusy ? { scanning: activePhotoId, ...effects } : effects;
   wishBook.update(wishes, WISH_REWARD, feedback, { date: state.wishes.date });
-  $('book-log-text').textContent = done === 3 ? '今天的願望都實現了，謝謝你陪我。' : done ? `已實現 ${done} 個願望，今天獲得 ${done * WISH_REWARD} 能量。` : '';
+  $('book-log-text').textContent = done === 3 ? `今天的願望都實現了，謝謝你陪我。願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}${state.wishEgg?.stock ? ` · 持有願望蛋 ${state.wishEgg.stock} 顆` : ''}` : done ? `已實現 ${done} 個願望，今天獲得 ${done * WISH_REWARD} 能量。` : '';
   renderPlayer();
   renderGrowth();
 }
@@ -269,12 +270,14 @@ function canChooseEgg(current, id) {
   if (current.egg.id === id) return true;
   if (current.egg.warmth > 0) return false;
   const firstHatched = current.hatched > 0 || Boolean(current.dex['001']);
-  return id === 'origin' ? !firstHatched : firstHatched;
+  if (id === 'origin') return !firstHatched;
+  if (EGGS[id]?.stocked) return firstHatched && (current.wishEgg?.stock || 0) > 0;
+  return firstHatched;
 }
 
 function renderEggChoices() {
   const firstHatched = state.hatched > 0 || Boolean(state.dex['001']);
-  $('egg-picker-note').textContent = state.egg.warmth > 0 ? '這顆蛋已經收到你的溫暖，孵化完成後再選下一顆。' : '本源蛋是首次相遇的禮物；完成第一次孵化後，普通蛋會接著開啟收藏旅程。';
+  $('egg-picker-note').textContent = state.egg.warmth > 0 ? '這顆蛋已經收到你的溫暖，孵化完成後再選下一顆。' : '本源蛋是首次相遇的禮物；完成第一次孵化後，普通蛋會接著開啟收藏旅程。集滿願望印記換到的願望蛋，也可以在這裡拿出來培育。';
   $('egg-choices').replaceChildren(...Object.values(EGGS).map(egg => {
     const current = state.egg.id === egg.id;
     const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = egg.id; card.setAttribute('aria-pressed', String(current)); card.disabled = busy || !canChooseEgg(state, egg.id);
@@ -282,10 +285,17 @@ function renderEggChoices() {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘，可能重複`;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
-    const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : egg.id === 'ordinary' && !firstHatched ? '首次孵化後解鎖' : state.egg.warmth > 0 ? '完成目前培育後可選' : '選擇這顆蛋';
-    content.append(title, detail, cost, label); card.append(art, content); return card;
+    const stock = state.wishEgg?.stock || 0;
+    const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : state.egg.warmth > 0 ? '完成目前培育後可選' : '選擇這顆蛋';
+    content.append(title, detail, cost);
+    if (egg.stocked) {
+      const own = document.createElement('p'); own.className = 'egg-choice__stock';
+      own.textContent = `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`;
+      content.append(own);
+    }
+    content.append(label); card.append(art, content); return card;
   }));
 }
 
@@ -709,6 +719,11 @@ async function processPhoto(wish, file, photoDate) {
   renderResources();
   restart($('chip-energy'), 'is-bump');
   if (state.wishes.done.length >= todaysWishes().length) buzz([30, 60, 30, 60, 90]);
+  const stamp = transaction.result.stamp;
+  if (stamp) {
+    await sleep(900);
+    toast(stamp.egg ? '集滿願望印記！獲得一顆願望蛋，到「選擇蛋」把它拿出來吧。' : `獲得願望印記 ${stamp.stamps} / ${WISH_STAMPS_PER_EGG}，集滿就能換一顆願望蛋。`);
+  }
 }
 
 /* ---------- 願望操作 ---------- */
@@ -766,7 +781,12 @@ $('egg-choices').addEventListener('click', async event => {
     const { state: latest, result } = await updateState(current => {
       const id = choice.dataset.egg;
       if (!EGGS[id] || !canChooseEgg(current, id)) return false;
-      if (current.egg.id !== id) current.egg = newEgg(id);
+      if (current.egg.id !== id) {
+        // 從蛋庫拿出來的蛋還沒注入能量就換掉，放回蛋庫
+        if (EGGS[current.egg.id]?.stocked) current.wishEgg.stock += 1;
+        if (EGGS[id].stocked) current.wishEgg.stock -= 1;
+        current.egg = newEgg(id);
+      }
       return true;
     });
     state = latest;

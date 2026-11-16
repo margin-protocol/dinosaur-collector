@@ -1,4 +1,5 @@
-import { todayKey, wishesFor, WISH_REWARD, WISH_POOL } from './wishes.js';
+import { todayKey, wishesFor, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';
+import { ensureWishEgg, stampDay } from './wish-egg.js';
 export const DAILY_XP = 10;
 export const GROWTH_XP = 20;
 export const GROWTH_ENERGY = 20;
@@ -26,6 +27,7 @@ export function hydrateProgression(state) {
     state.player = { ...old, xp: count(old.xp), claimed: unique(old.claimed), energyClaimed: unique(old.energyClaimed), stats: { wishes: count(old.stats?.wishes), fed: count(old.stats?.fed), colors: unique(old.stats?.colors).filter(id => WISH_POOL.some(w => w.id === id)), days: unique(old.stats?.days) } };
   }
   ensureDaily(state);
+  ensureWishEgg(state);
   return state;
 }
 export function completeDaily(state, date, id) {
@@ -38,7 +40,8 @@ export function completeDaily(state, date, id) {
   state.player.stats.wishes += 1;
   state.player.stats.colors = unique([...state.player.stats.colors, id]);
   state.player.stats.days = unique([...state.player.stats.days, date]);
-  return { awarded: true, levelBefore };
+  const stamp = state.wishes.done.length >= WISHES_PER_DAY ? stampDay(state, date) : null;
+  return { awarded: true, levelBefore, stamp };
 }
 const goal = (title, hint, metric, target, destination) => ({ title, hint, metric, target, destination });
 export function growthGoals(level) {

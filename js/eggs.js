@@ -29,6 +29,23 @@ export const EGGS = {
     art: 'origin',
     tint: 'hue-rotate(150deg) saturate(0.75)',
   },
+  wish: {
+    id: 'wish',
+    name: '願望蛋',
+    code: 'WISH',
+    warmthNeeded: 150,
+    hatches: null,
+    stocked: true, // 要從蛋庫取出（集滿願望印記獲得），不是隨時可選
+    // 比普通蛋更容易遇到 R 與 SR：N 每隻 6、R 每隻 12、SR 每隻 8，合計 100
+    pool: {
+      '001': 6, '005': 6, '007': 6, '008': 6, // N
+      '002': 12, '003': 12, '004': 12, '006': 12, '009': 12, // R
+      '010': 8, '013': 8, // SR
+    },
+    // 暫用：正式的願望蛋素材還沒到，先借本源蛋的圖並改色
+    art: 'origin',
+    tint: 'hue-rotate(70deg) saturate(1.35) brightness(1.05)',
+  },
 };
 
 export const DUPLICATE_FOSSILS = 3; // 孵到已擁有的小湘時，轉換成幾個化石碎片
