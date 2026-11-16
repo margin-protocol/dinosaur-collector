@@ -50,7 +50,7 @@ async function colorFile(page,id){const value=await page.evaluate(async id=>{con
    await page.waitForFunction(k=>{const s=JSON.parse(localStorage.getItem(k));return s.energy===135&&s.player.xp===130},key);
    const concurrent=await save(page);assert.equal(concurrent.player.xp,130);assert.equal(concurrent.egg.warmth,60);assert.equal(concurrent.player.stats.fed,60);
    await second.goto('http://127.0.0.1:8000/#wish');await second.locator('#tab-growth').click();await second.locator('#chapter-select').selectOption('1');
-   const outcomes=await Promise.all([page,second].map(tab=>tab.evaluate(async()=>{const {updateState}=await import('./js/state.js');const {claimGrowth}=await import('./js/progression.js');return (await updateState(s=>claimGrowth(s,1,'growth:1:3'))).result.awarded;})));assert.equal(outcomes.filter(Boolean).length,1);assert.equal((await save(page)).energy,155,'growth energy is paid once across tabs');
+   const outcomes=await Promise.all([page,second].map(tab=>tab.evaluate(async()=>{const {updateState}=await import('./js/state.js');const {claimGrowth}=await import('./js/progression.js');return (await updateState(s=>claimGrowth(s,1,'growth:1:3'))).result.awarded;})));assert.equal(outcomes.filter(Boolean).length,1);assert.equal((await save(page)).energy,185,'growth energy + chapter 1 reward (30) are paid once across tabs');assert.deepEqual((await save(page)).player.chapters,['1']);
    await page.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).player.xp===150,key);
    await second.close();
    await page.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.wishes.date='2000-01-01';localStorage.setItem(k,JSON.stringify(s));},key);

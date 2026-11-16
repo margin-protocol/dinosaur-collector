@@ -95,3 +95,5 @@ body[data-view="wish"] .game-footer { min-height:70px; padding-top:8px; padding-
 .snap-card p { margin:2px 0 0; font-size:11px; color:var(--pearl); }
 .snap-btn { width:auto !important; min-height:44px; padding:0 16px; display:inline-flex; align-items:center; white-space:nowrap; cursor:pointer; }
 .snap-btn.is-done { opacity:.5; pointer-events:none; }
+.chapter-reward { margin:6px 0 0; padding:6px 12px; display:inline-block; border-radius:999px; background:#ffd9a81a; border:1px dashed #ffd9a866; color:#ffd9a8; font-size:12px; }
+.chapter-reward.is-done { border-style:solid; opacity:.8; }

@@ -28,7 +28,7 @@ import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROO
 import { WISH_REWARD, PASS_RATIO, WISH_POOL, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 import { createMissions } from './missions.js';
 import { createResearch } from './research.js';
-import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth } from './progression.js';
+import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward } from './progression.js';
 import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
@@ -339,6 +339,9 @@ function renderGrowth() {
   const chapter = growthGoals(viewedChapter);
   $('chapter-number').textContent = `CHAPTER ${pad(viewedChapter)}`;
   $('chapter-title').textContent = chapter.name;
+  const finished = (state.player.chapters || []).includes(String(viewedChapter));
+  $('chapter-reward').textContent = `${finished ? '✓ 本章完成，已獲得' : '🎁 完成本章：直接升級，再得'}${describeChapterReward(chapter.reward || {})}`;
+  $('chapter-reward').classList.toggle('is-done', finished);
   $('growth-list').replaceChildren(...chapter.goals.map((goal, i) => {
     const progress = goalProgress(state, goal);
     const row = document.createElement('article'); row.className = 'growth-goal'; row.tabIndex = -1; row.dataset.goalRow = goal.id;
@@ -361,7 +364,7 @@ function renderGrowth() {
     row.append(no, content, status); return row;
   }));
   const pending = chapter.goals.find(g => !goalProgress(state, g).complete);
-  $('growth-action').textContent = pending ? pending.destination === 'daily' ? '去實現今日願望 ⟶' : '前往培育 ⟶' : chapter.goals.some(g => !goalProgress(state, g).claimed) ? '領取已完成的願望' : '看看今日願望 ⟶';
+  $('growth-action').textContent = pending ? ({ daily: '去實現今日願望 ⟶', incubate: '前往培育 ⟶', errands: '派小湘出門 ⟶', home: '回首頁 ⟶', dex: '看看圖鑑 ⟶' }[pending.destination] || '前往培育 ⟶') : chapter.goals.some(g => !goalProgress(state, g).claimed) ? '領取已完成的願望' : '看看今日願望 ⟶';
 }
 
 // 從蛋庫取出的蛋（願望蛋、縣市蛋）
@@ -1026,13 +1029,27 @@ $('growth-list').addEventListener('click', async event => {
   try {
     const transaction = await updateState(current => claimGrowth(current, chapter, button.dataset.goal));
     state = transaction.state; renderAll();
-    if (transaction.result.awarded) { $('growth-feedback').textContent = `心願達成，獲得 ${GROWTH_XP} XP 與 ${GROWTH_ENERGY} 能量。`; announceLevel(transaction.result); buzz([15, 30, 25]); }
+    if (transaction.result.awarded) {
+      $('growth-feedback').textContent = `心願達成，獲得 ${GROWTH_XP} XP 與 ${GROWTH_ENERGY} 能量。`;
+      const ch = transaction.result.chapter;
+      if (ch) {
+        viewedChapter = null;
+        renderGrowth();
+        $('growth-feedback').textContent = `第 ${ch.level} 章「${ch.name}」完成！獲得${ch.reward}。現在是 Lv.${playerLevel(state)}，新的一章開始了。`;
+        restart(document.querySelector('.player-progress'), 'is-level-up');
+        toast(`第 ${ch.level} 章完成！獲得${ch.reward}，升級為 Lv.${playerLevel(state)}`);
+        buzz([20, 40, 30, 40, 40]);
+      } else { announceLevel(transaction.result); buzz([15, 30, 25]); }
+    }
   } finally { claimBusy = false; state = loadState(); renderAll(); $('growth-list').querySelector(`[data-goal-row="${button.dataset.goal}"]`)?.focus({ preventScroll: true }); }
 });
 $('growth-action').addEventListener('click', () => {
   const goals = growthGoals(viewedChapter).goals;
   const pending = goals.find(g => !goalProgress(state, g).complete);
   if (pending?.destination === 'incubate') showView('incubate');
+  else if (pending?.destination === 'errands') openErrands();
+  else if (pending?.destination === 'home') showView('home');
+  else if (pending?.destination === 'dex') showView('dex');
   else if (!pending && goals.some(g => !goalProgress(state, g).claimed)) $('growth-list').querySelector('button')?.focus();
   else showWishTab('daily', true);
 });
@@ -2096,6 +2113,10 @@ setInterval(() => { if (!document.hidden) void tickPassive(); }, 60 * 1000);
 // 已經允許過定位的話，打開遊戲時自動感應；只有第一次來到的縣市才會跳出來
 void geoPermission().then(p => { if (p === 'granted') setTimeout(() => explore({ silent: true }), 1200); });
 showView(VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home', { replace: true });
+if (initialSave.state?.player?.chapterNotes?.length) {
+  const notes = initialSave.state.player.chapterNotes;
+  toast(notes.length > 1 ? `完成了 ${notes.length} 個章節，已補發章節獎勵並升級為 Lv.${playerLevel(state)}！` : `第 ${notes[0].level} 章完成！獲得${notes[0].reward}，升級為 Lv.${playerLevel(state)}`);
+}
 if (initialSave.growthEnergyAdded > 0) {
   $('growth-feedback').textContent = `先前已完成的成長願望，已補發 ${initialSave.growthEnergyAdded} 能量。`;
   toast(`成長願望獎勵更新，已補發 ${initialSave.growthEnergyAdded} 能量。`);
