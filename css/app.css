@@ -208,3 +208,5 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex-detail__intro { margin: 0 0 12px; font-size: 13px; line-height: 1.8; color: var(--pearl); text-align: left; }
 .dex-detail__how { margin: 0 0 6px; padding: 8px 10px; border-radius: 8px; background: #ffffff0d; font-size: 12px; color: var(--silver); text-align: left; }
 .dex-detail__at { font-size: 11px; color: var(--silver); }
+.dex-detail__story { margin: 0 0 10px; padding: 10px 12px; border-left: 2px solid #c9a8ff; border-radius: 4px; background: #c9a8ff12; font: 13px/1.8 var(--font-display); color: var(--ivory); text-align: left; }
+.dex-detail__story::before { content: '相遇的故事'; display: block; margin-bottom: 2px; font: 10px var(--font-mono); letter-spacing: .16em; color: var(--rose-metal); }

@@ -364,6 +364,7 @@ function takeEgg(s, egg, county, character) {
     if (i < 0) i = s.gifts.eggs.findIndex(e => e.egg === egg.id);
     const [gift] = s.gifts.eggs.splice(i, 1);
     if (gift?.character) egg.character = gift.character;
+    if (gift?.from) egg.from = gift.from;
   }
 }
 
@@ -748,6 +749,37 @@ async function onEggTap() {
   } finally { busy = false; state = loadState(); renderAll(); }
 }
 
+// 相遇的故事：記下這位小湘是從哪顆蛋、在什麼樣的日子孵出來的（只記第一次相遇）
+function meetingStory(current) {
+  const egg = current.egg;
+  const today = todayKey();
+  return {
+    egg: egg.id,
+    ...(egg.county ? { county: egg.county } : {}),
+    ...(egg.from && egg.from !== 'returned' ? { from: egg.from } : {}),
+    since: egg.since,
+    rain: rainingToday(current, today) || undefined,
+    night: isNight() || undefined,
+    wishes: current.wishes?.date === today ? current.wishes.done.length : 0,
+    nth: current.hatched + 1,
+  };
+}
+function storyText(c, entry) {
+  const st = entry?.story;
+  if (!st) return '';
+  const when = new Date(entry.at);
+  const date = `${when.getFullYear()} 年 ${when.getMonth() + 1} 月 ${when.getDate()} 日`;
+  const days = st.since && !Number.isNaN(Date.parse(st.since)) ? Math.max(0, Math.round((Date.parse(entry.at) - Date.parse(st.since)) / 864e5)) : null;
+  const source = st.county ? `在${st.county}探索時收到的縣市蛋`
+    : st.from?.startsWith('recipe:') ? '兩位小湘一起入住、偷偷準備的紀念蛋'
+    : st.from === 'taiwan' ? '走遍臺灣時收到的紀念蛋'
+    : st.from === 'code' ? '湘藏在暗號裡的蛋'
+    : st.from && HOLIDAYS.some(h => st.from.startsWith(h.id)) ? `${HOLIDAYS.find(h => st.from.startsWith(h.id)).name}收到的紀念蛋`
+    : EGGS[st.egg]?.name || '一顆蛋';
+  const mood = [st.night && '深夜裡', st.rain && '下著雨的日子'].filter(Boolean).join('、');
+  return `${date}${mood ? `，${mood}` : ''}，她從${source}裡孵出來。${days !== null ? `這顆蛋陪了你 ${days ? `${days} 天` : '不到一天'}，` : ''}是你孵化的第 ${st.nth} 顆蛋${st.wishes ? `；那天你完成了 ${st.wishes} 個願望` : ''}。`;
+}
+
 async function hatch(expected) {
   buzz([30, 50, 30, 50, 60]);
   await runAnalysis();
@@ -756,7 +788,7 @@ async function hatch(expected) {
     const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current))];
     const duplicate = Boolean(current.dex[character.no]);
     if (duplicate) current.fossils += DUPLICATE_FOSSILS;
-    else current.dex[character.no] = { at: new Date().toISOString() };
+    else current.dex[character.no] = { at: new Date().toISOString(), story: meetingStory(current) };
     current.hatched += 1; if (isNight()) current.bonus.total.nightHatch += 1; current.egg = current.shelf.shift() || newEgg('ordinary');
     return { character, duplicate };
   });
@@ -1348,7 +1380,10 @@ function openDexDetail(no) {
   $('dex-detail-intro').textContent = owned ? (INTROS[no] || '') : '還沒遇見她……她會是什麼樣的小湘呢？';
   $('dex-detail-how').textContent = `取得方式：${howToGet(c)}`;
   const at = state.dex[no]?.at;
-  $('dex-detail-at').textContent = owned && at && !Number.isNaN(Date.parse(at)) ? `相遇日期：${new Date(at).toLocaleDateString('zh-TW')}` : '';
+  const story = owned ? storyText(c, state.dex[no]) : '';
+  $('dex-detail-story').textContent = story;
+  $('dex-detail-story').hidden = !story;
+  $('dex-detail-at').textContent = !story && owned && at && !Number.isNaN(Date.parse(at)) ? `相遇日期：${new Date(at).toLocaleDateString('zh-TW')}` : '';
   $('dex-detail').showModal();
 }
 $('dex-grid').addEventListener('click', event => { const card = event.target.closest('[data-dex-no]'); if (card) openDexDetail(card.dataset.dexNo); });

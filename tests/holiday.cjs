@@ -13,6 +13,7 @@ await p.reload();await p.waitForTimeout(700);s=await save();assert.equal(s.gifts
 await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);await p.click('#open-eggs');await p.click('[data-cat=\"keepsake\"]');await p.click('[data-egg=\"keepsake\"]');await p.waitForTimeout(300);
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=100;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(400);
 await p.click('#cultivate');await p.locator('#reveal').waitFor();await p.waitForTimeout(300);assert.equal(await p.textContent('#reveal-name'),'情人節小湘');
+await p.evaluate(()=>document.querySelector('#reveal').close());await p.evaluate(()=>location.hash='dex');await p.waitForTimeout(400);await p.click('[data-dex-no="056"]');assert.match(await p.textContent('#dex-detail-story'),/情人節收到的紀念蛋.*第 2 顆蛋/);
 await c.close();
 // birthday only on the day
 ({c,p,save}=await page('2027-07-15T10:00:00+08:00'));await p.waitForTimeout(500);s=await save();assert.equal(s.gifts.keepsakes.length,0);await c.close();
