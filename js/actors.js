@@ -4,13 +4,14 @@
 
 import { reducedMotion } from './egg-view.js';
 
-// 三組動作，各是 4 欄 × 2 列、共 8 格的 spritesheet（首頁用的是縮小一半的衍生檔）。
+// 三組動作，各是 4 欄 × 2 列、共 8 格，每格 512px 的原版 spritesheet。
+// 首頁角色可達 310 CSS px，使用 256px 衍生檔會在高 DPR 手機上放大模糊。
 // ms 是每一格停留的毫秒數，照美術交接文件的建議值。
 // 素材更新時把 ?v= 的數字加一，手機才會抓新圖而不是用快取。
 const ANIMS = {
-  walk: { sheet: 'assets/characters/siang-001-walk-sheet-256.webp?v=2', ms: [140, 140, 140, 140, 140, 140, 140, 140] },
-  idle: { sheet: 'assets/characters/siang-001-idle-sheet-256.webp?v=1', ms: [850, 350, 300, 170, 160, 300, 650, 850] },
-  sit: { sheet: 'assets/characters/siang-001-sit-sheet-256.webp?v=1', ms: [800, 900, 850, 850, 750, 350, 900, 900] },
+  walk: { sheet: 'assets/characters/siang-001-walk-spritesheet.webp?v=1', ms: [140, 140, 140, 140, 140, 140, 140, 140] },
+  idle: { sheet: 'assets/characters/siang-001-idle-spritesheet.webp?v=1', ms: [850, 350, 300, 170, 160, 300, 650, 850] },
+  sit: { sheet: 'assets/characters/siang-001-sit-spritesheet.webp?v=1', ms: [800, 900, 850, 850, 750, 350, 900, 900] },
 };
 const STATE_ANIM = { idle: 'idle', inspect: 'idle', walk: 'walk', rest: 'sit' };
 const SPEED = 0.26; // 每秒走多少「個角色寬」：配合步伐，腳才不會滑
