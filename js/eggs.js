@@ -88,6 +88,13 @@ export const EGGS = {
   },
 };
 
+// 暫放架：換蛋時，已經注入能量的蛋放在這裡，進度保留
+export const SHELF_MAX = 6;
+export function ensureShelf(state) {
+  state.shelf = (Array.isArray(state.shelf) ? state.shelf : []).filter((e) => e && EGGS[e.id] && Number.isSafeInteger(e.warmth) && e.warmth >= 0 && typeof e.since === 'string').slice(0, SHELF_MAX);
+  return state.shelf;
+}
+
 export const DUPLICATE_FOSSILS = 3; // 孵到已擁有的小湘時，轉換成幾個化石碎片
 
 // 依權重從蛋池抽一隻

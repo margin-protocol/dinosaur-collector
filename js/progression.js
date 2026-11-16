@@ -3,6 +3,7 @@ import { ensureWishEgg, stampDay } from './wish-egg.js';
 import { ensureTravel } from './travel.js';
 import { ensureWeather } from './weather.js';
 import { ensureGifts } from './gifts.js';
+import { ensureShelf } from './eggs.js';
 export const DAILY_XP = 10;
 export const GROWTH_XP = 20;
 export const GROWTH_ENERGY = 20;
@@ -34,6 +35,7 @@ export function hydrateProgression(state) {
   ensureTravel(state);
   ensureWeather(state);
   ensureGifts(state);
+  ensureShelf(state);
   return state;
 }
 export function completeDaily(state, date, id) {

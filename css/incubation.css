@@ -50,3 +50,6 @@ body[data-view="incubate"] { background-image:linear-gradient(180deg,#151722c9,#
 .egg-choice p { margin:3px 0; font:11px/1.7 var(--font-display); }
 .egg-choice__state { display:block; margin-top:10px; color:#dcc5e5; font:11px var(--font-display); }
 #egg-picker-feedback { font:12px/1.7 var(--font-display); color:var(--pearl); }
+
+.egg-choices__heading { margin:14px 2px 8px; font:400 13px var(--font-display); letter-spacing:.14em; color:var(--pearl); }
+.egg-choices__heading:first-child { margin-top:4px; }
