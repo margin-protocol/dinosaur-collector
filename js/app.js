@@ -3,6 +3,7 @@ import { createIncubator, createEggView, stageOf, restart, reducedMotion } from 
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
 import { checkIn } from './travel.js';
+import { fetchWeather, recordWeather, isNight, rainingToday, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
@@ -103,6 +104,13 @@ function renderHome() {
   $('incubator-status').textContent = ['安靜生長中', '感受到小小的動靜', '生命正在甦醒', '快要見面了', '準備好相遇了'][s];
   $('incubation-message').textContent = ['裡面的小小生命，正做著柔軟的夢。', '好像聽見了你的聲音，輕輕回應了一下。', '細小的裂痕裡，藏著即將到來的相遇。', '再一點點溫暖，就能見到你了。', '牠已經準備好了。一起迎接新夥伴吧。'][s];
   $('incubation-percent').textContent = `${Math.round(pct)}%`;
+  const omens = [];
+  if (egg.pool) {
+    if (rainingToday(state, todayKey()) && egg.pool[RAIN_BOOST.no]) omens.push('今天下雨了……雨傘小湘好像比較容易出現');
+    if (isNight() && egg.pool[NIGHT_BOOST.no]) omens.push('深夜了……好像有誰還醒著（夜貓小湘比較容易出現）');
+  }
+  $('incubation-omen').textContent = omens.join('\n');
+  $('incubation-omen').hidden = !omens.length;
   $('vitals').setAttribute('aria-valuenow', String(Math.round(pct)));
   $('incubation-cost').textContent = ready ? '破殼不消耗能量' : state.energy > 0 ? `本次消耗 ${Math.min(TAP_ENERGY, state.energy, egg.warmthNeeded - state.egg.warmth)} 能量` : '能量不足，先完成願望';
   $('egg-day').textContent = `DAY ${daysSince(state.egg.since) + 1}`;
@@ -272,15 +280,26 @@ function renderGrowth() {
 function eggStock(s, id) {
   if (id === 'wish') return s.wishEgg?.stock || 0;
   if (id === 'county') return s.travel?.eggs?.length || 0;
+  if (id === 'weather') return s.weather?.stock || 0;
   return 0;
 }
 function returnEgg(s, egg) {
   if (egg.id === 'wish') s.wishEgg.stock += 1;
   if (egg.id === 'county' && egg.county) s.travel.eggs.unshift(egg.county);
+  if (egg.id === 'weather') s.weather.stock += 1;
 }
 function takeEgg(s, egg) {
   if (egg.id === 'wish') s.wishEgg.stock -= 1;
   if (egg.id === 'county') egg.county = s.travel.eggs.shift();
+  if (egg.id === 'weather') s.weather.stock -= 1;
+}
+
+// 目前會影響孵化結果的天氣／時間
+function hatchBoosts(s, now = new Date()) {
+  const boosts = [];
+  if (rainingToday(s, todayKey(now))) boosts.push(RAIN_BOOST);
+  if (isNight(now)) boosts.push(NIGHT_BOOST);
+  return boosts;
 }
 
 function canChooseEgg(current, id) {
@@ -302,7 +321,7 @@ function renderEggChoices() {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'weather' ? `雨天的蛋，雨傘小湘最常出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
     const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : state.egg.warmth > 0 ? '完成目前培育後可選' : '選擇這顆蛋';
@@ -311,6 +330,7 @@ function renderEggChoices() {
       const own = document.createElement('p'); own.className = 'egg-choice__stock';
       own.textContent = egg.id === 'wish'
         ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
+        : egg.id === 'weather' ? `持有 ${stock} 顆（下雨天打開遊戲時取得，每天最多一顆）`
         : stock ? `持有 ${stock} 顆：${state.travel.eggs.join('、')}（依取得順序培育）` : '到新的縣市按「探索」，那裡的小湘就會想出現';
       content.append(own);
     }
@@ -561,7 +581,7 @@ async function hatch(expected) {
   await runAnalysis();
   const transaction = await updateState(current => {
     if (current.egg.id !== expected.id || current.egg.since !== expected.since || current.egg.warmth < EGGS[current.egg.id].warmthNeeded) return null;
-    const character = CHARACTERS[rollFor(current.egg)];
+    const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current))];
     const duplicate = Boolean(current.dex[character.no]);
     if (duplicate) current.fossils += DUPLICATE_FOSSILS;
     else current.dex[character.no] = { at: new Date().toISOString() };
@@ -899,7 +919,7 @@ function renderExplore() {
   $('explore').hidden = !firstHatchedNow();
 }
 
-function showCountyCall({ county, result, error }) {
+function showCountyCall({ county, result, error, weather }) {
   const img = $('county-img');
   const no = county && COUNTY_CHARACTER[county];
   const c = no && CHARACTERS[no];
@@ -918,11 +938,23 @@ function showCountyCall({ county, result, error }) {
   else { title = `${county}的訊號`; text = '這裡的小湘已經和你打過招呼了。'; }
   $('county-title').textContent = title;
   $('county-text').textContent = text;
+  note = [note, weatherNote(weather)].filter(Boolean).join('\n');
   $('county-note').textContent = note;
   $('county-note').hidden = !note;
-  $('county-go').hidden = !result?.egg;
+  $('county-go').hidden = !(result?.egg || weather?.egg);
   $('county-call').showModal(); syncRoomActivity();
 }
+
+// 查天氣（失敗就算了，不影響探索）；下雨可能送天氣蛋
+async function checkWeather(pos) {
+  let kind;
+  try { kind = await fetchWeather(pos.lat, pos.lon); } catch { return null; }
+  const transaction = await updateState(current => recordWeather(current, kind, todayKey()));
+  state = transaction.state; renderAll();
+  return transaction.result;
+}
+const weatherNote = (w) => (w?.egg ? '外面在下雨，雨裡撿到一顆「天氣蛋」！到「選擇蛋」把它拿出來吧。' : '');
+function announceWeather(w) { if (w?.egg) toast(weatherNote(w)); }
 
 async function explore({ silent = false } = {}) {
   if (exploring || !firstHatchedNow()) return;
@@ -936,10 +968,12 @@ async function explore({ silent = false } = {}) {
     let counties;
     try { counties = await loadCounties(); } catch { if (!silent) showCountyCall({ error: 'failed' }); return; }
     const county = countyAt(counties, pos.lon, pos.lat);
-    if (!county) { if (!silent) showCountyCall({ county: null }); return; }
+    const weather = await checkWeather(pos);
+    if (!county) { if (!silent) showCountyCall({ county: null, weather }); else announceWeather(weather); return; }
     const transaction = await updateState(current => checkIn(current, county, todayKey()));
     state = transaction.state; renderAll();
-    if (!silent || transaction.result.egg) showCountyCall({ county, result: transaction.result });
+    if (!silent || transaction.result.egg) showCountyCall({ county, result: transaction.result, weather });
+    else announceWeather(weather);
   } finally {
     exploring = false; $('explore').disabled = false; $('explore-label').textContent = '探索';
   }

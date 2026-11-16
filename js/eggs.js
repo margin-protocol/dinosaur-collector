@@ -42,6 +42,23 @@ export const EGGS = {
     },
     // 正式三層素材：assets/eggs/wish/{shell,glow,cracks}.webp
   },
+  weather: {
+    id: 'weather',
+    name: '天氣蛋',
+    code: 'RAIN',
+    warmthNeeded: 150,
+    hatches: null,
+    stocked: true, // 下雨天打開遊戲（已允許定位）時取得，每天最多一顆
+    // 雨天的蛋：雨傘小湘最常見，喜歡雨的園丁、書頁也比較容易出現
+    pool: {
+      '003': 40, '006': 12, '007': 12, // 雨傘、園丁、書頁
+      '001': 8, '005': 8, '004': 8, // 原味、甜點、夜貓
+      '010': 6, '013': 6, // SR
+    },
+    // 暫用：正式的天氣蛋素材還沒到，先借本源蛋的圖並改色。素材放進 assets/eggs/weather/ 後刪掉這兩行
+    art: 'origin',
+    tint: 'hue-rotate(160deg) saturate(0.9) brightness(1.05)',
+  },
   county: {
     id: 'county',
     name: '縣市蛋',
@@ -129,10 +146,14 @@ export const SERIES = {
 export const COUNTY_CHARACTER = Object.fromEntries(Object.values(CHARACTERS).filter((c) => c.county).map((c) => [c.county, c.no]));
 
 // 依培育中的蛋決定孵出誰：縣市蛋固定孵出該縣市的小湘，其他蛋照蛋池抽
-export function rollFor(eggState) {
+// boosts：[{ no, times }]，例如深夜時夜貓小湘權重 ×4（只影響蛋池裡本來就有的角色）
+export function rollFor(eggState, boosts = []) {
   const egg = EGGS[eggState.id];
   if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
-  return rollHatch(egg);
+  if (!egg.pool || !boosts.length) return rollHatch(egg);
+  const pool = { ...egg.pool };
+  for (const b of boosts) if (pool[b.no]) pool[b.no] *= b.times;
+  return rollHatch({ ...egg, pool });
 }
 
 const FORMATS = ['webp', 'png'];

@@ -9,6 +9,7 @@ body[data-view="incubate"] .app { min-height:100svh; height:auto; overflow:visib
 .view--incubate .stage { flex:none; width:100%; height:clamp(290px,43svh,400px); min-height:0; margin:0; overflow:hidden; }
 .view--incubate .incubator { width:min(116cqw,132cqh); max-width:460px; left:50%; top:46%; }
 .view--incubate .side,.view--incubate .motes { display:none; }
+.incubation-omen { margin:-10px 0 14px; padding:0 10px; text-align:center; white-space:pre-line; color:#cfe0f0; font:11px/1.8 var(--font-display); letter-spacing:.04em; }
 .incubation-message { min-height:42px; margin:0 0 16px; padding:0 10px; text-align:center; color:var(--pearl); font:12px/1.9 var(--font-display); letter-spacing:.04em; }
 .view--incubate .vitals { display:grid; grid-template-columns:1fr auto; gap:12px; padding:16px 0; border-top:1px solid #b9a0bb40; border-bottom:0; }
 .view--incubate .vitals__zh { display:flex; align-items:center; gap:12px; font:12px var(--font-display); }
