@@ -51,27 +51,64 @@ function renderKey(message = '') {
 }
 
 /* ---------- 連線 ---------- */
-const config = () => cloudConfig(REVIEW_CLOUD_KEY);
+// 多位玩家：每位玩家一個私人資料庫＋一把 token，審核室可以切換。印章（私鑰）全部共用同一把
+const PLAYERS_KEY = 'siang-collector:review-players:v1';
+function loadPlayers() {
+  try {
+    const p = JSON.parse(localStorage.getItem(PLAYERS_KEY) || 'null');
+    if (p && Array.isArray(p.list)) return { list: p.list.filter(x => x && /^[\w.-]+\/[\w.-]+$/.test(x.repo) && x.token), active: p.active || 0 };
+  } catch {}
+  const old = cloudConfig(REVIEW_CLOUD_KEY); // 舊版只有一位玩家，搬進名單
+  return { list: old ? [{ name: '玩家 1', ...old }] : [], active: 0 };
+}
+let players = loadPlayers();
+const savePlayers = () => localStorage.setItem(PLAYERS_KEY, JSON.stringify(players));
+const config = () => players.list[players.active] || null;
 const cloud = () => { const c = config(); if (!c) throw new Error('請先在第 1 步連線資料庫'); return createCloud(c); };
+let adding = false;
 function renderCloud(message = '') {
   const c = config();
-  $('cloud-repo').value = c?.repo || $('cloud-repo').value;
+  const sel = $('player-select');
+  sel.replaceChildren(...players.list.map((p, i) => Object.assign(document.createElement('option'), { value: String(i), textContent: `${p.name}（${p.repo}）` })));
+  sel.value = String(players.active);
+  $('player-row').hidden = !players.list.length;
+  const editing = adding || !c;
+  $('player-name').value = editing ? '' : c.name;
+  $('cloud-repo').value = editing ? '' : c.repo;
   $('cloud-token').value = '';
-  $('cloud-token').placeholder = c ? '已儲存（要更換再貼上新的）' : 'github_pat_…';
-  $('cloud-save').textContent = c ? '更新連線' : '連線';
-  $('cloud-status').textContent = message || (c ? `已連線：${c.repo}` : '');
+  $('cloud-token').placeholder = editing ? 'github_pat_…' : '已儲存（要更換再貼上新的）';
+  $('cloud-save').textContent = editing ? '新增並連線' : '更新這位玩家';
+  $('player-cancel').hidden = !(adding && c);
+  $('player-remove').hidden = editing || players.list.length < 1;
+  $('cloud-status').textContent = message || (c && !adding ? `目前：${c.name}` : '');
+  document.querySelectorAll('[data-player-name]').forEach(el => { el.textContent = c ? c.name : '玩家'; });
 }
+function switched() { void refreshCodes(); void refreshLetters(); }
+$('player-select').addEventListener('change', () => { players.active = Number($('player-select').value); adding = false; savePlayers(); renderCloud(); switched(); });
+$('player-add').addEventListener('click', () => { adding = true; renderCloud('輸入新玩家的名字、他的私人資料庫，以及妳那把審核員 token。'); });
+$('player-cancel').addEventListener('click', () => { adding = false; renderCloud(); });
+$('player-remove').addEventListener('click', () => {
+  const c = config(); if (!c) return;
+  if (!$('player-remove').dataset.confirm) { $('player-remove').dataset.confirm = '1'; $('cloud-status').textContent = `確定要從審核室移除「${c.name}」嗎？（資料庫裡的東西不會被刪）再按一次確認。`; return; }
+  delete $('player-remove').dataset.confirm;
+  players.list.splice(players.active, 1); players.active = 0; savePlayers(); renderCloud('已移除。'); switched();
+});
 $('cloud-form').addEventListener('submit', async (e) => {
   e.preventDefault();
+  const editing = adding || !config();
+  const name = $('player-name').value.trim() || (editing ? `玩家 ${players.list.length + 1}` : config().name);
   const repo = $('cloud-repo').value.trim().replace(/^https:\/\/github\.com\//, '').replace(/\/$/, '');
-  const token = $('cloud-token').value.trim() || config()?.token || '';
+  const token = $('cloud-token').value.trim() || (editing ? '' : config().token);
   if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !token) { $('cloud-status').textContent = '請填資料庫名稱（owner/repo）和通行碼。'; return; }
+  if (editing && players.list.some(p => p.repo === repo)) { $('cloud-status').textContent = '這個資料庫已經在名單裡了。每位玩家要用自己的資料庫。'; return; }
   $('cloud-status').textContent = '連線中…';
   try {
     const info = await createCloud({ repo, token }).test();
-    saveCloudConfig({ repo, token }, REVIEW_CLOUD_KEY);
-    renderCloud(info.private ? '連線成功！' : '連線成功，但這個資料庫是公開的，建議改成私人。');
-    void refreshCodes(); void refreshLetters();
+    if (editing) { players.list.push({ name, repo, token }); players.active = players.list.length - 1; }
+    else players.list[players.active] = { name, repo, token };
+    adding = false; savePlayers();
+    renderCloud(info.private ? `連線成功！目前：${name}` : '連線成功，但這個資料庫是公開的，建議改成私人。');
+    switched();
   } catch (err) { $('cloud-status').textContent = `連不上：${err.message}`; }
 });
 

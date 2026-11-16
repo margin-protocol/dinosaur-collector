@@ -14,12 +14,18 @@
   <header><small>CHIEF RESEARCHER</small><h1>首席研究員審核室</h1><p>只有湘的手機需要打開這一頁。印章（私鑰）只存在這支手機裡。</p></header>
 
   <section class="card" id="sec-cloud">
-    <h2>1. 連線資料庫</h2>
-    <p class="hint">用「審核員專用」的那把 token，跟遊戲同一個私人資料庫。</p>
+    <h2>1. 玩家與資料庫</h2>
+    <p class="hint">每位玩家各有一個私人資料庫。這裡用「審核員專用」的 token；印章所有玩家共用。下面的暗號和紙條，都是給目前選擇的玩家。</p>
+    <div class="row" id="player-row" hidden>
+      <select id="player-select" aria-label="目前的玩家"></select>
+      <button class="btn btn--quiet" type="button" id="player-add">＋ 新增玩家</button>
+    </div>
     <form id="cloud-form" class="form">
+      <label>玩家名字<input id="player-name" maxlength="20" autocomplete="off" placeholder="例如：男友、朋朋 A"></label>
       <label>資料庫（owner/repo）<input id="cloud-repo" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="margin-protocol/xxxx"></label>
       <label>通行碼（token）<input id="cloud-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
       <button class="btn" type="submit" id="cloud-save">連線</button>
+      <div class="row"><button class="btn btn--quiet" type="button" id="player-cancel" hidden>取消</button><button class="btn btn--quiet" type="button" id="player-remove" hidden>移除這位玩家</button></div>
     </form>
     <p class="status" id="cloud-status" role="status"></p>
   </section>
@@ -46,7 +52,7 @@
   </section>
 
   <section class="card" id="sec-code">
-    <h2>3. 暗號</h2>
+    <h2>3. 暗號 · 給<span data-player-name>玩家</span></h2>
     <p class="hint">設定一句暗號，藏在聊天、卡片或禮物裡。他在遊戲「輸入暗號」兌換。空格、標點、全形半形不影響。</p>
     <form id="code-form" class="form">
       <label>暗號<span class="inline"><input id="code-phrase" autocomplete="off" maxlength="80" placeholder="例如：恐龍偷吃草莓"><button class="btn btn--quiet" type="button" id="code-random">隨機</button></span></label>
@@ -69,7 +75,7 @@
     <ul class="list" id="code-list"></ul>
   </section>
   <section class="card" id="sec-letter">
-    <h2>4. 寄紙條</h2>
+    <h2>4. 寄紙條 · 給<span data-player-name>玩家</span></h2>
     <p class="hint">寫好蓋章送出，他下次打開遊戲就會收到「湘寄來一張新紙條」，收在首頁的紙條裡。</p>
     <form id="letter-form" class="form">
       <label>標題（可不填）<input id="letter-title" maxlength="40" placeholder="例如：今天好想你"></label>
