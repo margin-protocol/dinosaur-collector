@@ -7,3 +7,5 @@
 `tests/actor-motion.cjs` 在實際首頁驗證完整步伐與幀序、選單／離頁暫停、reduced-motion；`tests/interaction.cjs` 回歸打招呼與返回。`RECORD_VIDEO=1` 可錄製 `docs/review/home-motion-390.webm`（需 Playwright ffmpeg）。
 
 此修改改善播放與切換節奏，不增加原稿沒有的中間格，也未宣稱通過真機效能驗收。
+
+高清 V1 已接入 1254px 獨立畫格，含兩影格待機／坐姿眨眼與站坐過渡；詳見 SIANG_HD_PREVIEW.md。本文件的完整八格循環指走路，待機與坐姿不再使用原版八格 sheet。

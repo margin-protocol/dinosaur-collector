@@ -203,8 +203,11 @@ body[data-view="incubate"] .app { height: 100vh; height: 100svh; overflow: hidde
 }
 .actor__flip { position: absolute; inset: 0; transform-origin: 50% 92%; }
 .actor__flip[data-dir="left"] { transform: scaleX(-1); }
-.actor__sprite { position: absolute; inset: 0; transform-origin: 50% 92%; }
-.actor__layer { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 400% 200%; }
+.actor__sprite { position: absolute; inset: 0; transform-origin: 50% 92%; animation:hd-breathe 5s ease-in-out infinite; animation-play-state:paused; }
+.resident-lanes[data-active="true"] .actor:not([data-state="walk"]) .actor__sprite { animation-play-state:running; }
+@keyframes hd-breathe { 50% { transform:scale(1.004,1.007); } }
+@media(prefers-reduced-motion:reduce) { .actor__sprite { animation:none!important; } }
+.actor__layer { position: absolute; inset: 0; background-repeat: no-repeat; background-size: 100% 100%; transform-origin:50% 91.6268%; }
 .actor__sprite.is-swap { animation: actor-swap 0.24s ease-out; }
 @keyframes actor-swap { 0% { transform: scale(1.04, 0.9); } 100% { transform: scale(1); } }
 .actor__shadow { left: 26%; right: 26%; }

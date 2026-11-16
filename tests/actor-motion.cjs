@@ -14,7 +14,7 @@ const assert = require('node:assert/strict');
     const frames = new Set(); const duration = parseFloat(actor.style.transitionDuration);
     const started = performance.now();
     while (actor.dataset.state === 'walk' && performance.now()-started < 2000) {
-      frames.add(actor.querySelector('.actor__layer:not([hidden])').style.backgroundPosition);
+      frames.add(actor.querySelector('.actor__layer:not([hidden])').style.backgroundImage);
       await new Promise(resolve=>requestAnimationFrame(resolve));
     }
     return {duration,frames:frames.size,state:actor.dataset.state};

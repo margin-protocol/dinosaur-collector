@@ -50,7 +50,7 @@ export const CHARACTERS = {
     name: '原味小湘',
     rarity: 'N',
     line: '「欸？你就是我的飼養員嗎？」',
-    image: 'siang-001-original',
+    image: 'siang-001-hd/idle-open',
   },
   // 第一批正式名單（2026-11-16 湘定案）
   '002': { no: '002', name: '草莓小湘', rarity: 'R', line: '「今天找到紅色的東西了嗎？我要最甜的那個！」', image: 'siang-002-strawberry' },

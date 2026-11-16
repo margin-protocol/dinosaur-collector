@@ -1,0 +1,210 @@
+{
+  "idle-open": {
+    "source": "idle-open.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      329,
+      93,
+      927,
+      1149
+    ],
+    "offsetY": 0.0,
+    "scale": 1,
+    "bytes": 619728
+  },
+  "idle-closed": {
+    "source": "idle-closed.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      329,
+      93,
+      926,
+      1149
+    ],
+    "offsetY": 0.0,
+    "scale": 1,
+    "bytes": 605832
+  },
+  "walk-01": {
+    "source": "exec-91d344c0-f7fb-442c-9f71-72905da844a1.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      284,
+      93,
+      932,
+      1152
+    ],
+    "offsetY": -0.23923,
+    "scale": 1,
+    "bytes": 639042
+  },
+  "walk-02": {
+    "source": "exec-5d13568e-073d-445c-8659-9ea0c0340d68.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      269,
+      92,
+      916,
+      1148
+    ],
+    "offsetY": 0.07974,
+    "scale": 1,
+    "bytes": 609702
+  },
+  "walk-03": {
+    "source": "exec-5c12cabe-0e60-4265-a003-46431d2039f2.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      307,
+      93,
+      931,
+      1149
+    ],
+    "offsetY": 0.0,
+    "scale": 1,
+    "bytes": 613482
+  },
+  "walk-04": {
+    "source": "exec-ea81c850-729b-47de-9239-2ba61cf285b4.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      266,
+      91,
+      928,
+      1148
+    ],
+    "offsetY": 0.07974,
+    "scale": 1,
+    "bytes": 639818
+  },
+  "walk-05": {
+    "source": "exec-65346521-f5ab-41f6-8ca9-6ae511f2ab1c.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      318,
+      90,
+      941,
+      1155
+    ],
+    "offsetY": -0.47847,
+    "scale": 1,
+    "bytes": 624790
+  },
+  "walk-06": {
+    "source": "exec-241c704e-c0f9-4189-9615-e56fad7e03e2.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      325,
+      92,
+      939,
+      1151
+    ],
+    "offsetY": -0.15949,
+    "scale": 1,
+    "bytes": 604136
+  },
+  "walk-07": {
+    "source": "exec-97bfbe5a-1ad1-4edc-862b-f6903fb8d7cf.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      321,
+      89,
+      944,
+      1152
+    ],
+    "offsetY": -0.23923,
+    "scale": 1,
+    "bytes": 608524
+  },
+  "walk-08": {
+    "source": "exec-5bf4bf02-a04b-4248-abfd-681ce0821bee.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      326,
+      90,
+      937,
+      1152
+    ],
+    "offsetY": -0.23923,
+    "scale": 1,
+    "bytes": 616746
+  },
+  "sit-open": {
+    "source": "exec-cfce8e06-f32d-4199-b498-bbd37226993f.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      304,
+      174,
+      932,
+      1145
+    ],
+    "offsetY": 0.31898,
+    "scale": 1,
+    "bytes": 637652
+  },
+  "crouch": {
+    "source": "exec-1ceccd03-a059-4d95-9282-4c615e60f8ce.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      307,
+      97,
+      931,
+      1170
+    ],
+    "offsetY": -1.55742,
+    "scale": 0.93,
+    "bytes": 652142
+  },
+  "sit-closed": {
+    "source": "exec-d8c82cdc-7216-4787-ac0a-7de6e967e753.png",
+    "size": [
+      1254,
+      1254
+    ],
+    "opaqueBounds": [
+      305,
+      174,
+      931,
+      1144
+    ],
+    "offsetY": 0.39872,
+    "scale": 1,
+    "bytes": 626916
+  }
+}

@@ -1,25 +1,11 @@
 // 首頁的活動角色：小湘會在培養架前方的地板上自己走動。
 // 輕量狀態機：idle（站著呼吸眨眼）→ walk（走到別處）→ idle → inspect（走到蛋旁邊看看）→ rest（坐下休息）……
-// 待機、走路、坐下各有一組 8 格 spritesheet 逐格播放；位移用 CSS transform，走路速度配合步伐。
+// 高清逐格待機、走路、坐姿與站坐過渡；位移用 CSS transform。
 
 import { reducedMotion } from './egg-view.js';
 
-// 三組動作，各是 4 欄 × 2 列、共 8 格，每格 512px 的原版 spritesheet。
-// 首頁角色可達 310 CSS px，使用 256px 衍生檔會在高 DPR 手機上放大模糊。
-// ms 是每一格停留的毫秒數，照美術交接文件的建議值。
-// 素材更新時把 ?v= 的數字加一，手機才會抓新圖而不是用快取。
-const ANIMS = {
-  walk: { sheet: 'assets/characters/siang-001-walk-spritesheet.webp?v=1', ms: [140, 140, 140, 140, 140, 140, 140, 140] },
-  idle: { sheet: 'assets/characters/siang-001-idle-spritesheet.webp?v=1', ms: [850, 350, 300, 170, 160, 300, 650, 850] },
-  sit: { sheet: 'assets/characters/siang-001-sit-spritesheet.webp?v=1', ms: [800, 900, 850, 850, 750, 350, 900, 900] },
-};
-let readySheets;
-function prepareSheets() {
-  return readySheets ||= Promise.all(Object.values(ANIMS).map(({ sheet }) => {
-    const image = new Image(); image.src = sheet;
-    return image.decode().catch(() => {});
-  }));
-}
+import { SIANG_ANIMS as ANIMS, prepareSiangFrames } from './siang-hd.js';
+
 const STATE_ANIM = { idle: 'idle', inspect: 'idle', walk: 'walk', rest: 'sit' };
 const SPEED = 0.26; // 每秒走多少「個角色寬」：配合步伐，腳才不會滑
 const LANE = [0.36, 0.9]; // 可活動範圍（佔地板寬度的比例）；左邊留給小恐龍
@@ -45,7 +31,7 @@ export function createSiangActor(lane, options = {}) {
   for (const [name, anim] of Object.entries(ANIMS)) {
     const layer = document.createElement('span');
     layer.className = 'actor__layer';
-    layer.style.backgroundImage = `url("${anim.sheet}")`;
+    layer.style.backgroundImage = `url("${anim.frames[0].src}")`;
     layer.hidden = name !== 'idle';
     layers[name] = layer;
     sprite.append(layer);
@@ -68,7 +54,11 @@ export function createSiangActor(lane, options = {}) {
 
   const setFrame = (n) => {
     frame = n;
-    layers[anim].style.backgroundPosition = `${(n % 4) * (100 / 3)}% ${Math.floor(n / 4) * 100}%`;
+    const asset = ANIMS[anim].frames[n];
+    layers[anim].style.backgroundImage = `url("${asset.src}")`;
+    layers[anim].style.transform = `translateY(${asset.offsetY}%) scale(${asset.scale})`;
+    layers[anim].dataset.frame = String(n);
+    layers[anim].dataset.animation = anim;
   };
 
   const stopFrames = () => {
@@ -76,27 +66,25 @@ export function createSiangActor(lane, options = {}) {
     frameTimer = 0;
   };
 
-  // 切換到某組動作並從第 0 格開始循環播放；loop=false 時停在第 0 格
-  function play(name, loop = true) {
+  // loop=false freezes frame zero unless a one-shot completion callback is supplied.
+  function play(name, loop = true, onComplete = null) {
     stopFrames();
     if (name !== anim) {
-      const sitting = name === 'sit' || anim === 'sit';
       layers[anim].hidden = true;
       anim = name;
       layers[anim].hidden = false;
-      if (sitting) {
-        // 站 ↔ 坐目前沒有過渡分鏡，先用很短的擠壓帶過
-        sprite.classList.remove('is-swap');
-        void sprite.offsetWidth;
-        sprite.classList.add('is-swap');
-      }
     }
     setFrame(0);
-    if (!loop) return;
+    if (!loop && !onComplete) return;
     const durations = ANIMS[anim].ms;
     const cycle = durations.reduce((sum, duration) => sum + duration, 0);
     const started = performance.now();
     const step = now => {
+      if (!loop && now - started >= cycle) {
+        stopFrames();
+        onComplete?.();
+        return;
+      }
       let elapsed = (now - started) % cycle;
       let next = 0;
       while (elapsed >= durations[next] && next < durations.length - 1) {
@@ -118,7 +106,11 @@ export function createSiangActor(lane, options = {}) {
     state = next;
     el.dataset.state = next;
     // Preserve blink/breath timing when idle changes to another idle state.
-    if (STATE_ANIM[next] !== anim || !frameTimer) play(STATE_ANIM[next]);
+    if (next === 'rest' && anim !== 'sit') {
+      play('lower', false, () => { if (running && state === 'rest') play('sit'); });
+    } else if (anim === 'sit' && next === 'idle') {
+      play('rise', false, () => { if (running && state === 'idle') play('idle'); });
+    } else if (STATE_ANIM[next] !== anim || !frameTimer) play(STATE_ANIM[next]);
 
     if (next === 'idle') {
       stateTimer = setTimeout(choose, rand(3500, 7000));
@@ -180,8 +172,11 @@ export function createSiangActor(lane, options = {}) {
       return; // 減少動態：站著不動
     }
     const token = ++generation;
-    prepareSheets().then(() => {
+    prepareSiangFrames().then(() => {
       if (running && token === generation) enter('idle');
+    }).catch(() => {
+      // Keep the decoded idle frame visible; retry preparation when this view returns.
+      if (token === generation) running = false;
     });
   }
 
