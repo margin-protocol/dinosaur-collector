@@ -11,3 +11,5 @@
 `tests/hatching.cjs` 驗證 360／390／430px、完整播放／跳過／Escape、重複獎勵、安排入住、刷新、612px 矮畫面、reduced-motion 與跨分頁單次結算。`tests/mobile.cjs` 回歸拍照願望、能量、存檔與孵化。截圖為隔離測試存檔，位於 `docs/review/hatching-*.png`。
 
 本次使用 Chromium 手機模擬，iOS Safari／Android Chrome 真機流暢度仍待驗收。
+
+彈窗驗收截圖採手機視窗截圖；原生 dialog 的 backdrop 只覆蓋視窗，整頁截圖會把視窗以外未遮暗的文件一併拍入，產生假斷層。彈窗開啟期間鎖定文件背景捲動，矮畫面在 dialog 內捲動。

@@ -29,3 +29,6 @@
 @media(max-height:700px) { .hatch-scene__egg { height:260px; } .hatch-scene[open] { gap:8px; } #reveal { padding-top:20px; } }
 @media(prefers-reduced-motion:reduce) { #reveal-img { animation:none; } .hatch-scene { animation:none; } }
 .hatch-scene:not([open]) { display:none; }
+
+/* Keep the page behind native modal backdrops stationary; scroll inside the dialog. */
+html:has(dialog[open]), body:has(dialog[open]) { overflow:hidden; overscroll-behavior:none; }
