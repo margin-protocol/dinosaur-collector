@@ -27,6 +27,7 @@
 <link rel="stylesheet" href="css/incubation.css">
 <link rel="stylesheet" href="css/hatching.css">
 <link rel="stylesheet" href="css/research.css">
+<link rel="stylesheet" href="css/tutorial.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
@@ -49,6 +50,12 @@
     <h1 class="header__title" id="page-title"></h1>
     <div class="rule" aria-hidden="true"><span class="gem"></span></div>
   </header>
+
+  <section id="tutorial-coach" class="tutorial-coach" aria-label="初次相遇教學" hidden>
+    <div class="tutorial-coach__top"><span id="tutorial-step"></span><button id="tutorial-pause" type="button">先自己逛逛</button></div>
+    <div class="tutorial-coach__body"><img src="assets/mascot/dinosaur-idle.webp" alt="" width="72" height="72"><div><h2 id="tutorial-title" aria-live="polite"></h2><p id="tutorial-copy"></p></div></div>
+    <div class="tutorial-coach__bottom"><button id="tutorial-more" type="button">旅程指南</button><button id="tutorial-action" type="button"></button></div>
+  </section>
 
   <main class="view view--home" data-view="home">
     <div class="home-heading"><div class="home-eyebrow">HOME / 01</div><h1>小湘的日常</h1><p id="home-subtitle">一起等待，初次相遇。</p></div>
@@ -205,8 +212,10 @@
     <button class="nav__item" type="button" id="open-cloud">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 9.5 4.3 4.3 0 0 0 7 18zM12 10v6M9.5 13.5 12 16l2.5-2.5"/></svg><span>雲端與備份</span>
     </button>
+    <button class="nav__item" type="button" id="open-tutorial"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7l1 2 1-2h7v15h-7l-1 2-1-2H4zM12 6v15M7 8h2M15 8h2M7 12h2M15 12h2"/></svg><span>旅程指南</span></button>
   </nav>
 <p class="fine">每一點陪伴，都讓我們更靠近。</p></dialog>
+<dialog id="tutorial-guide" class="sheet residents-dialog tutorial-guide" aria-labelledby="tutorial-guide-title"><div class="drawer-heading"><div><small>OUR FIRST CHAPTER</small><h2 id="tutorial-guide-title">初次相遇指南</h2></div><button class="close-button" id="close-tutorial" type="button" aria-label="關閉旅程指南">×</button></div><p class="tutorial-guide__intro">不用急著學會所有事。先陪一顆蛋長大，再慢慢把這個家變熱鬧。</p><ol class="tutorial-route"><li><b>認識你的蛋</b><span>在培育室查看蛋與孵化進度。第一顆本源蛋需要 100 點溫暖。</span></li><li><b>收下每天的見面禮</b><span>每日一次 +30 能量，首頁的禮物也可以領。</span></li><li><b>替小湘找一點顏色</b><span>每天三個今日願望，拍照或選相簿，指定顏色占 25% 以上。每項 +35 能量、+10 XP；辨色照片不上傳。</span></li><li><b>把能量變成溫暖</b><span>點「注入能量」或蛋，每次最多 10 點。進度滿後，再點一下迎接她。暫時沒能量就再完成願望，或到「隨手收藏」拍照。</span></li><li><b>一起回家生活</b><span>新夥伴會自動入住有空位的首頁，最多三位。點她打招呼、來回滑動摸摸頭，或把布丁拖給她。</span></li></ol><div class="tutorial-next"><b>之後，還有好多相遇</b><p>成長願望每項可領 20 XP＋20 能量；探索附近收集縣市蛋。第一次孵化後，到培育室從三顆新蛋中挑一顆。圖鑑、賓果與成就都在研究者手記，想找更多玩法時再來看看。</p><p>雲端連線是選用功能；「湘的委託」與「寄照片給湘」會上傳照片，和今日願望的手機辨色不同。</p></div><p id="tutorial-guide-status" role="status"></p><button class="btn" id="tutorial-resume" type="button">讓小恐龍帶路</button></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <dialog class="residents-dialog sheet" id="residents" aria-labelledby="residents-title"><div class="drawer-heading"><div><small>MAKE YOURSELF AT HOME</small><h2 id="residents-title">入住安排</h2></div><button class="close-button" type="button" id="close-residents" aria-label="關閉入住安排">×</button></div><p class="residents-intro">選擇最多三位已收集的小湘，一起在首頁生活。</p><p id="residents-summary"></p><div id="residents-list" class="residents-list"></div><p class="residents-feedback" id="residents-feedback" role="status" aria-live="polite"></p><button class="btn" type="button" id="residents-done">完成安排</button></dialog>

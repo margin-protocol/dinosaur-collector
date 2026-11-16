@@ -1,3 +1,4 @@
+import { createTutorial, startTutorial } from './tutorial.js';
 import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
@@ -102,6 +103,15 @@ const room = createRoom($('resident-lanes'), character => {
   });
 });
 const research = createResearch({ root: $('research-root'), getState: loadState, onCollect: () => showView('incubate') });
+
+const tutorial = createTutorial({
+  getState: () => state,
+  save: async mutator => { state = (await updateState(mutator)).state; renderAll(); },
+  context: () => ({ needed: EGGS[state.egg.id].warmthNeeded, snapsRemaining: SNAP.perDay - snapsToday(state, todayKey()), giftAvailable: giftReady(state, todayKey()), residents: residentsFor(state.dex).length, view: document.body.dataset.view }),
+  navigate: showView, collectGift,
+  arrange: () => $('open-residents').click(),
+  onDialog: syncRoomActivity, notify: toast,
+});
 
 function syncRoomActivity() {
   room.setActive(document.body.dataset.view === 'home' && !document.hidden && !document.querySelector('dialog[open]'));
@@ -659,6 +669,7 @@ function renderAll() {
   renderDex();
   research.update();
   if ($('residents').open) renderResidents();
+  tutorial.render();
 }
 
 function showView(name, options = {}) {
@@ -684,6 +695,11 @@ function showView(name, options = {}) {
   if (name === 'wish') {
     renderWishes();
     wishBook.openAtFirstUndone();
+  }
+  tutorial.clearTarget();
+  tutorial.render();
+  if (name === 'incubate' && state.tutorial?.status === 'active' && !state.tutorial.visitedEgg) {
+    void updateState(current => { if (current.tutorial?.status === 'active') current.tutorial.visitedEgg = true; }).then(t => { state = t.state; tutorial.render(); });
   }
 }
 
@@ -1097,7 +1113,7 @@ $('residents-list').addEventListener('click', event => {
   else { $('residents-feedback').textContent = '首頁最多入住三位，先讓一位休息，再邀請她吧。'; return; }
   if (!saveResidents(ids)) { $('residents-feedback').textContent = '這次安排無法儲存，請再試一次。'; return; }
   $('residents-feedback').textContent = '';
-  renderHome(); renderResidents();
+  renderHome(); renderResidents(); tutorial.render();
   $('residents-list').querySelector(`[data-no="${no}"]`)?.focus({ preventScroll: true });
 });
 for (const dialog of document.querySelectorAll('dialog')) dialog.addEventListener('close', syncRoomActivity);
@@ -1124,7 +1140,7 @@ document.addEventListener('visibilitychange', () => {
 });
 $('fab-letter').addEventListener('click', openLetterBox);
 $('intro-ok').addEventListener('click', () => {
-  void updateState(current => { current.seenIntro = true; }).then(transaction => { state = transaction.state; $('intro').close(); renderAll(); });
+  void updateState(current => { current.seenIntro = true; if (!current.tutorial) startTutorial(current); }).then(transaction => { state = transaction.state; $('intro').close(); renderAll(); });
 });
 $('photo-ok').addEventListener('click', () => $('photo').close());
 $('book-home').addEventListener('click', () => {
