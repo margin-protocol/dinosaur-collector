@@ -33,7 +33,7 @@ export function createMissions({ book, steps, onShoot, onSelect }) {
       } else {
         const label = node('label', 'mission-shoot', fx.scanning === wish.id ? '辨識中…' : '拍照探索');
         label.innerHTML = `<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h4l2-3h4l2 3h4v13H4z"/><circle cx="12" cy="13" r="4"/></svg><span>${fx.scanning === wish.id ? '辨識中…' : '拍照探索'}</span><span aria-hidden="true">⟶</span>`;
-        const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.capture = 'environment'; input.className = 'visually-hidden'; input.disabled = Boolean(fx.scanning);
+        const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.className = 'visually-hidden'; input.disabled = Boolean(fx.scanning);
         input.setAttribute('aria-label', `${wish.copy.name}：${wish.copy.hint}`);
         input.addEventListener('change', () => { const file = input.files?.[0]; input.value = ''; if (file) { index = i; onShoot(wish, file); } });
         label.append(input); card.append(label);

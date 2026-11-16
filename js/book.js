@@ -78,7 +78,7 @@ export function createBook({ book, pager, onShoot }) {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = 'image/*';
-        input.capture = 'environment';
+        // 可以拍照或從相簿選（湘決定開放）
         input.className = 'visually-hidden';
         input.disabled = Boolean(fx.scanning);
         input.setAttribute('aria-label', `拍照完成願望：${w.copy.name}（${w.copy.hint}）`);

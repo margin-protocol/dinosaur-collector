@@ -9,7 +9,7 @@ const gc=await b.newContext(opts);await gc.route('https://api.github.com/**',fak
 await gc.route('**/js/reviewer-key.js',route=>route.fulfill({contentType:'text/javascript',body:`export const REVIEWER_PUBLIC_JWK = ${JSON.stringify(pub)};`}));
 const g=await gc.newPage();g.on('pageerror',e=>errs.push('game: '+e.message));const key='siang-collector:v1';const save=()=>g.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
 await g.goto('http://127.0.0.1:8000');await g.click('#intro-ok');
-for(const id of ['snap-input','mission-input','postcard-input']) assert.equal(await g.getAttribute('#'+id,'capture'),null,id+' allows album');
+for(const id of ['snap-input','mission-input','postcard-input','dino-task-input']) assert.equal(await g.getAttribute('#'+id,'capture'),null,id+' allows album');
 await g.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=1;s.dex={'001':{at:'x'}};localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:cloud:v1',JSON.stringify({repo:'tester/private-data',token:'good-token'}));},key);await g.reload();
 const png=Buffer.from(await g.evaluate(()=>{const cv=document.createElement('canvas');cv.width=cv.height=50;const x=cv.getContext('2d');x.fillStyle='#e9a';x.fillRect(0,0,50,50);return cv.toDataURL('image/png').split(',')[1];}),'base64');
 await g.click('#open-center');await g.click('#open-postcard');await g.locator('#postcard-dialog[open]').waitFor();
