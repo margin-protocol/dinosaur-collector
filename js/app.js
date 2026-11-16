@@ -262,6 +262,30 @@ function renderGrowth() {
   $('growth-action').textContent = pending ? pending.destination === 'daily' ? '去實現今日願望 ⟶' : '前往培育 ⟶' : chapter.goals.some(g => !goalProgress(state, g).claimed) ? '領取已完成的願望' : '看看今日願望 ⟶';
 }
 
+function canChooseEgg(current, id) {
+  if (current.egg.id === id) return true;
+  if (current.egg.warmth > 0) return false;
+  const firstHatched = current.hatched > 0 || Boolean(current.dex['001']);
+  return id === 'origin' ? !firstHatched : firstHatched;
+}
+
+function renderEggChoices() {
+  const firstHatched = state.hatched > 0 || Boolean(state.dex['001']);
+  $('egg-picker-note').textContent = state.egg.warmth > 0 ? '這顆蛋已經收到你的溫暖，孵化完成後再選下一顆。' : '本源蛋是首次相遇的禮物；完成第一次孵化後，普通蛋會接著開啟收藏旅程。';
+  $('egg-choices').replaceChildren(...Object.values(EGGS).map(egg => {
+    const current = state.egg.id === egg.id;
+    const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = egg.id; card.setAttribute('aria-pressed', String(current)); card.disabled = busy || !canChooseEgg(state, egg.id);
+    const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true');
+    const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
+    const content = document.createElement('div');
+    const title = document.createElement('h3'); title.textContent = egg.name;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : '隨機遇見 4 種小湘，可能重複';
+    const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
+    const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : egg.id === 'ordinary' && !firstHatched ? '首次孵化後解鎖' : state.egg.warmth > 0 ? '完成目前培育後可選' : '選擇這顆蛋';
+    content.append(title, detail, cost, label); card.append(art, content); return card;
+  }));
+}
+
 function showWishTab(name, focus = false) {
   wishTab = name;
   for (const tab of ['daily', 'growth']) {
@@ -665,6 +689,26 @@ $('presenter-list').addEventListener('click', event => {
 /* ---------- 事件 ---------- */
 
 eggButton.addEventListener('click', onEggTap);
+$('open-eggs').addEventListener('click', () => {
+  state = loadState(); renderEggChoices(); $('egg-picker-feedback').textContent = ''; $('egg-picker').showModal(); syncRoomActivity();
+});
+$('close-eggs').addEventListener('click', () => $('egg-picker').close());
+$('egg-choices').addEventListener('click', async event => {
+  const choice = event.target.closest('[data-egg]');
+  if (!choice || choice.disabled || busy) return;
+  busy = true;
+  try {
+    const { state: latest, result } = await updateState(current => {
+      const id = choice.dataset.egg;
+      if (!EGGS[id] || !canChooseEgg(current, id)) return false;
+      if (current.egg.id !== id) current.egg = newEgg(id);
+      return true;
+    });
+    state = latest;
+    if (result) { $('egg-picker').close(); toast('這顆蛋正等著你的照顧。'); }
+    else { renderEggChoices(); $('egg-picker-feedback').textContent = '培育進度已更新，請先完成目前這顆蛋。'; }
+  } finally { busy = false; state = loadState(); renderAll(); }
+});
 $('cultivate').addEventListener('click', onEggTap);
 $('home-wishes').addEventListener('click', () => showView('wish'));
 $('incubate-wishes').addEventListener('click', () => showView('wish'));

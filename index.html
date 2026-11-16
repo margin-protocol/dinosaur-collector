@@ -99,6 +99,7 @@
       </div>
     </div>
 
+    <button class="egg-select-entry" id="open-eggs" type="button" aria-haspopup="dialog" aria-controls="egg-picker">選擇蛋 <span aria-hidden="true">⌄</span></button>
     <p class="incubation-message" id="incubation-message" aria-live="polite"></p>
     <section class="vitals card" id="vitals" role="progressbar" aria-label="孵化進度" aria-valuemin="0" aria-valuemax="100">
       <div class="vitals__id"><span class="vitals__en">VITAL SIGN</span><span class="vitals__zh">孵化進度 <strong id="incubation-percent">0%</strong></span></div>
@@ -174,6 +175,8 @@
 <dialog class="residents-dialog sheet" id="residents" aria-labelledby="residents-title"><div class="drawer-heading"><div><small>MAKE YOURSELF AT HOME</small><h2 id="residents-title">入住安排</h2></div><button class="close-button" type="button" id="close-residents" aria-label="關閉入住安排">×</button></div><p class="residents-intro">選擇最多三位已收集的小湘，一起在首頁生活。</p><p id="residents-summary"></p><div id="residents-list" class="residents-list"></div><p class="residents-feedback" id="residents-feedback" role="status" aria-live="polite"></p><button class="btn" type="button" id="residents-done">完成安排</button></dialog>
 
 <dialog class="presenter-dialog residents-dialog sheet" id="presenter" aria-labelledby="presenter-title"><div class="drawer-heading"><div><small>YOUR WISH COMPANION</small><h2 id="presenter-title">今天想和誰一起？</h2></div><button class="close-button" type="button" id="close-presenter" aria-label="關閉切換小湘">×</button></div><p class="residents-intro">選擇已收集的小湘陪你許願。切換不會改變當天任務與完成進度。</p><div id="presenter-list" class="residents-list"></div><p id="presenter-feedback" role="status" aria-live="polite"></p></dialog>
+
+<dialog class="residents-dialog sheet egg-picker" id="egg-picker" aria-labelledby="egg-picker-title"><div class="drawer-heading"><div><small>CHOOSE YOUR NEXT ENCOUNTER</small><h2 id="egg-picker-title">選擇培育的蛋</h2></div><button class="close-button" type="button" id="close-eggs" aria-label="關閉選擇蛋">×</button></div><p class="residents-intro" id="egg-picker-note"></p><div id="egg-choices"></div><p id="egg-picker-feedback" role="status" aria-live="polite"></p></dialog>
 
 <dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">
   <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
