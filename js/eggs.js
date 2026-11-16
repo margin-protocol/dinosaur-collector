@@ -90,9 +90,7 @@ export const EGGS = {
     warmthNeeded: 100,
     hatches: null,
     stocked: true, // 節日、生日、集滿縣市時收到，蛋上記著固定孵出的小湘
-    // 暫用：正式的紀念蛋素材還沒到。素材放進 assets/eggs/keepsake/ 後刪掉這兩行
-    art: 'origin',
-    tint: 'hue-rotate(320deg) saturate(1.4) brightness(1.05)',
+    // 正式紀念／節日蛋圖層：assets/eggs/keepsake/{shell,glow,cracks}.webp
   },
   county: {
     id: 'county',
