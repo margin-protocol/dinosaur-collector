@@ -103,9 +103,7 @@ export const EGGS = {
     hatches: null,
     stocked: true, // 見面時掃描湘的約會 QR Code 取得
     pool: { '014': 55, '042': 45 }, // 約會小湘、蝰蝰♡
-    // 暫用：正式的約會蛋素材還沒到（概念圖 concepts-v1/date.webp）。素材放進 assets/eggs/date/ 後刪掉這兩行
-    art: 'origin',
-    tint: 'hue-rotate(300deg) saturate(1.6) brightness(1.02)',
+    // 正式三層素材：assets/eggs/date/{shell,glow,cracks}.webp
   },
   county: {
     id: 'county',
