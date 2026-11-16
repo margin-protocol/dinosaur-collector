@@ -107,7 +107,18 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex__img { width: 100%; aspect-ratio: 1; object-fit: contain; }
 .dex__img.is-locked { filter: brightness(0); opacity: 0.75; }
 .dex__no { font-family: var(--font-mono); font-size: 11px; color: var(--rose-metal); letter-spacing: 0.14em; }
-.dex__name { font-family: var(--font-display); font-size: 14px; }
+.dex__name { font-family: var(--font-display); font-size: clamp(12px, 3.5vw, 14px); white-space: nowrap; letter-spacing: -0.02em; }
+.dex__modes { display: flex; justify-content: center; gap: 0; margin: 10px auto 14px; border: 1px solid #ad96b14d; border-radius: 999px; width: max-content; padding: 3px; }
+.dex__modes button { min-height: 36px; min-width: 88px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: var(--silver); font: 13px var(--font-display); letter-spacing: 0.12em; }
+.dex__modes button[aria-pressed="true"] { background: #e9e2ee; color: #2a2333; }
+.dex__section + .dex__section { margin-top: 22px; }
+.dex__section-title { display: flex; align-items: baseline; justify-content: space-between; margin: 0 2px 10px; padding-bottom: 6px; border-bottom: 1px solid #ad96b13d; font: 400 15px var(--font-display); letter-spacing: 0.14em; color: var(--ivory); }
+.dex__section-title small { font-family: var(--font-mono); font-size: 11px; color: var(--rose-metal); letter-spacing: 0.1em; }
+.dex__tag { position: absolute; z-index: 2; top: 7px; left: 7px; padding: 2px 6px; border-radius: 999px; font: 10px var(--font-display); letter-spacing: 0.08em; line-height: 1.4; color: #2a2333; background: #d9d2e0; }
+.dex__tag--weather { background: #bcd3ea; }
+.dex__tag--recipe { background: #f0c7a4; }
+.dex__tag--date { background: #f2b8c6; }
+.dex__tag--memorial { background: #f1d98a; }
 
 /* ---------- 底部分頁列 ---------- */
 .nav {

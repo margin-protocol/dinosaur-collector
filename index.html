@@ -141,7 +141,11 @@
 
   <main class="view" data-view="dex" hidden>
     <p class="dex__count" id="dex-count"></p>
-    <ul class="dex__grid" id="dex-grid"></ul>
+    <div class="dex__modes" role="group" aria-label="圖鑑排列方式">
+      <button type="button" data-dex-mode="all" aria-pressed="true">依編號</button>
+      <button type="button" data-dex-mode="series" aria-pressed="false">依系列</button>
+    </div>
+    <div id="dex-grid"></div>
     <div hidden>
       <button class="btn btn--quiet" id="reset-btn" type="button">重置進度（測試用）</button>
     </div>

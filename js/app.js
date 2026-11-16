@@ -1,4 +1,4 @@
-import { EGGS, CHARACTERS, DUPLICATE_FOSSILS, rollHatch, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
+import { EGGS, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollHatch, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
@@ -323,29 +323,67 @@ function announceLevel(result) {
   }
 }
 
+const DEX_MODE_KEY = 'siang-collector:dex-mode:v1';
+function dexMode() {
+  try { return localStorage.getItem(DEX_MODE_KEY) === 'series' ? 'series' : 'all'; } catch { return 'all'; }
+}
+document.querySelectorAll('[data-dex-mode]').forEach((button) => button.addEventListener('click', () => {
+  try { localStorage.setItem(DEX_MODE_KEY, button.dataset.dexMode); } catch {}
+  renderDex();
+}));
+
+function dexCard(c) {
+  const has = Boolean(state.dex[c.no]);
+  const li = document.createElement('li');
+  li.className = `dex__card card${has ? ' is-owned' : ''}`;
+  const img = document.createElement('img');
+  img.className = `dex__img${has ? '' : ' is-locked'}`;
+  img.alt = has ? c.name : '尚未收集的小湘';
+  loadWithFallback(img, characterSources(c.image));
+  const series = SERIES[c.series];
+  if (series) {
+    const tag = document.createElement('span');
+    tag.className = `dex__tag dex__tag--${c.series}`;
+    tag.textContent = series.short;
+    li.append(tag);
+  }
+  const no = document.createElement('div');
+  no.className = 'dex__no';
+  no.textContent = `No.${c.no}`;
+  const name = document.createElement('div');
+  name.className = 'dex__name';
+  name.textContent = has ? c.name : '???';
+  li.append(img, no, name);
+  return li;
+}
+
+function dexList(characters) {
+  const ul = document.createElement('ul');
+  ul.className = 'dex__grid';
+  ul.append(...characters.map(dexCard));
+  return ul;
+}
+
 function renderDex() {
   const all = Object.values(CHARACTERS);
   const owned = all.filter((c) => state.dex[c.no]);
   $('dex-count').textContent = `已收集 ${owned.length} / ${all.length}`;
-  $('dex-grid').replaceChildren(
-    ...all.map((c) => {
-      const has = Boolean(state.dex[c.no]);
-      const li = document.createElement('li');
-      li.className = `dex__card card${has ? ' is-owned' : ''}`;
-      const img = document.createElement('img');
-      img.className = `dex__img${has ? '' : ' is-locked'}`;
-      img.alt = has ? c.name : '尚未收集的小湘';
-      loadWithFallback(img, characterSources(c.image));
-      const no = document.createElement('div');
-      no.className = 'dex__no';
-      no.textContent = `No.${c.no}`;
-      const name = document.createElement('div');
-      name.className = 'dex__name';
-      name.textContent = has ? c.name : '???';
-      li.append(img, no, name);
-      return li;
-    }),
-  );
+  const mode = dexMode();
+  document.querySelectorAll('[data-dex-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.dexMode === mode)));
+  if (mode === 'all') { $('dex-grid').replaceChildren(dexList(all)); return; }
+  $('dex-grid').replaceChildren(...Object.entries(SERIES).map(([id, series]) => {
+    const members = all.filter((c) => c.series === id);
+    if (!members.length) return '';
+    const section = document.createElement('section');
+    section.className = 'dex__section';
+    const title = document.createElement('h2');
+    title.className = 'dex__section-title';
+    const got = members.filter((c) => state.dex[c.no]).length;
+    title.innerHTML = `<span></span><small>${got} / ${members.length}</small>`;
+    title.firstChild.textContent = series.name;
+    section.append(title, dexList(members));
+    return section;
+  }));
 }
 
 function renderResidents() {
