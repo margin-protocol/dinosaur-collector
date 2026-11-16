@@ -41,6 +41,10 @@ await p.locator('#reveal-ok').click();
 await p.evaluate(()=>location.hash='home');await p.waitForTimeout(300);
 await p.locator('#explore').click();await p.locator('#county-call[open]').waitFor();
 assert.match(await p.locator('#county-title').textContent(),/還沒有小湘的訊號/);await p.locator('#county-ok').click();
+// Green Island is its own spot inside Taitung
+await c.setGeolocation({latitude:22.66,longitude:121.49});await p.reload();await p.waitForTimeout(2500);await p.locator('#county-call[open]').waitFor({timeout:1}).catch(()=>{});if(!(await p.locator('#county-call[open]').count()))await p.locator('#explore').click();await p.locator('#county-call[open]').waitFor();
+assert.match(await p.locator('#county-title').textContent(),/綠島小湘想出現/);await p.locator('#county-ok').click();
+s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.ok(s.travel.eggs.includes('綠島'));
 await c.close();
 // denied permission
 const d=await b.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});const q=await d.newPage();

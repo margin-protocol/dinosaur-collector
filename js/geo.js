@@ -39,13 +39,25 @@ export function countyAt(counties, lon, lat) {
   return best;
 }
 
+// 特別地點：在範圍內時優先於縣市（例如綠島屬於臺東縣，但有自己的小湘）
+export const SPOTS = [
+  { name: '綠島', lat: 22.66, lon: 121.49, radiusKm: 7 },
+];
+export function spotAt(lon, lat) {
+  for (const s of SPOTS) {
+    const km = Math.hypot((lon - s.lon) * 111.32 * Math.cos((lat * Math.PI) / 180), (lat - s.lat) * 110.57);
+    if (km <= s.radiusKm) return s.name;
+  }
+  return null;
+}
+
 export function currentPosition() {
   return new Promise((resolve, reject) => {
     if (!navigator.geolocation) { reject(Object.assign(new Error('unsupported'), { code: 'unsupported' })); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lon: pos.coords.longitude, lat: pos.coords.latitude }),
       (err) => reject(err),
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 10 * 60 * 1000 },
+      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60 * 1000 },
     );
   });
 }

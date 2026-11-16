@@ -8,7 +8,7 @@ import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
 import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
 import { applyReward, validReward, describeReward } from './gifts.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
-import { loadCounties, countyAt, currentPosition, geoPermission } from './geo.js';
+import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 import { createMissions } from './missions.js';
@@ -1012,7 +1012,7 @@ async function explore({ silent = false } = {}) {
     catch (err) { if (!silent) showCountyCall({ error: err?.code === 1 ? 'denied' : 'failed' }); return; }
     let counties;
     try { counties = await loadCounties(); } catch { if (!silent) showCountyCall({ error: 'failed' }); return; }
-    const county = countyAt(counties, pos.lon, pos.lat);
+    const county = spotAt(pos.lon, pos.lat) || countyAt(counties, pos.lon, pos.lat);
     const weather = await checkWeather(pos);
     if (!county) { if (!silent) showCountyCall({ county: null, weather }); else announceWeather(weather); return; }
     const transaction = await updateState(current => checkIn(current, county, todayKey()));

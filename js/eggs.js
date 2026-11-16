@@ -154,6 +154,8 @@ export const CHARACTERS = {
   '032': { no: '032', name: '宜蘭縣小湘', rarity: 'R', line: '「泡完溫泉來吃蔥油餅，小狐狸說牠也要一口。」', image: 'siang-032-yilan', series: 'county', county: '宜蘭縣', special: true },
   '033': { no: '033', name: '花蓮縣小湘', rarity: 'R', line: '「七星潭撿到一顆最圓的石頭，送你。晚上去逛東大門！」', image: 'siang-033-hualien', series: 'county', county: '花蓮縣', special: true },
   '034': { no: '034', name: '臺東縣小湘', rarity: 'R', line: '「我騎車載你！……騙你的，你載我。」', image: 'siang-034-taitung', series: 'county', county: '臺東縣', special: true },
+  // 特別地點小湘：在縣市裡的特定地點打卡取得（地點範圍見 js/geo.js 的 SPOTS）
+  '035': { no: '035', name: '綠島小湘', rarity: 'SR', line: '「燈塔幫我們看著海，你只要負責看著我就好。」', image: 'siang-035-green-island', series: 'county', county: '綠島', special: true },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序
