@@ -282,7 +282,7 @@ function renderEggChoices() {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : '隨機遇見 4 種小湘，可能重複';
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘，可能重複`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : egg.id === 'ordinary' && !firstHatched ? '首次孵化後解鎖' : state.egg.warmth > 0 ? '完成目前培育後可選' : '選擇這顆蛋';
     content.append(title, detail, cost, label); card.append(art, content); return card;
