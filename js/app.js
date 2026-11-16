@@ -30,6 +30,7 @@ import { createMissions } from './missions.js';
 import { createResearch } from './research.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth } from './progression.js';
 import * as install from './install.js';
+import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -197,7 +198,8 @@ function renderHome() {
     $(id).textContent = open.length;
   }
 
-  const ids = room.update(state.dex);
+  const away = awayNos(state);
+  const ids = room.update(away.size ? Object.fromEntries(Object.entries(state.dex).filter(([no]) => !away.has(no))) : state.dex);
   ambience(homeAmbience());
   $('snack').hidden = !ids.length;
   $('snack-left').textContent = Math.max(0, snacksLeft(state, todayKey()));
@@ -663,6 +665,7 @@ function renderAll() {
   if (document.getElementById('dex-detail')) grantKeepsakes();
   if (document.getElementById('dino-task')) renderDinoTask();
   if (document.getElementById('letter-badge')) renderLetterBadge();
+  if (document.getElementById('errand-badge')) renderErrandBadge();
   if (document.getElementById('snap-count')) renderSnap();
   if (document.getElementById('explore')) $('explore').hidden = !(state.hatched > 0 || Boolean(state.dex['001']));
   renderResources();
@@ -2140,3 +2143,141 @@ install.onChange(type => {
   if (type === 'installed') { if ($('install-dialog').open) $('install-dialog').close(); toast('小湘收集器放到主畫面囉！之後點圖示就能打開～'); }
 });
 if (install.isInstalled()) $('open-install').hidden = true;
+
+// ── 派小湘出門
+var errandChoice = null; // { place } 或 { task }
+var errandPicked = [];
+var announcedBack; // var：renderAll 在檔案尾端宣告之前就會跑
+function siangImg(no, cls = '') {
+  const img = document.createElement('img'); img.alt = CHARACTERS[no].name; img.draggable = false; if (cls) img.className = cls;
+  loadWithFallback(img, characterSources(CHARACTERS[no].image)); return img;
+}
+function tripCard(entry) {
+  const card = document.createElement('div'); card.className = 'trip-card'; card.dataset.place = entry.place || 'home';
+  const bg = document.createElement('img'); bg.className = 'trip-card__img'; bg.alt = ''; bg.src = `assets/places/${entry.place}.webp`; bg.onerror = () => bg.remove();
+  const who = document.createElement('div'); who.className = 'trip-card__who'; who.append(...entry.nos.map(no => siangImg(no)));
+  const tag = document.createElement('span'); tag.className = 'trip-card__tag'; tag.textContent = `${PLACES[entry.place]?.emoji || ''} ${PLACES[entry.place]?.name || ''}`;
+  card.append(bg, who, tag);
+  if (entry.story) { const st = document.createElement('span'); st.className = 'trip-card__story'; st.textContent = '📖'; card.append(st); }
+  return card;
+}
+function renderErrandBadge() {
+  const owned = Object.keys(state.dex || {}).length;
+  $('home-errand').hidden = !owned;
+  const back = returned(state).length;
+  $('errand-badge').hidden = !back; $('errand-badge').textContent = back;
+  $('home-errand').classList.toggle('is-back', back > 0);
+  for (const e of returned(state)) {
+    announcedBack ||= new Set();
+    if (announcedBack.has(e.id)) continue; announcedBack.add(e.id);
+    const names = e.nos.map(no => CHARACTERS[no].name).join('和');
+    toast(e.place ? `${names}從${PLACES[e.place].name}回來了！點「出門」收下她帶的東西。` : `${names}的「${HOME_TASKS[e.task].name}」做好了！`);
+  }
+}
+function renderErrands() {
+  const er = state.errands;
+  const now = Date.now();
+  $('errand-active').replaceChildren(...er.active.map(e => {
+    const row = document.createElement('div'); const back = isBack(e, now); row.className = `errand-trip${back ? ' is-back' : ''}`;
+    const who = document.createElement('div'); who.className = 'errand-trip__who'; who.append(...e.nos.map(no => siangImg(no)));
+    const text = document.createElement('div'); const b = document.createElement('b'); const small = document.createElement('small');
+    const names = e.nos.map(no => CHARACTERS[no].name).join('和');
+    b.textContent = e.place ? `${names}去${PLACES[e.place].name}` : `${names}在${HOME_TASKS[e.task].name}`;
+    small.textContent = back ? '回來了！' : `還要 ${fmtLeft(e, now)}`;
+    text.append(b, small); row.append(who, text);
+    if (back) { const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.textContent = '收下'; btn.addEventListener('click', () => void collectErrand(e.id)); row.append(btn); }
+    return row;
+  }));
+  const full = er.active.length >= ERRAND_SLOTS;
+  const placeBtn = (key, info, kind) => {
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-place';
+    btn.setAttribute('aria-pressed', String(errandChoice?.[kind] === key)); btn.disabled = full;
+    btn.innerHTML = `<span aria-hidden="true">${info.emoji}</span>${info.name}<small>${info.hours} 小時</small>`;
+    btn.addEventListener('click', () => { errandChoice = { [kind]: key }; errandPicked = []; $('errand-status').textContent = ''; renderErrands(); $('errand-pick').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
+    return btn;
+  };
+  $('errand-places').replaceChildren(...Object.entries(PLACES).map(([k, v]) => placeBtn(k, v, 'place')));
+  $('errand-tasks').replaceChildren(...Object.entries(HOME_TASKS).map(([k, v]) => placeBtn(k, v, 'task')));
+  $('errand-status').textContent = full && !$('errand-status').textContent ? `同時最多 ${ERRAND_SLOTS} 趟，等她們回來再派吧。` : $('errand-status').textContent;
+  // 選小湘
+  const pick = $('errand-pick'); pick.hidden = !errandChoice || full;
+  if (errandChoice && !full) {
+    const place = errandChoice.place; const max = place ? 2 : 1;
+    const info = place ? PLACES[place] : HOME_TASKS[errandChoice.task];
+    const fav = place ? info.affinity.map(sr => SERIES[sr]?.short).filter(Boolean).join('、') : '';
+    const story = storyFor(errandPicked);
+    $('errand-pick-hint').textContent = place
+      ? `${info.emoji} ${info.name}（${info.hours} 小時）：選 1～2 位。★ 是${fav}系列，特別喜歡這裡，帶回的東西更多。${place === 'faraway' ? '縣市小湘遠行會帶回家鄉明信片，偶爾撿到沒去過的縣市蛋。' : ''}${errandPicked.length === 2 ? (story ? (state.errands.stories[story.id] ? `（這組會發生「${story.title}」）` : '（這組好像會發生什麼事…）') : '' ) : ''}`
+      : `${info.emoji} ${info.name}（${info.hours} 小時）：${info.desc}。選一位。`;
+    const busy = busyNos(state);
+    const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
+    owned.sort((a, b) => (place ? Number(hasAffinity(place, b)) - Number(hasAffinity(place, a)) : 0));
+    $('errand-siangs').replaceChildren(...owned.map(no => {
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang';
+      btn.setAttribute('aria-pressed', String(errandPicked.includes(no)));
+      btn.disabled = busy.has(no);
+      btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: busy.has(no) ? '忙碌中' : CHARACTERS[no].name.replace(/小湘.*/, '') || CHARACTERS[no].name }));
+      if (place && hasAffinity(place, no)) btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '★' }));
+      btn.addEventListener('click', () => {
+        if (errandPicked.includes(no)) errandPicked = errandPicked.filter(x => x !== no);
+        else errandPicked = max === 1 ? [no] : [...errandPicked, no].slice(-max);
+        renderErrands();
+      });
+      return btn;
+    }));
+    $('errand-go').disabled = !errandPicked.length;
+    $('errand-go').textContent = place ? (errandPicked.length === 2 ? '一起出發' : '出發') : '拜託你了';
+  }
+  // 相簿與收藏
+  const counties = Object.keys(state.errands.cards).length;
+  $('errand-collection').textContent = `旅行故事 ${Object.keys(er.stories).length} / ${STORIES.length} · 家鄉明信片 ${counties} / ${Object.keys(COUNTY_CHARACTER).length} · 一共出門 ${er.total} 次`;
+  $('errand-album').replaceChildren(...(er.album.length ? er.album.map(entry => {
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'trip-card-btn'; btn.style.cssText = 'border:0;padding:0;background:none;color:inherit';
+    btn.append(tripCard(entry)); btn.setAttribute('aria-label', `${entry.nos.map(no => CHARACTERS[no].name).join('和')}去${PLACES[entry.place]?.name}`);
+    btn.addEventListener('click', () => showErrandResult({ ...entry, names: entry.nos.map(no => CHARACTERS[no].name).join('和') }, true));
+    return btn;
+  }) : [Object.assign(document.createElement('p'), { className: 'residents-intro', textContent: '還沒有旅行照片，派小湘出門看看吧！' })]));
+}
+function openErrands() {
+  errandChoice = null; errandPicked = []; $('errand-status').textContent = '';
+  renderErrands();
+  if (!$('errand-dialog').open) { $('errand-dialog').showModal(); syncRoomActivity(); }
+}
+function showErrandResult(r, replay = false) {
+  $('errand-result-card').replaceChildren(r.place ? tripCard(r) : Object.assign(document.createElement('div'), { className: 'trip-card', style: 'background:linear-gradient(160deg,#6a5a7a,#2a2236)' }));
+  if (!r.place) $('errand-result-card').firstChild.append(Object.assign(document.createElement('div'), { className: 'trip-card__who' }));
+  if (!r.place) $('errand-result-card').querySelector('.trip-card__who').append(...r.nos.map(no => siangImg(no)));
+  $('errand-result-eyebrow').textContent = replay ? new Date(r.at).toLocaleDateString('zh-TW') : 'WELCOME BACK';
+  $('errand-result-title').textContent = r.place ? `${r.names}從${PLACES[r.place].name}回來了` : `${r.names}的${HOME_TASKS[r.task].name}完成了`;
+  $('errand-result-line').textContent = r.place ? `「${r.line}」${r.boost ? '她好像特別喜歡那裡。' : ''}` : '';
+  $('errand-result-story').hidden = !r.story;
+  if (r.story) { $('errand-story-title').textContent = `📖 ${r.story.title}${r.storyFirst ? '（新故事！）' : ''}`; $('errand-story-text').textContent = r.story.text; }
+  $('errand-result-gains').replaceChildren(...(r.gains || []).map(g => Object.assign(document.createElement('li'), { textContent: g })));
+  $('errand-result-ok').textContent = replay ? '關閉' : '收下';
+  $('errand-result').showModal();
+}
+async function collectErrand(id) {
+  const t = await updateState(current => collect(current, id, { eggs: EGGS }));
+  state = t.state;
+  if (!t.result) { renderErrands(); return; }
+  renderAll(); renderErrands(); restart($('chip-energy'), 'is-bump');
+  showErrandResult(t.result);
+  if (t.result.nos.some(no => room.residents().includes(no))) { room.happy(t.result.nos[0]); room.hearts(t.result.nos[0], 5); }
+}
+$('errand-go').addEventListener('click', async () => {
+  if (!errandChoice || !errandPicked.length) return;
+  const choice = { ...errandChoice, nos: [...errandPicked] };
+  const t = await updateState(current => { const r = depart(current, choice); return typeof r === 'string' ? { error: r } : { errand: r }; });
+  state = t.state;
+  if (t.result.error) { $('errand-status').textContent = t.result.error; return; }
+  const e = t.result.errand; const names = e.nos.map(no => CHARACTERS[no].name).join('和');
+  errandChoice = null; errandPicked = [];
+  $('errand-status').textContent = e.place ? `${names}出發去${PLACES[e.place].name}了！${fmtLeft(e)}後回來。` : `${names}開始${HOME_TASKS[e.task].name}了，${fmtLeft(e)}後完成。`;
+  renderAll(); renderErrands();
+});
+$('home-errand').addEventListener('click', openErrands);
+$('open-errands').addEventListener('click', () => { $('function-center').close(); openErrands(); });
+$('close-errands').addEventListener('click', () => $('errand-dialog').close());
+$('errand-dialog').addEventListener('close', syncRoomActivity);
+$('errand-result-ok').addEventListener('click', () => $('errand-result').close());
+setInterval(() => { if (!document.hidden) { renderErrandBadge(); if ($('errand-dialog').open) renderErrands(); } }, 30 * 1000);

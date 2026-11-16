@@ -35,8 +35,8 @@ export function chatterLine(state, chars, { now = new Date(), today, residents =
 
 export function ensureDino(state, today) {
   const old = state.dino || {};
-  state.dino = { date: typeof old.date === 'string' ? old.date : today, count: Number.isSafeInteger(old.count) ? old.count : 0, task: old.task && typeof old.task.type === 'string' ? old.task : null };
-  if (state.dino.date !== today) { state.dino = { date: today, count: 0, task: null }; }
+  state.dino = { date: typeof old.date === 'string' ? old.date : today, count: Number.isSafeInteger(old.count) ? old.count : 0, task: old.task && typeof old.task.type === 'string' ? old.task : null, ...(old.double ? { double: true } : {}) };
+  if (state.dino.date !== today) { state.dino = { date: today, count: 0, task: null, ...(old.double ? { double: true } : {}) }; }
   return state.dino;
 }
 
@@ -69,7 +69,8 @@ export function taskProgress(state, task, { today, snapsToday = 0 } = {}) {
 
 export function completeTask(state) {
   if (!state.dino?.task) return 0;
-  state.dino.task = null; state.dino.count += 1; state.energy += TASK_REWARD;
+  const reward = state.dino.double ? TASK_REWARD * 2 : TASK_REWARD; // 有小湘陪過小恐龍，獎勵加倍一次
+  state.dino.task = null; state.dino.count += 1; state.energy += reward; delete state.dino.double;
   if (state.bonus?.total) state.bonus.total.tasks += 1;
-  return TASK_REWARD;
+  return reward;
 }
