@@ -1137,7 +1137,15 @@ $('bubble').addEventListener('click', guideAction);
 // 切到別的 App 或關螢幕時暫停角色
 document.addEventListener('visibilitychange', () => {
   syncRoomActivity();
+  if (!document.hidden) void syncFromCloud();
 });
+// 回到畫面時重新收信、收委託（加到主畫面的 App 切回來不會重新整理）；兩分鐘內不重複
+let lastCloudSync = 0;
+function syncFromCloud(force = false) {
+  if (!force && Date.now() - lastCloudSync < 2 * 60 * 1000) return Promise.resolve();
+  lastCloudSync = Date.now();
+  return fetchMail().then(() => syncMissions()).then(() => syncPostcardReplies()).catch(() => {});
+}
 $('fab-letter').addEventListener('click', openLetterBox);
 $('intro-ok').addEventListener('click', () => {
   void updateState(current => { current.seenIntro = true; if (!current.tutorial) startTutorial(current); }).then(transaction => { state = transaction.state; $('intro').close(); renderAll(); });
@@ -1567,11 +1575,11 @@ async function syncMissions() {
   missionsSyncing = (async () => {
     const cloud = createCloud(cloudConfig());
     const files = (await cloud.list('missions')).filter(f => f.name.endsWith('.json'));
-    const list = [];
+    const list = []; let badSeal = 0;
     for (const f of files) {
       const file = await cloud.getJSON(f.path); const p = file?.data?.payload;
       if (!p || p.type !== 'mission' || p.id !== f.name.slice(0, -5) || typeof p.title !== 'string' || !validReward(p.reward, CHARACTERS)) continue;
-      if (!(await verifySigned(REVIEWER_PUBLIC_JWK, file.data))) continue;
+      if (!(await verifySigned(REVIEWER_PUBLIC_JWK, file.data))) { badSeal += 1; continue; }
       list.push({ id: p.id, title: p.title.slice(0, 60), body: String(p.body || '').slice(0, 600), reward: p.reward, expires: p.expires || null, createdAt: p.createdAt || '' });
     }
     const reviews = (await cloud.list('reviews')).filter(f => f.name.endsWith('.json') && !state.gifts.reviews.includes(f.name));
@@ -1605,7 +1613,7 @@ async function syncMissions() {
         }
         applied.push({ ...r, mission });
       }
-      return { fresh, applied };
+      return { fresh, applied, badSeal };
     });
     state = t.state; renderAll();
     for (const r of t.result.applied) toast(r.approved ? `委託「${r.mission.title}」通過了！獲得${describeReward(r.mission.reward, CHARACTERS, EGGS)}，照片收進記憶檔案。` : `委託「${r.mission.title}」被退回了，看看湘的批註吧。`);
@@ -1646,7 +1654,7 @@ async function openMissions() {
   if (!$('missions-dialog').open) { $('missions-dialog').showModal(); syncRoomActivity(); }
   if (!ready2()) return;
   $('missions-status').textContent = '同步中…';
-  try { await syncMissions(); $('missions-status').textContent = ''; } catch (err) { $('missions-status').textContent = `同步失敗：${err.message}`; }
+  try { const r = await syncMissions(); $('missions-status').textContent = r.badSeal ? `有 ${r.badSeal} 個委託的印章對不上，遊戲先不收。把遊戲完全關掉再打開試試；還是不行請湘檢查審核室的印章。` : ''; } catch (err) { $('missions-status').textContent = `同步失敗：${err.message}`; }
   renderMissions();
 }
 $('open-missions').addEventListener('click', () => { $('function-center').close(); void openMissions(); });
@@ -2073,7 +2081,8 @@ attachSnackDrag($('snack'), {
 
 renderAll();
 renderExplore();
-void autoBackup().then(() => fetchMail()).then(() => syncMissions()).then(() => syncPostcardReplies()).catch(() => {});
+void autoBackup().catch(() => {}).then(() => syncFromCloud(true));
+setInterval(() => { if (!document.hidden) void syncFromCloud(); }, 10 * 60 * 1000);
 void handleDateHash();
 addEventListener('hashchange', event => { if (/date=/.test(event.newURL)) void handleDateHash(event.newURL); });
 void tickPassive().then(added => { if (added) toast(`你不在的時候，培養架幫蛋保溫了 +${added}`); });
