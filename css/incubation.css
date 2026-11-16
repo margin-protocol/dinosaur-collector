@@ -7,7 +7,7 @@ body[data-view="incubate"] .app { min-height:100svh; height:auto; overflow:visib
 .view--incubate .eggtitle__name { font-size:28px; }
 .view--incubate .eggtitle__meta { display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
 .view--incubate .stage { flex:none; width:100%; height:clamp(290px,43svh,400px); min-height:0; margin:0; overflow:hidden; }
-.view--incubate .incubator { width:min(125cqw,145cqh); max-width:490px; left:50%; top:48%; }
+.view--incubate .incubator { width:min(116cqw,132cqh); max-width:460px; left:50%; top:46%; }
 .view--incubate .side,.view--incubate .motes { display:none; }
 .incubation-message { min-height:42px; margin:0 0 16px; padding:0 10px; text-align:center; color:var(--pearl); font:12px/1.9 var(--font-display); letter-spacing:.04em; }
 .view--incubate .vitals { display:grid; grid-template-columns:1fr auto; gap:12px; padding:16px 0; border-top:1px solid #b9a0bb40; border-bottom:0; }
@@ -32,7 +32,7 @@ body[data-view="incubate"] .game-footer { min-height:70px; padding-top:8px; padd
 @media(max-width:374px) { .view--incubate { padding-top:18px; } .view--incubate .eggtitle__name { font-size:25px; } }
 @media(max-height:700px) { .view--incubate .stage { height:280px; } }
 body[data-view="incubate"] { background-image:linear-gradient(180deg,#151722c9,#151722a6 45%,#151722e8),url('../assets/scene/home-bg.webp'); }
-.egg-select-entry { align-self:center; display:flex; align-items:center; gap:12px; min-height:44px; margin:-12px 0 4px; padding:8px 16px; border:1px solid #aa94b14d; border-radius:24px; background:#282532; color:var(--pearl); font:12px var(--font-display); }
+.egg-select-entry { align-self:center; display:flex; align-items:center; gap:8px; min-height:44px; margin:0 0 8px; padding:6px 12px; border:1px solid #aa94b14d; border-radius:24px; background:#282532; color:var(--pearl); font:11px var(--font-display); }
 .egg-select-entry:active { background:#43374e; }
 .egg-picker { max-height:85svh; overflow-y:auto; }
 #egg-choices { display:flex; flex-direction:column; gap:12px; }
