@@ -24,6 +24,7 @@
 <link rel="stylesheet" href="css/companion.css">
 <link rel="stylesheet" href="css/wishes-game.css">
 <link rel="stylesheet" href="css/incubation.css">
+<link rel="stylesheet" href="css/hatching.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
@@ -199,25 +200,24 @@
   <button class="btn" id="photo-ok" type="button">好</button>
 </dialog>
 
-<div class="analysis" id="analysis" hidden aria-live="assertive">
-  <div class="analysis__grid" aria-hidden="true"></div>
-  <div class="analysis__scan" aria-hidden="true"></div>
-  <div class="analysis__box">
-    <div class="analysis__en">LIFEFORM ANALYSIS</div>
-    <div class="analysis__title">生命體分析中</div>
-    <div class="analysis__bar"><div class="analysis__fill" id="analysis-fill"></div></div>
-    <div class="analysis__pct" id="analysis-pct">000%</div>
-  </div>
-</div>
+<dialog class="analysis hatch-scene" id="analysis" aria-labelledby="hatch-title">
+  <button class="hatch-skip" id="hatch-skip" type="button">跳過演出 <span aria-hidden="true">↗</span></button>
+  <div class="hatch-scene__heading"><span>THE FIRST HELLO</span><h2 id="hatch-title">有個小小的聲音……</h2><p id="hatch-caption" role="status">你的溫暖，正在被回應。</p></div>
+  <div id="hatch-egg" class="hatch-scene__egg" aria-hidden="true"></div>
+  <div class="hatch-scene__progress" aria-hidden="true"><div class="analysis__bar"><div class="analysis__fill" id="analysis-fill"></div></div><span id="analysis-pct">000%</span></div>
+</dialog>
 
 <dialog class="sheet sheet--reveal" id="reveal" aria-label="孵化結果">
-  <div class="sheet__en" id="reveal-en">NEW SPECIMEN REGISTERED</div>
+  <div class="sheet__en" id="reveal-en">A NEW COMPANION</div>
+  <p class="reveal-greeting" id="reveal-greeting">初次見面，請多指教。</p>
   <img class="sheet__img" id="reveal-img" alt="">
   <div class="sheet__no" id="reveal-no"></div>
   <h2 class="sheet__name" id="reveal-name"></h2>
   <p class="sheet__line" id="reveal-line"></p>
   <p class="sheet__bonus" id="reveal-bonus" hidden></p>
-  <button class="btn" id="reveal-ok" type="button">收進圖鑑</button>
+  <button class="btn" id="reveal-ok" type="button">一起回家</button>
+  <button class="reveal-arrange" id="reveal-arrange" type="button">安排入住 <span aria-hidden="true">↗</span></button>
+  <p class="reveal-saved">相遇已記錄，收藏與獎勵已儲存。</p>
 </dialog>
 
 <script type="module" src="js/app.js"></script>

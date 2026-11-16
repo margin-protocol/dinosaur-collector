@@ -487,7 +487,7 @@ async function onEggTap() {
 
 async function hatch(expected) {
   buzz([30, 50, 30, 50, 60]);
-  await runAnalysis(); incubator.flare(); await eggView.hatch();
+  await runAnalysis();
   const transaction = await updateState(current => {
     if (current.egg.id !== expected.id || current.egg.since !== expected.since || current.egg.warmth < EGGS[current.egg.id].warmthNeeded) return null;
     const character = CHARACTERS[rollHatch(EGGS[current.egg.id])];
@@ -504,35 +504,59 @@ async function hatch(expected) {
   else toast('這顆蛋已經完成孵化，進度已更新。');
 }
 
-// 破殼前的過場：畫面變暗、掃描、分析進度跑到 100%
+// Skipping only ends the presentation; the shared hatch transaction still runs once.
 async function runAnalysis() {
   const box = $('analysis');
-  box.hidden = false;
-  const total = reducedMotion() ? 0 : 2600;
-  const start = performance.now();
-  await new Promise((resolve) => {
-    const tick = (now) => {
-      const p = total ? Math.min(1, (now - start) / total) : 1;
-      $('analysis-fill').style.width = `${p * 100}%`;
-      $('analysis-pct').textContent = `${pad(p * 100, 3)}%`;
-      if (p < 1) requestAnimationFrame(tick);
-      else resolve();
-    };
-    requestAnimationFrame(tick);
-  });
-  await sleep(250);
-  box.hidden = true;
+  const preview = createEggView(EGGS[state.egg.id]);
+  preview.setProgress(100);
+  $('hatch-egg').replaceChildren(preview.el);
+  $('hatch-title').textContent = '有個小小的聲音……';
+  $('hatch-caption').textContent = '你的溫暖，正在被回應。';
+  $('analysis-fill').style.width = '0%';
+  $('analysis-pct').textContent = '000%';
+  box.showModal(); syncRoomActivity();
+  try {
+    await new Promise(resolve => {
+      let frame = 0, finished = false, opened = false;
+      const start = performance.now();
+      const finish = () => {
+        if (finished) return;
+        finished = true; cancelAnimationFrame(frame);
+        $('hatch-skip').removeEventListener('click', finish);
+        box.removeEventListener('cancel', skip);
+        resolve();
+      };
+      const skip = event => { event.preventDefault(); finish(); };
+      $('hatch-skip').addEventListener('click', finish);
+      box.addEventListener('cancel', skip);
+      const tick = now => {
+        const p = reducedMotion() ? 1 : Math.min(1, (now - start) / 2800);
+        $('analysis-fill').style.width = `${p * 100}%`;
+        $('analysis-pct').textContent = `${Math.round(p * 100)}%`;
+        if (p >= .55 && !opened) {
+          opened = true;
+          $('hatch-title').textContent = '終於，要見面了。';
+          $('hatch-caption').textContent = '新的故事，從這一刻開始。';
+          preview.hatch();
+        }
+        if (p >= 1) finish(); else frame = requestAnimationFrame(tick);
+      };
+      frame = requestAnimationFrame(tick);
+    });
+  } finally { box.close(); }
 }
 
 function showReveal(c, duplicate) {
   loadWithFallback($('reveal-img'), characterSources(c.image));
   $('reveal-img').alt = c.name;
-  $('reveal-en').textContent = duplicate ? 'DUPLICATE SPECIMEN' : 'NEW SPECIMEN REGISTERED';
+  $('reveal').dataset.duplicate = String(duplicate);
+  $('reveal-en').textContent = duplicate ? 'HELLO AGAIN' : 'A NEW COMPANION';
+  $('reveal-greeting').textContent = duplicate ? '是你呀，我們又見面了。' : '初次見面，請多指教。';
   $('reveal-no').textContent = `No.${c.no} ｜ ${c.rarity}`;
   $('reveal-name').textContent = c.name;
   $('reveal-line').textContent = c.line;
   $('reveal-bonus').hidden = !duplicate;
-  $('reveal-bonus').textContent = `已經有這隻小湘了，轉換成化石碎片 ×${DUPLICATE_FOSSILS}`;
+  $('reveal-bonus').textContent = `再次相遇的禮物 · 化石碎片 +${DUPLICATE_FOSSILS}`;
   $('reveal-ok').textContent = duplicate ? '收下化石' : '一起回家';
   $('reveal').dataset.next = 'home';
   $('reveal').showModal();
@@ -763,6 +787,12 @@ $('photo-ok').addEventListener('click', () => $('photo').close());
 $('book-home').addEventListener('click', () => {
   showView('incubate');
   say('太棒了！拿到能量了，點蛋餵給它！', 'happy', 2400);
+});
+$('reveal-arrange').addEventListener('click', () => {
+  $('reveal').close();
+  showView('home');
+  renderResidents(); $('residents-feedback').textContent = '選擇想留在首頁陪伴你的小湘，最多三位。';
+  $('residents').showModal(); syncRoomActivity();
 });
 $('reveal-ok').addEventListener('click', () => {
   $('reveal').close();
