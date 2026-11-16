@@ -4,6 +4,8 @@ import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
 import { unlockedMilestones, allLetters, unreadCount, lockedMilestones } from './letters.js';
 import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
+import { activeHolidays, HOLIDAYS, TAIWAN_NO } from './holidays.js';
+import { INTROS } from './intros.js';
 import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet } from './energy.js';
 import { checkIn } from './travel.js';
 import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
@@ -321,14 +323,14 @@ function eggStock(s, id) {
   if (id === 'wish') return s.wishEgg?.stock || 0;
   if (id === 'county') return s.travel?.eggs?.length || 0;
   if (id === 'weather') return s.weather?.stock || 0;
-  if (id === 'cipher') return s.gifts?.eggs?.filter(e => e.egg === 'cipher').length || 0;
+  if (id === 'cipher' || id === 'keepsake') return s.gifts?.eggs?.filter(e => e.egg === id).length || 0;
   return 0;
 }
 function returnEgg(s, egg) {
   if (egg.id === 'wish') s.wishEgg.stock += 1;
   if (egg.id === 'county' && egg.county) s.travel.eggs.unshift(egg.county);
   if (egg.id === 'weather') s.weather.stock += 1;
-  if (egg.id === 'cipher') s.gifts.eggs.unshift({ egg: 'cipher', ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
+  if (egg.id === 'cipher' || egg.id === 'keepsake') s.gifts.eggs.unshift({ egg: egg.id, ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
 }
 function takeEgg(s, egg, county) {
   if (egg.id === 'wish') s.wishEgg.stock -= 1;
@@ -337,8 +339,8 @@ function takeEgg(s, egg, county) {
     egg.county = s.travel.eggs.splice(Math.max(i, 0), 1)[0];
   }
   if (egg.id === 'weather') s.weather.stock -= 1;
-  if (egg.id === 'cipher') {
-    const i = s.gifts.eggs.findIndex(e => e.egg === 'cipher');
+  if (egg.id === 'cipher' || egg.id === 'keepsake') {
+    const i = s.gifts.eggs.findIndex(e => e.egg === egg.id);
     const [gift] = s.gifts.eggs.splice(i, 1);
     if (gift?.character) egg.character = gift.character;
   }
@@ -411,7 +413,7 @@ function eggCard(egg) {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = current && state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'weather' ? `雨天的蛋，雨傘小湘最常出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'weather' ? `雨天的蛋，雨傘小湘最常出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
     const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
@@ -422,6 +424,7 @@ function eggCard(egg) {
         ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
         : egg.id === 'weather' ? `持有 ${stock} 顆（下雨天打開遊戲時取得，每天最多一顆）`
         : egg.id === 'cipher' ? `持有 ${stock} 顆（輸入湘給的暗號、完成她的委託時取得）`
+        : egg.id === 'keepsake' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'keepsake').map(e => CHARACTERS[e.character]?.name).join('、')}` : '節日、小湘生日、走遍臺灣時會收到')
         : stock ? `另外還有 ${stock} 顆，列在下面，可以自己選` : '到新的縣市按「探索」，那裡的小湘就會想出現';
       content.append(own);
     }
@@ -476,6 +479,8 @@ function dexCard(c) {
   const has = Boolean(state.dex[c.no]);
   const li = document.createElement('li');
   li.className = `dex__card card${has ? ' is-owned' : ''}`;
+  li.dataset.dexNo = c.no; li.tabIndex = 0; li.setAttribute('role', 'button'); li.setAttribute('aria-label', `查看 No.${c.no} ${has ? c.name : '尚未收集的小湘'}`);
+  li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDexDetail(c.no); } });
   const img = document.createElement('img');
   img.className = `dex__img${has ? '' : ' is-locked'}`;
   img.alt = has ? c.name : '尚未收集的小湘';
@@ -558,6 +563,7 @@ function renderResidents() {
 }
 
 function renderAll() {
+  if (document.getElementById('dex-detail')) grantKeepsakes();
   if (document.getElementById('dino-task')) renderDinoTask();
   if (document.getElementById('letter-badge')) renderLetterBadge();
   if (document.getElementById('snap-count')) renderSnap();
@@ -994,7 +1000,7 @@ document.addEventListener('visibilitychange', () => {
 });
 $('fab-letter').addEventListener('click', openLetterBox);
 $('intro-ok').addEventListener('click', () => {
-  void updateState(current => { current.seenIntro = true; }).then(transaction => { state = transaction.state; $('intro').close(); });
+  void updateState(current => { current.seenIntro = true; }).then(transaction => { state = transaction.state; $('intro').close(); renderAll(); });
 });
 $('photo-ok').addEventListener('click', () => $('photo').close());
 $('book-home').addEventListener('click', () => {
@@ -1103,6 +1109,59 @@ $('explore-intro').addEventListener('close', syncRoomActivity);
 $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
+
+/* ---------- 紀念蛋：節日、生日、走遍臺灣 ---------- */
+let keepsakeBusy = false;
+function pendingKeepsakes(current) {
+  const got = current.gifts?.keepsakes || [];
+  const list = activeHolidays().filter(h => !got.includes(h.key)).map(h => ({ key: h.key, no: h.no, message: h.id === 'birthday' ? '今天是小湘的生日！收到一顆紀念蛋，只有今天才有喔。' : `${h.name}快樂！收到一顆${h.name}的紀念蛋。` }));
+  const counties = Object.values(CHARACTERS).filter(c => c.county && c.county !== '綠島');
+  if (!got.includes('taiwan') && !current.dex[TAIWAN_NO] && counties.every(c => current.dex[c.no])) list.push({ key: 'taiwan', no: TAIWAN_NO, message: '你走遍了整個臺灣！收到一顆紀念蛋，裡面是台灣小湘。' });
+  return list;
+}
+function grantKeepsakes() {
+  if (keepsakeBusy || !state.seenIntro || !pendingKeepsakes(state).length) return;
+  keepsakeBusy = true;
+  void updateState(current => {
+    const list = pendingKeepsakes(current);
+    for (const k of list) { current.gifts.eggs.push({ egg: 'keepsake', character: k.no, from: k.key, at: new Date().toISOString() }); current.gifts.keepsakes.push(k.key); }
+    return list;
+  }).then(t => {
+    state = t.state; keepsakeBusy = false; renderAll();
+    if (t.result.length) { toast(`${t.result[0].message}到「選擇蛋」把它拿出來吧。`); say('有特別的禮物送到了！', 'cheer', 3000); }
+  });
+}
+
+/* ---------- 圖鑑：小湘介紹 ---------- */
+function howToGet(c) {
+  if (c.no === '001') return '從小湘本源蛋孵出';
+  if (c.county) return `到${c.county}探索，收到縣市蛋後孵出`;
+  if (c.no === TAIWAN_NO) return '集滿 19 位縣市小湘時收到紀念蛋';
+  const h = HOLIDAYS.find(x => x.no === c.no);
+  if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
+  if (c.series === 'recipe') return '隱藏配方：兩位小湘一起照顧（研究室開發中）';
+  if (c.series === 'date') return '約會時掃描 QR Code 取得約會蛋（開發中）';
+  const eggs = Object.values(EGGS).filter(e => e.pool?.[c.no]).map(e => e.name);
+  return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
+}
+function openDexDetail(no) {
+  const c = CHARACTERS[no];
+  const owned = Boolean(state.dex[no]);
+  const img = $('dex-detail-img');
+  img.className = `dex-detail__img${owned ? '' : ' is-locked'}`; img.alt = owned ? c.name : '尚未收集的小湘';
+  loadWithFallback(img, characterSources(c.image));
+  $('dex-detail-no').textContent = `No.${c.no} · ${owned ? c.rarity : '?'} · ${SERIES[c.series]?.name || ''}`;
+  $('dex-detail-name').textContent = owned ? c.name : '???';
+  $('dex-detail-line').textContent = owned ? c.line : '';
+  $('dex-detail-line').hidden = !owned;
+  $('dex-detail-intro').textContent = owned ? (INTROS[no] || '') : '還沒遇見她……她會是什麼樣的小湘呢？';
+  $('dex-detail-how').textContent = `取得方式：${howToGet(c)}`;
+  const at = state.dex[no]?.at;
+  $('dex-detail-at').textContent = owned && at && !Number.isNaN(Date.parse(at)) ? `相遇日期：${new Date(at).toLocaleDateString('zh-TW')}` : '';
+  $('dex-detail').showModal();
+}
+$('dex-grid').addEventListener('click', event => { const card = event.target.closest('[data-dex-no]'); if (card) openDexDetail(card.dataset.dexNo); });
+$('close-dex-detail').addEventListener('click', () => $('dex-detail').close());
 
 /* ---------- 小恐龍：閒聊與小委託 ---------- */
 const firstHatchedState = () => state.hatched > 0 || Boolean(state.dex['001']);

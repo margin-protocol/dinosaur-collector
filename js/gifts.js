@@ -9,6 +9,7 @@ export function ensureGifts(state) {
     redeemed: Array.isArray(old.redeemed) ? [...new Set(old.redeemed.filter(str))] : [], // 已兌換的暗號（雜湊）
     reviews: Array.isArray(old.reviews) ? [...new Set(old.reviews.filter(str))] : [], // 已領過獎勵的審核結果
     dates: Array.isArray(old.dates) ? [...new Set(old.dates.filter(str))] : [], // 已使用的約會碼
+    keepsakes: Array.isArray(old.keepsakes) ? [...new Set(old.keepsakes.filter(str))] : [], // 已送過的紀念蛋（節日-年份、taiwan）
   };
   return state.gifts;
 }

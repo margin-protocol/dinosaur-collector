@@ -85,6 +85,17 @@ export const EGGS = {
     art: 'origin',
     tint: 'hue-rotate(250deg) saturate(1.2) brightness(0.95)',
   },
+  keepsake: {
+    id: 'keepsake',
+    name: '紀念蛋',
+    code: 'GIFT',
+    warmthNeeded: 100,
+    hatches: null,
+    stocked: true, // 節日、生日、集滿縣市時收到，蛋上記著固定孵出的小湘
+    // 暫用：正式的紀念蛋素材還沒到。素材放進 assets/eggs/keepsake/ 後刪掉這兩行
+    art: 'origin',
+    tint: 'hue-rotate(320deg) saturate(1.4) brightness(1.05)',
+  },
   county: {
     id: 'county',
     name: '縣市蛋',
@@ -189,6 +200,14 @@ export const CHARACTERS = {
   '053': { no: '053', name: '老鼠小湘', rarity: 'N', line: '「起司我偷偷藏了一塊，要分你一半嗎？」', image: 'siang-053-mouse', series: 'animals' },
   '054': { no: '054', name: '企鵝小湘', rarity: 'R', line: '「天氣再冷，跟你擠在一起就不冷了。」', image: 'siang-054-penguin', series: 'animals' },
   '055': { no: '055', name: '兔兔小湘', rarity: 'SR', line: '「兔兔公主駕到！今天要被寵一整天喔。」', image: 'siang-055-bunny', series: 'animals' },
+  // 節日小湘：節日期間收到紀念蛋（js/holidays.js）
+  '056': { no: '056', name: '情人節小湘', rarity: 'SSR', line: '「巧克力是真心的，你要好好收下喔♡」', image: 'siang-056-valentine', series: 'holiday', special: true },
+  '057': { no: '057', name: '白色情人節小湘', rarity: 'SSR', line: '「上個月的心意，我加倍還給你。」', image: 'siang-057-white-day', series: 'holiday', special: true },
+  '058': { no: '058', name: '聖誕小湘', rarity: 'SSR', line: '「聖誕快樂！今年最好的禮物，是遇見你。」', image: 'siang-058-christmas', series: 'holiday', special: true },
+  '059': { no: '059', name: '七夕小湘', rarity: 'SSR', line: '「鵲橋搭好了，這次換我去找你。」', image: 'siang-059-qixi', series: 'holiday', special: true },
+  '060': { no: '060', name: '萬聖節小湘', rarity: 'SSR', line: '「不給糖就搗蛋！……給了糖也要搗蛋。」', image: 'siang-060-halloween', series: 'holiday', special: true },
+  // 集滿 19 位縣市小湘時送出
+  '061': { no: '061', name: '台灣小湘', rarity: 'UR', line: '「我們把整座島都走過一遍了，謝謝你帶我回家。」', image: 'siang-061-taiwan', series: 'county', special: true },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序
@@ -201,6 +220,7 @@ export const SERIES = {
   county: { name: '縣市系列', short: '縣市' },
   friends: { name: '摯友系列', short: '摯友' },
   animals: { name: '動物小湘', short: '動物' },
+  holiday: { name: '節日系列', short: '節日' },
   special: { name: '特別收藏', short: '特別' },
 };
 

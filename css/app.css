@@ -123,6 +123,7 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex__tag--friends { background: #e8cdb0; }
 .dex__tag--special { background: #f6b6d6; }
 .dex__tag--animals { background: #f3d98b; }
+.dex__tag--holiday { background: #f1a7a7; }
 
 /* ---------- 底部分頁列 ---------- */
 .nav {
@@ -195,3 +196,15 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+.dex__card { cursor: pointer; }
+.dex-detail { position: relative; text-align: center !important; }
+.dex-detail__close { position: absolute; top: 12px; right: 12px; }
+.dex-detail__img { display: block; width: min(64vw, 240px); aspect-ratio: 1; margin: 4px auto 6px; object-fit: contain; }
+.dex-detail__img.is-locked { filter: brightness(0); opacity: .8; }
+.dex-detail__no { font: 11px var(--font-mono); color: var(--rose-metal); letter-spacing: .1em; }
+.dex-detail h2 { margin: 4px 0 8px; font: 400 21px var(--font-display); letter-spacing: .08em; }
+.dex-detail__line { margin: 0 0 10px; font: 14px/1.8 var(--font-display); color: var(--ivory); }
+.dex-detail__intro { margin: 0 0 12px; font-size: 13px; line-height: 1.8; color: var(--pearl); text-align: left; }
+.dex-detail__how { margin: 0 0 6px; padding: 8px 10px; border-radius: 8px; background: #ffffff0d; font-size: 12px; color: var(--silver); text-align: left; }
+.dex-detail__at { font-size: 11px; color: var(--silver); }
