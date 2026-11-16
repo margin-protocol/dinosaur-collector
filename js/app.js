@@ -350,7 +350,7 @@ function returnEgg(s, egg) {
   if (egg.id === 'weather') s.weather.stock += 1;
   if (egg.id === 'cipher' || egg.id === 'keepsake') s.gifts.eggs.unshift({ egg: egg.id, ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
 }
-function takeEgg(s, egg, county) {
+function takeEgg(s, egg, county, character) {
   if (egg.id === 'wish') s.wishEgg.stock -= 1;
   if (egg.id === 'county') {
     const i = county ? s.travel.eggs.indexOf(county) : 0;
@@ -358,7 +358,8 @@ function takeEgg(s, egg, county) {
   }
   if (egg.id === 'weather') s.weather.stock -= 1;
   if (egg.id === 'cipher' || egg.id === 'keepsake') {
-    const i = s.gifts.eggs.findIndex(e => e.egg === egg.id);
+    let i = character ? s.gifts.eggs.findIndex(e => e.egg === egg.id && e.character === character) : -1;
+    if (i < 0) i = s.gifts.eggs.findIndex(e => e.egg === egg.id);
     const [gift] = s.gifts.eggs.splice(i, 1);
     if (gift?.character) egg.character = gift.character;
   }
@@ -389,37 +390,84 @@ function canChooseEgg(current, id) {
   return firstHatched;
 }
 
+// 選擇蛋：先選六個分類（普通、願望、天氣、縣市、暗號、紀念），再選那一類裡的蛋
+const EGG_CATEGORIES = ['ordinary', 'wish', 'weather', 'county', 'cipher', 'keepsake'];
+let eggCategory = null;
+const eggArt = (egg, pct = 0) => { const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true'); const v = createEggView(egg); v.setProgress(pct); art.append(v.el); return art; };
+const swapLabel = () => shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
+
+function shelfCard(saved, index) {
+  const egg = EGGS[saved.id];
+  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice egg-choice--shelf'; card.dataset.shelf = String(index); card.disabled = busy || shelfFull(state);
+  const pct = Math.min(100, Math.round(100 * saved.warmth / egg.warmthNeeded));
+  const content = document.createElement('div');
+  const title = document.createElement('h3'); title.textContent = saved.county ? `${egg.name} · ${saved.county}` : egg.name;
+  const detail = document.createElement('p'); detail.textContent = `暫放中 · 孵化進度 ${pct}%（${saved.warmth} / ${egg.warmthNeeded}）`;
+  const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = shelfFull(state) ? '暫放架滿了，先孵完一顆' : '繼續培育這顆';
+  content.append(title, detail, label); card.append(eggArt(egg, pct), content); return card;
+}
+function countyCard(county) {
+  const egg = EGGS.county;
+  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = 'county'; card.dataset.county = county; card.disabled = busy || shelfFull(state);
+  const content = document.createElement('div');
+  const title = document.createElement('h3'); title.textContent = `${egg.name} · ${county}`;
+  const detail = document.createElement('p'); detail.textContent = `固定遇見${CHARACTERS[COUNTY_CHARACTER[county]]?.name || '這裡的小湘'}`;
+  const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
+  const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = swapLabel();
+  content.append(title, detail, cost, label); card.append(eggArt(egg), content); return card;
+}
+function keepsakeCard(gift) {
+  const egg = EGGS.keepsake;
+  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = 'keepsake'; card.dataset.character = gift.character; card.disabled = busy || shelfFull(state);
+  const content = document.createElement('div');
+  const title = document.createElement('h3'); title.textContent = egg.name;
+  const detail = document.createElement('p'); detail.textContent = `裡面是${CHARACTERS[gift.character]?.name || '特別的小湘'}`;
+  const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
+  const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = swapLabel();
+  content.append(title, detail, cost, label); card.append(eggArt(egg), content); return card;
+}
+// 每一類：正在培育的、暫放中的、還沒拿出來的數量
+function categoryInfo(id) {
+  const current = state.egg.id === id;
+  const shelved = state.shelf.filter(e => e.id === id).length;
+  const stock = id === 'ordinary' ? null : eggStock(state, id);
+  return { current, shelved, stock };
+}
+
 function renderEggChoices() {
   const firstHatched = state.hatched > 0 || Boolean(state.dex['001']);
-  $('egg-picker-note').textContent = firstHatched ? `隨時可以換蛋：已經注入能量的蛋會先放上暫放架（最多 ${SHELF_MAX} 顆），進度不會消失。` : '本源蛋是首次相遇的禮物；完成第一次孵化後，就能培育其他的蛋。';
-  const shelfCards = state.shelf.map((saved, index) => {
-    const egg = EGGS[saved.id];
-    const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice egg-choice--shelf'; card.dataset.shelf = String(index); card.disabled = busy || shelfFull(state);
-    const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true');
-    const pct = Math.min(100, Math.round(100 * saved.warmth / egg.warmthNeeded));
-    const preview = createEggView(egg); preview.setProgress(pct); art.append(preview.el);
-    const content = document.createElement('div');
-    const title = document.createElement('h3'); title.textContent = saved.county ? `${egg.name} · ${saved.county}` : egg.name;
-    const detail = document.createElement('p'); detail.textContent = `暫放中 · 孵化進度 ${pct}%（${saved.warmth} / ${egg.warmthNeeded}）`;
-    const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = shelfFull(state) ? '暫放架滿了，先孵完一顆' : '繼續培育這顆';
-    content.append(title, detail, label); card.append(art, content); return card;
-  });
   const heading = (text) => Object.assign(document.createElement('h3'), { className: 'egg-choices__heading', textContent: text });
-  // 縣市蛋：每個縣市一張卡，可以自己選要先孵哪一顆
-  const countyCards = (state.travel?.eggs || []).map(county => {
-    const egg = EGGS.county;
-    const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = 'county'; card.dataset.county = county; card.disabled = busy || shelfFull(state);
-    const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true');
-    const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
-    const content = document.createElement('div');
-    const title = document.createElement('h3'); title.textContent = `${egg.name} · ${county}`;
-    const no = COUNTY_CHARACTER[county];
-    const detail = document.createElement('p'); detail.textContent = `固定遇見${CHARACTERS[no]?.name || '這裡的小湘'}`;
-    const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
-    const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
-    content.append(title, detail, cost, label); card.append(art, content); return card;
-  });
-  $('egg-choices').replaceChildren(...(shelfCards.length ? [heading('暫放中的蛋'), ...shelfCards, heading('新的蛋')] : []), ...Object.values(EGGS).flatMap(egg => (egg.id === 'county' && countyCards.length && state.egg.id !== 'county') ? countyCards : (egg.id === 'county' && countyCards.length) ? [eggCard(egg), ...countyCards] : [eggCard(egg)]));
+  if (!firstHatched) eggCategory = null;
+  if (!eggCategory) {
+    $('egg-picker-title').textContent = '選擇培育的蛋';
+    $('egg-picker-note').textContent = firstHatched ? `先選一個分類。換蛋時，已經注入能量的蛋會放上暫放架（最多 ${SHELF_MAX} 顆），進度不會消失。` : '本源蛋是首次相遇的禮物；完成第一次孵化後，就能培育其他的蛋。';
+    const tiles = EGG_CATEGORIES.map(id => {
+      const egg = EGGS[id]; const info = categoryInfo(id);
+      const tile = document.createElement('button'); tile.type = 'button'; tile.className = 'egg-cat'; tile.dataset.cat = id; tile.disabled = !firstHatched;
+      tile.setAttribute('aria-pressed', String(info.current));
+      const name = document.createElement('b'); name.textContent = egg.name;
+      const sub = document.createElement('small');
+      sub.textContent = !firstHatched ? '首次孵化後解鎖' : [info.current && '培育中', info.shelved && `暫放 ${info.shelved}`, info.stock !== null && `持有 ${info.stock}`].filter(Boolean).join(' · ') || (id === 'ordinary' ? '隨時都有' : '還沒有');
+      tile.append(eggArt(egg), name, sub);
+      if (info.stock || info.shelved) tile.classList.add('has-eggs');
+      return tile;
+    });
+    const grid = document.createElement('div'); grid.className = 'egg-cats'; grid.append(...tiles);
+    $('egg-choices').replaceChildren(...(firstHatched ? [] : [eggCard(EGGS.origin)]), grid);
+    return;
+  }
+  const egg = EGGS[eggCategory];
+  $('egg-picker-title').textContent = egg.name;
+  const back = document.createElement('button'); back.type = 'button'; back.className = 'egg-back'; back.dataset.back = '1'; back.textContent = '‹ 所有分類';
+  const shelved = state.shelf.map((saved, index) => [saved, index]).filter(([saved]) => saved.id === eggCategory).map(([saved, index]) => shelfCard(saved, index));
+  let fresh;
+  if (eggCategory === 'county') fresh = [...(state.egg.id === 'county' ? [eggCard(egg)] : []), ...(state.travel?.eggs || []).map(countyCard)];
+  else if (eggCategory === 'keepsake') fresh = [...(state.egg.id === 'keepsake' ? [eggCard(egg)] : []), ...state.gifts.eggs.filter(g => g.egg === 'keepsake').map(keepsakeCard)];
+  else fresh = [eggCard(egg)];
+  if (!fresh.length) fresh = [eggCard(egg)];
+  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '下雨天打開遊戲（已允許定位）時取得，每天最多一顆。', county: '到新的縣市按「探索附近」取得，每個縣市一顆，固定孵出當地的小湘。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣時收到，固定孵出紀念的小湘。' }[eggCategory];
+  $('egg-picker-note').textContent = detailText;
+  $('egg-choices').replaceChildren(back, ...(shelved.length ? [heading('暫放中'), ...shelved, heading('可以培育')] : []), ...fresh);
 }
 
 function eggCard(egg) {
@@ -933,10 +981,12 @@ $('presenter-list').addEventListener('click', event => {
 
 eggButton.addEventListener('click', onEggTap);
 $('open-eggs').addEventListener('click', () => {
-  state = loadState(); renderEggChoices(); $('egg-picker-feedback').textContent = ''; $('egg-picker').showModal(); syncRoomActivity();
+  state = loadState(); eggCategory = null; renderEggChoices(); $('egg-picker-feedback').textContent = ''; $('egg-picker').showModal(); syncRoomActivity();
 });
 $('close-eggs').addEventListener('click', () => $('egg-picker').close());
 $('egg-choices').addEventListener('click', async event => {
+  const nav = event.target.closest('[data-cat], [data-back]');
+  if (nav && !nav.disabled) { eggCategory = nav.dataset.cat || null; renderEggChoices(); $('egg-picker-feedback').textContent = ''; return; }
   const choice = event.target.closest('[data-egg], [data-shelf]');
   if (!choice || choice.disabled || busy) return;
   busy = true;
@@ -960,10 +1010,12 @@ $('egg-choices').addEventListener('click', async event => {
         return true;
       }
       if (!EGGS[id] || !canChooseEgg(current, id)) return false;
-      if (current.egg.id !== id) {
+      const character = choice.dataset.character;
+      if (current.egg.id !== id || (character && current.egg.character !== character)) {
+        if (character && !current.gifts.eggs.some(g => g.egg === id && g.character === character)) return false;
         stowCurrent(current);
         const next = newEgg(id);
-        if (EGGS[id].stocked) takeEgg(current, next);
+        if (EGGS[id].stocked) takeEgg(current, next, null, character);
         current.egg = next;
       }
       return true;

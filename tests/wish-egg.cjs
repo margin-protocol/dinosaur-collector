@@ -14,11 +14,11 @@ await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=1;s.d
 await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(500);
 await p.locator('#open-eggs').click();await p.waitForTimeout(500);
 
-await p.locator('[data-egg="wish"]').click();await p.waitForTimeout(400);
+await p.locator('[data-cat=\"wish\"]').click();await p.locator('[data-egg=\"wish\"]').click();await p.waitForTimeout(400);
 let s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(s.egg.id,'wish');assert.equal(s.wishEgg.stock,0);
-await p.locator('#open-eggs').click();await p.waitForTimeout(300);await p.locator('[data-egg="ordinary"]').click();await p.waitForTimeout(400);
+await p.locator('#open-eggs').click();await p.waitForTimeout(300);await p.locator('[data-cat=\"ordinary\"]').click();await p.locator('[data-egg=\"ordinary\"]').click();await p.waitForTimeout(400);
 s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(s.egg.id,'ordinary');assert.equal(s.wishEgg.stock,1);
-await p.locator('#open-eggs').click();await p.waitForTimeout(300);await p.locator('[data-egg="wish"]').click();await p.waitForTimeout(300);
+await p.locator('#open-eggs').click();await p.waitForTimeout(300);await p.locator('[data-cat=\"wish\"]').click();await p.locator('[data-egg=\"wish\"]').click();await p.waitForTimeout(300);
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=150;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(500);
 
 await p.locator('#cultivate').click();await p.locator('#reveal').waitFor();await p.waitForTimeout(500);

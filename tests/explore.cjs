@@ -21,12 +21,12 @@ assert.match(await p.locator('#county-title').textContent(),/還在蛋裡等你/
 s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(s.travel.eggs.length,1);
 // pick county egg, refund on swap, then hatch
 await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
-await p.locator('#open-eggs').click();await p.locator('[data-egg="county"]').click();await p.waitForTimeout(300);
+await p.locator('#open-eggs').click();await p.locator('[data-cat=\"county\"]').click();await p.locator('[data-egg=\"county\"]').click();await p.waitForTimeout(300);
 s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(s.egg.county,'臺中市');assert.equal(s.travel.eggs.length,0);
 assert.match(await p.locator('#egg-name').textContent(),/縣市蛋 · 臺中市/);
-await p.locator('#open-eggs').click();await p.locator('[data-egg="ordinary"]').click();await p.waitForTimeout(300);
+await p.locator('#open-eggs').click();await p.locator('[data-cat=\"ordinary\"]').click();await p.locator('[data-egg=\"ordinary\"]').click();await p.waitForTimeout(300);
 s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.deepEqual(s.travel.eggs,['臺中市']);
-await p.locator('#open-eggs').click();await p.locator('[data-egg="county"]').click();await p.waitForTimeout(300);
+await p.locator('#open-eggs').click();await p.locator('[data-cat=\"county\"]').click();await p.locator('[data-egg=\"county\"]').click();await p.waitForTimeout(300);
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=150;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();
 await p.locator('#county-call[open]').waitFor({state:'detached',timeout:3000}).catch(()=>{});
 await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(400);

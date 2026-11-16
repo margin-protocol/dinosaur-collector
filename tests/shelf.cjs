@@ -7,32 +7,32 @@ await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=1;s.dex={'001':{at:'x'}};s.egg={id:'ordinary',warmth:80,since:'2026-11-10T00:00:00Z'};s.wishEgg={stamps:0,stock:1,days:[]};s.energy=50;localStorage.setItem(k,JSON.stringify(s));},key);
 await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(400);
 // switch to wish egg while ordinary has 80 warmth
-await p.click('#open-eggs');assert.equal(await p.locator('[data-egg="wish"]').isDisabled(),false);
-await p.click('[data-egg="wish"]');await p.waitForTimeout(300);
+await p.click('#open-eggs');await p.click('[data-cat="wish"]');assert.equal(await p.locator('[data-egg="wish"]').isDisabled(),false);
+await p.click('[data-egg=\"wish\"]');await p.waitForTimeout(300);
 let s=await save();assert.equal(s.egg.id,'wish');assert.equal(s.wishEgg.stock,0);assert.deepEqual(s.shelf.map(e=>[e.id,e.warmth]),[['ordinary',80]]);
 // feed the wish egg a bit, then go back to the shelved ordinary
 await p.click('#cultivate');await p.waitForTimeout(500);s=await save();const wishWarmth=s.egg.warmth;assert(wishWarmth>0);
-await p.click('#open-eggs');await p.locator('[data-shelf="0"]').waitFor();
+await p.click('#open-eggs');await p.click('[data-cat="ordinary"]');await p.locator('[data-shelf="0"]').waitFor();
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.click('[data-shelf="0"]');await p.waitForTimeout(300);
 s=await save();assert.equal(s.egg.id,'ordinary');assert.equal(s.egg.warmth,80);assert.deepEqual(s.shelf.map(e=>[e.id,e.warmth]),[['wish',wishWarmth]]);
 // fresh stocked egg swapped away is refunded, not shelved
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.weather.stock=1;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
-await p.click('#open-eggs');await p.click('[data-egg="weather"]');await p.waitForTimeout(300);s=await save();assert.equal(s.shelf.length,2);
-await p.click('#open-eggs');await p.click('[data-shelf="0"]');await p.waitForTimeout(300);s=await save();assert.equal(s.weather.stock,1);assert.equal(s.egg.id,'wish');assert.equal(s.shelf.length,1);
+await p.click('#open-eggs');await p.click('[data-cat=\"weather\"]');await p.click('[data-egg=\"weather\"]');await p.waitForTimeout(300);s=await save();assert.equal(s.shelf.length,2);
+await p.click('#open-eggs');await p.click('[data-cat="wish"]');await p.click('[data-shelf]');await p.waitForTimeout(300);s=await save();assert.equal(s.weather.stock,1);assert.equal(s.egg.id,'wish');assert.equal(s.shelf.length,1);
 // hatch the current egg → the shelved ordinary comes back automatically
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=150;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(400);
 await p.click('#cultivate');await p.locator('#reveal').waitFor();await p.waitForTimeout(300);
 s=await save();assert.equal(s.egg.id,'ordinary');assert.equal(s.egg.warmth,80);assert.equal(s.shelf.length,0);
 // choose which county egg to hatch first
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.travel={visits:{},eggs:['臺中市','花蓮縣'],granted:['臺中市','花蓮縣']};localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
-await p.click('#open-eggs');assert.equal(await p.locator('[data-county]').count(),2);await p.click('[data-county="花蓮縣"]');await p.waitForTimeout(300);
+await p.click('#open-eggs');await p.click('[data-cat="county"]');assert.equal(await p.locator('[data-county]').count(),2);await p.click('[data-county="花蓮縣"]');await p.waitForTimeout(300);
 s=await save();assert.equal(s.egg.county,'花蓮縣');assert.deepEqual(s.travel.eggs,['臺中市']);
-await p.click('#open-eggs');await p.click('[data-county="臺中市"]');await p.waitForTimeout(300);
+await p.click('#open-eggs');await p.click('[data-cat="county"]');await p.click('[data-county="臺中市"]');await p.waitForTimeout(300);
 s=await save();assert.equal(s.egg.county,'臺中市');assert.deepEqual(s.travel.eggs,['花蓮縣']);
 // shelf limit
 await p.evaluate(()=>document.querySelector('#reveal').close());
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg={id:'ordinary',warmth:20,since:'2026-11-15T00:00:00Z'};s.shelf=Array.from({length:6},(_,i)=>({id:'ordinary',warmth:10+i,since:`2026-11-0${i+1}T00:00:00Z`}));s.wishEgg.stock=1;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
-await p.click('#open-eggs');assert(await p.locator('[data-egg="wish"]').isDisabled());assert(await p.locator('[data-shelf="0"]').isDisabled());
+await p.click('#open-eggs');await p.click('[data-cat="wish"]');assert(await p.locator('[data-egg="wish"]').isDisabled());await p.click('[data-back]');await p.click('[data-cat="ordinary"]');assert(await p.locator('[data-shelf="0"]').isDisabled());
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('shelf: swap keeps progress, resume shelved egg, fresh stocked refund, auto-resume after hatch, shelf cap PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

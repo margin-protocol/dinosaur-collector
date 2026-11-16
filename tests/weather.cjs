@@ -29,11 +29,11 @@ await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
 const omen=await p.locator('#incubation-omen').textContent();assert.match(omen,/夜貓/);assert.doesNotMatch(omen,/雨傘/);
 if(process.env.SHOT){await p.screenshot({path:process.env.SHOT});}
 // pick weather egg, refund, hatch
-await p.locator('#open-eggs').click();await p.locator('[data-egg="weather"]').click();await p.waitForTimeout(300);
+await p.locator('#open-eggs').click();await p.locator('[data-cat=\"weather\"]').click();await p.locator('[data-egg=\"weather\"]').click();await p.waitForTimeout(300);
 s=await save();assert.equal(s.egg.id,'weather');assert.equal(s.weather.stock,1);
-await p.locator('#open-eggs').click();await p.locator('[data-egg="ordinary"]').click();await p.waitForTimeout(300);
+await p.locator('#open-eggs').click();await p.locator('[data-cat=\"ordinary\"]').click();await p.locator('[data-egg=\"ordinary\"]').click();await p.waitForTimeout(300);
 s=await save();assert.equal(s.weather.stock,2);
-await p.locator('#open-eggs').click();await p.locator('[data-egg="weather"]').click();await p.waitForTimeout(300);
+await p.locator('#open-eggs').click();await p.locator('[data-cat=\"weather\"]').click();await p.locator('[data-egg=\"weather\"]').click();await p.waitForTimeout(300);
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=150;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.waitForTimeout(800);
 await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
 await p.locator('#cultivate').click();await p.locator('#reveal').waitFor();

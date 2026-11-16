@@ -57,10 +57,10 @@ await g.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.gifts.redeeme
 assert.match(await redeem('恐龍偷吃草莓'),/已經被兌換/);
 // cipher egg hatches the chosen character
 await g.evaluate(()=>location.hash='incubate');await g.waitForTimeout(300);
-await g.click('#open-eggs');await g.click('[data-egg="cipher"]');await g.waitForTimeout(300);
+await g.click('#open-eggs');await g.click('[data-cat=\"cipher\"]');await g.click('[data-egg=\"cipher\"]');await g.waitForTimeout(300);
 s=await save();assert.equal(s.egg.id,'cipher');assert.equal(s.egg.character,'011');
-await g.click('#open-eggs');await g.click('[data-egg="ordinary"]');await g.waitForTimeout(300);s=await save();assert.equal(s.gifts.eggs[0].character,'011');
-await g.click('#open-eggs');await g.click('[data-egg="cipher"]');await g.waitForTimeout(300);
+await g.click('#open-eggs');await g.click('[data-cat=\"ordinary\"]');await g.click('[data-egg=\"ordinary\"]');await g.waitForTimeout(300);s=await save();assert.equal(s.gifts.eggs[0].character,'011');
+await g.click('#open-eggs');await g.click('[data-cat=\"cipher\"]');await g.click('[data-egg=\"cipher\"]');await g.waitForTimeout(300);
 await g.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=100;localStorage.setItem(k,JSON.stringify(s));},key);await g.reload();await g.evaluate(()=>location.hash='incubate');await g.waitForTimeout(400);
 await g.click('#cultivate');await g.locator('#reveal').waitFor();await g.waitForTimeout(300);
 assert.equal(await g.textContent('#reveal-name'),'草莓蛋糕小湘');await g.click('#reveal-ok');

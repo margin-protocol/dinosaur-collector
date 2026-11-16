@@ -10,7 +10,7 @@ await p.reload();await p.waitForTimeout(700);
 let s=await save();assert.deepEqual(s.gifts.keepsakes,['valentine-2027']);assert.equal(s.gifts.eggs.filter(e=>e.egg==='keepsake'&&e.character==='056').length,1);
 await p.reload();await p.waitForTimeout(700);s=await save();assert.equal(s.gifts.eggs.length,1);
 // hatch it
-await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);await p.click('#open-eggs');await p.click('[data-egg="keepsake"]');await p.waitForTimeout(300);
+await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);await p.click('#open-eggs');await p.click('[data-cat=\"keepsake\"]');await p.click('[data-egg=\"keepsake\"]');await p.waitForTimeout(300);
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=100;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(400);
 await p.click('#cultivate');await p.locator('#reveal').waitFor();await p.waitForTimeout(300);assert.equal(await p.textContent('#reveal-name'),'情人節小湘');
 await c.close();
