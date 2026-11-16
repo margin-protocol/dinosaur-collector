@@ -1,0 +1,30 @@
+name: Real gameplay teaser
+on:
+  push:
+    branches: [trailer-real-game-v1]
+  workflow_dispatch:
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install browser and video dependencies
+        run: |
+          npm install --no-save playwright@1.56.1
+          npx playwright install --with-deps chromium
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq ffmpeg fonts-noto-cjk
+      - name: Run actual game in mobile browser and record
+        run: |
+          python3 -m http.server 8765 --bind 127.0.0.1 >/tmp/siang-server.log 2>&1 &
+          node scripts/record-trailer.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SIANG-COLLECTOR-real-game-teaser
+          path: trailer-output/siang-collector-real-game-teaser.mp4
+          retention-days: 14
