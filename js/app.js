@@ -6,7 +6,8 @@ import { unlockedMilestones, allLetters, unreadCount, lockedMilestones } from '.
 import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
 import { activeHolidays, HOLIDAYS, TAIWAN_NO } from './holidays.js';
 import { INTROS } from './intros.js';
-import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet } from './energy.js';
+import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
+import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet, pet, feedSnack, snacksLeft, PET, SNACK } from './energy.js';
 import { checkIn } from './travel.js';
 import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
 import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
@@ -71,6 +72,12 @@ let photoBusy = false;
 let activePhotoId = null;
 
 // 小湘：孵出來以後才出現，在地板上自己走動
+const ambience = createAmbience($('companion-room'));
+function homeAmbience() {
+  const h = new Date().getHours();
+  return { rain: rainingToday(state, todayKey()), night: h >= 19 || h < 6, holiday: activeHolidays()[0]?.id || null };
+}
+const PET_LINES = ['好舒服～', '再摸一下嘛！', '嘿嘿，好害羞……', '最喜歡被你摸頭了！', '呼嚕呼嚕～'];
 const room = createRoom($('resident-lanes'), character => {
   say(character.line, 'happy', 4000);
   void updateState(current => greet(current, character.no, todayKey())).then(t => {
@@ -78,6 +85,12 @@ const room = createRoom($('resident-lanes'), character => {
     if (t.result) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`${character.name}很開心！+${t.result} 能量（每位每天一次）`); }
     const task = state.dino.task;
     if (task?.type === 'greet' && task.target === character.no) void finishTask();
+  });
+}, character => {
+  room.bubble(character.no, PET_LINES[Math.floor(Math.random() * PET_LINES.length)]);
+  void updateState(current => pet(current, todayKey())).then(t => {
+    state = t.state;
+    if (t.result) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`摸摸頭 +${t.result} 能量（今天還有 ${PET.perDay - state.bonus.pets.count} 次）`); }
   });
 });
 const research = createResearch({ root: $('research-root'), getState: loadState, onCollect: () => showView('incubate') });
@@ -157,6 +170,9 @@ function renderHome() {
   }
 
   const ids = room.update(state.dex);
+  ambience(homeAmbience());
+  $('snack').hidden = !ids.length;
+  $('snack-left').textContent = Math.max(0, snacksLeft(state, todayKey()));
   const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
   $('resident-count').textContent = `${ids.length} / ${ROOM_LIMIT}`;
   $('home-subtitle').textContent = !owned.length ? '一起等待，初次相遇。' : ids.length > 1 ? '今天也很熱鬧呢。' : '今日也請多多指教。';
@@ -1444,6 +1460,20 @@ $('code-form').addEventListener('submit', async (event) => {
   try { $('code-status').textContent = await redeemCode($('code-input').value); }
   catch (err) { $('code-status').textContent = `兌換失敗：${err.message || '連線問題'}`; }
   finally { $('code-submit').disabled = false; }
+});
+
+startChats(room, () => homeAmbience());
+attachSnackDrag($('snack'), {
+  canDrag: () => snacksLeft(state, todayKey()) > 0 && room.residents().length > 0,
+  onTap: () => toast(snacksLeft(state, todayKey()) > 0 ? '按住點心，拖到小湘身上餵她吃吧！' : '今天的點心吃完了，明天再來～'),
+  onDrop: async (no) => {
+    if (!no) { toast('要把點心放到小湘身上喔。'); return; }
+    const t = await updateState(current => feedSnack(current, todayKey()));
+    state = t.state; renderAll();
+    if (!t.result) { toast('今天的點心吃完了，明天再來～'); return; }
+    room.happy(no); room.hearts(no, 6); room.bubble(no, ['好好吃！謝謝你～', '是我最喜歡的口味！', '再一口……就一口！'][Math.floor(Math.random() * 3)]);
+    restart($('chip-energy'), 'is-bump'); toast(`${CHARACTERS[no].name}吃得好開心！+${t.result} 能量`);
+  },
 });
 
 renderAll();

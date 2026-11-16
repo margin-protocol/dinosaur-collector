@@ -19,6 +19,8 @@ export function ensureBonus(state) {
     explored: str(old.explored),
     snaps: { date: day(old.snaps).date, count: Number.isSafeInteger(old.snaps?.count) ? old.snaps.count : 0 },
     greets: { date: day(old.greets).date, ids: Array.isArray(old.greets?.ids) ? old.greets.ids.filter((v) => typeof v === 'string') : [] },
+    pets: { date: day(old.pets).date, count: Number.isSafeInteger(old.pets?.count) ? old.pets.count : 0 },
+    snacks: { date: day(old.snacks).date, count: Number.isSafeInteger(old.snacks?.count) ? old.snacks.count : 0 },
   };
   return state.bonus;
 }
@@ -57,3 +59,19 @@ export function greet(state, no, today) {
   if (b.greets.ids.includes(no)) return 0;
   b.greets.ids.push(no); state.energy += GREET_REWARD; return GREET_REWARD;
 }
+
+// 摸摸頭：每次 +2 能量，每天最多 5 次（之後還是可以摸，只是不給能量）
+export const PET = { reward: 2, perDay: 5 };
+// 餵點心：把點心拖到小湘身上，每次 +5 能量，每天 3 份
+export const SNACK = { reward: 5, perDay: 3 };
+const countFor = (state, field, today) => (state.bonus?.[field]?.date === today ? state.bonus[field].count : 0);
+function bump(state, field, today, limit, reward) {
+  ensureBonus(state);
+  const cur = state.bonus[field]?.date === today ? state.bonus[field] : { date: today, count: 0 };
+  if (cur.count >= limit) { state.bonus[field] = cur; return 0; }
+  state.bonus[field] = { date: today, count: cur.count + 1 }; state.energy += reward; return reward;
+}
+export const petsToday = (state, today) => countFor(state, 'pets', today);
+export const snacksLeft = (state, today) => SNACK.perDay - countFor(state, 'snacks', today);
+export const pet = (state, today) => bump(state, 'pets', today, PET.perDay, PET.reward);
+export const feedSnack = (state, today) => bump(state, 'snacks', today, SNACK.perDay, SNACK.reward);
