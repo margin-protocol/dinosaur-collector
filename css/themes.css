@@ -104,7 +104,7 @@ body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var
 @media(prefers-reduced-motion:reduce) { .theme-choice { transition:none; } }
 
 /* Keep stage labels legible over the softly lit room, including nighttime ambience. */
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .companion-room.is-night::before { background:linear-gradient(#d9e8f322,transparent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .companion-room.is-night::before { background:radial-gradient(ellipse 60% 55% at 50% 48%,#d9e8f322,transparent 75%); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.room-empty,.resident-name,.bubble__text,.wish-dialogue p) { text-shadow:none; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.ach-tile.is-ready,.bingo-cell.is-line) { background:var(--t-selected); color:var(--t-text); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .ach-tile.is-ready small { color:var(--t-accent); }

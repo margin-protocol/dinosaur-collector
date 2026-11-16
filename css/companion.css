@@ -124,8 +124,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .room-snack small { min-width:16px; height:16px; padding:0 4px; border-radius:999px; background:#ffffff22; font:10px/16px var(--font-body); text-align:center; }
 .snack-ghost { position:fixed; z-index:60; font-size:34px; transform:translate(-50%,-60%); pointer-events:none; filter:drop-shadow(0 4px 8px #0008); }
 .ambience { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
-.companion-room.is-night::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background:linear-gradient(#0a0c2a99, #0a0c2a33 60%, transparent); }
-.companion-room.is-rain::after { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background:linear-gradient(#3a4a5a55, transparent 70%); }
+/* Fade to transparent before every room edge to avoid a rectangular tint. */
+.companion-room.is-night::before { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse 60% 55% at 50% 48%,#0a0c2a55,transparent 75%); }
+.companion-room.is-rain::after { content:''; position:absolute; inset:0; z-index:0; pointer-events:none; background:radial-gradient(ellipse 60% 55% at 50% 48%,#3a4a5a33,transparent 75%); }
 .amb { position:absolute; top:-10%; font-style:normal; color:#fff; opacity:.8; animation-name:amb-fall; animation-timing-function:linear; animation-iteration-count:infinite; }
 .amb-rain { width:1px; height:18px; background:linear-gradient(transparent,#bfe3ffcc); opacity:.6; }
 .amb-snow { color:#f2f6ff; }
