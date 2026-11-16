@@ -169,3 +169,12 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 @keyframes ach-glow { 50% { box-shadow:0 0 18px #ffd27a77; } }
 @media (prefers-reduced-motion:reduce) { .ach-tile.is-ready { animation:none; } }
 .ach-info { margin:0 0 8px; padding:8px 10px; border-radius:8px; background:#ffffff0d; font-size:12px; line-height:1.7; color:var(--pearl); }
+
+.bingo-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:6px; margin:8px 0 12px; }
+.bingo-cell { aspect-ratio:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; padding:6px; border:1px solid #4a4155; border-radius:10px; background:#221f2a; text-align:center; }
+.bingo-cell span { font:12px/1.4 var(--font-display); color:var(--ivory); }
+.bingo-cell small { font:10px var(--font-mono); color:var(--silver); }
+.bingo-cell.is-done { border-color:#c9a8ff88; background:#2f2640; }
+.bingo-cell.is-done small { color:#c9f2d9; font-size:14px; }
+.bingo-cell.is-line { border-color:#ffd27a; background:#3a2e3e; box-shadow:inset 0 0 12px #ffd27a33; }
+#bingo-claim { width:100%; }

@@ -8,6 +8,8 @@ import { ensureBonus } from './energy.js';
 import { ensureLetters } from './letters.js';
 import { ensureDino } from './dino.js';
 import { ensureAchievements } from './achievements.js';
+import { ensureRecipes } from './recipes.js';
+import { ensureBingo } from './bingo.js';
 export const DAILY_XP = 10;
 export const GROWTH_XP = 20;
 export const GROWTH_ENERGY = 20;
@@ -44,6 +46,8 @@ export function hydrateProgression(state) {
   ensureLetters(state);
   ensureDino(state, todayKey());
   ensureAchievements(state);
+  ensureRecipes(state);
+  ensureBingo(state);
   return state;
 }
 export function completeDaily(state, date, id) {

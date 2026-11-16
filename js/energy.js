@@ -22,7 +22,7 @@ export function ensureBonus(state) {
     pets: { date: day(old.pets).date, count: Number.isSafeInteger(old.pets?.count) ? old.pets.count : 0 },
     snacks: { date: day(old.snacks).date, count: Number.isSafeInteger(old.snacks?.count) ? old.snacks.count : 0 },
     // 累計次數（成就用，不會每天歸零）
-    total: Object.fromEntries(['pets', 'snacks', 'snaps', 'greets', 'tasks', 'nightHatch'].map((k) => [k, Number.isSafeInteger(old.total?.[k]) ? old.total[k] : 0])),
+    total: Object.fromEntries(['pets', 'snacks', 'snaps', 'greets', 'tasks', 'nightHatch', 'explores', 'gifts'].map((k) => [k, Number.isSafeInteger(old.total?.[k]) ? old.total[k] : 0])),
     // 今天拍過的照片指紋（只存雜湊，不存照片），用來提醒重複的照片
     photos: { date: day(old.photos).date, hashes: Array.isArray(old.photos?.hashes) ? old.photos.hashes.filter((h) => typeof h === 'string').slice(-40) : [] },
   };
@@ -46,7 +46,7 @@ export const giftReady = (state, today) => state.bonus?.gift !== today;
 export function claimGift(state, today) {
   const b = ensureBonus(state);
   if (b.gift === today) return 0;
-  b.gift = today; state.energy += DAILY_GIFT; return DAILY_GIFT;
+  b.gift = today; b.total.gifts += 1; state.energy += DAILY_GIFT; return DAILY_GIFT;
 }
 
 export const snapsToday = (state, today) => (state.bonus?.snaps?.date === today ? state.bonus.snaps.count : 0);

@@ -9,6 +9,8 @@ import { INTROS } from './intros.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
+import { RECIPES, tickRecipes } from './recipes.js';
+import { ensureBingo, bingoStatus, bingoReady, claimBingo, REWARDS as BINGO_REWARDS } from './bingo.js';
 import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet, pet, feedSnack, snacksLeft, PET, SNACK, photoSeen, rememberPhoto } from './energy.js';
 import { checkIn } from './travel.js';
 import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
@@ -629,6 +631,7 @@ function renderResidents() {
 }
 
 function renderAll() {
+  if (document.getElementById('bingo-badge')) { renderBingoBadge(); checkRecipes(); }
   if (document.getElementById('achievement-badge')) renderAchievementBadge();
   if (document.getElementById('dex-detail')) grantKeepsakes();
   if (document.getElementById('dino-task')) renderDinoTask();
@@ -1157,7 +1160,7 @@ async function explore({ silent = false } = {}) {
     let counties;
     try { counties = await loadCounties(); } catch { if (!silent) showCountyCall({ error: 'failed' }); return; }
     const county = spotAt(pos.lon, pos.lat) || countyAt(counties, pos.lon, pos.lat);
-    state = (await updateState(current => { current.bonus.explored = todayKey(); })).state;
+    state = (await updateState(current => { if (current.bonus.explored !== todayKey()) current.bonus.total.explores += 1; current.bonus.explored = todayKey(); })).state;
     const weather = await checkWeather(pos);
     if (!county) { if (!silent) showCountyCall({ county: null, weather }); else announceWeather(weather); return; }
     const transaction = await updateState(current => checkIn(current, county, todayKey()));
@@ -1182,6 +1185,56 @@ $('explore-intro').addEventListener('close', syncRoomActivity);
 $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
+
+/* ---------- 隱藏配方 ---------- */
+let recipeBusy = false;
+function checkRecipes() {
+  if (recipeBusy || !state.seenIntro) return;
+  const ctx = { residents: residentsFor(state.dex), raining: rainingToday(state, todayKey()), today: todayKey() };
+  if (!RECIPES.some(r => !state.recipes[r.id].done && r.members.every(no => ctx.residents.includes(no)) && (!r.rain || ctx.raining) && !state.recipes[r.id].days.includes(ctx.today))) return;
+  recipeBusy = true;
+  void updateState(current => tickRecipes(current, ctx)).then(t => {
+    state = t.state; recipeBusy = false; renderAll();
+    const { progressed, completed } = t.result;
+    if (completed.length) { toast(`🍰 ${completed.map(r => r.members.map(no => CHARACTERS[no].name).join('和')).join('、')}一起做出了驚喜！收到一顆紀念蛋，到「選擇蛋」看看吧。`); say('好像有什麼新的東西誕生了！', 'cheer', 3500); }
+    else if (progressed.length) { const r = progressed[0]; say(`${r.members.map(no => CHARACTERS[no].name).join('和')}好像在偷偷準備什麼……（${state.recipes[r.id].days.length} / ${r.days}）`, 'happy', 4500); }
+  });
+}
+
+/* ---------- 每週賓果 ---------- */
+function renderBingoBadge() {
+  const n = bingoReady(state);
+  $('bingo-badge').hidden = !n; $('bingo-badge').textContent = n;
+}
+function openBingo() {
+  if (state.bingo.week !== ensureBingo(structuredClone(state)).week) { void updateState(current => { ensureBingo(current); }).then(t => { state = t.state; openBingo(); }); return; }
+  const st = bingoStatus(state);
+  const lineCells = new Set(st.lines.filter(l => l.done).flatMap(l => l.cells));
+  $('bingo-grid').replaceChildren(...st.cells.map((c, i) => {
+    const cell = document.createElement('div'); cell.className = `bingo-cell${c.done ? ' is-done' : ''}${lineCells.has(i) ? ' is-line' : ''}`;
+    const text = document.createElement('span'); text.textContent = c.text;
+    const prog = document.createElement('small'); prog.textContent = c.done ? '✓' : `${c.value} / ${c.goal}`;
+    cell.append(text, prog); return cell;
+  }));
+  const lines = st.lines.filter(l => l.done).length;
+  const ready = bingoReady(state);
+  const end = new Date(state.bingo.week + 'T00:00:00'); end.setDate(end.getDate() + 6);
+  $('bingo-week').textContent = `${state.bingo.week.slice(5).replace('-', '/')} – ${end.getMonth() + 1}/${end.getDate()} · 已連成 ${lines} 條線`;
+  $('bingo-claim').hidden = !ready;
+  $('bingo-claim').textContent = `領取獎勵（${ready}）`;
+  if (!$('bingo-dialog').open) { $('bingo-dialog').showModal(); syncRoomActivity(); }
+}
+$('open-bingo').addEventListener('click', () => { $('function-center').close(); openBingo(); });
+$('close-bingo').addEventListener('click', () => $('bingo-dialog').close());
+$('bingo-dialog').addEventListener('close', syncRoomActivity);
+$('bingo-claim').addEventListener('click', async () => {
+  $('bingo-claim').disabled = true;
+  const t = await updateState(current => claimBingo(current));
+  state = t.state; renderAll(); $('bingo-claim').disabled = false;
+  const got = [t.result.wishEgg && `${t.result.wishEgg} 顆願望蛋`, t.result.energy && `${t.result.energy} 能量`].filter(Boolean).join('、');
+  if (got) { restart($('chip-energy'), 'is-bump'); toast(`賓果！獲得 ${got}`); }
+  openBingo();
+});
 
 /* ---------- 成就 ---------- */
 const ACH_NOTIFIED = 'siang-collector:achievements-notified:v1';
@@ -1276,7 +1329,8 @@ function howToGet(c) {
   if (c.no === TAIWAN_NO) return '集滿 19 位縣市小湘時收到紀念蛋';
   const h = HOLIDAYS.find(x => x.no === c.no);
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
-  if (c.series === 'recipe') return '隱藏配方：兩位小湘一起照顧（研究室開發中）';
+  const recipe = RECIPES.find(r => r.target === c.no);
+  if (recipe) { const rec = state.recipes[recipe.id]; return `隱藏配方：${state.dex[c.no] || rec.days.length ? recipe.text : '某兩位小湘一起入住首頁，就會發生什麼……'}${rec.done ? '' : rec.days.length ? `（已累積 ${rec.days.length} / ${recipe.days} 天）` : ''}`; }
   if (c.series === 'date') return '約會時掃描 QR Code 取得約會蛋（開發中）';
   const eggs = Object.values(EGGS).filter(e => e.pool?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
