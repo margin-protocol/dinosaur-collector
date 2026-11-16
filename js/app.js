@@ -7,7 +7,7 @@ import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
 import { unlockedMilestones, allLetters, unreadCount, lockedMilestones } from './letters.js';
 import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
 import { activeHolidays, HOLIDAYS, TAIWAN_NO } from './holidays.js';
-import { INTROS } from './intros.js';
+import { INTROS, MYSTERY_INTROS } from './intros.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
@@ -1439,7 +1439,7 @@ function openDexDetail(no) {
   $('dex-detail-name').textContent = owned ? c.name : '???';
   $('dex-detail-line').textContent = owned ? c.line : '';
   $('dex-detail-line').hidden = !owned;
-  $('dex-detail-intro').textContent = owned ? (INTROS[no] || '') : '還沒遇見她……她會是什麼樣的小湘呢？';
+  $('dex-detail-intro').textContent = owned ? (INTROS[no] || '') : (MYSTERY_INTROS[no] || '遠處好像有誰探了一下頭。再靠近一點，下次也許就能打個招呼。');
   $('dex-detail-how').textContent = `取得方式：${howToGet(c)}`;
   const at = state.dex[no]?.at;
   const story = owned ? storyText(c, state.dex[no]) : '';
