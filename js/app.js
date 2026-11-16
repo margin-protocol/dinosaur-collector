@@ -9,6 +9,7 @@ import { INTROS } from './intros.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
+import { FOSSIL_OFFERS, pickable, exchange } from './fossils.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
 import { RECIPES, tickRecipes } from './recipes.js';
 import { ensureBingo, bingoStatus, bingoReady, claimBingo, REWARDS as BINGO_REWARDS } from './bingo.js';
@@ -1701,6 +1702,43 @@ async function handleDateHash(url = location.href) {
   const code = m[1].toUpperCase();
   try { toast((await redeemDate(code)) || '這個約會碼不對喔。'); } catch (err) { toast(`約會碼讀取失敗：${err.message}`); }
 }
+
+/* ---------- 化石交換所 ---------- */
+function openFossils() {
+  $('fossil-have').textContent = `你有 ${state.fossils} 個化石碎片。抽到重複的小湘，每次會得到 ${DUPLICATE_FOSSILS} 個。`;
+  $('fossil-offers').replaceChildren(...FOSSIL_OFFERS.map(o => {
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fossil-offer'; btn.dataset.offer = o.id;
+    btn.disabled = state.fossils < o.cost || (o.id === 'pick' && !pickable(state, EGGS, CHARACTERS).length);
+    const text = document.createElement('div'); const b = document.createElement('b'); b.textContent = o.name; const sm = document.createElement('small'); sm.textContent = o.desc; text.append(b, sm);
+    const cost = document.createElement('span'); cost.textContent = `${o.cost} 化石`;
+    btn.append(text, cost); return btn;
+  }));
+  $('fossil-pick').hidden = true;
+  if (!$('fossil-dialog').open) { $('fossil-status').textContent = ''; $('fossil-dialog').showModal(); syncRoomActivity(); }
+}
+async function doExchange(offerId, no) {
+  const t = await updateState(current => exchange(current, offerId, { eggs: EGGS, chars: CHARACTERS, no }));
+  state = t.state; renderAll();
+  if (!t.result) { $('fossil-status').textContent = '化石不夠喔。'; return; }
+  restart($('chip-fossil'), 'is-bump');
+  $('fossil-status').textContent = offerId === 'energy' ? '換到 30 能量了！' : offerId === 'pick' ? `換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
+  openFossils();
+}
+$('chip-fossil').addEventListener('click', openFossils);
+$('close-fossil').addEventListener('click', () => $('fossil-dialog').close());
+$('fossil-dialog').addEventListener('close', syncRoomActivity);
+$('fossil-offers').addEventListener('click', event => {
+  const btn = event.target.closest('[data-offer]'); if (!btn || btn.disabled) return;
+  if (btn.dataset.offer !== 'pick') { void doExchange(btn.dataset.offer); return; }
+  $('fossil-pick-list').replaceChildren(...pickable(state, EGGS, CHARACTERS).map(no => {
+    const c = CHARACTERS[no]; const b = document.createElement('button'); b.type = 'button'; b.className = 'fossil-pick'; b.dataset.pick = no;
+    const img = document.createElement('img'); img.alt = ''; loadWithFallback(img, characterSources(c.image));
+    b.append(img, `No.${c.no} · ${c.rarity}`); return b;
+  }));
+  $('fossil-pick').hidden = false;
+  $('fossil-pick').scrollIntoView({ block: 'nearest' });
+});
+$('fossil-pick-list').addEventListener('click', event => { const b = event.target.closest('[data-pick]'); if (b) void doExchange('pick', b.dataset.pick); });
 
 /* ---------- 額外能量：見面禮、隨手收藏、自動保溫 ---------- */
 async function collectGift() {
