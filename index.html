@@ -22,6 +22,7 @@
 <link rel="stylesheet" href="css/mobile.css">
 <link rel="stylesheet" href="css/lobby.css">
 <link rel="stylesheet" href="css/companion.css">
+<link rel="stylesheet" href="css/wishes-game.css">
 </head>
 <body>
 <div class="scene" aria-hidden="true"></div>
@@ -115,24 +116,23 @@
     <div class="home-actions"><button class="btn" type="button" id="cultivate">培養 · 注入能量</button><button class="wish-entry" type="button" id="incubate-wishes"><span class="wish-entry__star" aria-hidden="true">✦</span><span class="wish-entry__title">今日願望</span><span id="incubate-wish-progress">0 / 3</span></button></div>
   </main>
 
-  <!-- 今日願望：魔法委託簿 -->
   <main class="view view--wish" data-view="wish" hidden>
-    <div class="book__head">
-      <div class="book__en">DAILY EXPLORATION</div>
-      <h1 class="book__title">今日願望</h1>
-      <div class="book__meta">
-        <span id="book-day"></span>
-        <span class="book__gems" id="book-gems" role="img"></span>
-        <span id="book-progress"></span>
-      </div>
-    </div>
-    <p class="wish-intro">把日常的顏色，變成一起成長的能量。</p>
-    <div class="mission-list" id="book"></div>
-    <section class="book__log" aria-live="polite">
-      <p class="book__log-text" id="book-log-text"></p>
-      <button class="btn" type="button" id="book-home"><span class="gem" aria-hidden="true"></span><span>前往培育</span><span class="gem" aria-hidden="true"></span></button>
+    <section class="player-progress" aria-label="研究者等級"><div class="player-progress__labels"><span id="player-rank">Lv.1 初見研究者</span><span id="player-xp">0 / 100 XP</span></div><div class="xp-track" id="xp-track" role="progressbar" aria-label="下一級經驗值" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="xp-fill"></div></div></section>
+    <h1 class="wish-heading">小湘的願望</h1>
+    <div class="wish-tabs" role="tablist" aria-label="願望類型"><button id="tab-daily" type="button" role="tab" aria-selected="true" aria-controls="panel-daily">今日願望</button><button id="tab-growth" type="button" role="tab" aria-selected="false" aria-controls="panel-growth" tabindex="-1">成長願望</button></div>
+    <section id="panel-daily" role="tabpanel" aria-labelledby="tab-daily">
+      <div class="daily-status"><span id="book-day"></span><div id="book-gems" class="wish-steps" role="group" aria-label="切換三個今日願望"></div><span id="book-progress">0 / 3</span></div>
+      <div class="wish-character-scene"><img id="wish-portrait" class="wish-portrait" alt=""><div class="wish-dialogue"><p id="wish-line"></p><span id="wish-speaker"></span><button type="button" id="open-presenter" aria-haspopup="dialog" aria-controls="presenter">切換小湘 <span aria-hidden="true">⌄</span></button></div></div>
+      <div class="mission-list" id="book"></div>
+      <p class="wish-private">照片只在手機上辨色，不會上傳，也不會保存。</p>
+      <section class="daily-log" aria-live="polite"><p id="book-log-text"></p><button class="text-action" id="book-home" type="button">前往培育 <span aria-hidden="true">⟶</span></button></section>
     </section>
-    <p class="fine">照片只在手機上分析顏色，不會上傳，也不會保存。<br>每天更新三個願望，每項完成可獲得 35 能量。</p>
+    <section id="panel-growth" role="tabpanel" aria-labelledby="tab-growth" hidden>
+      <div class="chapter-top"><span id="chapter-number">CHAPTER 01</span><label class="chapter-history">歷程 <select id="chapter-select" aria-label="查看已解鎖等級的成長願望"></select></label></div><h2 class="chapter-title" id="chapter-title"></h2><p class="chapter-caption">每一步陪伴，都會被好好記住。</p>
+      <div id="growth-list" class="growth-list"></div>
+      <div class="growth-companion"><p>不著急，我們一起慢慢來。</p><img src="assets/mascot/dinosaur-idle.webp" alt="陪伴你的小恐龍" width="512" height="512"></div>
+      <button class="btn" id="growth-action" type="button">前往培育</button><p class="wish-private">成長願望跨日保留，每項完成可領取 20 XP。</p><p id="growth-feedback" class="growth-feedback" role="status" aria-live="polite"></p>
+    </section>
   </main>
 
   <main class="view" data-view="dex" hidden>
@@ -170,6 +170,8 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <dialog class="residents-dialog sheet" id="residents" aria-labelledby="residents-title"><div class="drawer-heading"><div><small>MAKE YOURSELF AT HOME</small><h2 id="residents-title">入住安排</h2></div><button class="close-button" type="button" id="close-residents" aria-label="關閉入住安排">×</button></div><p class="residents-intro">選擇最多三位已收集的小湘，一起在首頁生活。</p><p id="residents-summary"></p><div id="residents-list" class="residents-list"></div><p class="residents-feedback" id="residents-feedback" role="status" aria-live="polite"></p><button class="btn" type="button" id="residents-done">完成安排</button></dialog>
+
+<dialog class="presenter-dialog residents-dialog sheet" id="presenter" aria-labelledby="presenter-title"><div class="drawer-heading"><div><small>YOUR WISH COMPANION</small><h2 id="presenter-title">今天想和誰一起？</h2></div><button class="close-button" type="button" id="close-presenter" aria-label="關閉切換小湘">×</button></div><p class="residents-intro">選擇已收集的小湘陪你許願。切換不會改變當天任務與完成進度。</p><div id="presenter-list" class="residents-list"></div><p id="presenter-feedback" role="status" aria-live="polite"></p></dialog>
 
 <dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">
   <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
