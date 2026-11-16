@@ -95,6 +95,18 @@ export const EGGS = {
     stocked: true, // 節日、生日、集滿縣市時收到，蛋上記著固定孵出的小湘
     // 正式紀念／節日蛋圖層：assets/eggs/keepsake/{shell,glow,cracks}.webp
   },
+  date: {
+    id: 'date',
+    name: '約會蛋',
+    code: 'DATE',
+    warmthNeeded: 100,
+    hatches: null,
+    stocked: true, // 見面時掃描湘的約會 QR Code 取得
+    pool: { '014': 55, '042': 45 }, // 約會小湘、蝰蝰♡
+    // 暫用：正式的約會蛋素材還沒到（概念圖 concepts-v1/date.webp）。素材放進 assets/eggs/date/ 後刪掉這兩行
+    art: 'origin',
+    tint: 'hue-rotate(300deg) saturate(1.6) brightness(1.02)',
+  },
   county: {
     id: 'county',
     name: '縣市蛋',

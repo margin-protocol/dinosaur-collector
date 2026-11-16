@@ -86,6 +86,41 @@
     <h3>寄過的紙條</h3>
     <ul class="list" id="letter-list"></ul>
   </section>
+  <section class="card" id="sec-mission">
+    <h2>5. 照片委託 · 給<span data-player-name>玩家</span></h2>
+    <p class="hint">出一個照片題目，他拍好上傳後，在下面審核、寫批註。通過的照片會收進他的記憶檔案。</p>
+    <form id="mission-form" class="form">
+      <label>題目<input id="mission-title" maxlength="60" placeholder="例如：今天晚餐吃什麼"></label>
+      <label>說明（可不填）<textarea id="mission-body" rows="3" maxlength="600" placeholder="例如：拍下你今天的晚餐，要有飲料喔！"></textarea></label>
+      <label>獎勵<select id="mission-reward">
+        <option value="energy:50">50 能量</option>
+        <option value="energy:100">100 能量</option>
+        <option value="egg:cipher">暗號蛋（隨機小湘）</option>
+        <option value="egg:wish">願望蛋</option>
+        <option value="character">暗號蛋（指定小湘）</option>
+      </select></label>
+      <label id="mission-character-row" hidden>指定小湘<select id="mission-character"></select></label>
+      <label>期限（可不填）<input id="mission-expires" type="date"></label>
+      <button class="btn" type="submit" id="mission-create">蓋章並出題</button>
+    </form>
+    <p class="status" id="mission-status" role="status"></p>
+    <h3>委託與待審核的照片</h3>
+    <button class="btn btn--quiet" type="button" id="mission-refresh">重新整理</button>
+    <ul class="list" id="mission-list"></ul>
+  </section>
+
+  <section class="card" id="sec-date">
+    <h2>6. 約會 QR Code · 給<span data-player-name>玩家</span></h2>
+    <p class="hint">見面時產生，讓他用手機相機掃描（或輸入 6 碼約會碼）。10 分鐘內有效、只能用一次，會送他一顆約會蛋，並把今天收進記憶檔案。</p>
+    <form id="date-form" class="form">
+      <label>今天的約會（會寫進記憶檔案）<input id="date-title" maxlength="40" placeholder="例如：高美濕地看夕陽"></label>
+      <label>想對他說的話（可不填）<textarea id="date-note" rows="2" maxlength="300"></textarea></label>
+      <label>遊戲網址<input id="date-url" autocomplete="off" spellcheck="false"></label>
+      <button class="btn" type="submit" id="date-create">產生約會 QR Code</button>
+    </form>
+    <div class="date-qr" id="date-qr" hidden><div id="date-qr-svg"></div><p class="date-code" id="date-code"></p><p class="hint" id="date-expire"></p></div>
+    <p class="status" id="date-status" role="status"></p>
+  </section>
 </main>
 <script type="module" src="js/review.js"></script>
 </body>

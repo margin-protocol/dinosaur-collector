@@ -10,6 +10,7 @@ import { ensureDino } from './dino.js';
 import { ensureAchievements } from './achievements.js';
 import { ensureRecipes } from './recipes.js';
 import { ensureBingo } from './bingo.js';
+import { ensureMissions } from './commissions.js';
 export const DAILY_XP = 10;
 export const GROWTH_XP = 20;
 export const GROWTH_ENERGY = 20;
@@ -48,6 +49,7 @@ export function hydrateProgression(state) {
   ensureAchievements(state);
   ensureRecipes(state);
   ensureBingo(state);
+  ensureMissions(state);
   return state;
 }
 export function completeDaily(state, date, id) {

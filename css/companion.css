@@ -178,3 +178,27 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .bingo-cell.is-done small { color:#c9f2d9; font-size:14px; }
 .bingo-cell.is-line { border-color:#ffd27a; background:#3a2e3e; box-shadow:inset 0 0 12px #ffd27a33; }
 #bingo-claim { width:100%; }
+
+.missions-dialog, .memories-dialog { max-height:86vh; overflow:auto; }
+.missions-list { display:grid; gap:10px; }
+.commission { padding:12px; border:1px solid #4a4155; border-radius:12px; background:#221f2a; }
+.commission.is-open { border-color:#c9a8ff88; }
+.commission h3 { margin:0 0 4px; font:400 15px var(--font-display); }
+.commission p { margin:0 0 6px; font-size:13px; line-height:1.7; color:var(--pearl); white-space:pre-line; }
+.commission small { display:block; font-size:11px; color:var(--silver); }
+.commission__note { margin:6px 0; padding:6px 10px; border-left:2px solid #f4c6db; background:#f4c6db12; font-size:12px; color:#f4c6db; }
+.commission__thumb { width:64px; height:64px; object-fit:cover; border-radius:8px; float:right; margin-left:8px; }
+.commission .btn { width:100%; margin-top:8px; }
+.memories-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
+.memory { padding:0; border:1px solid #4a4155; border-radius:10px; overflow:hidden; background:#221f2a; color:var(--ivory); text-align:left; }
+.memory img { display:block; width:100%; aspect-ratio:1; object-fit:cover; background:#16131b; }
+.memory span { display:block; padding:5px 6px; font:11px/1.4 var(--font-display); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.memory small { display:block; padding:0 6px 6px; font:9px var(--font-mono); color:var(--silver); }
+.memory--date img { background:linear-gradient(135deg,#5a2a44,#2a1d33); }
+.memory-view { text-align:center; }
+.memory-view__close { position:absolute; top:12px; right:12px; }
+.memory-view img { display:block; width:100%; max-height:50svh; object-fit:contain; border-radius:10px; background:#16131b; margin:6px 0 10px; }
+.memory-view small { font:11px var(--font-mono); color:var(--rose-metal); }
+.memory-view h2 { margin:4px 0 8px; font:400 19px var(--font-display); }
+.memory-view__note { margin:0; padding:10px 12px; border-left:2px solid #c9a8ff; border-radius:4px; background:#c9a8ff12; font:13px/1.8 var(--font-display); text-align:left; white-space:pre-line; }
+.memory-view__note::before { content:'首席研究員的批註'; display:block; font:10px var(--font-mono); letter-spacing:.14em; color:var(--rose-metal); margin-bottom:2px; }

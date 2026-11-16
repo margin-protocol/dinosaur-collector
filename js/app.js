@@ -8,6 +8,7 @@ import { activeHolidays, HOLIDAYS, TAIWAN_NO } from './holidays.js';
 import { INTROS } from './intros.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
+import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
 import { RECIPES, tickRecipes } from './recipes.js';
 import { ensureBingo, bingoStatus, bingoReady, claimBingo, REWARDS as BINGO_REWARDS } from './bingo.js';
@@ -343,14 +344,14 @@ function eggStock(s, id) {
   if (id === 'wish') return s.wishEgg?.stock || 0;
   if (id === 'county') return s.travel?.eggs?.length || 0;
   if (id === 'weather') return s.weather?.stock || 0;
-  if (id === 'cipher' || id === 'keepsake') return s.gifts?.eggs?.filter(e => e.egg === id).length || 0;
+  if (id === 'cipher' || id === 'keepsake' || id === 'date') return s.gifts?.eggs?.filter(e => e.egg === id).length || 0;
   return 0;
 }
 function returnEgg(s, egg) {
   if (egg.id === 'wish') s.wishEgg.stock += 1;
   if (egg.id === 'county' && egg.county) s.travel.eggs.unshift(egg.county);
   if (egg.id === 'weather') s.weather.stock += 1;
-  if (egg.id === 'cipher' || egg.id === 'keepsake') s.gifts.eggs.unshift({ egg: egg.id, ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
+  if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date') s.gifts.eggs.unshift({ egg: egg.id, ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
 }
 function takeEgg(s, egg, county, character) {
   if (egg.id === 'wish') s.wishEgg.stock -= 1;
@@ -359,7 +360,7 @@ function takeEgg(s, egg, county, character) {
     egg.county = s.travel.eggs.splice(Math.max(i, 0), 1)[0];
   }
   if (egg.id === 'weather') s.weather.stock -= 1;
-  if (egg.id === 'cipher' || egg.id === 'keepsake') {
+  if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date') {
     let i = character ? s.gifts.eggs.findIndex(e => e.egg === egg.id && e.character === character) : -1;
     if (i < 0) i = s.gifts.eggs.findIndex(e => e.egg === egg.id);
     const [gift] = s.gifts.eggs.splice(i, 1);
@@ -394,7 +395,7 @@ function canChooseEgg(current, id) {
 }
 
 // 選擇蛋：先選六個分類（普通、願望、天氣、縣市、暗號、紀念），再選那一類裡的蛋
-const EGG_CATEGORIES = ['ordinary', 'wish', 'weather', 'county', 'cipher', 'keepsake'];
+const EGG_CATEGORIES = ['ordinary', 'wish', 'weather', 'county', 'cipher', 'keepsake', 'date'];
 let eggCategory = null;
 const eggArt = (egg, pct = 0) => { const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true'); const v = createEggView(egg); v.setProgress(pct); art.append(v.el); return art; };
 const swapLabel = () => shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
@@ -468,7 +469,7 @@ function renderEggChoices() {
   else if (eggCategory === 'keepsake') fresh = [...(state.egg.id === 'keepsake' ? [eggCard(egg)] : []), ...state.gifts.eggs.filter(g => g.egg === 'keepsake').map(keepsakeCard)];
   else fresh = [eggCard(egg)];
   if (!fresh.length) fresh = [eggCard(egg)];
-  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '下雨天打開遊戲（已允許定位）時取得，每天最多一顆。', county: '到新的縣市按「探索附近」取得，每個縣市一顆，固定孵出當地的小湘。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣時收到，固定孵出紀念的小湘。' }[eggCategory];
+  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '下雨天打開遊戲（已允許定位）時取得，每天最多一顆。', county: '到新的縣市按「探索附近」取得，每個縣市一顆，固定孵出當地的小湘。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣時收到，固定孵出紀念的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
   $('egg-picker-note').textContent = detailText;
   $('egg-choices').replaceChildren(back, ...(shelved.length ? [heading('暫放中'), ...shelved, heading('可以培育')] : []), ...fresh);
 }
@@ -493,6 +494,7 @@ function eggCard(egg) {
         ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
         : egg.id === 'weather' ? `持有 ${stock} 顆（下雨天打開遊戲時取得，每天最多一顆）`
         : egg.id === 'cipher' ? `持有 ${stock} 顆（輸入湘給的暗號、完成她的委託時取得）`
+        : egg.id === 'date' ? `持有 ${stock} 顆（見面時掃描湘的約會 QR Code 取得）`
         : egg.id === 'keepsake' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'keepsake').map(e => CHARACTERS[e.character]?.name).join('、')}` : '節日、小湘生日、走遍臺灣時會收到')
         : stock ? `另外還有 ${stock} 顆，列在下面，可以自己選` : '到新的縣市按「探索」，那裡的小湘就會想出現';
       content.append(own);
@@ -632,6 +634,7 @@ function renderResidents() {
 }
 
 function renderAll() {
+  if (document.getElementById('missions-badge')) renderMissionsBadge();
   if (document.getElementById('bingo-badge')) { renderBingoBadge(); checkRecipes(); }
   if (document.getElementById('achievement-badge')) renderAchievementBadge();
   if (document.getElementById('dex-detail')) grantKeepsakes();
@@ -1525,6 +1528,180 @@ async function fetchMail() {
   return fresh.length;
 }
 
+/* ---------- 湘的委託、記憶檔案、約會碼 ---------- */
+function ready2() { return Boolean(cloudConfig() && REVIEWER_PUBLIC_JWK); }
+let missionsSyncing = null;
+// 讀取湘的委託與審核結果（驗證印章後才採用）
+async function syncMissions() {
+  if (!ready2()) return { fresh: 0, results: [] };
+  if (missionsSyncing) return missionsSyncing;
+  missionsSyncing = (async () => {
+    const cloud = createCloud(cloudConfig());
+    const files = (await cloud.list('missions')).filter(f => f.name.endsWith('.json'));
+    const list = [];
+    for (const f of files) {
+      const file = await cloud.getJSON(f.path); const p = file?.data?.payload;
+      if (!p || p.type !== 'mission' || p.id !== f.name.slice(0, -5) || typeof p.title !== 'string' || !validReward(p.reward, CHARACTERS)) continue;
+      if (!(await verifySigned(REVIEWER_PUBLIC_JWK, file.data))) continue;
+      list.push({ id: p.id, title: p.title.slice(0, 60), body: String(p.body || '').slice(0, 600), reward: p.reward, expires: p.expires || null, createdAt: p.createdAt || '' });
+    }
+    const reviews = (await cloud.list('reviews')).filter(f => f.name.endsWith('.json') && !state.gifts.reviews.includes(f.name));
+    const results = [];
+    for (const f of reviews) {
+      const file = await cloud.getJSON(f.path); const p = file?.data?.payload;
+      if (!p || p.type !== 'review' || `${p.mission}__${p.submission}.json` !== f.name) continue;
+      if (!(await verifySigned(REVIEWER_PUBLIC_JWK, file.data))) continue;
+      results.push({ file: f.name, ...p });
+    }
+    const t = await updateState(current => {
+      const known = new Set(current.missions.list.map(m => m.id));
+      const fresh = list.filter(m => !known.has(m.id)).length;
+      current.missions.list = [...current.missions.list.filter(m => current.missions.status[m.id] === 'approved' && !list.some(x => x.id === m.id)), ...list];
+      const applied = [];
+      for (const r of results) {
+        if (current.gifts.reviews.includes(r.file)) continue;
+        const mission = current.missions.list.find(m => m.id === r.mission);
+        const pending = current.missions.pending[r.mission];
+        if (!mission || !pending || pending.sid !== r.submission) continue;
+        current.gifts.reviews.push(r.file);
+        if (r.approved) {
+          applyReward(current, mission.reward, 'mission');
+          current.missions.status[r.mission] = 'approved';
+          current.memories.push({ id: `m-${r.mission}`, kind: 'mission', title: mission.title, note: String(r.note || '').slice(0, 600), at: r.createdAt || new Date().toISOString(), thumb: pending.thumb, photo: `submissions/${r.mission}/${r.submission}.jpg` });
+          delete current.missions.pending[r.mission]; delete current.missions.notes[r.mission];
+        } else {
+          current.missions.status[r.mission] = 'rejected';
+          current.missions.notes[r.mission] = String(r.note || '').slice(0, 600);
+          delete current.missions.pending[r.mission];
+        }
+        applied.push({ ...r, mission });
+      }
+      return { fresh, applied };
+    });
+    state = t.state; renderAll();
+    for (const r of t.result.applied) toast(r.approved ? `委託「${r.mission.title}」通過了！獲得${describeReward(r.mission.reward, CHARACTERS, EGGS)}，照片收進記憶檔案。` : `委託「${r.mission.title}」被退回了，看看湘的批註吧。`);
+    if (!t.result.applied.length && t.result.fresh) toast(`湘出了 ${t.result.fresh} 個新委託！在研究者手記的「湘的委託」。`);
+    return t.result;
+  })().finally(() => { missionsSyncing = null; });
+  return missionsSyncing;
+}
+function missionStatus(m) { return state.missions.pending[m.id] ? 'submitted' : state.missions.status[m.id] || 'open'; }
+function openMissionCount() { return state.missions.list.filter(m => !['approved', 'submitted'].includes(missionStatus(m)) && !(m.expires && Date.now() > Date.parse(m.expires))).length; }
+function renderMissionsBadge() { const n = openMissionCount(); $('missions-badge').hidden = !n; $('missions-badge').textContent = n; }
+
+let missionTarget = null;
+function renderMissions() {
+  const list = [...state.missions.list].sort((a, b) => String(b.createdAt).localeCompare(String(a.createdAt)));
+  $('missions-list').replaceChildren(...list.map(m => {
+    const st = missionStatus(m);
+    const expired = st !== 'approved' && m.expires && Date.now() > Date.parse(m.expires);
+    const el = document.createElement('article'); el.className = `commission${st === 'open' || st === 'rejected' ? ' is-open' : ''}`;
+    if (st === 'submitted' && state.missions.pending[m.id]?.thumb) { const img = document.createElement('img'); img.className = 'commission__thumb'; img.src = state.missions.pending[m.id].thumb; img.alt = ''; el.append(img); }
+    const h = document.createElement('h3'); h.textContent = m.title;
+    const body = document.createElement('p'); body.textContent = m.body;
+    const info = document.createElement('small');
+    info.textContent = `獎勵：${describeReward(m.reward, CHARACTERS, EGGS)}${m.expires ? ` · 期限 ${new Date(m.expires).toLocaleDateString('zh-TW')}` : ''} · ${expired ? '已過期' : { open: '等你拍', submitted: '等湘審核中', approved: '已完成 ✓', rejected: '被退回，可以再拍一次' }[st]}`;
+    el.append(h, body, info);
+    if (st === 'rejected' && state.missions.notes[m.id]) { const n = document.createElement('p'); n.className = 'commission__note'; n.textContent = `湘：${state.missions.notes[m.id]}`; el.append(n); }
+    if ((st === 'open' || st === 'rejected') && !expired) {
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.textContent = st === 'rejected' ? '重新拍一張' : '拍照上傳';
+      btn.addEventListener('click', () => { missionTarget = m.id; $('mission-input').click(); });
+      el.append(btn);
+    }
+    return el;
+  }));
+  if (!list.length) $('missions-list').replaceChildren(Object.assign(document.createElement('p'), { className: 'residents-intro', textContent: ready2() ? '湘還沒有出委託，等等看吧～' : '要先到「雲端與備份」連上資料庫，才收得到湘的委託。' }));
+}
+async function openMissions() {
+  renderMissions(); $('missions-status').textContent = '';
+  if (!$('missions-dialog').open) { $('missions-dialog').showModal(); syncRoomActivity(); }
+  if (!ready2()) return;
+  $('missions-status').textContent = '同步中…';
+  try { await syncMissions(); $('missions-status').textContent = ''; } catch (err) { $('missions-status').textContent = `同步失敗：${err.message}`; }
+  renderMissions();
+}
+$('open-missions').addEventListener('click', () => { $('function-center').close(); void openMissions(); });
+$('close-missions').addEventListener('click', () => $('missions-dialog').close());
+$('missions-dialog').addEventListener('close', syncRoomActivity);
+$('mission-input').addEventListener('change', async () => {
+  const file = $('mission-input').files?.[0]; $('mission-input').value = '';
+  const id = missionTarget; missionTarget = null;
+  if (!file || !id || !ready2()) return;
+  $('missions-status').textContent = '上傳中…';
+  try {
+    const [bytes, thumb] = await Promise.all([compressPhoto(file), thumbnail(file)]);
+    const sid = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+    const cloud = createCloud(cloudConfig());
+    await cloud.putBytes(`submissions/${id}/${sid}.jpg`, bytes, 'submit photo');
+    await cloud.putJSON(`submissions/${id}/${sid}.json`, { mission: id, sid, at: new Date().toISOString() }, 'submit photo');
+    const t = await updateState(current => { current.missions.pending[id] = { sid, thumb, at: new Date().toISOString() }; delete current.missions.status[id]; });
+    state = t.state; renderAll(); renderMissions();
+    $('missions-status').textContent = '上傳好了！等湘審核，通過會收進記憶檔案。';
+  } catch (err) { $('missions-status').textContent = `上傳失敗：${err.message}`; }
+});
+
+// 記憶檔案
+function openMemories() {
+  const list = [...state.memories].sort((a, b) => String(b.at).localeCompare(String(a.at)));
+  $('memories-intro').textContent = list.length ? `一共 ${list.length} 份記憶。` : '完成湘的委託、跟湘約會，回憶就會收在這裡。';
+  $('memories-grid').replaceChildren(...list.map(m => {
+    const el = document.createElement('button'); el.type = 'button'; el.className = `memory memory--${m.kind}`;
+    const img = document.createElement('img'); img.alt = ''; if (m.thumb) img.src = m.thumb; else if (m.character) loadWithFallback(img, characterSources(CHARACTERS[m.character]?.image || 'siang-014-date'));
+    const t = document.createElement('span'); t.textContent = m.title;
+    const d = document.createElement('small'); d.textContent = new Date(m.at).toLocaleDateString('zh-TW');
+    el.append(img, t, d); el.addEventListener('click', () => void openMemory(m)); return el;
+  }));
+  if (!$('memories-dialog').open) { $('memories-dialog').showModal(); syncRoomActivity(); }
+}
+async function openMemory(m) {
+  const img = $('memory-view-img');
+  img.removeAttribute('src'); if (m.thumb) img.src = m.thumb; else loadWithFallback(img, characterSources(CHARACTERS[m.character]?.image || 'siang-014-date'));
+  $('memory-view-date').textContent = `${m.kind === 'date' ? '約會紀念' : '委託'} · ${new Date(m.at).toLocaleDateString('zh-TW')}`;
+  $('memory-view-title').textContent = m.title;
+  $('memory-view-note').textContent = m.note || '';
+  $('memory-view-note').hidden = !m.note;
+  $('memory-view').showModal();
+  if (m.photo && cloudConfig()) {
+    try { const bytes = await createCloud(cloudConfig()).getBytes(m.photo); if (bytes) img.src = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })); } catch {}
+  }
+}
+$('open-memories').addEventListener('click', () => { $('function-center').close(); openMemories(); });
+$('close-memories').addEventListener('click', () => $('memories-dialog').close());
+$('memories-dialog').addEventListener('close', syncRoomActivity);
+$('close-memory-view').addEventListener('click', () => $('memory-view').close());
+
+// 約會碼：dates/<CODE>.json，湘蓋章、幾分鐘內有效、只能用一次
+async function redeemDate(code) {
+  if (!cloudConfig()) return '要先到「雲端與備份」連線，才能使用約會碼。';
+  if (!REVIEWER_PUBLIC_JWK) return '審核員的印章還沒設定好。';
+  if (state.gifts.dates.includes(code)) return '這個約會碼已經用過了。';
+  const cloud = createCloud(cloudConfig());
+  const file = await cloud.getJSON(`dates/${code}.json`);
+  const p = file?.data?.payload;
+  if (!p || p.type !== 'date' || p.code !== code || !(await verifySigned(REVIEWER_PUBLIC_JWK, file.data))) return null;
+  if (Date.now() > Date.parse(p.expires)) return '這個約會碼過期了，請湘再產生一個新的。';
+  if (await cloud.exists(`used/date-${code}.json`)) return '這個約會碼已經用過了。';
+  await cloud.putJSON(`used/date-${code}.json`, { at: new Date().toISOString() }, 'use date code');
+  const t = await updateState(current => {
+    if (current.gifts.dates.includes(code)) return false;
+    current.gifts.dates.push(code);
+    current.gifts.eggs.push({ egg: 'date', from: 'date', at: new Date().toISOString() });
+    current.memories.push({ id: `d-${code}`, kind: 'date', title: p.title || '今天的約會', note: String(p.note || '').slice(0, 600), at: new Date().toISOString(), character: '014' });
+    return true;
+  });
+  state = t.state; renderAll();
+  if (!t.result) return '這個約會碼已經用過了。';
+  say('約會快樂！我收到一顆特別的蛋喔♡', 'cheer', 4000);
+  return '約會快樂♡ 獲得一顆約會蛋，今天的約會也收進記憶檔案了。到「選擇蛋」把它拿出來吧！';
+}
+async function handleDateHash(url = location.href) {
+  const m = String(url).match(/#.*date=([A-Za-z0-9]{6})/);
+  if (!m) return;
+  if (/date=/.test(location.hash)) history.replaceState(null, '', location.pathname + location.search);
+  const code = m[1].toUpperCase();
+  try { toast((await redeemDate(code)) || '這個約會碼不對喔。'); } catch (err) { toast(`約會碼讀取失敗：${err.message}`); }
+}
+
 /* ---------- 額外能量：見面禮、隨手收藏、自動保溫 ---------- */
 async function collectGift() {
   const t = await updateState(current => claimGift(current, todayKey()));
@@ -1651,6 +1828,8 @@ $('cloud-disconnect').addEventListener('click', () => { saveCloudConfig(null); $
 
 // 暗號：正規化 → 雜湊 → 讀 codes/<雜湊>.json → 驗證湘的簽章 → 檢查期限與是否用過 → 發獎勵
 async function redeemCode(text) {
+  const maybeDate = String(text || '').trim().toUpperCase();
+  if (DATE_CODE.test(maybeDate)) { const r = await redeemDate(maybeDate); if (r) return r; }
   const phrase = normalizeCode(text);
   if (!phrase) return '先輸入暗號喔。';
   const config = cloudConfig();
@@ -1705,7 +1884,9 @@ attachSnackDrag($('snack'), {
 
 renderAll();
 renderExplore();
-void autoBackup().then(() => fetchMail()).catch(() => {});
+void autoBackup().then(() => fetchMail()).then(() => syncMissions()).catch(() => {});
+void handleDateHash();
+addEventListener('hashchange', event => { if (/date=/.test(event.newURL)) void handleDateHash(event.newURL); });
 void tickPassive().then(added => { if (added) toast(`你不在的時候，培養架幫蛋保溫了 +${added}`); });
 setInterval(() => { if (!document.hidden) void tickPassive(); }, 60 * 1000);
 // 已經允許過定位的話，打開遊戲時自動感應；只有第一次來到的縣市才會跳出來

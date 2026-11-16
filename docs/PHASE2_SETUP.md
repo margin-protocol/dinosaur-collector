@@ -29,5 +29,11 @@ GitHub → Settings → Developer settings → Personal access tokens → **Fine
 | backups/latest.json、backups/YYYY-MM-DD.json | 遊戲 | 進度備份 |
 | codes/<雜湊>.json | 審核室 | 湘蓋章的暗號（檔名是暗號的雜湊，看不出原文） |
 | redeemed/<雜湊>.json | 遊戲 | 一次性暗號的兌換紀錄 |
+| letters/<id>.json | 審核室 | 湘蓋章的紙條 |
+| missions/<id>.json | 審核室 | 湘蓋章的照片委託 |
+| submissions/<id>/<sid>.jpg、.json | 遊戲 | 玩家提交的照片 |
+| reviews/<id>__<sid>.json | 審核室 | 湘蓋章的審核結果與批註 |
+| dates/<CODE>.json | 審核室 | 約會碼（10 分鐘有效） |
+| used/date-<CODE>.json | 遊戲 | 約會碼已使用 |
 
 安全性：兩把 token 對資料庫都有寫入權，所以遊戲只接受湘的印章（ECDSA P-256 數位簽章）驗證通過的內容；改檔案也偽造不了印章。印章私鑰只存在湘手機的瀏覽器裡。

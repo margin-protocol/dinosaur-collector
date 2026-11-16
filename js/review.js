@@ -4,6 +4,8 @@ import { generateKeys, exportJwk, importPrivate, publicFromPrivate, signPayload,
 import { CHARACTERS, EGGS } from './eggs.js';
 import { describeReward } from './gifts.js';
 import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
+import qrcode from './vendor/qrcode.mjs';
+import { newDateCode } from './commissions.js';
 
 export const REVIEW_CLOUD_KEY = 'siang-collector:review-cloud:v1';
 const NOTES_KEY = 'siang-collector:review-notes:v1'; // 暗號原文與備註只存在湘的手機
@@ -47,7 +49,7 @@ function renderKey(message = '') {
   $('key-generate').textContent = has ? '重新產生印章（舊章會失效）' : '產生新的印章';
   if (pub) $('key-public').value = JSON.stringify(pub);
   $('key-status').textContent = message;
-  for (const id of ['code-create', 'letter-send']) $(id).disabled = !has;
+  for (const id of ['code-create', 'letter-send', 'mission-create', 'date-create']) $(id).disabled = !has;
 }
 
 /* ---------- 連線 ---------- */
@@ -83,7 +85,7 @@ function renderCloud(message = '') {
   $('cloud-status').textContent = message || (c && !adding ? `目前：${c.name}` : '');
   document.querySelectorAll('[data-player-name]').forEach(el => { el.textContent = c ? c.name : '玩家'; });
 }
-function switched() { void refreshCodes(); void refreshLetters(); }
+function switched() { void refreshCodes(); void refreshLetters(); void refreshMissions(); $('date-qr').hidden = true; }
 $('player-select').addEventListener('change', () => { players.active = Number($('player-select').value); adding = false; savePlayers(); renderCloud(); switched(); });
 $('player-add').addEventListener('click', () => { adding = true; renderCloud('輸入新玩家的名字、他的私人資料庫，以及妳那把審核員 token。'); });
 $('player-cancel').addEventListener('click', () => { adding = false; renderCloud(); });
@@ -239,9 +241,106 @@ async function refreshLetters() {
   } catch (err) { $('letter-status').textContent = `讀取紙條失敗：${err.message}`; }
 }
 
+/* ---------- 照片委託 ---------- */
+$('mission-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `No.${c.no} ${c.name}` })));
+$('mission-reward').addEventListener('change', () => { $('mission-character-row').hidden = $('mission-reward').value !== 'character'; });
+function missionReward() {
+  const v = $('mission-reward').value;
+  if (v === 'character') return { type: 'character', no: $('mission-character').value };
+  const [type, val] = v.split(':');
+  return type === 'energy' ? { type, amount: Number(val) } : { type, egg: val };
+}
+$('mission-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const title = $('mission-title').value.trim();
+  if (!title) { $('mission-status').textContent = '先寫題目吧。'; return; }
+  if (!privateKey) { $('mission-status').textContent = '請先在第 2 步準備好印章。'; return; }
+  $('mission-create').disabled = true; $('mission-status').textContent = '蓋章中…';
+  try {
+    const id = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).slice(2, 7)}`;
+    const expires = $('mission-expires').value ? new Date(`${$('mission-expires').value}T23:59:59+08:00`).toISOString() : null;
+    const payload = { v: 1, type: 'mission', id, title, body: $('mission-body').value.trim(), reward: missionReward(), expires, createdAt: new Date().toISOString() };
+    await cloud().putJSON(`missions/${id}.json`, await signPayload(privateKey, payload), 'add mission');
+    $('mission-status').textContent = `出題了！他下次打開遊戲就會看到「${title}」。`;
+    $('mission-title').value = ''; $('mission-body').value = '';
+    void refreshMissions();
+  } catch (err) { $('mission-status').textContent = `出題失敗：${err.message}`; }
+  finally { $('mission-create').disabled = !privateKey; }
+});
+const photoUrls = [];
+async function refreshMissions() {
+  if (!config()) return;
+  photoUrls.splice(0).forEach((u) => URL.revokeObjectURL(u));
+  try {
+    const c = cloud();
+    const [missions, reviews] = await Promise.all([c.list('missions'), c.list('reviews')]);
+    const reviewed = new Set(reviews.map((f) => f.name));
+    const items = await Promise.all(missions.filter((f) => f.name.endsWith('.json')).map(async (f) => ({ id: f.name.slice(0, -5), p: (await c.getJSON(f.path))?.data?.payload })));
+    items.sort((a, b) => String(b.p?.createdAt).localeCompare(String(a.p?.createdAt)));
+    const lis = [];
+    for (const { id, p } of items) {
+      const li = document.createElement('li');
+      const b = document.createElement('b'); b.textContent = p?.title || id;
+      const subs = (await c.list(`submissions/${id}`)).filter((f) => f.name.endsWith('.jpg'));
+      const waiting = subs.filter((f) => !reviewed.has(`${id}__${f.name.slice(0, -4)}.json`));
+      const info = document.createElement('small'); info.textContent = `${describeReward(p?.reward || {}, CHARACTERS, EGGS)} · 提交 ${subs.length} 次 · ${waiting.length ? `${waiting.length} 張待審核` : '沒有待審核的照片'}`;
+      li.append(b, info);
+      for (const f of waiting) {
+        const sid = f.name.slice(0, -4);
+        const bytes = await c.getBytes(f.path);
+        const img = document.createElement('img'); img.className = 'review-photo'; img.alt = `${p?.title} 的照片`;
+        if (bytes) { const url = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })); photoUrls.push(url); img.src = url; }
+        const note = document.createElement('textarea'); note.rows = 2; note.maxLength = 600; note.placeholder = '首席研究員的批註（會收進他的記憶檔案）';
+        const row = document.createElement('div'); row.className = 'row';
+        const ok = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: '通過' });
+        const no = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '退回' });
+        const decide = async (approvedFlag) => {
+          if (!privateKey) { $('mission-status').textContent = '請先準備好印章。'; return; }
+          ok.disabled = no.disabled = true;
+          const payload = { v: 1, type: 'review', mission: id, submission: sid, approved: approvedFlag, note: note.value.trim(), createdAt: new Date().toISOString() };
+          await c.putJSON(`reviews/${id}__${sid}.json`, await signPayload(privateKey, payload), approvedFlag ? 'approve submission' : 'reject submission');
+          $('mission-status').textContent = approvedFlag ? '已通過！他下次打開遊戲就會收到獎勵。' : '已退回，他可以再拍一次。';
+          void refreshMissions();
+        };
+        ok.addEventListener('click', () => decide(true)); no.addEventListener('click', () => decide(false));
+        row.append(ok, no); li.append(img, note, row);
+      }
+      const row = document.createElement('div'); row.className = 'row';
+      const del = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '撤回題目' });
+      del.addEventListener('click', async () => { del.disabled = true; await c.remove(`missions/${id}.json`, 'remove mission'); void refreshMissions(); });
+      row.append(del); li.append(row); lis.push(li);
+    }
+    $('mission-list').replaceChildren(...(lis.length ? lis : [Object.assign(document.createElement('li'), { textContent: '還沒有委託。' })]));
+  } catch (err) { $('mission-status').textContent = `讀取委託失敗：${err.message}`; }
+}
+$('mission-refresh').addEventListener('click', refreshMissions);
+
+/* ---------- 約會 QR Code ---------- */
+const URL_KEY = 'siang-collector:review-game-url:v1';
+$('date-url').value = localStorage.getItem(URL_KEY) || new URL('./', location.href).href;
+$('date-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!privateKey) { $('date-status').textContent = '請先在第 2 步準備好印章。'; return; }
+  $('date-create').disabled = true; $('date-status').textContent = '蓋章中…';
+  try {
+    const gameUrl = $('date-url').value.trim(); localStorage.setItem(URL_KEY, gameUrl);
+    const code = newDateCode();
+    const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
+    const payload = { v: 1, type: 'date', code, title: $('date-title').value.trim() || '今天的約會', note: $('date-note').value.trim(), expires, createdAt: new Date().toISOString() };
+    await cloud().putJSON(`dates/${code}.json`, await signPayload(privateKey, payload), 'date code');
+    const q = qrcode(0, 'M'); q.addData(`${gameUrl.replace(/#.*$/, '')}#date=${code}`); q.make();
+    $('date-qr-svg').innerHTML = q.createSvgTag({ cellSize: 6, margin: 2 });
+    $('date-code').textContent = code;
+    $('date-expire').textContent = `有效到 ${new Date(expires).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}，只能用一次`;
+    $('date-qr').hidden = false; $('date-status').textContent = '請他用手機相機掃描，或在遊戲「輸入暗號」打上這 6 碼。';
+  } catch (err) { $('date-status').textContent = `產生失敗：${err.message}`; }
+  finally { $('date-create').disabled = !privateKey; }
+});
+
 /* ---------- 啟動 ---------- */
 renderCloud();
 await setKey((await loadJwk()) || null);
 renderKey();
 void refreshCodes();
 void refreshLetters();
+void refreshMissions();

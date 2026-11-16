@@ -17,7 +17,7 @@ export function ensureGifts(state) {
 export function validReward(r, characters) {
   if (!r || typeof r !== 'object') return false;
   if (r.type === 'energy') return Number.isSafeInteger(r.amount) && r.amount > 0 && r.amount <= 1000;
-  if (r.type === 'egg') return ['wish', 'weather', 'cipher'].includes(r.egg);
+  if (r.type === 'egg') return ['wish', 'weather', 'cipher', 'date'].includes(r.egg);
   if (r.type === 'character') return Boolean(characters[r.no]);
   return false;
 }
