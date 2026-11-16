@@ -59,6 +59,23 @@ export const EGGS = {
     art: 'origin',
     tint: 'hue-rotate(160deg) saturate(0.9) brightness(1.05)',
   },
+  cipher: {
+    id: 'cipher',
+    name: '暗號蛋',
+    code: 'CODE',
+    warmthNeeded: 100,
+    hatches: null,
+    stocked: true, // 湘的暗號、照片委託送的蛋
+    // 湘指定角色時固定孵出該角色（存在蛋上的 character）；沒指定就從這個池子抽
+    pool: {
+      '001': 6, '005': 6, '007': 6, '008': 6,
+      '002': 12, '003': 12, '004': 12, '006': 12, '009': 12,
+      '010': 8, '013': 8,
+    },
+    // 暫用：正式的暗號蛋素材還沒到（概念圖 concepts-v1/cipher.webp）。素材放進 assets/eggs/cipher/ 後刪掉這兩行
+    art: 'origin',
+    tint: 'hue-rotate(250deg) saturate(1.2) brightness(0.95)',
+  },
   county: {
     id: 'county',
     name: '縣市蛋',
@@ -149,6 +166,7 @@ export const COUNTY_CHARACTER = Object.fromEntries(Object.values(CHARACTERS).fil
 // boosts：[{ no, times }]，例如深夜時夜貓小湘權重 ×4（只影響蛋池裡本來就有的角色）
 export function rollFor(eggState, boosts = []) {
   const egg = EGGS[eggState.id];
+  if (eggState.character && CHARACTERS[eggState.character]) return eggState.character;
   if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
   if (!egg.pool || !boosts.length) return rollHatch(egg);
   const pool = { ...egg.pool };

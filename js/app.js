@@ -3,6 +3,10 @@ import { createIncubator, createEggView, stageOf, restart, reducedMotion } from 
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
 import { checkIn } from './travel.js';
+import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
+import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
+import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
+import { applyReward, validReward, describeReward } from './gifts.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
@@ -283,17 +287,24 @@ function eggStock(s, id) {
   if (id === 'wish') return s.wishEgg?.stock || 0;
   if (id === 'county') return s.travel?.eggs?.length || 0;
   if (id === 'weather') return s.weather?.stock || 0;
+  if (id === 'cipher') return s.gifts?.eggs?.filter(e => e.egg === 'cipher').length || 0;
   return 0;
 }
 function returnEgg(s, egg) {
   if (egg.id === 'wish') s.wishEgg.stock += 1;
   if (egg.id === 'county' && egg.county) s.travel.eggs.unshift(egg.county);
   if (egg.id === 'weather') s.weather.stock += 1;
+  if (egg.id === 'cipher') s.gifts.eggs.unshift({ egg: 'cipher', ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
 }
 function takeEgg(s, egg) {
   if (egg.id === 'wish') s.wishEgg.stock -= 1;
   if (egg.id === 'county') egg.county = s.travel.eggs.shift();
   if (egg.id === 'weather') s.weather.stock -= 1;
+  if (egg.id === 'cipher') {
+    const i = s.gifts.eggs.findIndex(e => e.egg === 'cipher');
+    const [gift] = s.gifts.eggs.splice(i, 1);
+    if (gift?.character) egg.character = gift.character;
+  }
 }
 
 // 目前會影響孵化結果的天氣／時間
@@ -323,7 +334,7 @@ function renderEggChoices() {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'weather' ? `雨天的蛋，雨傘小湘最常出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'weather' ? `雨天的蛋，雨傘小湘最常出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
     const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : state.egg.warmth > 0 ? '完成目前培育後可選' : '選擇這顆蛋';
@@ -333,6 +344,7 @@ function renderEggChoices() {
       own.textContent = egg.id === 'wish'
         ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
         : egg.id === 'weather' ? `持有 ${stock} 顆（下雨天打開遊戲時取得，每天最多一顆）`
+        : egg.id === 'cipher' ? `持有 ${stock} 顆（輸入湘給的暗號、完成她的委託時取得）`
         : stock ? `持有 ${stock} 顆：${state.travel.eggs.join('、')}（依取得順序培育）` : '到新的縣市按「探索」，那裡的小湘就會想出現';
       content.append(own);
     }
@@ -872,7 +884,7 @@ addEventListener('popstate', () => { const view = location.hash.slice(1); showVi
 addEventListener('storage', (event) => { if ([PRESENTER_KEY, ROOM_KEY, 'siang-collector:v1'].includes(event.key) && !busy && !photoBusy) { state = loadState(); eggView = null; renderAll(); } });
 $('nav').addEventListener('click', (e) => {
   const item = e.target.closest('.nav__item');
-  if (item && !item.disabled) showView(item.dataset.view);
+  if (item && !item.disabled && item.dataset.view) showView(item.dataset.view);
 });
 $('fab-wish').addEventListener('click', () => showView('wish'));
 // 點小恐龍：對話框收著就先打開；已經打開就照牠說的去做
@@ -988,8 +1000,127 @@ $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
 
+/* ---------- 雲端：備份、還原與暗號 ---------- */
+const BACKUP_KEYS = ['siang-collector:v1', ROOM_KEY, PRESENTER_KEY, 'siang-collector:dex-mode:v1'];
+const LAST_BACKUP_KEY = 'siang-collector:cloud-backup:v1';
+const lastBackup = () => { try { return localStorage.getItem(LAST_BACKUP_KEY); } catch { return null; } };
+
+function renderCloud(message = '') {
+  const config = cloudConfig();
+  $('cloud-repo').value = config?.repo || $('cloud-repo').value;
+  $('cloud-token').value = '';
+  $('cloud-token').placeholder = config ? '已儲存（要更換再貼上新的）' : 'github_pat_…';
+  $('cloud-save').textContent = config ? '更新連線' : '連線';
+  $('cloud-backup').hidden = !config;
+  $('cloud-restore-confirm').hidden = true;
+  const last = lastBackup();
+  $('cloud-last').textContent = last ? `上次備份：${new Date(last).toLocaleString('zh-TW')}（每天打開遊戲時自動備份）` : '還沒有備份過';
+  $('cloud-status').textContent = message;
+}
+
+async function backupNow() {
+  const config = cloudConfig();
+  if (!config) throw new Error('還沒連線');
+  const cloud = createCloud(config);
+  const keys = {};
+  for (const k of BACKUP_KEYS) { try { const v = localStorage.getItem(k); if (v !== null) keys[k] = v; } catch {} }
+  const data = { app: 'siang-collector', v: 1, at: new Date().toISOString(), keys };
+  await cloud.putJSON('backups/latest.json', data, 'backup: latest', { overwrite: true });
+  await cloud.putJSON(`backups/${todayKey()}.json`, data, `backup: ${todayKey()}`, { overwrite: true });
+  try { localStorage.setItem(LAST_BACKUP_KEY, data.at); } catch {}
+  return data.at;
+}
+
+async function autoBackup() {
+  const last = lastBackup();
+  if (!cloudConfig() || (last && todayKey(new Date(last)) === todayKey())) return;
+  try { await backupNow(); } catch {}
+}
+
+$('open-cloud').addEventListener('click', () => { $('function-center').close(); renderCloud(); $('cloud-dialog').showModal(); syncRoomActivity(); });
+$('close-cloud').addEventListener('click', () => $('cloud-dialog').close());
+$('cloud-dialog').addEventListener('close', syncRoomActivity);
+$('cloud-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const repo = $('cloud-repo').value.trim().replace(/^https:\/\/github\.com\//, '').replace(/\/$/, '');
+  const token = $('cloud-token').value.trim() || cloudConfig()?.token || '';
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !token) { $('cloud-status').textContent = '請填資料庫名稱（像 owner/repo）和通行碼。'; return; }
+  $('cloud-save').disabled = true; $('cloud-status').textContent = '連線中…';
+  try {
+    const info = await createCloud({ repo, token }).test();
+    saveCloudConfig({ repo, token });
+    renderCloud(info.private ? '連線成功！' : '連線成功，但這個資料庫是公開的。照片和備份請改放在私人資料庫。');
+    void autoBackup().then(() => renderCloud($('cloud-status').textContent));
+  } catch (err) { $('cloud-status').textContent = `連不上：${err.message}`; }
+  finally { $('cloud-save').disabled = false; }
+});
+$('cloud-backup-now').addEventListener('click', async () => {
+  $('cloud-backup-now').disabled = true; $('cloud-status').textContent = '備份中…';
+  try { await backupNow(); renderCloud('備份完成。'); } catch (err) { $('cloud-status').textContent = `備份失敗：${err.message}`; }
+  finally { $('cloud-backup-now').disabled = false; }
+});
+let pendingRestore = null;
+$('cloud-restore').addEventListener('click', async () => {
+  $('cloud-status').textContent = '讀取雲端備份…';
+  try {
+    const file = await createCloud(cloudConfig()).getJSON('backups/latest.json');
+    if (!file || file.data.app !== 'siang-collector' || !file.data.keys?.['siang-collector:v1']) { $('cloud-status').textContent = '雲端還沒有備份。'; return; }
+    pendingRestore = file.data;
+    const saved = JSON.parse(file.data.keys['siang-collector:v1']);
+    $('cloud-status').textContent = `找到 ${new Date(file.data.at).toLocaleString('zh-TW')} 的備份：圖鑑 ${Object.keys(saved.dex || {}).length} 位、能量 ${saved.energy || 0}。`;
+    $('cloud-restore-confirm').hidden = false;
+  } catch (err) { $('cloud-status').textContent = `讀取失敗：${err.message}`; }
+});
+$('cloud-restore-confirm').addEventListener('click', () => {
+  if (!pendingRestore) return;
+  for (const [k, v] of Object.entries(pendingRestore.keys)) if (BACKUP_KEYS.includes(k)) localStorage.setItem(k, v);
+  location.reload();
+});
+$('cloud-disconnect').addEventListener('click', () => { saveCloudConfig(null); $('cloud-repo').value = ''; renderCloud('已中斷連線，這支手機不再保存通行碼。'); });
+
+// 暗號：正規化 → 雜湊 → 讀 codes/<雜湊>.json → 驗證湘的簽章 → 檢查期限與是否用過 → 發獎勵
+async function redeemCode(text) {
+  const phrase = normalizeCode(text);
+  if (!phrase) return '先輸入暗號喔。';
+  const config = cloudConfig();
+  if (!config) return '要先到「雲端與備份」連線，才能兌換暗號。';
+  if (!REVIEWER_PUBLIC_JWK) return '審核員的印章還沒設定好，請湘先完成審核頁的設定。';
+  const hash = await sha256Hex(phrase);
+  const cloud = createCloud(config);
+  const file = await cloud.getJSON(`codes/${hash}.json`);
+  if (!file) return state.gifts.redeemed.includes(hash) ? '這個暗號已經兌換過了。' : '暗號好像不對……再想想看？';
+  const signed = file.data;
+  const p = signed.payload;
+  if (!(await verifySigned(REVIEWER_PUBLIC_JWK, signed)) || p?.type !== 'code' || p.hash !== hash || !validReward(p.reward, CHARACTERS)) return '這個暗號的印章不對，無法兌換。';
+  if (p.expires && Date.now() > Date.parse(p.expires)) return '這個暗號已經過期了。';
+  const once = p.once !== false;
+  // 一次性暗號：全世界只能兌換一次；可重複的暗號：每天可以兌換一次
+  const mark = once ? hash : `${hash}:${todayKey()}`;
+  if (state.gifts.redeemed.includes(mark)) return once ? '這個暗號已經兌換過了。' : '這個暗號今天已經兌換過了，明天再來吧。';
+  if (once && await cloud.exists(`redeemed/${hash}.json`)) return '這個暗號已經被兌換過了。';
+  if (once) await cloud.putJSON(`redeemed/${hash}.json`, { at: new Date().toISOString() }, 'redeem code');
+  const transaction = await updateState(current => {
+    if (current.gifts.redeemed.includes(mark)) return false;
+    applyReward(current, p.reward, 'code'); current.gifts.redeemed.push(mark); return true;
+  });
+  state = transaction.state; renderAll();
+  if (!transaction.result) return '這個暗號已經兌換過了。';
+  return `兌換成功！獲得${describeReward(p.reward, CHARACTERS, EGGS)}。${p.reward.type === 'energy' ? '' : '\n到培育室的「選擇蛋」把它拿出來吧。'}`;
+}
+$('open-code').addEventListener('click', () => { $('function-center').close(); $('code-input').value = ''; $('code-status').textContent = ''; $('code-dialog').showModal(); syncRoomActivity(); });
+$('close-code').addEventListener('click', () => $('code-dialog').close());
+$('code-dialog').addEventListener('close', syncRoomActivity);
+$('code-form').addEventListener('submit', async (event) => {
+  event.preventDefault();
+  $('code-submit').disabled = true; $('code-status').textContent = '確認中…';
+  try { $('code-status').textContent = await redeemCode($('code-input').value); }
+  catch (err) { $('code-status').textContent = `兌換失敗：${err.message || '連線問題'}`; }
+  finally { $('code-submit').disabled = false; }
+});
+
 renderAll();
 renderExplore();
+void autoBackup();
 // 已經允許過定位的話，打開遊戲時自動感應；只有第一次來到的縣市才會跳出來
 void geoPermission().then(p => { if (p === 'granted') setTimeout(() => explore({ silent: true }), 1200); });
 showView(VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home', { replace: true });

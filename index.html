@@ -178,6 +178,12 @@
     <button class="nav__item" type="button" disabled>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v13H4zM4 10h16M9 6V4h6v2"/></svg><span>記憶 · 尚未開放</span>
     </button>
+    <button class="nav__item" type="button" id="open-code">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v2"/></svg><span>輸入暗號</span>
+    </button>
+    <button class="nav__item" type="button" id="open-cloud">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 9.5 4.3 4.3 0 0 0 7 18zM12 10v6M9.5 13.5 12 16l2.5-2.5"/></svg><span>雲端與備份</span>
+    </button>
   </nav>
 <p class="fine">每一點陪伴，都讓我們更靠近。</p></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -189,6 +195,12 @@
 <dialog class="residents-dialog sheet egg-picker" id="egg-picker" aria-labelledby="egg-picker-title"><div class="drawer-heading"><div><small>CHOOSE YOUR NEXT ENCOUNTER</small><h2 id="egg-picker-title">選擇培育的蛋</h2></div><button class="close-button" type="button" id="close-eggs" aria-label="關閉選擇蛋">×</button></div><p class="residents-intro" id="egg-picker-note"></p><div id="egg-choices"></div><p id="egg-picker-feedback" role="status" aria-live="polite"></p></dialog>
 
 <dialog class="residents-dialog sheet county-call" id="county-call" aria-labelledby="county-title"><small class="county-call__eyebrow" id="county-eyebrow">LOCAL SIGNAL</small><img class="county-call__img" id="county-img" alt="" hidden><h2 id="county-title"></h2><p class="county-call__text" id="county-text"></p><p class="county-call__note" id="county-note" hidden></p><div class="county-call__actions"><button class="btn" type="button" id="county-go" hidden>前往培育室</button><button class="btn btn--quiet" type="button" id="county-ok">好</button></div><p class="county-call__privacy">定位只用來判斷所在縣市，座標不會保存或上傳。</p></dialog>
+<dialog class="residents-dialog sheet cloud-dialog" id="code-dialog" aria-labelledby="code-title"><div class="drawer-heading"><div><small>SECRET PHRASE</small><h2 id="code-title">輸入暗號</h2></div><button class="close-button" type="button" id="close-code" aria-label="關閉輸入暗號">×</button></div><p class="residents-intro">湘藏在聊天、卡片或禮物裡的暗號，可以在這裡兌換。空格、標點、全形半形都不影響。</p><form id="code-form" class="cloud-form"><input id="code-input" type="text" autocomplete="off" placeholder="例如：恐龍偷吃草莓" maxlength="80"><button class="btn" type="submit" id="code-submit">兌換</button></form><p class="cloud-status" id="code-status" role="status" aria-live="polite"></p></dialog>
+<dialog class="residents-dialog sheet cloud-dialog" id="cloud-dialog" aria-labelledby="cloud-title"><div class="drawer-heading"><div><small>CLOUD &amp; BACKUP</small><h2 id="cloud-title">雲端與備份</h2></div><button class="close-button" type="button" id="close-cloud" aria-label="關閉雲端與備份">×</button></div>
+<p class="residents-intro">連上湘的私人資料庫後，進度每天自動備份，換手機也能還原；暗號和湘的委託也需要連線。token 只存在這支手機。</p>
+<form id="cloud-form" class="cloud-form"><label>資料庫（owner/repo）<input id="cloud-repo" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="margin-protocol/xxxx"></label><label>通行碼（token）<input id="cloud-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label><button class="btn" type="submit" id="cloud-save">連線</button></form>
+<div class="cloud-backup" id="cloud-backup" hidden><p id="cloud-last"></p><button class="btn" type="button" id="cloud-backup-now">立即備份</button><button class="btn btn--quiet" type="button" id="cloud-restore">從雲端還原</button><button class="btn btn--danger" type="button" id="cloud-restore-confirm" hidden>確定還原（會覆蓋這支手機的進度）</button><button class="btn btn--quiet" type="button" id="cloud-disconnect">中斷連線</button></div>
+<p class="cloud-status" id="cloud-status" role="status" aria-live="polite"></p></dialog>
 <dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">
   <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
   <p class="sheet__note">致親愛的飼養員：

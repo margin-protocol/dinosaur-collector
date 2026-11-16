@@ -1,0 +1,30 @@
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg-deep); color: var(--ivory); font: 15px/1.7 var(--font-body); }
+.review { max-width: 560px; margin: 0 auto; padding: calc(var(--safe-top) + 24px) 16px 48px; }
+header small { font: 10px var(--font-body); letter-spacing: .22em; color: var(--pearl); }
+header h1 { margin: 6px 0; font: 400 26px var(--font-display); letter-spacing: .1em; }
+header p, .hint { margin: 0 0 10px; font-size: 13px; color: var(--silver); }
+.warn { color: #f4c6db; }
+.card { margin-top: 18px; padding: 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--bg-panel); }
+.card h2 { margin: 0 0 8px; font: 400 18px var(--font-display); letter-spacing: .08em; }
+.card h3 { margin: 18px 0 8px; font: 400 15px var(--font-display); }
+.form { display: grid; gap: 10px; }
+.form label { display: grid; gap: 4px; font-size: 13px; color: var(--pearl); }
+.form label.check { display: flex; align-items: center; gap: 8px; }
+.inline { display: flex; gap: 8px; }
+.inline input { flex: 1; }
+input, select, textarea { width: 100%; min-height: 44px; padding: 8px 12px; border: 1px solid #65576f; border-radius: 8px; background: #16131b; color: var(--ivory); font: 15px var(--font-body); }
+input[type=checkbox] { width: 20px; min-height: 20px; }
+textarea { font: 12px/1.5 var(--font-mono); resize: vertical; }
+.btn { min-height: 46px; padding: 0 18px; border: 0; border-radius: 10px; background: #e9e2ee; color: #2a2333; font: 15px var(--font-display); letter-spacing: .08em; }
+.btn:disabled { opacity: .5; }
+.btn--quiet { background: none; border: 1px solid #65576f; color: var(--ivory); }
+.row { display: flex; flex-wrap: wrap; gap: 8px; }
+.status { min-height: 20px; margin: 8px 0 0; font-size: 13px; color: #f4c6db; white-space: pre-line; }
+.list { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.list li { padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 13px; }
+.list li b { font-weight: 500; color: var(--ivory); }
+.list li small { display: block; color: var(--silver); }
+.list li .row { margin-top: 6px; }
+.list li .btn { min-height: 36px; font-size: 13px; padding: 0 12px; }

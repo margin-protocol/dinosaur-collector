@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>首席研究員審核室｜SIANG COLLECTOR</title>
+<link rel="icon" href="assets/icons/icon-192.png" type="image/png">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/review.css">
+</head>
+<body>
+<main class="review">
+  <header><small>CHIEF RESEARCHER</small><h1>首席研究員審核室</h1><p>只有湘的手機需要打開這一頁。印章（私鑰）只存在這支手機裡。</p></header>
+
+  <section class="card" id="sec-cloud">
+    <h2>1. 連線資料庫</h2>
+    <p class="hint">用「審核員專用」的那把 token，跟遊戲同一個私人資料庫。</p>
+    <form id="cloud-form" class="form">
+      <label>資料庫（owner/repo）<input id="cloud-repo" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="margin-protocol/xxxx"></label>
+      <label>通行碼（token）<input id="cloud-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
+      <button class="btn" type="submit" id="cloud-save">連線</button>
+    </form>
+    <p class="status" id="cloud-status" role="status"></p>
+  </section>
+
+  <section class="card" id="sec-key">
+    <h2>2. 首席研究員的印章</h2>
+    <p class="status" id="key-state"></p>
+    <div class="row">
+      <button class="btn" type="button" id="key-generate">產生新的印章</button>
+      <button class="btn btn--quiet" type="button" id="key-show-import">從備份還原</button>
+    </div>
+    <div id="key-import" hidden class="form">
+      <label>貼上印章備份<textarea id="key-import-text" rows="4" spellcheck="false"></textarea></label>
+      <button class="btn" type="button" id="key-import-ok">還原印章</button>
+    </div>
+    <div id="key-info" hidden>
+      <p class="hint">① 公鑰：把這段交給德寶，寫進遊戲，遊戲才認得妳的章。公開無妨。</p>
+      <textarea id="key-public" rows="3" readonly></textarea>
+      <button class="btn btn--quiet" type="button" id="key-copy-public">複製公鑰</button>
+      <p class="hint warn">② 印章備份（私鑰）：換手機時用來還原。<b>只能自己保存</b>（例如存進密碼管理器），不要傳給任何人，也不要放進 repo。</p>
+      <button class="btn btn--quiet" type="button" id="key-copy-backup">複製印章備份</button>
+    </div>
+    <p class="status" id="key-status" role="status"></p>
+  </section>
+
+  <section class="card" id="sec-code">
+    <h2>3. 暗號</h2>
+    <p class="hint">設定一句暗號，藏在聊天、卡片或禮物裡。他在遊戲「輸入暗號」兌換。空格、標點、全形半形不影響。</p>
+    <form id="code-form" class="form">
+      <label>暗號<span class="inline"><input id="code-phrase" autocomplete="off" maxlength="80" placeholder="例如：恐龍偷吃草莓"><button class="btn btn--quiet" type="button" id="code-random">隨機</button></span></label>
+      <label>獎勵<select id="code-reward">
+        <option value="energy:50">50 能量</option>
+        <option value="energy:100">100 能量</option>
+        <option value="egg:cipher">暗號蛋（隨機小湘）</option>
+        <option value="egg:wish">願望蛋</option>
+        <option value="character">暗號蛋（指定小湘）</option>
+      </select></label>
+      <label id="code-character-row" hidden>指定小湘<select id="code-character"></select></label>
+      <label>有效期限（可不填）<input id="code-expires" type="date"></label>
+      <label class="check"><input id="code-reusable" type="checkbox"> 可以重複兌換（每天一次；預設整個暗號只能用一次）</label>
+      <label>備註（只有妳看得到，可不填）<input id="code-note" maxlength="60" placeholder="例如：生日卡片裡"></label>
+      <button class="btn" type="submit" id="code-create">蓋章並送出</button>
+    </form>
+    <p class="status" id="code-status" role="status"></p>
+    <h3>已設定的暗號</h3>
+    <button class="btn btn--quiet" type="button" id="code-refresh">重新整理</button>
+    <ul class="list" id="code-list"></ul>
+  </section>
+</main>
+<script type="module" src="js/review.js"></script>
+</body>
+</html>
