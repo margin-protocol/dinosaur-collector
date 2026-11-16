@@ -31,6 +31,7 @@ import { createResearch } from './research.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward } from './progression.js';
 import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
+import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -2302,3 +2303,28 @@ $('close-errands').addEventListener('click', () => $('errand-dialog').close());
 $('errand-dialog').addEventListener('close', syncRoomActivity);
 $('errand-result-ok').addEventListener('click', () => $('errand-result').close());
 setInterval(() => { if (!document.hidden) { renderErrandBadge(); if ($('errand-dialog').open) renderErrands(); } }, 30 * 1000);
+
+// ── 更新通知
+const updateWatcher = watchForUpdates(() => { $('update-pill').hidden = false; buzz([10, 30, 10]); });
+$('update-pill').addEventListener('click', () => location.reload());
+window.__checkUpdates = updateWatcher.check; // 給測試用
+const isReturning = () => state.hatched > 0 || Object.keys(state.dex || {}).length > 0;
+noteNewPlayer(isReturning());
+async function showWhatsNew(tries = 0) {
+  if (navigator.webdriver && !window.__testWhatsNew) return; // 自動化測試不跳更新內容
+  const list = await loadChangelog();
+  const fresh = unseen(list, { returning: isReturning() });
+  if (!fresh.length) return;
+  if (!state.seenIntro || document.querySelector('dialog[open]')) { if (tries < 30) setTimeout(() => void showWhatsNew(tries + 1), 4000); return; }
+  $('whats-new-list').replaceChildren(...fresh.map(entry => {
+    const box = document.createElement('section'); box.className = 'whats-new__entry';
+    const h = document.createElement('h3'); h.textContent = entry.title ? `${entry.title}` : entry.version;
+    const date = document.createElement('small'); date.textContent = entry.date || entry.version;
+    const ul = document.createElement('ul'); ul.append(...entry.items.map(t => Object.assign(document.createElement('li'), { textContent: t })));
+    box.append(date, h, ul); return box;
+  }));
+  $('whats-new').showModal();
+  $('whats-new-ok').onclick = () => { markSeen(list); $('whats-new').close(); };
+  $('whats-new').addEventListener('cancel', () => markSeen(list), { once: true });
+}
+setTimeout(() => void showWhatsNew(), 1500);
