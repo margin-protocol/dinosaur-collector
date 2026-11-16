@@ -51,7 +51,18 @@
 .growth-goal p { font-size:11px; line-height:1.7; margin:0; color:var(--pearl); }
 .growth-goal__state { text-align:right; font:10px var(--font-body); color:var(--pearl); }
 .growth-goal__state span { display:block; margin-top:5px; font:10px var(--font-display); }
-.growth-claim { margin-top:5px; min-height:44px; padding:7px; font:11px var(--font-display); background:#ead9ed; color:#342637; border:0; border-radius:4px; }
+/* Reward amount and action share one generous touch target. */
+.growth-claim { display:flex; flex-direction:column; justify-content:center; gap:7px; min-width:94px; min-height:64px; padding:10px 12px; color:var(--ivory); background:linear-gradient(125deg,#3c3349,#292633); border:1px solid #a994b35c; border-radius:2px 12px 2px 12px; text-align:left; cursor:pointer; transition:background .18s ease,transform .18s ease,border-color .18s ease; }
+.growth-claim .growth-claim__reward { margin:0; color:#ecd9ed; font:500 13px var(--font-body); letter-spacing:.07em; font-variant-numeric:tabular-nums; }
+.growth-claim .growth-claim__action { display:flex; align-items:center; justify-content:space-between; gap:18px; margin:0; font:13px var(--font-display); letter-spacing:.12em; }
+.growth-claim .growth-claim__arrow { margin:0; color:#d9bddf; font:18px/1 var(--font-body); }
+.growth-claim:active:not(:disabled) { transform:scale(.96); background:#4b3e56; border-color:#dbc0df; }
+.growth-claim:focus-visible { outline:2px solid #efdaef; outline-offset:4px; }
+.growth-claim:disabled { opacity:.55; cursor:wait; }
+.growth-goal .growth-goal__progress { margin-top:6px; color:#c7b8cf; font:10px var(--font-body); font-variant-numeric:tabular-nums; letter-spacing:.06em; }
+@media(hover:hover) { .growth-claim:hover:not(:disabled) { background:#44394f; border-color:#c6a8cf; } }
+@media(prefers-reduced-motion:reduce) { .growth-claim { transition:none; } }
+
 .growth-companion { display:flex; align-items:center; justify-content:flex-end; gap:8px; padding:10px 0; }
 .growth-companion img { width:100px; height:100px; object-fit:contain; }
 .growth-companion p { font:12px var(--font-display); color:var(--pearl); }

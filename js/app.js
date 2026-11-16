@@ -241,10 +241,14 @@ function renderGrowth() {
     const hint = document.createElement('p'); hint.textContent = goal.hint;
     content.append(title, hint);
     const status = document.createElement('div'); status.className = 'growth-goal__state';
-    status.append(document.createTextNode(`${progress.current} / ${goal.target}`));
+    const count = document.createElement('p'); count.className = 'growth-goal__progress'; count.textContent = `${progress.current} / ${goal.target}`; content.append(count);
     if (progress.claimed) { const label = document.createElement('span'); label.textContent = '✓ 已領取'; status.append(label); }
     else if (progress.complete) {
-      const claim = document.createElement('button'); claim.type = 'button'; claim.className = 'growth-claim'; claim.dataset.goal = goal.id; claim.textContent = `領取 ${GROWTH_XP} XP`; claim.disabled = claimBusy; status.append(claim);
+      const claim = document.createElement('button'); claim.type = 'button'; claim.className = 'growth-claim'; claim.dataset.goal = goal.id; claim.setAttribute('aria-label', `領取 ${goal.title}的 ${GROWTH_XP} XP 獎勵`);
+      const reward = document.createElement('span'); reward.className = 'growth-claim__reward'; reward.textContent = `+${GROWTH_XP} XP`;
+      const action = document.createElement('span'); action.className = 'growth-claim__action'; action.textContent = '領取';
+      const arrow = document.createElement('span'); arrow.className = 'growth-claim__arrow'; arrow.textContent = '↗'; arrow.setAttribute('aria-hidden', 'true');
+      action.append(arrow); claim.append(reward, action); claim.disabled = claimBusy; status.append(claim);
     } else { const label = document.createElement('span'); label.textContent = '進行中'; status.append(label); }
     row.append(no, content, status); return row;
   }));
