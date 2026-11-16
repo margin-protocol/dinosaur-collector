@@ -24,9 +24,15 @@ await p.click('#open-eggs');await p.click('[data-shelf="0"]');await p.waitForTim
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=150;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(400);
 await p.click('#cultivate');await p.locator('#reveal').waitFor();await p.waitForTimeout(300);
 s=await save();assert.equal(s.egg.id,'ordinary');assert.equal(s.egg.warmth,80);assert.equal(s.shelf.length,0);
+// choose which county egg to hatch first
+await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.travel={visits:{},eggs:['臺中市','花蓮縣'],granted:['臺中市','花蓮縣']};localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
+await p.click('#open-eggs');assert.equal(await p.locator('[data-county]').count(),2);await p.click('[data-county="花蓮縣"]');await p.waitForTimeout(300);
+s=await save();assert.equal(s.egg.county,'花蓮縣');assert.deepEqual(s.travel.eggs,['臺中市']);
+await p.click('#open-eggs');await p.click('[data-county="臺中市"]');await p.waitForTimeout(300);
+s=await save();assert.equal(s.egg.county,'臺中市');assert.deepEqual(s.travel.eggs,['花蓮縣']);
 // shelf limit
-await p.click('#reveal-ok');
-await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.shelf=Array.from({length:6},(_,i)=>({id:'ordinary',warmth:10+i,since:`2026-11-0${i+1}T00:00:00Z`}));s.wishEgg.stock=1;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
+await p.evaluate(()=>document.querySelector('#reveal').close());
+await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg={id:'ordinary',warmth:20,since:'2026-11-15T00:00:00Z'};s.shelf=Array.from({length:6},(_,i)=>({id:'ordinary',warmth:10+i,since:`2026-11-0${i+1}T00:00:00Z`}));s.wishEgg.stock=1;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
 await p.click('#open-eggs');assert(await p.locator('[data-egg="wish"]').isDisabled());assert(await p.locator('[data-shelf="0"]').isDisabled());
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('shelf: swap keeps progress, resume shelved egg, fresh stocked refund, auto-resume after hatch, shelf cap PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

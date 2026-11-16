@@ -24,6 +24,7 @@ export const EGGS = {
       '001': 14, '005': 14, '007': 14, '008': 14, // N
       '002': 8, '003': 8, '004': 8, '006': 8, '009': 8, // R
       '010': 2, '013': 2, // SR
+      '036': 2, '037': 2, '038': 2, '039': 2, '040': 2, '041': 2, // SR 摯友小湘
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -39,6 +40,7 @@ export const EGGS = {
       '001': 6, '005': 6, '007': 6, '008': 6, // N
       '002': 12, '003': 12, '004': 12, '006': 12, '009': 12, // R
       '010': 8, '013': 8, // SR
+      '043': 3, // SSR 戀愛小湘（聞止水ver），只在願望蛋
     },
     // 正式三層素材：assets/eggs/wish/{shell,glow,cracks}.webp
   },
@@ -156,6 +158,17 @@ export const CHARACTERS = {
   '034': { no: '034', name: '臺東縣小湘', rarity: 'R', line: '「我騎車載你！……騙你的，你載我。」', image: 'siang-034-taitung', series: 'county', county: '臺東縣', special: true },
   // 特別地點小湘：在縣市裡的特定地點打卡取得（地點範圍見 js/geo.js 的 SPOTS）
   '035': { no: '035', name: '綠島小湘', rarity: 'SR', line: '「燈塔幫我們看著海，你只要負責看著我就好。」', image: 'siang-035-green-island', series: 'county', county: '綠島', special: true },
+  // 摯友小湘（台詞為德寶初稿）：普通蛋可開出
+  '036': { no: '036', name: '摯友小湘（把拔ver）', rarity: 'SR', line: '「把拔又累到睡著了，我們小聲一點喔。」', image: 'siang-036-friend-baba', series: 'friends' },
+  '037': { no: '037', name: '摯友小湘（ㄊㄧver）', rarity: 'SR', line: '「ㄊㄧ說抱抱可以充電，你要不要也來一下？」', image: 'siang-037-friend-ti', series: 'friends' },
+  '038': { no: '038', name: '摯友小湘（史蒂芬灰ver）', rarity: 'SR', line: '「史蒂芬灰在聽歌，我們一起跟著哼吧～」', image: 'siang-038-friend-steven-gray', series: 'friends' },
+  '039': { no: '039', name: '摯友小湘（Serry ver）', rarity: 'SR', line: '「Serry 說今天的光線很好，來拍一張！」', image: 'siang-039-friend-serry', series: 'friends' },
+  '040': { no: '040', name: '摯友小湘（Achio ver）', rarity: 'SR', line: '「Achio 說運動完要補充水分，你今天喝水了嗎？」', image: 'siang-040-friend-achio', series: 'friends' },
+  '041': { no: '041', name: '摯友小湘（Bois ver）', rarity: 'SR', line: '「Bois 撿到一根超大的漂流木，說要送給你。」', image: 'siang-041-friend-bois', series: 'friends' },
+  // 約會：約會蛋（約會 QR Code）取得
+  '042': { no: '042', name: '蝰蝰♡', rarity: 'SSR', line: '「蝰蝰今天有想我嗎🥺」', image: 'siang-042-kuikui', series: 'date', special: true },
+  // 特別：願望蛋可開出
+  '043': { no: '043', name: '戀愛小湘（聞止水ver）', rarity: 'SSR', line: '「我老婆超漂亮❤️」', image: 'siang-043-love-wen', series: 'special' },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序
@@ -166,6 +179,8 @@ export const SERIES = {
   date: { name: '約會系列', short: '約會' },
   memorial: { name: '紀念限定', short: '限定' },
   county: { name: '縣市系列', short: '縣市' },
+  friends: { name: '摯友系列', short: '摯友' },
+  special: { name: '特別收藏', short: '特別' },
 };
 
 // 縣市 → 縣市小湘編號

@@ -320,9 +320,12 @@ function returnEgg(s, egg) {
   if (egg.id === 'weather') s.weather.stock += 1;
   if (egg.id === 'cipher') s.gifts.eggs.unshift({ egg: 'cipher', ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
 }
-function takeEgg(s, egg) {
+function takeEgg(s, egg, county) {
   if (egg.id === 'wish') s.wishEgg.stock -= 1;
-  if (egg.id === 'county') egg.county = s.travel.eggs.shift();
+  if (egg.id === 'county') {
+    const i = county ? s.travel.eggs.indexOf(county) : 0;
+    egg.county = s.travel.eggs.splice(Math.max(i, 0), 1)[0];
+  }
   if (egg.id === 'weather') s.weather.stock -= 1;
   if (egg.id === 'cipher') {
     const i = s.gifts.eggs.findIndex(e => e.egg === 'cipher');
@@ -372,13 +375,32 @@ function renderEggChoices() {
     content.append(title, detail, label); card.append(art, content); return card;
   });
   const heading = (text) => Object.assign(document.createElement('h3'), { className: 'egg-choices__heading', textContent: text });
-  $('egg-choices').replaceChildren(...(shelfCards.length ? [heading('暫放中的蛋'), ...shelfCards, heading('新的蛋')] : []), ...Object.values(EGGS).map(egg => {
+  // 縣市蛋：每個縣市一張卡，可以自己選要先孵哪一顆
+  const countyCards = (state.travel?.eggs || []).map(county => {
+    const egg = EGGS.county;
+    const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = 'county'; card.dataset.county = county; card.disabled = busy || shelfFull(state);
+    const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true');
+    const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
+    const content = document.createElement('div');
+    const title = document.createElement('h3'); title.textContent = `${egg.name} · ${county}`;
+    const no = COUNTY_CHARACTER[county];
+    const detail = document.createElement('p'); detail.textContent = `固定遇見${CHARACTERS[no]?.name || '這裡的小湘'}`;
+    const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
+    const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
+    content.append(title, detail, cost, label); card.append(art, content); return card;
+  });
+  $('egg-choices').replaceChildren(...(shelfCards.length ? [heading('暫放中的蛋'), ...shelfCards, heading('新的蛋')] : []), ...Object.values(EGGS).flatMap(egg => (egg.id === 'county' && countyCards.length && state.egg.id !== 'county') ? countyCards : (egg.id === 'county' && countyCards.length) ? [eggCard(egg), ...countyCards] : [eggCard(egg)]));
+}
+
+function eggCard(egg) {
+  const firstHatched = state.hatched > 0 || Boolean(state.dex['001']);
+  {
     const current = state.egg.id === egg.id;
     const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = egg.id; card.setAttribute('aria-pressed', String(current)); card.disabled = busy || !canChooseEgg(state, egg.id);
     const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true');
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
-    const title = document.createElement('h3'); title.textContent = egg.name;
+    const title = document.createElement('h3'); title.textContent = current && state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
     const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'weather' ? `雨天的蛋，雨傘小湘最常出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
@@ -390,11 +412,11 @@ function renderEggChoices() {
         ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
         : egg.id === 'weather' ? `持有 ${stock} 顆（下雨天打開遊戲時取得，每天最多一顆）`
         : egg.id === 'cipher' ? `持有 ${stock} 顆（輸入湘給的暗號、完成她的委託時取得）`
-        : stock ? `持有 ${stock} 顆：${state.travel.eggs.join('、')}（依取得順序培育）` : '到新的縣市按「探索」，那裡的小湘就會想出現';
+        : stock ? `另外還有 ${stock} 顆，列在下面，可以自己選` : '到新的縣市按「探索」，那裡的小湘就會想出現';
       content.append(own);
     }
     content.append(label); card.append(art, content); return card;
-  }));
+  }
 }
 
 function showWishTab(name, focus = false) {
@@ -892,6 +914,13 @@ $('egg-choices').addEventListener('click', async event => {
         return true;
       }
       const id = choice.dataset.egg;
+      const county = choice.dataset.county;
+      if (county) {
+        if (!current.travel.eggs.includes(county) || shelfFull(current)) return false;
+        stowCurrent(current);
+        const next = newEgg('county'); takeEgg(current, next, county); current.egg = next;
+        return true;
+      }
       if (!EGGS[id] || !canChooseEgg(current, id)) return false;
       if (current.egg.id !== id) {
         stowCurrent(current);
