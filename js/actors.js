@@ -13,6 +13,13 @@ const ANIMS = {
   idle: { sheet: 'assets/characters/siang-001-idle-spritesheet.webp?v=1', ms: [850, 350, 300, 170, 160, 300, 650, 850] },
   sit: { sheet: 'assets/characters/siang-001-sit-spritesheet.webp?v=1', ms: [800, 900, 850, 850, 750, 350, 900, 900] },
 };
+let readySheets;
+function prepareSheets() {
+  return readySheets ||= Promise.all(Object.values(ANIMS).map(({ sheet }) => {
+    const image = new Image(); image.src = sheet;
+    return image.decode().catch(() => {});
+  }));
+}
 const STATE_ANIM = { idle: 'idle', inspect: 'idle', walk: 'walk', rest: 'sit' };
 const SPEED = 0.26; // 每秒走多少「個角色寬」：配合步伐，腳才不會滑
 const LANE = [0.36, 0.9]; // 可活動範圍（佔地板寬度的比例）；左邊留給小恐龍
@@ -54,6 +61,7 @@ export function createSiangActor(lane, options = {}) {
   let anim = 'idle';
   let frame = 0;
   let frameTimer = 0;
+  let generation = 0;
   let stateTimer = 0;
   let running = false;
   let afterWalk = 'idle';
@@ -64,7 +72,7 @@ export function createSiangActor(lane, options = {}) {
   };
 
   const stopFrames = () => {
-    clearTimeout(frameTimer);
+    cancelAnimationFrame(frameTimer);
     frameTimer = 0;
   };
 
@@ -85,13 +93,19 @@ export function createSiangActor(lane, options = {}) {
     }
     setFrame(0);
     if (!loop) return;
-    const step = () => {
-      frameTimer = setTimeout(() => {
-        setFrame((frame + 1) % ANIMS[anim].ms.length);
-        step();
-      }, ANIMS[anim].ms[frame]);
+    const durations = ANIMS[anim].ms;
+    const cycle = durations.reduce((sum, duration) => sum + duration, 0);
+    const started = performance.now();
+    const step = now => {
+      let elapsed = (now - started) % cycle;
+      let next = 0;
+      while (elapsed >= durations[next] && next < durations.length - 1) {
+        elapsed -= durations[next++];
+      }
+      if (next !== frame) setFrame(next);
+      frameTimer = requestAnimationFrame(step);
     };
-    step();
+    frameTimer = requestAnimationFrame(step);
   }
 
   const place = (seconds) => {
@@ -103,7 +117,8 @@ export function createSiangActor(lane, options = {}) {
     clearTimeout(stateTimer);
     state = next;
     el.dataset.state = next;
-    play(STATE_ANIM[next]);
+    // Preserve blink/breath timing when idle changes to another idle state.
+    if (STATE_ANIM[next] !== anim || !frameTimer) play(STATE_ANIM[next]);
 
     if (next === 'idle') {
       stateTimer = setTimeout(choose, rand(3500, 7000));
@@ -129,7 +144,10 @@ export function createSiangActor(lane, options = {}) {
     el.dataset.state = 'walk';
     afterWalk = then;
     flip.dataset.dir = target < x ? 'left' : 'right';
-    const seconds = (dist * lane.clientWidth) / (el.offsetWidth * SPEED);
+    const cycle = ANIMS.walk.ms.reduce((sum, duration) => sum + duration, 0) / 1000;
+    const travel = (dist * lane.clientWidth) / (el.offsetWidth * SPEED);
+    // The compact home lanes must still allow a complete step cycle, not a half-step snap.
+    const seconds = Math.max(1, Math.ceil(travel / cycle)) * cycle;
     x = target;
     place(seconds);
     play('walk');
@@ -161,11 +179,15 @@ export function createSiangActor(lane, options = {}) {
       play('idle', false);
       return; // 減少動態：站著不動
     }
-    enter('idle');
+    const token = ++generation;
+    prepareSheets().then(() => {
+      if (running && token === generation) enter('idle');
+    });
   }
 
   function stop() {
     running = false;
+    generation += 1;
     clearTimeout(stateTimer);
     stopFrames();
     // 停在目前畫面上的位置，回來時從這裡繼續
