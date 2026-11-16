@@ -68,6 +68,18 @@
     <button class="btn btn--quiet" type="button" id="code-refresh">重新整理</button>
     <ul class="list" id="code-list"></ul>
   </section>
+  <section class="card" id="sec-letter">
+    <h2>4. 寄紙條</h2>
+    <p class="hint">寫好蓋章送出，他下次打開遊戲就會收到「湘寄來一張新紙條」，收在首頁的紙條裡。</p>
+    <form id="letter-form" class="form">
+      <label>標題（可不填）<input id="letter-title" maxlength="40" placeholder="例如：今天好想你"></label>
+      <label>內容<textarea id="letter-body" class="letter-text" rows="7" maxlength="3000" placeholder="致親愛的飼養員：&#10;&#10;……&#10;&#10;—— 小湘 ♡"></textarea></label>
+      <button class="btn" type="submit" id="letter-send">蓋章並寄出</button>
+    </form>
+    <p class="status" id="letter-status" role="status"></p>
+    <h3>寄過的紙條</h3>
+    <ul class="list" id="letter-list"></ul>
+  </section>
 </main>
 <script type="module" src="js/review.js"></script>
 </body>

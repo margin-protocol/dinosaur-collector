@@ -53,7 +53,7 @@
     <div class="home-heading"><div class="home-eyebrow">HOME / 01</div><h1>小湘的日常</h1><p id="home-subtitle">一起等待，初次相遇。</p></div>
     <div class="companion-room" id="companion-room" data-active="false">
       <button class="residents-entry" id="open-residents" type="button" aria-haspopup="dialog" aria-controls="residents"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v15H4zM8 5V3m8 2V3M4 10h16"/><path d="m9 15 2 2 4-4"/></svg><span>入住安排<small id="resident-count">0 / 3</small></span></button>
-      <button class="room-letter" id="home-letter" type="button" aria-label="小湘的紙條"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 7 9-7"/></svg><span>紙條</span></button>
+      <button class="room-letter" id="home-letter" type="button" aria-label="小湘的紙條"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 7 9-7"/></svg><span>紙條</span><i class="letter-badge" id="letter-badge" hidden></i></button>
       <button class="room-letter room-gift" id="daily-gift" type="button" hidden aria-label="領取每日見面禮"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-2-3.500-6-3-5 0 .5 1.500 5 0 5 0zm0 0c2-3.500 6-3 5 0-.5 1.500-5 0-5 0z"/></svg><span>見面禮</span></button>
       <button class="explore-pill" id="explore" type="button" hidden><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg><span><b id="explore-label">探索附近</b><small id="explore-sub">看看這裡有沒有小湘的訊號</small></span></button>
       <div id="resident-lanes" class="resident-lanes"></div>
@@ -204,6 +204,13 @@
 <form id="cloud-form" class="cloud-form"><label>資料庫（owner/repo）<input id="cloud-repo" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="margin-protocol/xxxx"></label><label>通行碼（token）<input id="cloud-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label><button class="btn" type="submit" id="cloud-save">連線</button></form>
 <div class="cloud-backup" id="cloud-backup" hidden><p id="cloud-last"></p><button class="btn" type="button" id="cloud-backup-now">立即備份</button><button class="btn btn--quiet" type="button" id="cloud-restore">從雲端還原</button><button class="btn btn--danger" type="button" id="cloud-restore-confirm" hidden>確定還原（會覆蓋這支手機的進度）</button><button class="btn btn--quiet" type="button" id="cloud-disconnect">中斷連線</button></div>
 <p class="cloud-status" id="cloud-status" role="status" aria-live="polite"></p></dialog>
+<dialog class="residents-dialog sheet letter-box" id="letter-box" aria-labelledby="letter-box-title"><div class="drawer-heading"><div><small>LETTERS</small><h2 id="letter-box-title">紙條收藏</h2></div><button class="close-button" type="button" id="close-letter-box" aria-label="關閉紙條收藏">×</button></div><div id="letter-list" class="letter-list"></div><p class="residents-intro" id="letter-locked"></p></dialog>
+<dialog class="sheet sheet--letter" id="letter-read" aria-labelledby="letter-read-title">
+  <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
+  <h2 class="letter-read__title" id="letter-read-title"></h2>
+  <p class="sheet__note" id="letter-read-body"></p>
+  <button class="btn" id="letter-read-ok" type="button">收好</button>
+</dialog>
 <dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">
   <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
   <p class="sheet__note">致親愛的飼養員：

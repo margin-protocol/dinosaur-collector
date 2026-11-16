@@ -47,7 +47,7 @@ function renderKey(message = '') {
   $('key-generate').textContent = has ? '重新產生印章（舊章會失效）' : '產生新的印章';
   if (pub) $('key-public').value = JSON.stringify(pub);
   $('key-status').textContent = message;
-  for (const id of ['code-create']) $(id).disabled = !has;
+  for (const id of ['code-create', 'letter-send']) $(id).disabled = !has;
 }
 
 /* ---------- 連線 ---------- */
@@ -71,7 +71,7 @@ $('cloud-form').addEventListener('submit', async (e) => {
     const info = await createCloud({ repo, token }).test();
     saveCloudConfig({ repo, token }, REVIEW_CLOUD_KEY);
     renderCloud(info.private ? '連線成功！' : '連線成功，但這個資料庫是公開的，建議改成私人。');
-    void refreshCodes();
+    void refreshCodes(); void refreshLetters();
   } catch (err) { $('cloud-status').textContent = `連不上：${err.message}`; }
 });
 
@@ -165,8 +165,46 @@ async function refreshCodes() {
 }
 $('code-refresh').addEventListener('click', refreshCodes);
 
+/* ---------- 寄紙條 ---------- */
+$('letter-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const body = $('letter-body').value.trim();
+  if (!body) { $('letter-status').textContent = '先寫點什麼吧。'; return; }
+  if (!privateKey) { $('letter-status').textContent = '請先在第 2 步準備好印章。'; return; }
+  $('letter-send').disabled = true; $('letter-status').textContent = '蓋章中…';
+  try {
+    const id = `${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`;
+    const payload = { v: 1, type: 'letter', id, title: $('letter-title').value.trim(), body, createdAt: new Date().toISOString() };
+    await cloud().putJSON(`letters/${id}.json`, await signPayload(privateKey, payload), 'send letter');
+    $('letter-status').textContent = '寄出了！他下次打開遊戲就會收到。';
+    $('letter-title').value = ''; $('letter-body').value = '';
+    void refreshLetters();
+  } catch (err) { $('letter-status').textContent = `寄送失敗：${err.message}`; }
+  finally { $('letter-send').disabled = !privateKey; }
+});
+async function refreshLetters() {
+  if (!config()) return;
+  try {
+    const c = cloud();
+    const files = (await c.list('letters')).filter((f) => f.name.endsWith('.json')).sort((a, b) => b.name.localeCompare(a.name));
+    const items = await Promise.all(files.map(async (f) => ({ f, data: (await c.getJSON(f.path))?.data?.payload })));
+    $('letter-list').replaceChildren(...items.map(({ f, data }) => {
+      const li = document.createElement('li');
+      const b = document.createElement('b'); b.textContent = data?.title || '（無標題）';
+      const small = document.createElement('small'); small.textContent = data?.createdAt ? new Date(data.createdAt).toLocaleString('zh-TW') : '';
+      const pre = document.createElement('pre'); pre.textContent = data?.body || '';
+      const row = document.createElement('div'); row.className = 'row';
+      const del = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '收回（他已收到的不會消失）' });
+      del.addEventListener('click', async () => { del.disabled = true; await c.remove(f.path, 'remove letter'); void refreshLetters(); });
+      row.append(del); li.append(b, small, pre, row); return li;
+    }));
+    if (!items.length) $('letter-list').replaceChildren(Object.assign(document.createElement('li'), { textContent: '還沒有寄過紙條。' }));
+  } catch (err) { $('letter-status').textContent = `讀取紙條失敗：${err.message}`; }
+}
+
 /* ---------- 啟動 ---------- */
 renderCloud();
 await setKey((await loadJwk()) || null);
 renderKey();
 void refreshCodes();
+void refreshLetters();

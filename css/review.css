@@ -28,3 +28,5 @@ textarea { font: 12px/1.5 var(--font-mono); resize: vertical; }
 .list li small { display: block; color: var(--silver); }
 .list li .row { margin-top: 6px; }
 .list li .btn { min-height: 36px; font-size: 13px; padding: 0 12px; }
+.letter-text { font: 15px/1.8 var(--font-display); }
+.list li pre { margin: 4px 0 0; white-space: pre-wrap; font: 13px/1.7 var(--font-display); color: var(--silver); }

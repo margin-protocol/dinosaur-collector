@@ -2,6 +2,7 @@ import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, COUNTY
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
+import { unlockedMilestones, allLetters, unreadCount, lockedMilestones } from './letters.js';
 import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet } from './energy.js';
 import { checkIn } from './travel.js';
 import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
@@ -525,6 +526,7 @@ function renderResidents() {
 }
 
 function renderAll() {
+  if (document.getElementById('letter-badge')) renderLetterBadge();
   if (document.getElementById('snap-count')) renderSnap();
   if (document.getElementById('explore')) $('explore').hidden = !(state.hatched > 0 || Boolean(state.dex['001']));
   renderResources();
@@ -908,7 +910,7 @@ $('cultivate').addEventListener('click', onEggTap);
 $('home-wishes').addEventListener('click', () => showView('wish'));
 $('incubate-wishes').addEventListener('click', () => showView('wish'));
 $('enter-incubator').addEventListener('click', () => showView('incubate'));
-$('home-letter').addEventListener('click', () => { $('intro').showModal(); syncRoomActivity(); });
+$('home-letter').addEventListener('click', openLetterBox);
 $('open-residents').addEventListener('click', () => { renderResidents(); $('residents-feedback').textContent = ''; $('residents').showModal(); syncRoomActivity(); });
 $('close-residents').addEventListener('click', () => $('residents').close());
 $('residents-done').addEventListener('click', () => $('residents').close());
@@ -950,7 +952,7 @@ $('bubble').addEventListener('click', guideAction);
 document.addEventListener('visibilitychange', () => {
   syncRoomActivity();
 });
-$('fab-letter').addEventListener('click', () => { $('intro').showModal(); syncRoomActivity(); });
+$('fab-letter').addEventListener('click', openLetterBox);
 $('intro-ok').addEventListener('click', () => {
   void updateState(current => { current.seenIntro = true; }).then(transaction => { state = transaction.state; $('intro').close(); });
 });
@@ -1061,6 +1063,75 @@ $('explore-intro').addEventListener('close', syncRoomActivity);
 $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
+
+/* ---------- 紙條收藏 ---------- */
+const LETTER_ICON = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 7 9-7"/></svg>';
+const NOTIFIED_KEY = 'siang-collector:letters-notified:v1'; // 已提醒過的里程碑紙條（不放進遊戲存檔）
+function renderLetterBadge() {
+  const n = unreadCount(state, CHARACTERS);
+  $('letter-badge').hidden = !n; $('letter-badge').textContent = n;
+  let notified = [];
+  try { notified = JSON.parse(localStorage.getItem(NOTIFIED_KEY) || '[]'); } catch {}
+  const fresh = unlockedMilestones(state, CHARACTERS).filter(m => !notified.includes(m.id) && !state.letters.read.includes(m.id));
+  if (fresh.length) {
+    try { localStorage.setItem(NOTIFIED_KEY, JSON.stringify([...notified, ...fresh.map(m => m.id)])); } catch {}
+    toast(`你收到一張新紙條：「${fresh[0].title}」，到首頁的紙條看看吧。`);
+  }
+}
+function openLetterBox() {
+  const read = state.letters.read;
+  $('letter-list').replaceChildren(...allLetters(state, CHARACTERS).map(letter => {
+    const item = document.createElement('button'); item.type = 'button'; item.className = `letter-item${letter.kind === 'mail' ? ' is-mail' : ''}`;
+    item.innerHTML = LETTER_ICON;
+    const text = document.createElement('span'); text.textContent = letter.title || '湘寄來的紙條';
+    const sub = document.createElement('small'); sub.textContent = letter.kind === 'mail' ? `湘寄來的 · ${new Date(letter.at).toLocaleDateString('zh-TW')}` : letter.kind === 'intro' ? '最初的紙條' : `里程碑 · ${letter.hint}`;
+    text.append(sub);
+    const badge = document.createElement('span'); badge.className = 'letter-new'; badge.textContent = letter.kind !== 'intro' && !read.includes(letter.id) ? '未讀' : '';
+    item.append(text, badge);
+    item.addEventListener('click', () => readLetter(letter));
+    return item;
+  }));
+  const locked = lockedMilestones(state, CHARACTERS).length;
+  $('letter-locked').textContent = locked ? `還有 ${locked} 張紙條等你發現。` : '所有里程碑紙條都收齊了！';
+  $('letter-box').showModal(); syncRoomActivity();
+}
+function readLetter(letter) {
+  $('letter-read-title').textContent = letter.kind === 'intro' ? '' : letter.title || '湘寄來的紙條';
+  $('letter-read-title').hidden = letter.kind === 'intro';
+  $('letter-read-body').textContent = letter.body;
+  $('letter-read').showModal();
+  if (letter.kind !== 'intro' && !state.letters.read.includes(letter.id)) {
+    void updateState(current => { if (!current.letters.read.includes(letter.id)) current.letters.read.push(letter.id); }).then(t => { state = t.state; renderLetterBadge(); });
+  }
+}
+$('close-letter-box').addEventListener('click', () => $('letter-box').close());
+$('letter-box').addEventListener('close', syncRoomActivity);
+$('letter-read-ok').addEventListener('click', () => { $('letter-read').close(); if ($('letter-box').open) openLetterBox(); });
+
+// 湘從審核室寄來的紙條：letters/<id>.json，驗證印章後存到本機（離線也能看）
+async function fetchMail() {
+  const config = cloudConfig();
+  if (!config || !REVIEWER_PUBLIC_JWK) return 0;
+  const cloud = createCloud(config);
+  const files = (await cloud.list('letters')).filter(f => f.name.endsWith('.json'));
+  const known = new Set(state.letters.mail.map(m => m.id));
+  const fresh = [];
+  for (const f of files) {
+    const id = f.name.slice(0, -5);
+    if (known.has(id)) continue;
+    const file = await cloud.getJSON(f.path);
+    const p = file?.data?.payload;
+    if (!file || p?.type !== 'letter' || p.id !== id || typeof p.body !== 'string' || p.body.length > 3000) continue;
+    if (!(await verifySigned(REVIEWER_PUBLIC_JWK, file.data))) continue;
+    fresh.push({ id, title: typeof p.title === 'string' ? p.title.slice(0, 40) : '', body: p.body, at: p.createdAt || new Date().toISOString() });
+  }
+  if (!fresh.length) return 0;
+  const t = await updateState(current => { const ids = new Set(current.letters.mail.map(m => m.id)); for (const m of fresh) if (!ids.has(m.id)) current.letters.mail.push(m); });
+  state = t.state; renderAll();
+  toast(fresh.length > 1 ? `湘寄來 ${fresh.length} 張新紙條！` : '湘寄來一張新紙條！到首頁的紙條看看吧。');
+  say('有一張新紙條送到了！', 'happy', 3000);
+  return fresh.length;
+}
 
 /* ---------- 額外能量：見面禮、隨手收藏、自動保溫 ---------- */
 async function collectGift() {
@@ -1214,7 +1285,7 @@ $('code-form').addEventListener('submit', async (event) => {
 
 renderAll();
 renderExplore();
-void autoBackup();
+void autoBackup().then(() => fetchMail()).catch(() => {});
 void tickPassive().then(added => { if (added) toast(`你不在的時候，培養架幫蛋保溫了 +${added}`); });
 setInterval(() => { if (!document.hidden) void tickPassive(); }, 60 * 1000);
 // 已經允許過定位的話，打開遊戲時自動感應；只有第一次來到的縣市才會跳出來
