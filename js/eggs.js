@@ -64,9 +64,7 @@ export const EGGS = {
       '001': 8, '005': 8, '004': 8, // 原味、甜點、夜貓
       '010': 6, '013': 6, // SR
     },
-    // 暫用：正式的天氣蛋素材還沒到，先借本源蛋的圖並改色。素材放進 assets/eggs/weather/ 後刪掉這兩行
-    art: 'origin',
-    tint: 'hue-rotate(160deg) saturate(0.9) brightness(1.05)',
+    // 正式天氣蛋圖層：assets/eggs/weather/{shell,glow,cracks}.webp
   },
   cipher: {
     id: 'cipher',
