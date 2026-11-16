@@ -70,5 +70,6 @@ export function taskProgress(state, task, { today, snapsToday = 0 } = {}) {
 export function completeTask(state) {
   if (!state.dino?.task) return 0;
   state.dino.task = null; state.dino.count += 1; state.energy += TASK_REWARD;
+  if (state.bonus?.total) state.bonus.total.tasks += 1;
   return TASK_REWARD;
 }

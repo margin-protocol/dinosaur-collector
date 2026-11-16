@@ -182,6 +182,9 @@
     <button class="nav__item" type="button" disabled>
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v13H4zM4 10h16M9 6V4h6v2"/></svg><span>記憶 · 尚未開放</span>
     </button>
+    <button class="nav__item" type="button" id="open-achievements">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4"/></svg><span>成就</span><span class="dot" id="achievement-badge" hidden></span>
+    </button>
     <button class="nav__item" type="button" id="open-code">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 11V8a5 5 0 0 1 10 0v3M5 11h14v10H5zM12 15v2"/></svg><span>輸入暗號</span>
     </button>
@@ -214,6 +217,7 @@
   <button class="btn" id="letter-read-ok" type="button">收好</button>
 </dialog>
 <dialog class="residents-dialog sheet dex-detail" id="dex-detail" aria-labelledby="dex-detail-name"><button class="close-button dex-detail__close" type="button" id="close-dex-detail" aria-label="關閉">×</button><img class="dex-detail__img" id="dex-detail-img" alt=""><small class="dex-detail__no" id="dex-detail-no"></small><h2 id="dex-detail-name"></h2><p class="dex-detail__line" id="dex-detail-line"></p><p class="dex-detail__intro" id="dex-detail-intro"></p><p class="dex-detail__how" id="dex-detail-how"></p><small class="dex-detail__at" id="dex-detail-at"></small></dialog>
+<dialog class="residents-dialog sheet achievement-dialog" id="achievement-dialog" aria-labelledby="achievement-title"><div class="drawer-heading"><div><small>ACHIEVEMENTS</small><h2 id="achievement-title">成就</h2></div><button class="close-button" type="button" id="close-achievements" aria-label="關閉成就">×</button></div><p class="residents-intro" id="achievement-summary"></p><div id="achievement-list"></div></dialog>
 <dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">
   <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
   <p class="sheet__note">致親愛的飼養員：

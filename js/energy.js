@@ -21,6 +21,10 @@ export function ensureBonus(state) {
     greets: { date: day(old.greets).date, ids: Array.isArray(old.greets?.ids) ? old.greets.ids.filter((v) => typeof v === 'string') : [] },
     pets: { date: day(old.pets).date, count: Number.isSafeInteger(old.pets?.count) ? old.pets.count : 0 },
     snacks: { date: day(old.snacks).date, count: Number.isSafeInteger(old.snacks?.count) ? old.snacks.count : 0 },
+    // 累計次數（成就用，不會每天歸零）
+    total: Object.fromEntries(['pets', 'snacks', 'snaps', 'greets', 'tasks', 'nightHatch'].map((k) => [k, Number.isSafeInteger(old.total?.[k]) ? old.total[k] : 0])),
+    // 今天拍過的照片指紋（只存雜湊，不存照片），用來提醒重複的照片
+    photos: { date: day(old.photos).date, hashes: Array.isArray(old.photos?.hashes) ? old.photos.hashes.filter((h) => typeof h === 'string').slice(-40) : [] },
   };
   return state.bonus;
 }
@@ -50,14 +54,14 @@ export function takeSnap(state, today) {
   const b = ensureBonus(state);
   if (b.snaps.date !== today) b.snaps = { date: today, count: 0 };
   if (b.snaps.count >= SNAP.perDay) return 0;
-  b.snaps.count += 1; state.energy += SNAP.reward; return SNAP.reward;
+  b.snaps.count += 1; b.total.snaps += 1; state.energy += SNAP.reward; return SNAP.reward;
 }
 
 export function greet(state, no, today) {
   const b = ensureBonus(state);
   if (b.greets.date !== today) b.greets = { date: today, ids: [] };
   if (b.greets.ids.includes(no)) return 0;
-  b.greets.ids.push(no); state.energy += GREET_REWARD; return GREET_REWARD;
+  b.greets.ids.push(no); b.total.greets += 1; state.energy += GREET_REWARD; return GREET_REWARD;
 }
 
 // 摸摸頭：每次 +2 能量，每天最多 5 次（之後還是可以摸，只是不給能量）
@@ -68,6 +72,7 @@ const countFor = (state, field, today) => (state.bonus?.[field]?.date === today 
 function bump(state, field, today, limit, reward) {
   ensureBonus(state);
   const cur = state.bonus[field]?.date === today ? state.bonus[field] : { date: today, count: 0 };
+  state.bonus.total[field] = (state.bonus.total[field] || 0) + 1;
   if (cur.count >= limit) { state.bonus[field] = cur; return 0; }
   state.bonus[field] = { date: today, count: cur.count + 1 }; state.energy += reward; return reward;
 }
@@ -75,3 +80,14 @@ export const petsToday = (state, today) => countFor(state, 'pets', today);
 export const snacksLeft = (state, today) => SNACK.perDay - countFor(state, 'snacks', today);
 export const pet = (state, today) => bump(state, 'pets', today, PET.perDay, PET.reward);
 export const feedSnack = (state, today) => bump(state, 'snacks', today, SNACK.perDay, SNACK.reward);
+
+// 照片指紋：今天拍過很像的照片就提醒（只比對同一天）
+export function photoSeen(state, hash, today, similar) {
+  const p = state.bonus?.photos;
+  return Boolean(p && p.date === today && p.hashes.some((h) => similar(h, hash)));
+}
+export function rememberPhoto(state, hash, today) {
+  const b = ensureBonus(state);
+  if (b.photos.date !== today) b.photos = { date: today, hashes: [] };
+  b.photos.hashes = [...b.photos.hashes, hash].slice(-40);
+}

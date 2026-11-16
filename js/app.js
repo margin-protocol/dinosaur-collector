@@ -7,7 +7,9 @@ import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWAR
 import { activeHolidays, HOLIDAYS, TAIWAN_NO } from './holidays.js';
 import { INTROS } from './intros.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
-import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet, pet, feedSnack, snacksLeft, PET, SNACK } from './energy.js';
+import { photoHash, similarPhoto } from './photo-hash.js';
+import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
+import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet, pet, feedSnack, snacksLeft, PET, SNACK, photoSeen, rememberPhoto } from './energy.js';
 import { checkIn } from './travel.js';
 import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
 import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
@@ -579,6 +581,7 @@ function renderResidents() {
 }
 
 function renderAll() {
+  if (document.getElementById('achievement-badge')) renderAchievementBadge();
   if (document.getElementById('dex-detail')) grantKeepsakes();
   if (document.getElementById('dino-task')) renderDinoTask();
   if (document.getElementById('letter-badge')) renderLetterBadge();
@@ -703,7 +706,7 @@ async function hatch(expected) {
     const duplicate = Boolean(current.dex[character.no]);
     if (duplicate) current.fossils += DUPLICATE_FOSSILS;
     else current.dex[character.no] = { at: new Date().toISOString() };
-    current.hatched += 1; current.egg = current.shelf.shift() || newEgg('ordinary');
+    current.hatched += 1; if (isNight()) current.bonus.total.nightHatch += 1; current.egg = current.shelf.shift() || newEgg('ordinary');
     return { character, duplicate };
   });
   state = transaction.state; eggView = null; sayOverride = null;
@@ -859,7 +862,9 @@ async function processPhoto(wish, file, photoDate) {
 
   // 先結算並存檔（只會執行這一次），之後才是動畫；動畫中途關掉也不會重複領獎
   if (photoDate !== todayKey()) { state = (await updateState(() => {})).state; renderAll(); toast('新的一天開始了，請重新選擇願望。'); return; }
-  const transaction = await updateState(current => completeDaily(current, photoDate, wish.id));
+  const photo = await freshPhoto(file);
+  if (photo.duplicate) { renderWishes(); toast('這張照片今天已經用過了喔，換一張新的吧～'); return; }
+  const transaction = await updateState(current => { const r = completeDaily(current, photoDate, wish.id); if (r.awarded && photo.hash) rememberPhoto(current, photo.hash, todayKey()); return r; });
   state = transaction.state;
   if (!transaction.result.awarded) { renderAll(); return; }
   renderHome();
@@ -1126,6 +1131,58 @@ $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
 
+/* ---------- 成就 ---------- */
+const ACH_NOTIFIED = 'siang-collector:achievements-notified:v1';
+function renderAchievementBadge() {
+  const list = achievementStatus(state, CHARACTERS);
+  const ready = list.filter(a => a.done && !a.claimed).length;
+  $('achievement-badge').hidden = !ready; $('achievement-badge').textContent = ready;
+  let seen = []; try { seen = JSON.parse(localStorage.getItem(ACH_NOTIFIED) || '[]'); } catch {}
+  const fresh = list.filter(a => a.done && !a.claimed && !seen.includes(a.id));
+  if (fresh.length && state.seenIntro) {
+    try { localStorage.setItem(ACH_NOTIFIED, JSON.stringify([...seen, ...fresh.map(a => a.id)])); } catch {}
+    toast(`🏆 達成成就「${fresh[0].title}」！到研究者手記的「成就」領取獎勵。`);
+  }
+}
+function openAchievements() {
+  const list = achievementStatus(state, CHARACTERS);
+  const done = list.filter(a => a.done).length;
+  $('achievement-summary').textContent = `已達成 ${done} / ${list.length}`;
+  $('achievement-list').replaceChildren(...ACHIEVEMENT_GROUPS.map(group => {
+    const items = list.filter(a => a.group === group);
+    const section = document.createElement('section'); section.className = 'ach-group';
+    const h = document.createElement('h3'); h.textContent = `${group} · ${items.filter(a => a.done).length}/${items.length}`;
+    section.append(h, ...items.map(a => {
+      const row = document.createElement('div'); row.className = `ach${a.done ? ' is-done' : ''}`;
+      const icon = document.createElement('span'); icon.className = 'ach__icon'; icon.textContent = a.claimed ? '🏆' : a.done ? '✨' : a.secret ? '❔' : '○';
+      const body = document.createElement('div'); body.className = 'ach__body';
+      const title = document.createElement('b'); title.textContent = a.secret && !a.done ? '？？？' : a.title;
+      const hint = document.createElement('small'); hint.textContent = a.secret ? (a.done ? a.reveal : '隱藏成就') : a.hint;
+      const bar = document.createElement('span'); bar.className = 'ach__bar'; const fill = document.createElement('i'); fill.style.width = `${Math.round(100 * a.value / a.goal)}%`; bar.append(fill);
+      const num = document.createElement('small'); num.className = 'ach__num'; num.textContent = a.secret && !a.done ? '' : `${a.value} / ${a.goal}`;
+      body.append(title, hint, bar, num);
+      row.append(icon, body);
+      if (a.done && !a.claimed) {
+        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ach__claim'; btn.textContent = `領取 +${a.reward}`;
+        btn.addEventListener('click', async () => {
+          btn.disabled = true;
+          const t = await updateState(current => claimAchievement(current, a.id, CHARACTERS));
+          state = t.state; renderAll();
+          if (t.result) { restart($('chip-energy'), 'is-bump'); toast(`成就獎勵 +${t.result} 能量`); }
+          openAchievements();
+        });
+        row.append(btn);
+      } else { const r = document.createElement('small'); r.className = 'ach__reward'; r.textContent = a.claimed ? '已領取' : `+${a.reward}`; row.append(r); }
+      return row;
+    }));
+    return section;
+  }));
+  if (!$('achievement-dialog').open) { $('achievement-dialog').showModal(); syncRoomActivity(); }
+}
+$('open-achievements').addEventListener('click', () => { $('function-center').close(); openAchievements(); });
+$('close-achievements').addEventListener('click', () => $('achievement-dialog').close());
+$('achievement-dialog').addEventListener('close', syncRoomActivity);
+
 /* ---------- 紀念蛋：節日、生日、走遍臺灣 ---------- */
 let keepsakeBusy = false;
 function pendingKeepsakes(current) {
@@ -1231,6 +1288,9 @@ $('dino-task-input').addEventListener('change', async () => {
   const task = state.dino.task;
   if (!file || task?.type !== 'color') return;
   const wish = WISH_POOL.find(w => w.id === task.target);
+  const photo = await freshPhoto(file);
+  if (photo.duplicate) { say(DUPLICATE_PHOTO, 'remind', 3500, 'chat'); return; }
+  if (photo.hash) state = (await updateState(current => rememberPhoto(current, photo.hash, todayKey()))).state;
   let ratio = 0;
   try { ratio = await analyzePhoto(file, wish, $('photo-thumb')); } catch { toast('這張照片讀不出來，再拍一次試試。'); return; }
   if (ratio >= PASS_RATIO) void finishTask();
@@ -1326,14 +1386,28 @@ function renderSnap() {
   $('snap-label').classList.toggle('is-done', n >= SNAP.perDay);
   $('snap-label').firstChild.textContent = n >= SNAP.perDay ? '明天再拍' : '拍一張';
 }
+const SNAP_CHEERS = [
+  '第一張收藏！今天也一起發現小美好吧～', '好可愛的東西！你的眼光真好。', '收藏冊越來越熱鬧了！', '這張我好喜歡，可以偷偷存起來嗎？', '已經五張了！今天的世界很漂亮對吧？',
+  '你連這個都注意到了，好厲害！', '小湘們排隊在看你拍的照片喔。', '每一張都是今天的小禮物。', '再一張就收集滿了，加油！', '今天的十張都收集好了！謝謝你帶我看見這麼多。',
+];
+// 拍照共用：今天拍過幾乎一樣的照片就提醒
+async function freshPhoto(file) {
+  let hash;
+  try { hash = await photoHash(file); } catch { return { error: true }; }
+  if (photoSeen(state, hash, todayKey(), similarPhoto)) return { duplicate: true, hash };
+  return { hash };
+}
+const DUPLICATE_PHOTO = '這張好像今天拍過了，換一個東西拍拍看吧～';
 $('snap-input').addEventListener('change', async () => {
   const file = $('snap-input').files?.[0];
   $('snap-input').value = '';
   if (!file) return;
-  try { const bmp = await createImageBitmap(file); bmp.close?.(); } catch { toast('這張照片讀不出來，再拍一次試試。'); return; }
-  const t = await updateState(current => takeSnap(current, todayKey()));
+  const photo = await freshPhoto(file);
+  if (photo.error) { toast('這張照片讀不出來，再拍一次試試。'); return; }
+  if (photo.duplicate) { toast(DUPLICATE_PHOTO); return; }
+  const t = await updateState(current => { const r = takeSnap(current, todayKey()); if (r) rememberPhoto(current, photo.hash, todayKey()); return r; });
   state = t.state; renderAll();
-  if (t.result) { restart($('chip-energy'), 'is-bump'); toast(`收藏起來了！+${t.result} 能量`); }
+  if (t.result) { restart($('chip-energy'), 'is-bump'); toast(`${SNAP_CHEERS[Math.min(SNAP_CHEERS.length, state.bonus.snaps.count) - 1]} +${t.result} 能量`); }
   else toast('今天的隨手收藏已經滿了，明天再拍吧。');
 });
 
