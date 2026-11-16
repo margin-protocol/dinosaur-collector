@@ -31,10 +31,13 @@ await g.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=1;s.d
 const openCenter=async(id)=>{await g.click('#open-center');await g.click(id);};
 // redeem before connecting
 await openCenter('#open-code');await g.fill('#code-input','恐龍偷吃草莓');await g.click('#code-submit');await g.waitForFunction(()=>/連線/.test(document.querySelector('#code-status').textContent));await g.click('#close-code');
+// Theme preference travels with backups without touching game resources.
+await openCenter('#open-themes');await g.click('[data-palette="mint"]');await g.click('#theme-done');
 // connect → auto backup
 await openCenter('#open-cloud');await g.fill('#cloud-repo',fake.repo);await g.fill('#cloud-token','good-token');await g.click('#cloud-save');
 await g.waitForFunction(()=>/上次備份/.test(document.querySelector('#cloud-last').textContent));
 assert.ok(fake.read('backups/latest.json'));assert.equal(JSON.parse(JSON.parse(fake.read('backups/latest.json')).keys[key]).energy,7);
+assert.equal(JSON.parse(fake.read('backups/latest.json')).keys['siang-collector:theme:v1'],'mint');
 assert.equal(JSON.stringify(await save()).includes('good-token'),false,'token not in save');
 await g.click('#close-cloud');
 const redeem=async(text)=>{await openCenter('#open-code');await g.fill('#code-input',text);await g.click('#code-submit');await g.waitForFunction(()=>!/確認中/.test(document.querySelector('#code-status').textContent)&&document.querySelector('#code-status').textContent);const t=await g.textContent('#code-status');await g.click('#close-code');return t;};
@@ -67,10 +70,13 @@ assert.equal(await g.textContent('#reveal-name'),'草莓蛋糕小湘');await g.c
 // restore from cloud backup onto a wiped device
 await openCenter('#open-cloud');await g.click('#cloud-backup-now');await g.waitForFunction(()=>/備份完成/.test(document.querySelector('#cloud-status').textContent));await g.click('#close-cloud');
 const before=await save();
+await g.evaluate(()=>localStorage.setItem('siang-collector:theme:v1','rose'));
 await g.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.dex={};s.energy=0;localStorage.setItem(k,JSON.stringify(s));},key);await g.reload();
 await openCenter('#open-cloud');await g.click('#cloud-restore');await g.locator('#cloud-restore-confirm').waitFor();
 await Promise.all([g.waitForNavigation(),g.click('#cloud-restore-confirm')]);
 s=await save();assert.ok(s.dex['011']);assert.equal(s.energy,before.energy);
+await g.waitForFunction(()=>document.documentElement.dataset.theme==='mint');
+assert.equal(await g.evaluate(()=>localStorage.getItem('siang-collector:theme:v1')),'mint','restores backed-up theme');
 // reviewer key restore on a new device
 const r2c=await b.newContext(ctxOpts);await r2c.route('https://api.github.com/**',fake.handler);const r2=await r2c.newPage();await r2.goto('http://127.0.0.1:8000/review.html');
 await r2.click('#key-show-import');await r2.fill('#key-import-text',JSON.stringify(backup));await r2.click('#key-import-ok');await r2.waitForFunction(()=>/已還原/.test(document.querySelector('#key-status').textContent));

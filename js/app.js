@@ -1,3 +1,4 @@
+import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
 import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
@@ -1946,7 +1947,7 @@ async function tickPassive() {
 }
 
 /* ---------- 雲端：備份、還原與暗號 ---------- */
-const BACKUP_KEYS = ['siang-collector:v1', ROOM_KEY, PRESENTER_KEY, 'siang-collector:dex-mode:v1'];
+const BACKUP_KEYS = [THEME_KEY, 'siang-collector:v1', ROOM_KEY, PRESENTER_KEY, 'siang-collector:dex-mode:v1'];
 const LAST_BACKUP_KEY = 'siang-collector:cloud-backup:v1';
 const lastBackup = () => { try { return localStorage.getItem(LAST_BACKUP_KEY); } catch { return null; } };
 
@@ -2079,6 +2080,7 @@ attachSnackDrag($('snack'), {
   },
 });
 
+setupThemes({ onOpen: syncRoomActivity });
 renderAll();
 renderExplore();
 void autoBackup().catch(() => {}).then(() => syncFromCloud(true));
