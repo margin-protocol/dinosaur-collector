@@ -79,9 +79,7 @@ export const EGGS = {
       '002': 12, '003': 12, '004': 12, '006': 12, '009': 12,
       '010': 8, '013': 8,
     },
-    // 暫用：正式的暗號蛋素材還沒到（概念圖 concepts-v1/cipher.webp）。素材放進 assets/eggs/cipher/ 後刪掉這兩行
-    art: 'origin',
-    tint: 'hue-rotate(250deg) saturate(1.2) brightness(0.95)',
+    // 正式三層素材：assets/eggs/cipher/{shell,glow,cracks}.webp
   },
   keepsake: {
     id: 'keepsake',
