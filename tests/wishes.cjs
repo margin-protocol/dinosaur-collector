@@ -66,11 +66,12 @@ async function colorFile(page,id){const value=await page.evaluate(async id=>{con
   assert.equal(errors.length,0,errors.join('\n'));console.log(`${width}px: presenter selection, unchanged daily progress, XP, growth claims, level history, keyboard tabs, rollover and layout PASS`);
   await context.close();
  }
- const midnightContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce'});
- const midnight=await midnightContext.newPage();await midnight.clock.install({time:new Date('2026-11-16T23:59:00Z')});
+ // 固定在台灣時區，跨日判定才不會受執行環境的時區影響
+ const midnightContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',timezoneId:'Asia/Taipei'});
+ const midnight=await midnightContext.newPage();await midnight.clock.install({time:new Date('2026-11-16T23:59:00+08:00')});
  await midnight.goto('http://127.0.0.1:8000');await midnight.locator('#intro-ok').click();await midnight.locator('#home-wishes').click();
  const staleId=await midnight.locator('.mission:not([hidden])').getAttribute('data-wish');const staleFile=await colorFile(midnight,staleId);
- await midnight.clock.setSystemTime(new Date('2026-11-17T00:01:00Z'));await midnight.locator(`[data-wish="${staleId}"] input`).setInputFiles(staleFile);
+ await midnight.clock.setSystemTime(new Date('2026-11-17T00:01:00+08:00'));await midnight.locator(`[data-wish="${staleId}"] input`).setInputFiles(staleFile);
  await midnight.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).wishes.date==='2026-11-17',key);
  const midnightSave=await save(midnight);assert.equal(midnightSave.energy,0);assert.equal(midnightSave.player.xp,0);assert.deepEqual(midnightSave.wishes.done,[]);
  console.log('Actual midnight stale camera input: no energy or XP re-award PASS');await midnightContext.close();
