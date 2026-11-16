@@ -47,11 +47,13 @@ export function createIncubator() {
   const el = div('incubator');
   const halo = div('incubator__halo');
   const back = layerImg('incubator__layer incubator__layer--cradle', incubatorSources('cradle-back'));
+  // 環的後半圈（在蛋後面）：從前景環拆出來，蛋才會像放在環的中間
+  const ringBack = layerImg('incubator__layer incubator__layer--cradle', incubatorSources('cradle-ring-back'));
   const slot = div('incubator__slot');
   const front = layerImg('incubator__layer incubator__layer--cradle', incubatorSources('cradle-front'));
   const ring = div('incubator__ring');
   const flare = div('incubator__flare');
-  el.append(halo, back, slot, front, ring, flare);
+  el.append(halo, back, ringBack, slot, front, ring, flare);
 
   return {
     el,
