@@ -1,7 +1,9 @@
-import { EGGS, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollHatch, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
+import { EGGS, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
+import { checkIn } from './travel.js';
+import { loadCounties, countyAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, wishesFor, todayKey, analyzePhoto } from './wishes.js';
 import { createMissions } from './missions.js';
@@ -95,7 +97,7 @@ function renderHome() {
   incubator.setProgress(pct / 100);
   incubator.el.classList.toggle('is-ready', ready);
 
-  $('egg-name').textContent = egg.name;
+  $('egg-name').textContent = state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
   $('cultivate-label').textContent = ready ? '迎接新夥伴' : '注入能量';
   $('cultivate').disabled = busy;
   $('incubator-status').textContent = ['安靜生長中', '感受到小小的動靜', '生命正在甦醒', '快要見面了', '準備好相遇了'][s];
@@ -266,12 +268,27 @@ function renderGrowth() {
   $('growth-action').textContent = pending ? pending.destination === 'daily' ? '去實現今日願望 ⟶' : '前往培育 ⟶' : chapter.goals.some(g => !goalProgress(state, g).claimed) ? '領取已完成的願望' : '看看今日願望 ⟶';
 }
 
+// 從蛋庫取出的蛋（願望蛋、縣市蛋）
+function eggStock(s, id) {
+  if (id === 'wish') return s.wishEgg?.stock || 0;
+  if (id === 'county') return s.travel?.eggs?.length || 0;
+  return 0;
+}
+function returnEgg(s, egg) {
+  if (egg.id === 'wish') s.wishEgg.stock += 1;
+  if (egg.id === 'county' && egg.county) s.travel.eggs.unshift(egg.county);
+}
+function takeEgg(s, egg) {
+  if (egg.id === 'wish') s.wishEgg.stock -= 1;
+  if (egg.id === 'county') egg.county = s.travel.eggs.shift();
+}
+
 function canChooseEgg(current, id) {
   if (current.egg.id === id) return true;
   if (current.egg.warmth > 0) return false;
   const firstHatched = current.hatched > 0 || Boolean(current.dex['001']);
   if (id === 'origin') return !firstHatched;
-  if (EGGS[id]?.stocked) return firstHatched && (current.wishEgg?.stock || 0) > 0;
+  if (EGGS[id]?.stocked) return firstHatched && eggStock(current, id) > 0;
   return firstHatched;
 }
 
@@ -285,14 +302,16 @@ function renderEggChoices() {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
-    const stock = state.wishEgg?.stock || 0;
+    const stock = eggStock(state, egg.id);
     const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : state.egg.warmth > 0 ? '完成目前培育後可選' : '選擇這顆蛋';
     content.append(title, detail, cost);
     if (egg.stocked) {
       const own = document.createElement('p'); own.className = 'egg-choice__stock';
-      own.textContent = `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`;
+      own.textContent = egg.id === 'wish'
+        ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
+        : stock ? `持有 ${stock} 顆：${state.travel.eggs.join('、')}（依取得順序培育）` : '到新的縣市按「探索」，那裡的小湘就會想出現';
       content.append(own);
     }
     content.append(label); card.append(art, content); return card;
@@ -428,6 +447,7 @@ function renderResidents() {
 }
 
 function renderAll() {
+  if (document.getElementById('explore')) $('explore').hidden = !(state.hatched > 0 || Boolean(state.dex['001']));
   renderResources();
   renderHome();
   renderWishes();
@@ -541,7 +561,7 @@ async function hatch(expected) {
   await runAnalysis();
   const transaction = await updateState(current => {
     if (current.egg.id !== expected.id || current.egg.since !== expected.since || current.egg.warmth < EGGS[current.egg.id].warmthNeeded) return null;
-    const character = CHARACTERS[rollHatch(EGGS[current.egg.id])];
+    const character = CHARACTERS[rollFor(current.egg)];
     const duplicate = Boolean(current.dex[character.no]);
     if (duplicate) current.fossils += DUPLICATE_FOSSILS;
     else current.dex[character.no] = { at: new Date().toISOString() };
@@ -783,9 +803,10 @@ $('egg-choices').addEventListener('click', async event => {
       if (!EGGS[id] || !canChooseEgg(current, id)) return false;
       if (current.egg.id !== id) {
         // 從蛋庫拿出來的蛋還沒注入能量就換掉，放回蛋庫
-        if (EGGS[current.egg.id]?.stocked) current.wishEgg.stock += 1;
-        if (EGGS[id].stocked) current.wishEgg.stock -= 1;
-        current.egg = newEgg(id);
+        if (EGGS[current.egg.id]?.stocked) returnEgg(current, current.egg);
+        const next = newEgg(id);
+        if (EGGS[id].stocked) takeEgg(current, next);
+        current.egg = next;
       }
       return true;
     });
@@ -870,7 +891,69 @@ $('reset-btn').addEventListener('click', () => {
   $('intro').showModal();
 });
 
+/* ---------- 探索：定位所在縣市，讓那裡的小湘出現 ---------- */
+let exploring = false;
+const firstHatchedNow = () => state.hatched > 0 || Boolean(state.dex['001']);
+
+function renderExplore() {
+  $('explore').hidden = !firstHatchedNow();
+}
+
+function showCountyCall({ county, result, error }) {
+  const img = $('county-img');
+  const no = county && COUNTY_CHARACTER[county];
+  const c = no && CHARACTERS[no];
+  const owned = Boolean(c && state.dex[no]);
+  const waiting = county && (state.travel.eggs.includes(county) || state.egg.county === county);
+  img.hidden = !c;
+  if (c) { img.className = `county-call__img${owned ? '' : ' is-locked'}`; loadWithFallback(img, characterSources(c.image)); img.alt = owned ? c.name : '還看不清楚的小湘'; }
+  $('county-eyebrow').textContent = county ? `LOCAL SIGNAL · ${county}` : 'LOCAL SIGNAL';
+  let title; let text; let note = '';
+  if (error === 'denied') { title = '小湘感應不到你在哪裡'; text = '需要允許定位，才能知道你在哪個縣市。請到瀏覽器或手機設定，允許這個網站使用位置。'; }
+  else if (error) { title = '訊號有點微弱'; text = '這次沒有成功定位，到空曠一點的地方再試一次。'; }
+  else if (!county) { title = '這裡還沒有小湘的訊號'; text = '目前只有臺灣本島 19 個縣市的小湘。澎湖、金門、馬祖之後再開放。'; }
+  else if (result?.egg) { title = `${c.name}想出現！`; text = c.line; note = `獲得一顆「縣市蛋 · ${county}」，到培育室的「選擇蛋」把它拿出來吧。`; }
+  else if (owned) { title = `${c.name}：又見面了！`; text = `「你又來${county}啦，今天也一起走走吧。」`; }
+  else if (waiting) { title = `${c.name}還在蛋裡等你`; text = '「快點把我孵出來嘛……我已經準備好了！」'; }
+  else { title = `${county}的訊號`; text = '這裡的小湘已經和你打過招呼了。'; }
+  $('county-title').textContent = title;
+  $('county-text').textContent = text;
+  $('county-note').textContent = note;
+  $('county-note').hidden = !note;
+  $('county-go').hidden = !result?.egg;
+  $('county-call').showModal(); syncRoomActivity();
+}
+
+async function explore({ silent = false } = {}) {
+  if (exploring || !firstHatchedNow()) return;
+  exploring = true;
+  $('explore').disabled = true;
+  $('explore-label').textContent = '感應中…';
+  try {
+    let pos;
+    try { pos = await currentPosition(); }
+    catch (err) { if (!silent) showCountyCall({ error: err?.code === 1 ? 'denied' : 'failed' }); return; }
+    let counties;
+    try { counties = await loadCounties(); } catch { if (!silent) showCountyCall({ error: 'failed' }); return; }
+    const county = countyAt(counties, pos.lon, pos.lat);
+    if (!county) { if (!silent) showCountyCall({ county: null }); return; }
+    const transaction = await updateState(current => checkIn(current, county, todayKey()));
+    state = transaction.state; renderAll();
+    if (!silent || transaction.result.egg) showCountyCall({ county, result: transaction.result });
+  } finally {
+    exploring = false; $('explore').disabled = false; $('explore-label').textContent = '探索';
+  }
+}
+
+$('explore').addEventListener('click', () => explore());
+$('county-ok').addEventListener('click', () => $('county-call').close());
+$('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
+$('county-call').addEventListener('close', syncRoomActivity);
+
 renderAll();
+renderExplore();
+// 已經允許過定位的話，打開遊戲時自動感應；只有第一次來到的縣市才會跳出來
+void geoPermission().then(p => { if (p === 'granted') setTimeout(() => explore({ silent: true }), 1200); });
 showView(VIEWS.includes(location.hash.slice(1)) ? location.hash.slice(1) : 'home', { replace: true });
 if (initialSave.growthEnergyAdded > 0) {
   $('growth-feedback').textContent = `先前已完成的成長願望，已補發 ${initialSave.growthEnergyAdded} 能量。`;

@@ -119,6 +119,7 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex__tag--recipe { background: #f0c7a4; }
 .dex__tag--date { background: #f2b8c6; }
 .dex__tag--memorial { background: #f1d98a; }
+.dex__tag--county { background: #b9e0cf; }
 
 /* ---------- 底部分頁列 ---------- */
 .nav {

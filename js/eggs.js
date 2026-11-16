@@ -46,6 +46,18 @@ export const EGGS = {
     art: 'origin',
     tint: 'hue-rotate(70deg) saturate(1.35) brightness(1.05)',
   },
+  county: {
+    id: 'county',
+    name: '縣市蛋',
+    code: 'CITY',
+    warmthNeeded: 150,
+    hatches: null,
+    stocked: true, // 在新縣市打卡取得，每個縣市一顆
+    byCounty: true, // 固定孵出該縣市的小湘（見 rollFor）
+    // 暫用：正式的縣市蛋素材還沒到，先借本源蛋的圖並改色
+    art: 'origin',
+    tint: 'hue-rotate(185deg) saturate(1.1)',
+  },
 };
 
 export const DUPLICATE_FOSSILS = 3; // 孵到已擁有的小湘時，轉換成幾個化石碎片
@@ -87,6 +99,26 @@ export const CHARACTERS = {
   '013': { no: '013', name: '琥珀小湘', rarity: 'SR', line: '「有些心事藏得太久，會變成亮晶晶的寶物。」', image: 'siang-013-amber', series: 'daily' },
   '014': { no: '014', name: '約會小湘', rarity: 'SSR', line: '「今天的回憶，我偷偷幫你存了一份喔♡」', image: 'siang-014-date', series: 'date', special: true },
   '015': { no: '015', name: '壽星小湘', rarity: 'UR', line: '「今天我最大！所以你要陪我一整天！」', image: 'siang-015-birthday', series: 'memorial', special: true },
+  // 縣市小湘（暫定名稱與台詞，等湘定案）：在該縣市打卡取得縣市蛋，固定孵出
+  '016': { no: '016', name: '臺北市小湘', rarity: 'R', line: '「你來臺北市了？我在這裡等你好久了！」', image: 'siang-016-taipei', series: 'county', county: '臺北市', special: true },
+  '017': { no: '017', name: '新北市小湘', rarity: 'R', line: '「你來新北市了？我在這裡等你好久了！」', image: 'siang-017-new-taipei', series: 'county', county: '新北市', special: true },
+  '018': { no: '018', name: '基隆市小湘', rarity: 'R', line: '「你來基隆市了？我在這裡等你好久了！」', image: 'siang-018-keelung', series: 'county', county: '基隆市', special: true },
+  '019': { no: '019', name: '桃園市小湘', rarity: 'R', line: '「你來桃園市了？我在這裡等你好久了！」', image: 'siang-019-taoyuan', series: 'county', county: '桃園市', special: true },
+  '020': { no: '020', name: '新竹市小湘', rarity: 'R', line: '「你來新竹市了？我在這裡等你好久了！」', image: 'siang-020-hsinchu-city', series: 'county', county: '新竹市', special: true },
+  '021': { no: '021', name: '新竹縣小湘', rarity: 'R', line: '「你來新竹縣了？我在這裡等你好久了！」', image: 'siang-021-hsinchu-county', series: 'county', county: '新竹縣', special: true },
+  '022': { no: '022', name: '苗栗縣小湘', rarity: 'R', line: '「你來苗栗縣了？我在這裡等你好久了！」', image: 'siang-022-miaoli', series: 'county', county: '苗栗縣', special: true },
+  '023': { no: '023', name: '臺中市小湘', rarity: 'R', line: '「你來臺中市了？我在這裡等你好久了！」', image: 'siang-023-taichung', series: 'county', county: '臺中市', special: true },
+  '024': { no: '024', name: '彰化縣小湘', rarity: 'R', line: '「你來彰化縣了？我在這裡等你好久了！」', image: 'siang-024-changhua', series: 'county', county: '彰化縣', special: true },
+  '025': { no: '025', name: '南投縣小湘', rarity: 'R', line: '「你來南投縣了？我在這裡等你好久了！」', image: 'siang-025-nantou', series: 'county', county: '南投縣', special: true },
+  '026': { no: '026', name: '雲林縣小湘', rarity: 'R', line: '「你來雲林縣了？我在這裡等你好久了！」', image: 'siang-026-yunlin', series: 'county', county: '雲林縣', special: true },
+  '027': { no: '027', name: '嘉義市小湘', rarity: 'R', line: '「你來嘉義市了？我在這裡等你好久了！」', image: 'siang-027-chiayi-city', series: 'county', county: '嘉義市', special: true },
+  '028': { no: '028', name: '嘉義縣小湘', rarity: 'R', line: '「你來嘉義縣了？我在這裡等你好久了！」', image: 'siang-028-chiayi-county', series: 'county', county: '嘉義縣', special: true },
+  '029': { no: '029', name: '臺南市小湘', rarity: 'R', line: '「你來臺南市了？我在這裡等你好久了！」', image: 'siang-029-tainan', series: 'county', county: '臺南市', special: true },
+  '030': { no: '030', name: '高雄市小湘', rarity: 'R', line: '「你來高雄市了？我在這裡等你好久了！」', image: 'siang-030-kaohsiung', series: 'county', county: '高雄市', special: true },
+  '031': { no: '031', name: '屏東縣小湘', rarity: 'R', line: '「你來屏東縣了？我在這裡等你好久了！」', image: 'siang-031-pingtung', series: 'county', county: '屏東縣', special: true },
+  '032': { no: '032', name: '宜蘭縣小湘', rarity: 'R', line: '「你來宜蘭縣了？我在這裡等你好久了！」', image: 'siang-032-yilan', series: 'county', county: '宜蘭縣', special: true },
+  '033': { no: '033', name: '花蓮縣小湘', rarity: 'R', line: '「你來花蓮縣了？我在這裡等你好久了！」', image: 'siang-033-hualien', series: 'county', county: '花蓮縣', special: true },
+  '034': { no: '034', name: '臺東縣小湘', rarity: 'R', line: '「你來臺東縣了？我在這裡等你好久了！」', image: 'siang-034-taitung', series: 'county', county: '臺東縣', special: true },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序
@@ -96,7 +128,18 @@ export const SERIES = {
   recipe: { name: '隱藏配方', short: '配方' },
   date: { name: '約會系列', short: '約會' },
   memorial: { name: '紀念限定', short: '限定' },
+  county: { name: '縣市系列', short: '縣市' },
 };
+
+// 縣市 → 縣市小湘編號
+export const COUNTY_CHARACTER = Object.fromEntries(Object.values(CHARACTERS).filter((c) => c.county).map((c) => [c.county, c.no]));
+
+// 依培育中的蛋決定孵出誰：縣市蛋固定孵出該縣市的小湘，其他蛋照蛋池抽
+export function rollFor(eggState) {
+  const egg = EGGS[eggState.id];
+  if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
+  return rollHatch(egg);
+}
 
 const FORMATS = ['webp', 'png'];
 

@@ -53,6 +53,7 @@
     <div class="companion-room" id="companion-room" data-active="false">
       <button class="residents-entry" id="open-residents" type="button" aria-haspopup="dialog" aria-controls="residents"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 5h16v15H4zM8 5V3m8 2V3M4 10h16"/><path d="m9 15 2 2 4-4"/></svg><span>入住安排<small id="resident-count">0 / 3</small></span></button>
       <button class="room-letter" id="home-letter" type="button" aria-label="小湘的紙條"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 7 9-7"/></svg><span>紙條</span></button>
+      <button class="room-letter room-explore" id="explore" type="button" hidden aria-label="探索所在縣市"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21s-6.5-6.2-6.5-11a6.5 6.5 0 0 1 13 0c0 4.8-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/></svg><span id="explore-label">探索</span></button>
       <div id="resident-lanes" class="resident-lanes"></div>
       <p class="room-empty" id="room-empty">第一位小湘，正等著與你相遇。<span>完成願望，前往培育迎接她。</span></p>
     <!-- 首頁的引導角色與日常台詞；入住角色由獨立活動區呈現。 -->
@@ -183,6 +184,7 @@
 
 <dialog class="residents-dialog sheet egg-picker" id="egg-picker" aria-labelledby="egg-picker-title"><div class="drawer-heading"><div><small>CHOOSE YOUR NEXT ENCOUNTER</small><h2 id="egg-picker-title">選擇培育的蛋</h2></div><button class="close-button" type="button" id="close-eggs" aria-label="關閉選擇蛋">×</button></div><p class="residents-intro" id="egg-picker-note"></p><div id="egg-choices"></div><p id="egg-picker-feedback" role="status" aria-live="polite"></p></dialog>
 
+<dialog class="residents-dialog sheet county-call" id="county-call" aria-labelledby="county-title"><small class="county-call__eyebrow" id="county-eyebrow">LOCAL SIGNAL</small><img class="county-call__img" id="county-img" alt="" hidden><h2 id="county-title"></h2><p class="county-call__text" id="county-text"></p><p class="county-call__note" id="county-note" hidden></p><div class="county-call__actions"><button class="btn" type="button" id="county-go" hidden>前往培育室</button><button class="btn btn--quiet" type="button" id="county-ok">好</button></div><p class="county-call__privacy">定位只用來判斷所在縣市，座標不會保存或上傳。</p></dialog>
 <dialog class="sheet sheet--letter" id="intro" aria-label="小湘留下的紙條">
   <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
   <p class="sheet__note">致親愛的飼養員：
