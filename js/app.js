@@ -1196,41 +1196,53 @@ function renderAchievementBadge() {
     toast(`🏆 達成成就「${fresh[0].title}」！到研究者手記的「成就」領取獎勵。`);
   }
 }
+function achievementTile(a) {
+  const tile = document.createElement('button'); tile.type = 'button';
+  const ready = a.done && !a.claimed;
+  tile.className = `ach-tile${a.claimed ? ' is-claimed' : ''}${ready ? ' is-ready' : ''}${!a.done ? ' is-locked' : ''}`;
+  tile.dataset.ach = a.id;
+  const icon = document.createElement('span'); icon.className = 'ach-tile__icon'; icon.textContent = a.claimed ? '🏆' : ready ? '🎁' : a.secret ? '❔' : '🔒';
+  const title = document.createElement('b'); title.textContent = a.secret && !a.done ? '？？？' : a.title;
+  const bar = document.createElement('span'); bar.className = 'ach__bar'; const fill = document.createElement('i'); fill.style.width = `${Math.round(100 * a.value / a.goal)}%`; bar.append(fill);
+  const foot = document.createElement('small'); foot.textContent = ready ? `領取 +${a.reward}` : a.claimed ? '已領取' : a.secret ? '隱藏' : `${a.value}/${a.goal}`;
+  tile.append(icon, title, bar, foot);
+  return tile;
+}
+function showAchievementInfo(a) {
+  $('achievement-info').hidden = false;
+  $('achievement-info').textContent = `${a.secret && !a.done ? '？？？ · 隱藏成就' : `${a.title} · ${a.secret ? a.reveal : a.hint}`}（${a.secret && !a.done ? '?' : `${a.value}/${a.goal}`}，獎勵 +${a.reward} 能量${a.claimed ? '，已領取' : ''}）`;
+}
 function openAchievements() {
   const list = achievementStatus(state, CHARACTERS);
   const done = list.filter(a => a.done).length;
-  $('achievement-summary').textContent = `已達成 ${done} / ${list.length}`;
-  $('achievement-list').replaceChildren(...ACHIEVEMENT_GROUPS.map(group => {
-    const items = list.filter(a => a.group === group);
-    const section = document.createElement('section'); section.className = 'ach-group';
-    const h = document.createElement('h3'); h.textContent = `${group} · ${items.filter(a => a.done).length}/${items.length}`;
-    section.append(h, ...items.map(a => {
-      const row = document.createElement('div'); row.className = `ach${a.done ? ' is-done' : ''}`;
-      const icon = document.createElement('span'); icon.className = 'ach__icon'; icon.textContent = a.claimed ? '🏆' : a.done ? '✨' : a.secret ? '❔' : '○';
-      const body = document.createElement('div'); body.className = 'ach__body';
-      const title = document.createElement('b'); title.textContent = a.secret && !a.done ? '？？？' : a.title;
-      const hint = document.createElement('small'); hint.textContent = a.secret ? (a.done ? a.reveal : '隱藏成就') : a.hint;
-      const bar = document.createElement('span'); bar.className = 'ach__bar'; const fill = document.createElement('i'); fill.style.width = `${Math.round(100 * a.value / a.goal)}%`; bar.append(fill);
-      const num = document.createElement('small'); num.className = 'ach__num'; num.textContent = a.secret && !a.done ? '' : `${a.value} / ${a.goal}`;
-      body.append(title, hint, bar, num);
-      row.append(icon, body);
-      if (a.done && !a.claimed) {
-        const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'ach__claim'; btn.textContent = `領取 +${a.reward}`;
-        btn.addEventListener('click', async () => {
-          btn.disabled = true;
-          const t = await updateState(current => claimAchievement(current, a.id, CHARACTERS));
-          state = t.state; renderAll();
-          if (t.result) { restart($('chip-energy'), 'is-bump'); toast(`成就獎勵 +${t.result} 能量`); }
-          openAchievements();
-        });
-        row.append(btn);
-      } else { const r = document.createElement('small'); r.className = 'ach__reward'; r.textContent = a.claimed ? '已領取' : `+${a.reward}`; row.append(r); }
-      return row;
-    }));
-    return section;
-  }));
-  if (!$('achievement-dialog').open) { $('achievement-dialog').showModal(); syncRoomActivity(); }
+  const ready = list.filter(a => a.done && !a.claimed);
+  $('achievement-summary').textContent = `已達成 ${done} / ${list.length}${ready.length ? ` · ${ready.length} 個待領取` : ''}`;
+  const section = (title, items) => {
+    const sec = document.createElement('section'); sec.className = 'ach-group';
+    const h = document.createElement('h3'); h.textContent = title;
+    const grid = document.createElement('div'); grid.className = 'ach-grid'; grid.append(...items.map(achievementTile));
+    sec.append(h, grid); return sec;
+  };
+  const groups = ACHIEVEMENT_GROUPS.map(group => {
+    const items = list.filter(a => a.group === group && !(a.done && !a.claimed));
+    const all = list.filter(a => a.group === group);
+    return items.length ? section(`${group} · ${all.filter(a => a.done).length}/${all.length}`, items) : null;
+  }).filter(Boolean);
+  $('achievement-list').replaceChildren(...(ready.length ? [section('🎁 待領取', ready)] : []), ...groups);
+  if (!$('achievement-dialog').open) { $('achievement-info').hidden = true; $('achievement-dialog').showModal(); syncRoomActivity(); }
 }
+$('achievement-list').addEventListener('click', async event => {
+  const tile = event.target.closest('[data-ach]');
+  if (!tile) return;
+  const a = achievementStatus(state, CHARACTERS).find(x => x.id === tile.dataset.ach);
+  if (!a) return;
+  if (!(a.done && !a.claimed)) { showAchievementInfo(a); return; }
+  tile.disabled = true;
+  const t = await updateState(current => claimAchievement(current, a.id, CHARACTERS));
+  state = t.state; renderAll();
+  if (t.result) { restart($('chip-energy'), 'is-bump'); toast(`🏆 ${a.title} · +${t.result} 能量`); }
+  openAchievements();
+});
 $('open-achievements').addEventListener('click', () => { $('function-center').close(); openAchievements(); });
 $('close-achievements').addEventListener('click', () => $('achievement-dialog').close());
 $('achievement-dialog').addEventListener('close', syncRoomActivity);

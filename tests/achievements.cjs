@@ -18,10 +18,10 @@ assert.match(await p.textContent('#toast'),/眼光真好/);
 let s=await save();assert.equal(s.bonus.snaps.count,2);assert.equal(s.energy,20);assert.equal(JSON.stringify(s).includes('base64'),false);
 // achievements: hatch-1, hatch-10, ssr ready
 await p.click('#open-center');await p.click('#open-achievements');await p.locator('#achievement-dialog[open]').waitFor();
-assert.equal(await p.locator('.ach__claim').count(),3);
+assert.equal(await p.locator('.ach-tile.is-ready').count(),3);
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
-await p.locator('.ach__claim').first().click();await p.waitForTimeout(300);
+await p.locator('.ach-tile.is-ready[data-ach="hatch-1"]').click();await p.waitForTimeout(300);
 s=await save();assert.deepEqual(s.achievements.claimed,['hatch-1']);assert.equal(s.energy,40);
-assert.equal(await p.locator('.ach__claim').count(),2);
+assert.equal(await p.locator('.ach-tile.is-ready').count(),2);await p.locator('.ach-tile[data-ach="hatch-30"]').click();assert.match(await p.textContent('#achievement-info'),/孵化 30/);
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('achievements: snap cheers, duplicate photo reminder, achievement claim PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

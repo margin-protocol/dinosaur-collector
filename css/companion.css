@@ -34,15 +34,15 @@ body[data-view="home"] .app { height:auto; min-height:max(760px,100svh); overflo
 .resident-slot { position:absolute; left:18%; width:82%; height:100%; bottom:0; --actor:clamp(240px,77vw,310px); }
 .resident-slot .actor { bottom:0; pointer-events:auto !important; cursor:pointer; border-radius:40%; }
 .resident-slot .actor:focus-visible { outline:1px solid var(--bio-cyan); outline-offset:-20px; }
-.resident-name { position:absolute; bottom:-9px; left:50%; transform:translateX(-50%); font:10px var(--font-display); white-space:nowrap; color:var(--pearl); text-shadow:0 1px 6px #14131d; }
+.resident-name { position:absolute; bottom:calc(var(--actor) * 0.035 - 6px); left:50%; transform:translateX(-50%); font:10px var(--font-display); white-space:nowrap; color:var(--pearl); text-shadow:0 1px 6px #14131d; }
 .resident-lanes[data-count="2"] .resident-slot,.resident-lanes[data-count="3"] .resident-slot { width:60%; --actor:clamp(185px,58vw,245px); }
 .resident-lanes[data-count="2"] .resident-slot--0,.resident-lanes[data-count="3"] .resident-slot--0 { left:36%; z-index:3; }
 .resident-lanes[data-count="2"] .resident-slot--1,.resident-lanes[data-count="3"] .resident-slot--1 { left:-5%; bottom:58px; z-index:2; }
 .resident-lanes[data-count="3"] .resident-slot--2 { left:42%; bottom:140px; z-index:1; --actor:clamp(160px,49vw,210px); }
-.resident-static { position:absolute; bottom:0; left:50%; transform:translateX(-50%); width:var(--actor); aspect-ratio:1; border:0; padding:0; background:none; pointer-events:auto; cursor:pointer; transition-property:left; transition-timing-function:linear; -webkit-user-select:none; user-select:none; }
+.resident-static { position:absolute; bottom:calc(var(--actor) * -0.075); left:50%; transform:translateX(-50%); width:var(--actor); aspect-ratio:1; border:0; padding:0; background:none; pointer-events:auto; cursor:pointer; transition-property:left; transition-timing-function:linear; -webkit-user-select:none; user-select:none; }
 .resident-static img { width:100%; height:100%; object-fit:contain; }
 .resident-static .doll { position:absolute; inset:0; display:block; transform:scaleX(var(--face,1)); transition:transform .25s ease; }
-.doll__shadow { position:absolute; left:32%; right:32%; bottom:3%; height:5%; border-radius:50%; background:radial-gradient(#0008,#0000 70%); }
+.doll__shadow { position:absolute; left:30%; right:30%; bottom:6%; height:5%; border-radius:50%; background:radial-gradient(#0008,#0000 70%); }
 .resident-static.is-walking img { animation:doll-hop .46s ease-in-out infinite !important; transform-origin:50% 95%; }
 .resident-static.is-happy { animation:doll-happy .6s ease-out; }
 @keyframes doll-hop { 0%,100% { transform:translateY(0) rotate(-1.5deg); } 50% { transform:translateY(-4%) rotate(1.5deg); } }
@@ -155,3 +155,17 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .ach__claim { min-height:36px; padding:0 12px; border:0; border-radius:10px; background:#e9e2ee; color:#2a2333; font:13px var(--font-display); white-space:nowrap; }
 .ach__reward { font:11px var(--font-mono); color:var(--rose-metal); white-space:nowrap; }
 .room-gift:not([hidden]) ~ .room-snack { top:160px; }
+
+.ach-grid { display:grid; grid-template-columns:repeat(3, minmax(0,1fr)); gap:8px; }
+.ach-tile { display:flex; flex-direction:column; align-items:center; gap:4px; min-height:104px; padding:10px 6px 8px; border:1px solid #4a4155; border-radius:12px; background:#221f2a; color:var(--ivory); text-align:center; }
+.ach-tile__icon { font-size:20px; line-height:1; }
+.ach-tile b { font:400 12px/1.35 var(--font-display); min-height:2.7em; display:flex; align-items:center; }
+.ach-tile .ach__bar { width:80%; }
+.ach-tile small { font:10px var(--font-mono); color:var(--silver); }
+.ach-tile.is-locked { opacity:.75; }
+.ach-tile.is-claimed { border-color:#c9a8ff55; background:#2a2434; }
+.ach-tile.is-ready { border-color:#ffd27a; background:#3a2e3e; box-shadow:0 0 12px #ffd27a44; animation:ach-glow 2s ease-in-out infinite; }
+.ach-tile.is-ready small { color:#ffe2a8; }
+@keyframes ach-glow { 50% { box-shadow:0 0 18px #ffd27a77; } }
+@media (prefers-reduced-motion:reduce) { .ach-tile.is-ready { animation:none; } }
+.ach-info { margin:0 0 8px; padding:8px 10px; border-radius:8px; background:#ffffff0d; font-size:12px; line-height:1.7; color:var(--pearl); }

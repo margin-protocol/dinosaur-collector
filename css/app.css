@@ -198,9 +198,9 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 }
 
 .dex__card { cursor: pointer; }
-.dex-detail { position: relative; text-align: center !important; }
+.dex-detail { text-align: center !important; }
 .dex-detail__close { position: absolute; top: 12px; right: 12px; }
-.dex-detail__img { display: block; width: min(64vw, 240px); aspect-ratio: 1; margin: 4px auto 6px; object-fit: contain; }
+.dex-detail__img { display: block; width: min(56vw, 220px, 32svh); aspect-ratio: 1; margin: 4px auto 6px; object-fit: contain; }
 .dex-detail__img.is-locked { filter: brightness(0); opacity: .8; }
 .dex-detail__no { font: 11px var(--font-mono); color: var(--rose-metal); letter-spacing: .1em; }
 .dex-detail h2 { margin: 4px 0 8px; font: 400 21px var(--font-display); letter-spacing: .08em; }
