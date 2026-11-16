@@ -35,7 +35,7 @@ const storeJwk = (jwk) => idb('readwrite', (s) => s.put(jwk, 'reviewer'));
 let privateJwk = null;
 let privateKey = null;
 async function setKey(jwk) { privateJwk = jwk; privateKey = jwk ? await importPrivate(jwk) : null; }
-const samePublic = (a, b) => a && b && a.x === b.x && a.y === b.y;
+const samePublic = (a, b) => Array.isArray(b) ? b.some(k => samePublic(a, k)) : Boolean(a && b && a.x === b.x && a.y === b.y);
 
 function renderKey(message = '') {
   const has = Boolean(privateJwk);

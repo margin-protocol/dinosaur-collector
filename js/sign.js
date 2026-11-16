@@ -24,6 +24,10 @@ export async function signPayload(privateKey, payload) {
 }
 
 export async function verifySigned(publicJwk, signed) {
+  if (Array.isArray(publicJwk)) {
+    for (const jwk of publicJwk) if (await verifySigned(jwk, signed)) return true;
+    return false;
+  }
   if (!publicJwk || !signed?.payload || typeof signed.sig !== 'string') return false;
   try {
     const key = await importPublic(publicJwk);
