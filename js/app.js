@@ -248,7 +248,7 @@ function renderGrowth() {
       const reward = document.createElement('span'); reward.className = 'growth-claim__reward'; reward.textContent = `+${GROWTH_XP} XP`;
       const action = document.createElement('span'); action.className = 'growth-claim__action'; action.textContent = '領取';
       const arrow = document.createElement('span'); arrow.className = 'growth-claim__arrow'; arrow.textContent = '↗'; arrow.setAttribute('aria-hidden', 'true');
-      action.append(arrow); claim.append(reward, action); claim.disabled = claimBusy; status.append(claim);
+      action.append(arrow); claim.append(action, reward); claim.disabled = claimBusy; status.append(claim);
     } else { const label = document.createElement('span'); label.textContent = '進行中'; status.append(label); }
     row.append(no, content, status); return row;
   }));
