@@ -76,6 +76,7 @@ function percent() {
 
 function renderResources() {
   $('energy-value').textContent = state.energy;
+  $('incubation-energy').textContent = state.energy;
   $('fossil-value').textContent = state.fossils;
 }
 
@@ -100,7 +101,7 @@ function renderHome() {
   $('incubation-message').textContent = ['裡面的小小生命，正做著柔軟的夢。', '好像聽見了你的聲音，輕輕回應了一下。', '細小的裂痕裡，藏著即將到來的相遇。', '再一點點溫暖，就能見到你了。', '牠已經準備好了。一起迎接新夥伴吧。'][s];
   $('incubation-percent').textContent = `${Math.round(pct)}%`;
   $('vitals').setAttribute('aria-valuenow', String(Math.round(pct)));
-  $('incubation-cost').textContent = ready ? '輕輕喚醒，開始你們的故事' : state.energy > 0 ? `本次注入 ${Math.min(TAP_ENERGY, state.energy, egg.warmthNeeded - state.egg.warmth)} 能量 · 已擁有 ${state.energy}` : '完成今日願望，帶一點溫暖回來。';
+  $('incubation-cost').textContent = ready ? '破殼不消耗能量' : state.energy > 0 ? `本次消耗 ${Math.min(TAP_ENERGY, state.energy, egg.warmthNeeded - state.egg.warmth)} 能量` : '能量不足，先完成願望';
   $('egg-day').textContent = `DAY ${daysSince(state.egg.since) + 1}`;
   [...$('pips').children].forEach((pip, i) => pip.classList.toggle('is-on', i < s));
   $('pips').setAttribute('aria-label', `孵化階段 ${s}，共 4 階段`);
