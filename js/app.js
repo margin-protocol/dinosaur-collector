@@ -93,7 +93,7 @@ function renderHome() {
   incubator.el.classList.toggle('is-ready', ready);
 
   $('egg-name').textContent = egg.name;
-  $('cultivate').textContent = ready ? '迎接新夥伴' : '注入能量';
+  $('cultivate-label').textContent = ready ? '迎接新夥伴' : '注入能量';
   $('cultivate').disabled = busy;
   $('incubator-status').textContent = ['安靜生長中', '感受到小小的動靜', '生命正在甦醒', '快要見面了', '準備好相遇了'][s];
   $('incubation-message').textContent = ['裡面的小小生命，正做著柔軟的夢。', '好像聽見了你的聲音，輕輕回應了一下。', '細小的裂痕裡，藏著即將到來的相遇。', '再一點點溫暖，就能見到你了。', '牠已經準備好了。一起迎接新夥伴吧。'][s];
