@@ -309,3 +309,26 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .room-wheel { top:206px; }
 .room-gift:not([hidden]) ~ .room-wheel { top:252px; }
 .room-wheel.is-spent { opacity:.55; }
+
+/* 小湘好感度 */
+.dex-bond { margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:#ffffff0b; border:1px solid #f0a8c033; text-align:left; }
+.dex-bond__head { display:flex; align-items:center; gap:10px; }
+.dex-bond__hearts { color:#f08aae; letter-spacing:2px; font-size:16px; }
+.dex-bond__head b { font-size:13px; }
+.dex-bond__bar { position:relative; height:6px; margin:8px 0; border-radius:999px; background:#ffffff1a; overflow:hidden; }
+.dex-bond__bar::before { content:''; position:absolute; inset:0 auto 0 0; width:var(--p,0%); border-radius:inherit; background:linear-gradient(90deg,#f0a8c0,#ffd9a8); transition:width .4s; }
+.dex-bond__today { margin:0 0 8px; font-size:12px; opacity:.8; line-height:1.5; }
+.dex-bond__unlocks { list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+.dex-bond__unlocks li { display:grid; gap:2px; padding:7px 10px; border-radius:10px; background:#00000022; font-size:12.5px; line-height:1.55; opacity:.6; }
+.dex-bond__unlocks li.is-open { opacity:1; background:#f0a8c014; }
+.dex-bond__unlocks b { font-size:11px; color:#f0a8c0; font-weight:600; }
+.dex-detail.is-shiny .dex-detail__img { filter:drop-shadow(0 0 14px #ffe7a6) drop-shadow(0 0 4px #fff); }
+.dex-detail.is-shiny { box-shadow:0 0 0 2px #ffd9a8aa, 0 0 40px #ffd9a855; }
+.bond-up { text-align:center; }
+.bond-up__img { display:block; width:150px; height:150px; margin:0 auto 6px; object-fit:contain; filter:drop-shadow(0 6px 12px #0008); }
+.bond-up.is-shiny .bond-up__img { filter:drop-shadow(0 0 16px #ffe7a6) drop-shadow(0 0 4px #fff); }
+.bond-up__unlock { margin:4px 0; color:#f0a8c0; font-size:13px; }
+.bond-up__text { margin:8px 0; padding:10px 12px; border-radius:12px; background:#ffffff0d; font-size:14px; line-height:1.65; }
+.bond-up__reward { margin:0 0 12px; font-size:12px; opacity:.8; }
+.dex__bond { position:absolute; left:6px; bottom:6px; padding:0 6px; border-radius:999px; background:#000a; color:#f0a8c0; font-size:10px; line-height:16px; }
+.dex__card.is-shiny { box-shadow:0 0 0 2px #ffd9a8, 0 0 14px #ffd9a866; }

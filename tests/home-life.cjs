@@ -27,9 +27,9 @@ let s=await save();assert.equal(s.bonus.pets.count,5);assert.equal(s.energy,10);
 assert(await p.locator('.resident-bubble').count()>=1);
 // snack drag ×4 → 3 rewarded
 const snack=p.locator('#snack');
-const drag=async()=>{const a=await snack.boundingBox();const t=await doll.boundingBox();await p.mouse.move(a.x+a.width/2,a.y+a.height/2);await p.mouse.down();await p.mouse.move(t.x+t.width/2,t.y+t.height/2,{steps:8});await p.mouse.up();await p.waitForTimeout(300);};
+const drag=async()=>{const a=await snack.boundingBox();const t=await doll.boundingBox();await p.mouse.move(a.x+a.width/2,a.y+a.height/2);await p.mouse.down();await p.mouse.move(t.x+t.width/2,t.y+t.height/2,{steps:8});await p.mouse.up();await p.waitForTimeout(300);if(await p.locator('#bond-up[open]').count()){await p.click('#bond-up-ok');await p.waitForTimeout(200);}};
 for(let i=0;i<4;i++) await drag();
-s=await save();assert.equal(s.bonus.snacks.count,3);assert.equal(s.energy,25);
+s=await save();assert.equal(s.bonus.snacks.count,3);assert.equal(s.energy,35,'snacks +15, plus Lv.2 bond reward +10');
 assert.equal(await p.textContent('#snack-left'),'0');
 // residents chat
 await p.evaluate(()=>document.querySelectorAll('.resident-bubble').forEach(e=>e.remove()));

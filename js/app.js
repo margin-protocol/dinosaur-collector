@@ -33,6 +33,8 @@ import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
+import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward } from './affection.js';
+const GAIN_ERRAND = BOND_GAIN.errand;
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -52,7 +54,8 @@ function daysSince(iso) {
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
 }
 
-const initialSave = await updateState(() => {});
+// 開遊戲的第一次存檔：順便結算「住在首頁的小湘每天 ♡+2」，不另外多存一次
+const initialSave = await updateState(current => ({ homeBond: homeTick(current, residentsFor(current.dex), todayKey()) }));
 let state = initialSave.state;
 if (!state.egg) state.egg = newEgg('ordinary'); // 培育槽不留空：孵完就送來下一顆
 let eggView = null;
@@ -95,19 +98,27 @@ const room = createRoom($('resident-lanes'), character => {
   say(character.line, 'happy', 4000);
   room.peek(character.no, no => openDexDetail(no));
   // 點一下 = 打招呼，也算摸摸頭一次（很多人是用點的，不是用滑的）
-  void updateState(current => ({ greet: greet(current, character.no, todayKey()), pet: pet(current, todayKey()) })).then(t => {
+  void updateState(current => ({ greet: greet(current, character.no, todayKey()), pet: pet(current, todayKey()), bond: gainBond(current, character.no, 'tap', todayKey()) })).then(t => {
     state = t.state;
-    const { greet: g, pet: pt } = t.result;
-    if (g) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`${character.name}很開心！+${g + pt} 能量`); }
-    else if (pt) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`摸摸頭 +${pt} 能量（今天還有 ${PET.perDay - state.bonus.pets.count} 次）`); }
+    const { greet: g, pet: pt, bond } = t.result;
+    const heart = bond.added ? ` · ♡+${bond.added}` : '';
+    if (g) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`${character.name}很開心！+${g + pt} 能量${heart}`); }
+    else if (pt) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`摸摸頭 +${pt} 能量${heart}`); }
+    else if (bond.added) toast(`${character.name} ♡+${bond.added}（好感度 ${bondInfo(state, character.no, todayKey()).pts}）`);
+    else bondCapNotice(character.no);
+    if (bond.up.length) queueBondUps([{ no: character.no, up: bond.up }]);
     const task = state.dino.task;
     if (task?.type === 'greet' && task.target === character.no) void finishTask();
   });
 }, character => {
   room.bubble(character.no, PET_LINES[Math.floor(Math.random() * PET_LINES.length)]);
-  void updateState(current => pet(current, todayKey())).then(t => {
+  void updateState(current => ({ energy: pet(current, todayKey()), bond: gainBond(current, character.no, 'pet', todayKey()) })).then(t => {
     state = t.state;
-    if (t.result) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`摸摸頭 +${t.result} 能量（今天還有 ${PET.perDay - state.bonus.pets.count} 次）`); }
+    const { energy, bond } = t.result; const heart = bond.added ? ` · ♡+${bond.added}` : '';
+    if (energy) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`摸摸頭 +${energy} 能量${heart}`); }
+    else if (bond.added) toast(`${character.name} ♡+${bond.added}（好感度 ${bondInfo(state, character.no, todayKey()).pts}）`);
+    else bondCapNotice(character.no);
+    if (bond.up.length) queueBondUps([{ no: character.no, up: bond.up }]);
   });
 });
 const research = createResearch({ root: $('research-root'), getState: loadState, onCollect: () => showView('incubate') });
@@ -617,6 +628,11 @@ function dexCard(c) {
   name.className = 'dex__name';
   name.textContent = has ? c.name : '???';
   li.append(img, no, name);
+  if (has) {
+    const b = bondInfo(state, c.no, todayKey());
+    if (b.level > 1) { const tag = document.createElement('span'); tag.className = 'dex__bond'; tag.textContent = `♥ ${b.level}`; li.append(tag); }
+    li.classList.toggle('is-shiny', b.max);
+  }
   return li;
 }
 
@@ -847,13 +863,15 @@ async function hatch(expected) {
     if (current.egg.id !== expected.id || current.egg.since !== expected.since || current.egg.warmth < EGGS[current.egg.id].warmthNeeded) return null;
     const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current))];
     const duplicate = Boolean(current.dex[character.no]);
-    if (duplicate) current.fossils += DUPLICATE_FOSSILS;
+    let bondUp = [];
+    if (duplicate) { current.fossils += DUPLICATE_FOSSILS; bondUp = gainBond(current, character.no, 'duplicate', todayKey()).up; }
     else current.dex[character.no] = { at: new Date().toISOString(), story: meetingStory(current) };
     current.hatched += 1; if (isNight()) current.bonus.total.nightHatch += 1; const resumed = current.shelf.shift(); current.egg = resumed || newEgg('ordinary'); current.eggOffer = resumed ? null : makeOffer();
-    return { character, duplicate };
+    return { character, duplicate, bondUp };
   });
   state = transaction.state; eggView = null; sayOverride = null;
   if (transaction.result && !transaction.result.duplicate) welcomeResident(transaction.result.character.no, state.dex);
+  if (transaction.result?.bondUp?.length) queueBondUps([{ no: transaction.result.character.no, up: transaction.result.bondUp }]);
   renderAll();
   if (transaction.result) showReveal(transaction.result.character, transaction.result.duplicate);
   else toast('這顆蛋已經完成孵化，進度已更新。');
@@ -1472,6 +1490,8 @@ function openDexDetail(no) {
   $('dex-detail-story').textContent = story;
   $('dex-detail-story').hidden = !story;
   $('dex-detail-at').textContent = !story && owned && at && !Number.isNaN(Date.parse(at)) ? `相遇日期：${new Date(at).toLocaleDateString('zh-TW')}` : '';
+  renderBond(no, owned);
+  $('dex-detail').classList.toggle('is-shiny', owned && bondInfo(state, no, todayKey()).max);
   $('dex-detail').showModal();
 }
 $('dex-grid').addEventListener('click', event => { const card = event.target.closest('[data-dex-no]'); if (card) openDexDetail(card.dataset.dexNo); });
@@ -2119,11 +2139,12 @@ attachSnackDrag($('snack'), {
   onTap: () => toast(snacksLeft(state, todayKey()) > 0 ? '按住布丁，拖到小湘身上餵她吃吧！' : '今天的布丁吃完了，明天再來～'),
   onDrop: async (no) => {
     if (!no) { toast('要把布丁放到小湘身上喔。'); return; }
-    const t = await updateState(current => feedSnack(current, todayKey()));
+    const t = await updateState(current => { const energy = feedSnack(current, todayKey()); return { energy, bond: energy ? gainBond(current, no, 'snack', todayKey()) : null }; });
     state = t.state; renderAll();
-    if (!t.result) { toast('今天的布丁吃完了，明天再來～'); return; }
+    if (!t.result.energy) { toast('今天的布丁吃完了，明天再來～'); return; }
+    if (t.result.bond?.up.length) queueBondUps([{ no, up: t.result.bond.up }]);
     room.happy(no); room.hearts(no, 6); room.bubble(no, ['布丁好好吃！謝謝你～', '是我最喜歡的焦糖口味！', '再一口……就一口！'][Math.floor(Math.random() * 3)]);
-    restart($('chip-energy'), 'is-bump'); toast(`${CHARACTERS[no].name}吃得好開心！+${t.result} 能量`);
+    restart($('chip-energy'), 'is-bump'); toast(`${CHARACTERS[no].name}吃得好開心！+${t.result.energy} 能量${t.result.bond?.added ? ` · ♡+${t.result.bond.added}` : ''}`);
   },
 });
 
@@ -2304,11 +2325,20 @@ function showErrandResult(r, replay = false) {
   $('errand-result').showModal();
 }
 async function collectErrand(id) {
-  const t = await updateState(current => collect(current, id, { eggs: EGGS }));
+  const t = await updateState(current => {
+    const r = collect(current, id, { eggs: EGGS });
+    if (r) {
+      const today = todayKey();
+      r.bondUps = r.nos.map(no => ({ no, up: [...gainBond(current, no, 'errand', today).up, ...(r.story ? gainBond(current, no, 'story', today).up : [])] })).filter(x => x.up.length);
+      r.gains = [...r.gains, `${r.nos.length > 1 ? '每位' : ''}好感度 ♡+${GAIN_ERRAND + (r.story ? 2 : 0)}`];
+    }
+    return r;
+  });
   state = t.state;
   if (!t.result) { renderErrands(); return; }
   renderAll(); renderErrands(); restart($('chip-energy'), 'is-bump');
   showErrandResult(t.result);
+  if (t.result.bondUps?.length) queueBondUps(t.result.bondUps);
   if (t.result.nos.some(no => room.residents().includes(no))) { room.happy(t.result.nos[0]); room.hearts(t.result.nos[0], 5); }
 }
 $('errand-go').addEventListener('click', async () => {
@@ -2468,3 +2498,62 @@ function renderWheelBadge() {
 $('wheel-dialog').addEventListener('close', () => renderWheelBadge());
 $('close-wheel').addEventListener('click', () => $('wheel-dialog').close());
 $('wheel-dialog').addEventListener('close', syncRoomActivity);
+
+// ── 小湘好感度
+function renderBond(no, owned) {
+  const box = $('dex-detail-bond'); box.hidden = !owned;
+  if (!owned) return;
+  const b = bondInfo(state, no, todayKey());
+  const pct = b.max ? 100 : Math.round(((b.pts - b.prev) / (b.next - b.prev)) * 100);
+  $('bond-hearts').textContent = '♥'.repeat(b.level) + '♡'.repeat(MAX_LEVEL - b.level);
+  $('bond-level').textContent = b.max ? `好感度 Lv.${b.level} · 滿級` : `好感度 Lv.${b.level} · ${b.pts} / ${b.next}`;
+  $('bond-bar').style.setProperty('--p', `${pct}%`);
+  $('bond-today').textContent = b.max ? '已經是最好的朋友了！' : b.left ? `今天在首頁還能增加 ${b.left} 點（點她、摸摸頭、餵布丁）· 一起出門 +${BOND_GAIN.errand}` : `今天在首頁的好感度滿了（每天 ${DAILY_CAP} 點），可以帶她出門，或明天再來。`;
+  const texts = bondText(no);
+  $('bond-unlocks').replaceChildren(...[2, 3, 4, 5].map(lv => {
+    const li = document.createElement('li'); const open = b.level >= lv;
+    li.className = open ? 'is-open' : '';
+    const tag = document.createElement('b'); tag.textContent = `Lv.${lv} ${UNLOCK_LABEL[lv]}`;
+    const body = document.createElement('span'); body.textContent = open ? (lv === 3 ? texts[lv] : `「${texts[lv]}」`) : '🔒 再親近一點就能看到';
+    li.append(tag, body); return li;
+  }));
+}
+let bondQueue = [];
+function queueBondUps(list) {
+  for (const { no, up } of list) for (const u of up) bondQueue.push({ no, ...u });
+  showNextBondUp();
+}
+function showNextBondUp(tries = 0) {
+  if (!bondQueue.length || $('bond-up').open) return;
+  if (document.querySelector('dialog[open]')) { if (tries < 40) setTimeout(() => showNextBondUp(tries + 1), 1500); return; }
+  const { no, level, reward, unlock, text } = bondQueue.shift();
+  const c = CHARACTERS[no];
+  loadWithFallback($('bond-up-img'), characterSources(c.image)); $('bond-up-img').alt = c.name;
+  $('bond-up-title').textContent = `${c.name}的好感度升到 Lv.${level}！`;
+  $('bond-up-unlock').textContent = `解鎖：${unlock}`;
+  $('bond-up-text').textContent = level === 3 ? text : `「${text}」`;
+  const r = describeLevelReward(reward);
+  $('bond-up-reward').textContent = r ? `禮物：${r}` : '';
+  $('bond-up').classList.toggle('is-shiny', level >= MAX_LEVEL);
+  $('bond-up').showModal(); syncRoomActivity(); buzz([20, 40, 20]);
+  renderResources();
+}
+$('bond-up-ok').addEventListener('click', () => $('bond-up').close());
+$('bond-up').addEventListener('close', () => { syncRoomActivity(); renderAll(); setTimeout(showNextBondUp, 300); });
+const bondCapTold = new Set();
+function bondCapNotice(no) {
+  const key = `${todayKey()}:${no}`;
+  if (bondCapTold.has(key) || !state.dex[no]) return;
+  bondCapTold.add(key);
+  toast(`${CHARACTERS[no].name}今天跟你已經很親了（好感度今天滿了）。換別的小湘入住，或帶她出門吧！`);
+}
+// 住在首頁的小湘每天 ♡+2
+function tickHomeBond() {
+  const residents = room.residents();
+  if (!residents.length) return;
+  const today = todayKey();
+  if (residents.every(no => state.affection?.[no]?.home === today)) return;
+  void updateState(current => homeTick(current, residents, today)).then(t => { state = t.state; if (t.result.length) queueBondUps(t.result); });
+}
+if (initialSave.result?.homeBond?.length) setTimeout(() => queueBondUps(initialSave.result.homeBond), 1200);
+document.addEventListener('visibilitychange', () => { if (!document.hidden) tickHomeBond(); });
