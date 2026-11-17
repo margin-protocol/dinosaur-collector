@@ -1,0 +1,28 @@
+{
+  "id": "ch2-03",
+  "enemyId": "angry-mushroom",
+  "chapter": 2,
+  "stage": "2-3",
+  "name": "生氣蘑菇",
+  "type": "normal",
+  "image": "assets/enemies/chapter-02/ch2-03-angry-mushroom.webp",
+  "weaknesses": [
+    "animals"
+  ],
+  "weakTag": "怒氣被蹭掉",
+  "personality": "紅色斑點大菇帽、奶油色圓滾滾身體。因為常被路過旅人踩到而氣噗噗、噴出一團團孢子；嘴硬心軟，其實很在意其他人有沒有受傷。",
+  "lines": {
+    "opening": "「誰——！剛剛是不是有人踩到我的帽子？！我明明有掛『請勿踩踏』的牌子！」",
+    "countered": "「等、等等！別用那種軟綿綿的臉蹭我啦！我、我才沒有消氣！」動物小湘蹭了蹭菇帽，生氣蘑菇噴出的孢子變成了小泡泡。",
+    "enemyVictory": "「哼哼！知道我的厲害了吧！誰叫你們都不看路！……欸，有沒有嗆到？要不要喝水？」",
+    "enemyDefeat": "「哼！這次算你們厲害……下次走路要看路！不准再踩我的帽子！」"
+  },
+  "bossStory": null,
+  "chapterClue": "生氣蘑菇撿起一張被風吹倒的告示牌，上面寫著：「山谷深處天天打雷，越是沒有人回應，雷聲就越大。」",
+  "metadata": {
+    "version": 1,
+    "status": "approved",
+    "artSize": "1024x1024 transparent WebP",
+    "note": "普通小怪，Boss 故事為 null；遊戲實際使用版本在 js/battle.js。"
+  }
+}
