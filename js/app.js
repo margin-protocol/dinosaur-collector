@@ -230,8 +230,9 @@ function renderHome() {
   } else if (firstHatched && state.bonus.explored !== todayKey() && !state.energy) {
     text = '這附近好像有小湘的訊號……要不要去探索看看？';
     mode = 'explore';
-  } else if (state.energy > 0) {
-    text = '有能量了，一起去培育新夥伴吧。';
+  } else if (state.energy >= 10 && !open.length) {
+    text = '有能量了，有空再去培育室餵餵蛋吧。';
+    mode = 'energy'; // 安靜的提示：不掛驚嘆號
   } else if (open.length) {
     text = `${state.dex['001'] ? '小湘' : '蛋'}想看${open[0].color}的東西。`;
     mode = 'wish';
@@ -257,14 +258,25 @@ function renderHome() {
   if (!exploring) $('explore-sub').textContent = exploredToday ? '今天探索過了，換個地方再試試' : '看看這裡有沒有小湘的訊號';
   if ($('bubble-text').textContent !== text) {
     $('bubble-text').textContent = text;
-    openBubble();
+    // 同一句話 10 分鐘內不再自己跳出來（小恐龍插話結束、畫面重畫時不會一直重播）
+    const shown = bubbleShownAt.get(text) || 0;
+    if (sayOverride || Date.now() - shown > 10 * 60 * 1000) { bubbleShownAt.set(text, Date.now()); openBubble(); }
   }
-  // 對話框收起時，如果玩家還有事可以做，小恐龍頭上顯示驚嘆號
-  $('guide-alert').hidden = $('bubble').classList.contains('is-open') || mode === 'rest';
+  // 對話框收起時，如果玩家有該處理的事，小恐龍頭上顯示驚嘆號；點過的同一件事不再顯示
+  $('guide-alert').hidden = !alertWanted(mode, text);
   eggButton.setAttribute('aria-label', ready ? `讓${egg.name}破殼` : `幫${egg.name}注入能量，目前生命訊號 ${Math.round(pct)}%`);
 }
 
 // 對話框有事才出現：打開後依字數停留幾秒，自動收起
+const bubbleShownAt = new Map();
+let alertDismissed = '';
+const ALERT_MODES = ['tap', 'gift', 'explore', 'wish', 'task-offer'];
+function alertWanted(mode = $('guide').dataset.mode, text = $('bubble-text').textContent) {
+  if ($('bubble').classList.contains('is-open') || sayOverride) return false;
+  if (!ALERT_MODES.includes(mode)) return false;
+  if (mode === 'tap' && !$('enter-incubator').classList.contains('is-ready')) return false;
+  return alertDismissed !== `${mode}|${text}`;
+}
 function openBubble() {
   const bubble = $('bubble');
   bubble.classList.add('is-open');
@@ -272,14 +284,16 @@ function openBubble() {
   clearTimeout(bubbleTimer);
   bubbleTimer = setTimeout(() => {
     bubble.classList.remove('is-open');
-    $('guide-alert').hidden = $('guide').dataset.mode === 'rest';
+    $('guide-alert').hidden = !alertWanted();
   }, 3200 + $('bubble-text').textContent.length * 120);
 }
 
 function guideAction() {
   const mode = $('guide').dataset.mode;
+  alertDismissed = `${mode}|${$('bubble-text').textContent}`;
+  $('guide-alert').hidden = true;
   if (mode === 'wish') showView('wish');
-  else if (mode === 'tap') showView('incubate');
+  else if (mode === 'tap' || mode === 'energy') showView('incubate');
   else if (mode === 'gift') void collectGift();
   else if (mode === 'explore') startExplore();
   else if (mode === 'task-offer') void acceptTask();
@@ -502,7 +516,7 @@ function renderEggChoices() {
   else if (eggCategory === 'keepsake') fresh = [...(state.egg.id === 'keepsake' ? [eggCard(egg)] : []), ...state.gifts.eggs.filter(g => g.egg === 'keepsake').map(keepsakeCard)];
   else fresh = [eggCard(egg)];
   if (!fresh.length) fresh = [eggCard(egg)];
-  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '下雨天打開遊戲（已允許定位）時取得，每天最多一顆。', county: '到新的縣市按「探索附近」取得，每個縣市一顆，固定孵出當地的小湘。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣時收到，固定孵出紀念的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
+  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '下雨天打開遊戲（已允許定位）時取得，每天最多一顆。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣時收到，固定孵出紀念的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
   $('egg-picker-note').textContent = detailText;
   $('egg-choices').replaceChildren(back, ...(shelved.length ? [heading('暫放中'), ...shelved, heading('可以培育')] : []), ...fresh);
 }
@@ -674,6 +688,7 @@ function renderAll() {
   if (document.getElementById('dino-task')) renderDinoTask();
   if (document.getElementById('letter-badge')) renderLetterBadge();
   if (document.getElementById('errand-badge')) renderErrandBadge();
+  if (document.getElementById('wheel-badge')) renderWheelBadge();
   if (document.getElementById('snap-count')) renderSnap();
   if (document.getElementById('explore')) $('explore').hidden = !(state.hatched > 0 || Boolean(state.dex['001']));
   renderResources();
@@ -1162,7 +1177,7 @@ $('fab-wish').addEventListener('click', () => showView('wish'));
 // 點小恐龍：對話框收著就先打開；已經打開就照牠說的去做
 $('guide').addEventListener('click', () => {
   if ($('bubble').classList.contains('is-open')) guideAction();
-  else openBubble();
+  else { alertDismissed = `${$('guide').dataset.mode}|${$('bubble-text').textContent}`; openBubble(); }
 });
 $('bubble').addEventListener('click', guideAction);
 // 切到別的 App 或關螢幕時暫停角色
@@ -1228,7 +1243,9 @@ function showCountyCall({ county, result, error, weather }) {
   else if (error) { title = '訊號有點微弱'; text = '這次沒有成功定位，到空曠一點的地方再試一次。'; }
   else if (!county) { title = '這裡還沒有小湘的訊號'; text = '目前只有臺灣本島 19 個縣市的小湘。澎湖、金門、馬祖之後再開放。'; }
   else if (result?.egg) { title = `${c.name}想出現！`; text = c.line; note = `獲得一顆「縣市蛋 · ${county}」，到培育室的「選擇蛋」把它拿出來吧。`; }
-  else if (owned) { title = `${c.name}：又見面了！`; text = `「你又來${county}啦，今天也一起走走吧。」`; }
+  else if (result?.daily === 'county') { title = owned ? `${c.name}：又見面了！` : `${c.name}的蛋又出現了`; text = owned ? `「你又來${county}啦，這顆蛋送你，說不定會孵出新朋友喔。」` : '「快點把我孵出來嘛……」'; note = `今天的探索禮物：一顆「縣市蛋 · ${county}」，到「選擇蛋」把它拿出來吧。${owned ? '（已經有她了的話，孵出來會變成化石）' : ''}`; }
+  else if (result?.daily === 'wish' || result?.daily === 'weather') { title = owned ? `${c.name}：又見面了！` : `${county}的訊號`; text = owned ? `「你又來${county}啦，我在路上撿到一顆蛋，給你！」` : '這附近好像有什麼東西在閃閃發光……'; note = `今天的探索禮物：一顆「${result.daily === 'wish' ? '願望蛋' : '天氣蛋'}」，到「選擇蛋」把它拿出來吧。`; }
+  else if (owned) { title = `${c.name}：又見面了！`; text = `「你又來${county}啦，今天也一起走走吧。」明天再來探索，還會有一顆蛋喔。`; }
   else if (waiting) { title = `${c.name}還在蛋裡等你`; text = '「快點把我孵出來嘛……我已經準備好了！」'; }
   else { title = `${county}的訊號`; text = '這裡的小湘已經和你打過招呼了。'; }
   $('county-title').textContent = title;
@@ -1236,7 +1253,7 @@ function showCountyCall({ county, result, error, weather }) {
   note = [note, weatherNote(weather)].filter(Boolean).join('\n');
   $('county-note').textContent = note;
   $('county-note').hidden = !note;
-  $('county-go').hidden = !(result?.egg || weather?.egg);
+  $('county-go').hidden = !(result?.egg || result?.daily || weather?.egg);
   $('county-call').showModal(); syncRoomActivity();
 }
 
@@ -1268,7 +1285,7 @@ async function explore({ silent = false } = {}) {
     if (!county) { if (!silent) showCountyCall({ county: null, weather }); else announceWeather(weather); return; }
     const transaction = await updateState(current => checkIn(current, county, todayKey()));
     state = transaction.state; renderAll();
-    if (!silent || transaction.result.egg) showCountyCall({ county, result: transaction.result, weather });
+    if (!silent || transaction.result.egg || transaction.result.daily) showCountyCall({ county, result: transaction.result, weather });
     else announceWeather(weather);
   } finally {
     exploring = false; $('explore').disabled = false; $('explore-label').textContent = '探索附近'; renderHome();
@@ -2441,5 +2458,13 @@ $('wheel-spin').addEventListener('click', async () => {
   if (payout === 0) say('沒關係，明天再轉一次！', 'normal', 3500);
 });
 $('open-wheel').addEventListener('click', () => { $('function-center').close(); openWheel(); });
+$('home-wheel').addEventListener('click', openWheel);
+function renderWheelBadge() {
+  const left = spinsLeft(state);
+  $('home-wheel').hidden = !state.seenIntro;
+  $('wheel-badge').hidden = !left; $('wheel-badge').textContent = left;
+  $('home-wheel').classList.toggle('is-spent', !left);
+}
+$('wheel-dialog').addEventListener('close', () => renderWheelBadge());
 $('close-wheel').addEventListener('click', () => $('wheel-dialog').close());
 $('wheel-dialog').addEventListener('close', syncRoomActivity);

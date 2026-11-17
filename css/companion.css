@@ -118,9 +118,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .dino-task__btn { min-height:36px; padding:0 12px; display:inline-flex; align-items:center; border-radius:10px; background:#e9e2ee; color:#2a2333; font:13px var(--font-display); white-space:nowrap; cursor:pointer; }
 .dino-task__skip { width:28px; height:28px; border:0; background:none; color:var(--silver); font-size:18px; }
 
-.room-snack { top:112px; right:6px; width:46px; height:46px; min-height:46px; justify-content:center; gap:0; padding:0; border-radius:50%; background:#2a2236cc; border:1px solid #c9a8ff55; touch-action:none; }
+.room-snack { top:112px; right:6px; width:46px; height:46px; min-height:46px; justify-content:center; gap:0; padding:0; border-radius:50%; background:none; border:0; box-shadow:none; touch-action:none; }
 .room-snack small { position:absolute; top:-2px; right:-2px; }
-.snack-icon { font-size:24px; line-height:1; }
+.snack-icon { font-size:30px; line-height:1; filter:drop-shadow(0 3px 5px #000a); }
 .room-snack small { min-width:16px; height:16px; padding:0 4px; border-radius:999px; background:#ffffff22; font:10px/16px var(--font-body); text-align:center; }
 .snack-ghost { position:fixed; z-index:60; font-size:34px; transform:translate(-50%,-60%); pointer-events:none; filter:drop-shadow(0 4px 8px #0008); }
 .ambience { position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
@@ -304,3 +304,8 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .wheel-stake:disabled { opacity:.45; }
 .wheel-result { min-height:2.8em; margin:10px 0 2px; font-size:14px; line-height:1.5; }
 .wheel-total { margin:0; font-size:11px; opacity:.6; }
+
+/* 首頁的轉盤入口 */
+.room-wheel { top:206px; }
+.room-gift:not([hidden]) ~ .room-wheel { top:252px; }
+.room-wheel.is-spent { opacity:.55; }

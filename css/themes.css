@@ -62,7 +62,7 @@ body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var
 .view--incubate #cultivate,#reveal-ok,.research-primary,.growth-claim,#tutorial-action { background:linear-gradient(135deg,var(--t-button),var(--t-button-end)); color:var(--t-text); border-color:var(--t-line); }
 .view--incubate #cultivate:active,.research-primary:active:not(:disabled),.growth-claim:active:not(:disabled),#tutorial-action:active { background:var(--t-selected); border-color:var(--t-accent); }
 @media(hover:hover) { .growth-claim:hover:not(:disabled) { background:var(--t-selected); border-color:var(--t-accent); } }
-.back-button,.close-button,.room-snack { background:var(--t-raised); color:var(--t-text); }
+.back-button,.close-button { background:var(--t-raised); color:var(--t-text); }
 .center-button,.explore-pill,.dino-task,.egg-request { background:var(--t-panel); border-color:var(--t-line); color:var(--t-text); }
 .explore-pill svg,#chip-energy .chip__icon svg,#chip-fossil .chip__icon svg { stroke:var(--t-accent); }
 .cloud-form input,#postcard-text,.chapter-history select { background:var(--t-bg); border-color:var(--t-line); color:var(--t-text); }

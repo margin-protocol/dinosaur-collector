@@ -11,15 +11,15 @@ assert(await p.locator('#daily-gift').isVisible());assert.equal(await p.locator(
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.click('#daily-gift');await p.waitForTimeout(300);let s=await save();assert.equal(s.energy,30);
 assert(await p.locator('#daily-gift').isHidden());
-// greet twice → +5 once
+// greet twice → +5 once; each tap also pets (+2 ×2)
 const resident=p.locator('.resident-slot .resident-static').first();await resident.click();await p.waitForTimeout(300);await resident.click();await p.waitForTimeout(300);
-s=await save();assert.equal(s.energy,35);
+s=await save();assert.equal(s.energy,39);
 // snaps
 await p.evaluate(()=>location.hash='wish');await p.waitForTimeout(300);
 // 每張都不一樣（重複的照片不給能量）
 const pics=await p.evaluate(()=>Array.from({length:11},(_,i)=>{const cv=document.createElement('canvas');cv.width=cv.height=36;const x=cv.getContext('2d');for(let k=0;k<12;k++){x.fillStyle=`hsl(${(i*37+k*53)%360},70%,${30+((i*k)%5)*10}%)`;x.fillRect((k*7+i*5)%30,(k*11+i*3)%30,6+(i%4)*3,6+(k%3)*4);}return cv.toDataURL('image/png').split(',')[1];}));
 for(let i=0;i<11;i++){await p.setInputFiles('#snap-input',{name:`s${i}.png`,mimeType:'image/png',buffer:Buffer.from(pics[i],'base64')});await p.waitForTimeout(200);}
-s=await save();assert.equal(s.energy,135);assert.equal(s.bonus.snaps.count,10);
+s=await save();assert.equal(s.energy,139);assert.equal(s.bonus.snaps.count,10);
 assert.match(await p.textContent('#snap-count'),/10 \/ 10/);
 // passive: 5 hours away → +25; 20 hours → capped +60; never past the threshold
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.bonus.passiveAt=new Date(Date.now()-5*3600e3-60e3).toISOString();localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.waitForTimeout(600);

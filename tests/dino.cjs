@@ -17,7 +17,7 @@ await mk({type:'greet',target:'044',text:'去跟貓咪小湘打個招呼吧',goa
 assert(await p.locator('#dino-task').isVisible());
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.locator('.resident-slot .resident-static').first().click();await p.waitForTimeout(600);
-let s=await save();assert.equal(s.dino.task,null);assert.equal(s.dino.count,1);assert.equal(s.energy,5+25);
+let s=await save();assert.equal(s.dino.task,null);assert.equal(s.dino.count,1);assert.equal(s.energy,5+25+2,'greet task + tap also pets (+2)');
 // color task: blue photo passes, red photo fails
 const blue=await p.evaluate(async()=>{const cv=document.createElement('canvas');cv.width=cv.height=40;const x=cv.getContext('2d');x.fillStyle='#2f6fe0';x.fillRect(0,0,40,40);return cv.toDataURL('image/png').split(',')[1];});
 const red=await p.evaluate(async()=>{const cv=document.createElement('canvas');cv.width=cv.height=40;const x=cv.getContext('2d');x.fillStyle='#d2203f';x.fillRect(0,0,40,40);return cv.toDataURL('image/png').split(',')[1];});
