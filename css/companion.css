@@ -393,3 +393,53 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .enemy-art.is-shiny img, .enemy-art.is-shiny .enemy-art__emoji { filter:drop-shadow(0 0 8px #ffe7a6) drop-shadow(0 0 2px #fff) saturate(1.2); }
 .battle-stage-card.is-shiny { border-color:#ffd9a888; background:#ffd9a814; }
 .battle-stage-card.is-done { opacity:.5; }
+
+/* 咕咕的故事檔案館：酒紅、玫瑰金、深色玻璃，書頁元素只做點綴 */
+.archive, .archive-entry, .gugu-review { --wine:#6b2338; --wine-deep:#2a1119; --rose-gold:#e3b6a0; --rose-gold-soft:#e3b6a033; }
+.archive { padding:0; max-height:88vh; overflow:hidden; display:flex; flex-direction:column; background:linear-gradient(170deg,#3a1624f2,#1b1218f5 46%,#16121af7); border:1px solid #e3b6a04d; box-shadow:0 24px 60px #000b, inset 0 1px 0 #ffffff14; backdrop-filter:blur(14px); }
+.archive[open] { display:flex; }
+.archive__head { position:relative; display:grid; grid-template-columns:56px 1fr auto; gap:12px; align-items:center; padding:18px 18px 12px; border-bottom:1px solid #e3b6a026; }
+.archive__head small { font:10px/1.4 var(--font-latin); letter-spacing:.18em; color:var(--rose-gold); opacity:.85; }
+.archive__head h2 { margin:2px 0; font-size:19px; letter-spacing:.06em; color:#f6e6dc; }
+.archive__greet { margin:0; font-size:12px; color:#f6e6dcb3; }
+.gugu-avatar, .gugu-review__avatar { display:grid; place-items:center; width:56px; height:56px; border-radius:50%; overflow:hidden; background:radial-gradient(circle at 50% 35%, #e3b6a03d, #2a1119 70%); box-shadow:0 0 0 1.5px #e3b6a099, 0 4px 14px #0008; font-size:28px; }
+.gugu-avatar img, .gugu-review__avatar img { width:150%; height:150%; object-fit:cover; object-position:50% 18%; }
+.archive__tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:10px 14px; }
+.archive__tabs button { position:relative; padding:9px 4px 8px; border:1px solid #e3b6a026; border-radius:12px 12px 4px 4px; background:#ffffff08; color:#f6e6dcb3; font-size:13px; }
+.archive__tabs button small { display:block; margin-top:1px; font-size:11px; color:var(--rose-gold); opacity:.8; }
+.archive__tabs button[aria-selected="true"] { background:linear-gradient(180deg,#6b2338,#4a1828); color:#fff1e8; border-color:#e3b6a080; box-shadow:inset 0 -2px 0 var(--rose-gold); }
+.archive__body { overflow:auto; padding:4px 14px 18px; display:grid; gap:10px; -webkit-overflow-scrolling:touch; }
+.archive-section { display:grid; gap:8px; }
+.archive-section__title { margin:8px 0 0; font-size:13px; letter-spacing:.12em; color:var(--rose-gold); display:flex; align-items:center; gap:8px; }
+.archive-section__title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,#e3b6a066,transparent); }
+.archive-note { margin:2px 0; font-size:12px; color:#f6e6dc99; }
+.archive-card { position:relative; padding:11px 13px; border-radius:14px; background:#ffffff0b; border:1px solid #ffffff14; box-shadow:inset 0 1px 0 #ffffff0d; }
+.archive-card::after { content:''; position:absolute; right:0; top:0; width:14px; height:14px; border-radius:0 14px 0 6px; background:linear-gradient(225deg,#e3b6a040 50%,transparent 50%); } /* 書頁摺角 */
+.archive-card.is-locked { display:grid; gap:2px; opacity:.6; background:#00000026; border-style:dashed; border-color:#e3b6a033; }
+.archive-card.is-locked::after { display:none; }
+.archive-card.is-locked b { font-size:13px; color:#f6e6dcb3; } .archive-card.is-locked small { font-size:11px; color:#f6e6dc80; }
+.archive-story summary { display:flex; align-items:center; gap:8px; cursor:pointer; list-style:none; }
+.archive-story summary::-webkit-details-marker { display:none; }
+.archive-story summary::after { content:'›'; margin-left:auto; color:var(--rose-gold); transition:transform .2s; }
+.archive-story[open] summary::after { transform:rotate(90deg); }
+.archive-story summary b { font-size:14px; color:#f6e6dc; } .archive-story summary small { font-size:11px; color:#f6e6dc80; }
+.archive-story p { margin:10px 0 2px; padding-top:10px; border-top:1px solid #e3b6a026; font-size:13.5px; line-height:1.85; color:#f6e6dce6; }
+.archive-face { width:34px; height:34px; object-fit:contain; }
+.archive-lines { margin:8px 0 0; padding-left:1em; font-size:12.5px; line-height:1.7; color:#f6e6dcbf; }
+.archive-clues b { font-size:13px; color:#f6e6dc; } .archive-clues ul { margin:6px 0 0; padding-left:1em; font-size:12.5px; line-height:1.7; } .archive-clues small { display:block; font-size:11px; opacity:.6; }
+.archive-file__top { display:grid; grid-template-columns:42px 1fr auto; gap:10px; align-items:center; }
+.archive-file__top small { display:block; font-size:10px; letter-spacing:.08em; color:var(--rose-gold); } .archive-file__top b { font-size:14px; color:#f6e6dc; }
+.archive-stars { color:#ffd36b; letter-spacing:2px; font-size:13px; }
+.archive-file.is-uncleared { opacity:.8; }
+.archive-facts { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:10px 0 0; }
+.archive-facts dt { font-size:10px; color:#f6e6dc80; } .archive-facts dd { margin:0; font-size:13px; color:#f6e6dc; }
+.archive-facts dt { grid-row:1; } .archive-facts dd { grid-row:2; }
+.archive-bio { margin:8px 0 0; font-size:12px; line-height:1.65; color:#f6e6dcb3; }
+.gugu-review { display:grid; grid-template-columns:44px 1fr; gap:10px; align-items:start; margin:0 0 10px; padding:10px 12px; border-radius:14px; text-align:left; background:linear-gradient(135deg,#6b23384d,#2a111966); border:1px solid #e3b6a04d; }
+.gugu-review .gugu-review__avatar { width:44px; height:44px; font-size:22px; }
+.gugu-review small { font-size:10.5px; letter-spacing:.08em; color:var(--rose-gold); } .gugu-review p { margin:2px 0 0; font-size:13px; line-height:1.6; color:#f6e6dc; }
+.gugu-review.is-small { margin:10px 0 0; grid-template-columns:32px 1fr; padding:8px 10px; } .gugu-review.is-small .gugu-review__avatar { width:32px; height:32px; font-size:16px; }
+.archive-entry { display:grid; grid-template-columns:36px 1fr auto; gap:10px; align-items:center; width:100%; margin:0 0 12px; padding:10px 14px; border-radius:14px; border:1px solid #e3b6a04d; background:linear-gradient(120deg,#6b233866,#2a111999); color:#f6e6dc; text-align:left; }
+.archive-entry__icon { font-size:22px; } .archive-entry b { display:block; font-size:14px; } .archive-entry small { font-size:11px; color:#f6e6dcb3; }
+.battle-stage-card.is-extra { border-color:#e3b6a066; background:linear-gradient(120deg,#6b233833,#ffffff08); grid-column:span 2; }
+.gugu-review p.gugu-review__note { margin-top:4px; font-size:12px; color:var(--rose-gold); opacity:.9; }

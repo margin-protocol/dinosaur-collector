@@ -36,6 +36,8 @@ import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './w
 import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward } from './affection.js';
 const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
+import { battleArchive, bondArchive, travelArchive } from './archive.js';
+import { REVIEW_LABEL } from './gugu-reviews.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -2642,6 +2644,22 @@ function renderBattle() {
       }));
       sec.append(h, grid); return sec;
     }));
+    // 特殊關卡（EX）：還沒解鎖時整區不出現，避免劇透
+    for (const x of battle.EXTRA_STAGES) {
+      if (!battle.unlocked(state, x.id)) continue;
+      const e = battle.ENEMIES[x.id]; const st = b.stages[x.id];
+      const sec = document.createElement('section'); sec.className = 'battle-chapter battle-extra';
+      const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = x.title;
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'battle-stage-card is-extra';
+      btn.append(enemyArt(x.id));
+      const info = document.createElement('div'); info.className = 'battle-stage-card__info'; info.innerHTML = '<small></small><b></b><span></span>';
+      info.querySelector('small').textContent = `${e.stage} · 可重複挑戰`; info.querySelector('b').textContent = e.name;
+      info.querySelector('span').textContent = st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
+      btn.append(info);
+      btn.addEventListener('click', () => { battleEnemy = x.id; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
+      const grid = document.createElement('div'); grid.className = 'battle-stages'; grid.append(btn);
+      sec.append(h, grid); $('battle-map').append(sec);
+    }
   }
   if (inStage) renderBattleStage();
 }
@@ -2721,6 +2739,8 @@ async function collectBattle(id) {
   if (r.record && r.delta !== null) $('battle-result-score').lastChild.previousSibling.querySelector('small').textContent = '新紀錄！';
   $('battle-result-log').replaceChildren(...rep.log.map(line => Object.assign(document.createElement('li'), { textContent: line, className: line.startsWith('✦') ? 'is-special' : '' })));
   $('battle-result-log').append(Object.assign(document.createElement('li'), { className: 'is-power', textContent: `隊伍戰力 ${rep.power} vs ${rep.enemyPower}` }));
+  $('battle-result-review').hidden = !r.review;
+  if (r.review) { guguAvatar(document.querySelector('#battle-result-review .gugu-review__avatar')); $('battle-review-label').textContent = `咕咕書評 · ${REVIEW_LABEL[r.review.kind] || ''}`; $('battle-review-text').textContent = r.review.text; $('battle-review-note').textContent = r.review.note || ''; $('battle-review-note').hidden = !r.review.note; }
   $('battle-result-advice').hidden = !rep.advice; if (rep.advice) $('battle-result-advice').textContent = `💡 ${rep.advice.text}`;
   const storyText = [r.clue && `🔍 線索：${r.clue}`, r.story && `📖 ${r.story}`].filter(Boolean).join('\n\n');
   $('battle-result-story').hidden = !storyText; $('battle-result-story').textContent = storyText;
@@ -2752,3 +2772,100 @@ $('open-train').addEventListener('click', () => { battleEnemy = null; $('battle-
 $('train-back').addEventListener('click', () => { $('battle-train').hidden = true; renderBattle(); });
 $('errand-dialog').addEventListener('close', () => { battleEnemy = null; $('battle-train').hidden = true; showErrandTab('errand'); });
 setInterval(() => { if (!document.hidden && !$('battle-pane').hidden && $('errand-dialog').open && !battleEnemy) renderBattle(); }, 30 * 1000);
+
+// ── 咕咕的故事檔案館（只讀現有存檔）
+const GUGU_GREETS = ['「噓……翻書請小聲。」', '「想重讀哪一本？手洗乾淨了嗎？」', '「沒解鎖的頁面，我不會偷偷給你看。」', '「今天也來借故事啊。登記一下。」'];
+let archiveTab = 'battle';
+const fmtDate = (iso) => { const d = new Date(iso); return Number.isNaN(d.getTime()) ? '' : `${d.getFullYear()}/${d.getMonth() + 1}/${d.getDate()}`; };
+const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+function guguAvatar(box) {
+  if (box.childElementCount) return;
+  const img = document.createElement('img'); img.alt = ''; img.src = battle.enemyArtPath('gugu');
+  img.onerror = () => { img.remove(); box.textContent = '👻'; };
+  box.append(img);
+}
+function lockedCard(text) { const c = el('div', 'archive-card is-locked'); c.append(el('b', '', '🔒 ？？？'), el('small', '', text)); return c; }
+function renderArchive() {
+  const ba = battleArchive(state); const bo = bondArchive(state); const tr = travelArchive(state);
+  $('archive-count-battle').textContent = `${ba.collected}/${ba.total}`;
+  $('archive-count-bond').textContent = `${bo.unlocked}/${bo.total}`;
+  $('archive-count-travel').textContent = `${tr.unlocked}/${tr.total}`;
+  document.querySelectorAll('[data-archive-tab]').forEach(t => t.setAttribute('aria-selected', String(t.dataset.archiveTab === archiveTab)));
+  const body = $('archive-body'); body.replaceChildren();
+  if (archiveTab === 'battle') {
+    for (const ch of ba.chapters) {
+      const sec = el('section', 'archive-section');
+      sec.append(el('h3', 'archive-section__title', ch.locked ? `第 ${ch.id} 章 · ？？？` : `第 ${ch.id} 章 · ${ch.name}`));
+      if (ch.locked) { sec.append(lockedCard('打到這一章就會解鎖。')); body.append(sec); continue; }
+      if (ch.bossStory) {
+        for (const [key, label] of [['before', 'Boss 開場'], ['after', 'Boss 過關後']]) {
+          const text = ch.bossStory[key];
+          if (!text) { sec.append(lockedCard(key === 'before' ? '挑戰這一章的 Boss 時解鎖。' : '打倒 Boss 後解鎖。')); continue; }
+          const det = el('details', 'archive-card archive-story'); const sum = el('summary');
+          sum.append(el('b', '', `📖 ${label}${ch.bossStory.bossName ? ` · ${ch.bossStory.bossName}` : ''}`)); det.append(sum, el('p', '', text)); sec.append(det);
+        }
+      }
+      if (ch.clueTotal) {
+      const clues = el('div', 'archive-card archive-clues');
+      clues.append(el('b', '', `🔍 線索 ${ch.clues.length} / ${ch.clueTotal}`));
+      if (ch.clues.length) { const ul = el('ul'); ul.append(...ch.clues.map(c => el('li', '', `${c.stage}　${c.text}`))); clues.append(ul); }
+      else clues.append(el('small', '', '第一次通關各關卡時會撿到線索。'));
+      sec.append(clues);
+      }
+      sec.append(...ch.stages.map(stageCard));
+      body.append(sec);
+    }
+    for (const x of ba.extras) {
+      if (x.file.locked) continue;
+      const sec = el('section', 'archive-section'); sec.append(el('h3', 'archive-section__title', x.title), stageCard(x.file)); body.append(sec);
+    }
+    const pages = el('section', 'archive-section');
+    pages.append(el('h3', 'archive-section__title', `特殊書頁 ${ba.pages.owned.length}`), lockedCard('這一頁還是空白的……咕咕說，有些故事要等時候到了才會出現。'));
+    body.append(pages);
+  } else if (archiveTab === 'bond') {
+    body.append(el('p', 'archive-note', `已相遇 ${bo.met} 位 · 好感度 Lv.3 解鎖每位小湘的小故事。`));
+    for (const x of bo.list) {
+      if (!x.story) { const c = lockedCard(`${x.name}：好感度 Lv.3 解鎖（目前 Lv.${x.level}）`); body.append(c); continue; }
+      const det = el('details', 'archive-card archive-story'); const sum = el('summary');
+      const img = document.createElement('img'); img.className = 'archive-face'; img.alt = ''; loadWithFallback(img, characterSources(x.image));
+      sum.append(img, el('b', '', `${x.name} · Lv.${x.level}`)); det.append(sum, el('p', '', x.story));
+      if (x.lines.length) { const ul = el('ul', 'archive-lines'); ul.append(...x.lines.map(l => el('li', '', `Lv.${l.level}「${l.text}」`))); det.append(ul); }
+      body.append(det);
+    }
+  } else {
+    body.append(el('p', 'archive-note', '兩位小湘一起出門，有時會發生小故事。'));
+    for (const t of tr.list) {
+      if (t.locked) { body.append(lockedCard('讓特定的兩位小湘一起出門就可能發現。')); continue; }
+      const det = el('details', 'archive-card archive-story'); const sum = el('summary');
+      sum.append(el('b', '', `📖 ${t.title}`), el('small', '', [t.who, t.place, fmtDate(t.at)].filter(Boolean).join(' · ')));
+      det.append(sum, el('p', '', t.text)); body.append(det);
+    }
+  }
+}
+function stageCard(f) {
+  if (f.locked) return lockedCard(`${f.stage}${f.boss ? ' · BOSS' : ''} · 打贏前一關解鎖`);
+  const c = el('div', `archive-card archive-file${f.cleared ? '' : ' is-uncleared'}`);
+  const top = el('div', 'archive-file__top');
+  const art = enemyArt(f.id, 'is-mini');
+  const head = el('div'); head.append(el('small', '', `${f.stage}${f.boss ? ' · BOSS' : ''}${f.extra ? ' · 特殊' : ''}`), el('b', '', f.name));
+  top.append(art, head, el('span', 'archive-stars', f.cleared ? `${'★'.repeat(f.stars)}${'☆'.repeat(3 - f.stars)}` : ''));
+  c.append(top);
+  const facts = el('dl', 'archive-facts');
+  for (const [k, v] of [['首次通關', f.cleared ? (f.firstAt ? fmtDate(f.firstAt) : f.firstLabel) : '尚未通關'], ['最高分', f.best || '—'], ['討伐', `${f.clears} 勝 / ${f.tries} 戰`]]) { facts.append(el('dt', '', k), el('dd', '', String(v))); }
+  c.append(facts);
+  if (f.bio) c.append(el('p', 'archive-bio', f.bio));
+  if (f.review) { const r = el('div', 'gugu-review is-small'); const av = el('span', 'gugu-review__avatar'); guguAvatar(av); const t = el('div'); t.append(el('small', '', `咕咕書評 · ${f.review.label}`), el('p', '', f.review.text)); if (f.review.note) t.append(el('p', 'gugu-review__note', f.review.note)); r.append(av, t); c.append(r); }
+  return c;
+}
+function openArchive(tab = archiveTab) {
+  archiveTab = tab;
+  guguAvatar(document.querySelector('#archive .gugu-avatar'));
+  $('archive-greet').textContent = GUGU_GREETS[Math.floor(Math.random() * GUGU_GREETS.length)];
+  renderArchive();
+  if (!$('archive').open) { $('archive').showModal(); syncRoomActivity(); }
+}
+document.querySelectorAll('[data-archive-tab]').forEach(t => t.addEventListener('click', () => { archiveTab = t.dataset.archiveTab; renderArchive(); }));
+$('open-archive').addEventListener('click', () => { $('function-center').close(); openArchive('battle'); });
+$('open-archive-battle').addEventListener('click', () => openArchive('battle'));
+$('close-archive').addEventListener('click', () => $('archive').close());
+$('archive').addEventListener('close', syncRoomActivity);

@@ -15,6 +15,8 @@ const PREF = 'siang-collector:theme:v1';
   // Use an established home so previews show the character in the real game scene.
   await p.evaluate(k => { const s = JSON.parse(localStorage.getItem(k)); s.dex['001'] = { at: new Date().toISOString() }; s.hatched = 1; s.energy = 87; s.fossils = 6; s.tutorial.status = 'complete'; localStorage.setItem(k, JSON.stringify(s)); }, KEY);
   await p.reload();
+  // 等開遊戲的第一次存檔（含住首頁的每日好感）寫完再記下原始存檔
+  await p.waitForFunction(k => JSON.parse(localStorage.getItem(k)).affection?.['001']?.home, KEY, { timeout: 5000 });
   const originalSave = await p.evaluate(k => localStorage.getItem(k), KEY);
   const room = await p.evaluate(() => localStorage.getItem('siang-collector:residents:v1'));
   const palettes = process.env.LIGHT_THEMES ? ['cream', 'sakura', 'daylight'] : ['cream', 'sakura', 'daylight', 'lilac', 'mint', 'blue', 'rose'];
@@ -33,6 +35,8 @@ const PREF = 'siang-collector:theme:v1';
    assert.equal(await p.locator(`[data-palette="${id}"]`).getAttribute('aria-pressed'), 'true');
    const meta = await p.locator('meta[name="theme-color"]').getAttribute('content');
    assert.equal(meta, { lilac: '#151722', mint: '#101e20', blue: '#111b2b', rose: '#24191f', cream: '#f9f2e6', sakura: '#fff0f3', daylight: '#eef6fc' }[id]);
+   // 等面板顏色穩定再讀（切換配色後偶爾會讀到上一個配色的顏色）
+   await p.waitForFunction(() => { const c = getComputedStyle(document.querySelector('#theme-dialog')).backgroundColor; const ok = c === window.__lastPanel; window.__lastPanel = c; return ok; }, null, { polling: 100, timeout: 3000 }).catch(() => {});
    surfaces.push(await p.locator('#theme-dialog').evaluate(e => getComputedStyle(e).backgroundColor));
    if (['cream', 'sakura', 'daylight'].includes(id)) {
     const contrast = await p.evaluate(() => {

@@ -4,42 +4,52 @@
 import { CHARACTERS, SERIES } from './eggs.js';
 import { levelOf } from './affection.js';
 import { todayKey } from './wishes.js';
+import { GUGU_REVIEWS, REVIEW_ORDER } from './gugu-reviews.js';
 
 // 敵人。圖片照皮寶的命名放在 assets/enemies/chapter-0N/（沒有圖就顯示 emoji）。
 // 文字欄位都可以直接改：intro 開場、weakHit 被剋制的反應（weakTag 是戰報上的小標）、win 玩家打贏時敵人說的話、
 // lose 玩家打輸時敵人說的話、clue 第一次通關揭露的章節線索、story Boss 前後故事。
 // 皮寶的素材資料檔在 data/enemies/*.json，這裡是遊戲實際使用的版本。
 export const ENEMIES = {
-  mochi: { stage: '1-1', name: '偷吃鬼糰子', emoji: '🍡', art: 'chapter-01/ch1-01-mochi-thief', power: 8, minutes: 30, weak: ['daily', 'recipe'], // 皮寶標的「甜點」對應到日常（甜點小湘）與隱藏配方
+  mochi: { bio: "裝無辜、愛偷吃甜點；抱著比自己還大的金湯匙，嘴角總沾著焦糖。", stage: '1-1', name: '偷吃鬼糰子', emoji: '🍡', art: 'chapter-01/ch1-01-mochi-thief', power: 8, minutes: 30, weak: ['daily', 'recipe'], // 皮寶標的「甜點」對應到日常（甜點小湘）與隱藏配方
     intro: '「噓！我只吃一口……真的只有一口！你沒看到吧？」', weakTag: '偷吃術失靈', weakHit: '「咦？！你們連焦糖味都聞得出來！我的偷吃術失效啦！」糰子額頭冒出一滴汗。',
     win: '「嗚……好啦，布丁還你！可是湯匙可以留下嗎？」', lose: '「嘿嘿！這些布丁就先借我保管～下次再來抓我呀！」',
     clue: '糰子逃跑時掉下的金湯匙，背面竟刻著一枚小小的焦糖王冠。' },
-  sock: { stage: '1-2', name: '襪子遊俠', emoji: '🧦', art: 'chapter-01/ch1-02-sock-ranger', power: 10, minutes: 30, weak: ['animals'],
+  sock: { bio: "一隻戴酒紅頭巾的奶油紫條紋獨眼襪子小盜賊。跳得飛快，專偷單邊襪子；背著裝滿贓物的布袋，愛炫耀腳程。", stage: '1-2', name: '襪子遊俠', emoji: '🧦', art: 'chapter-01/ch1-02-sock-ranger', power: 10, minutes: 30, weak: ['animals'],
     intro: '「左腳的歸我，右腳的也歸我！嘿嘿！」', weakTag: '飛毛腿失速', weakHit: '「等等！你怎麼跑得比我還快？！犯規啦！」襪子遊俠嚇得把袋裡的單邊襪子掉了一地。',
     win: '「嗚哇！還你還你！可是這雙真的好好看嘛！」', lose: '「追不到我吧！你的另一隻襪子我也收下囉！」',
     clue: '牠的戰利品袋裡夾著一張沾著焦糖的便當菜單，背面寫著：「青椒不可以剩下！」' },
-  bento: { stage: '1-3', name: '碎碎念便當盒', emoji: '🍱', art: 'chapter-01/ch1-03-nagging-bento', power: 22, minutes: 45, weak: ['friends'],
+  bento: { bio: "暴躁又愛操心的便當盒怪。打開的盒蓋像帽子，拿木製飯匙當指揮棒；把配菜當成小牙齒一樣念個不停，實際上很在乎大家有沒有好好吃飯。", stage: '1-3', name: '碎碎念便當盒', emoji: '🍱', art: 'chapter-01/ch1-03-nagging-bento', power: 22, minutes: 45, weak: ['friends'],
     intro: '「停——！青椒還沒吃！紅蘿蔔也不准偷偷撥到旁邊！」', weakTag: '友情分菜術',
     weakHit: '「咦？！你們居然互相分掉不愛吃的菜……這、這不是友情嗎！我才沒有感動！」便當盒眼角冒出小淚光。',
     win: '「好、好啦！今天就放你們走……但便當盒要記得帶回家喔！」',
     lose: '「不准挑食！飯粒剩三顆也不行——全部吃完再走！」',
     clue: '便當盒底部壓著一張皺皺的配送單：「焦糖王宮，布丁一百份，街角舊倉庫收。」' },
-  'caramel-king': { stage: '1-B', name: '焦糖大王', emoji: '🍮', art: 'chapter-01/ch1-boss-caramel-king', power: 40, minutes: 90, boss: true, weak: ['daily'],
+  'caramel-king': { bio: "自稱布丁王國的統治者，霸道又愛逞強；其實害怕寂寞，想邀請大家共享甜點。", stage: '1-B', name: '焦糖大王', emoji: '🍮', art: 'chapter-01/ch1-boss-caramel-king', power: 40, minutes: 90, boss: true, weak: ['daily'],
     intro: "「站住！闖入本王甜點王國的人，都要先交出布丁稅！全世界的布丁，都是本王的！」", weakTag: '獨佔計畫瓦解', weakHit: "「什麼？！你們居然沒有搶著獨吞，還、還分著吃？！本王的獨佔計畫怎麼會輸給這種普通的幸福感——！」焦糖王冠氣得歪向一邊。",
     win: "「嗚……本王輸了……可、可是本王只是想找人一起吃布丁，才不是故意搶走大家的甜點……」", lose: "「哼哼！看到了吧，這就是布丁王者的威嚴！把你們的點心也留下來，本王就勉強饒你們一回！」",
     story: { before: "小湘循著前面幾隻小怪掉下的線索，一路追到街角舊倉庫。推開門後，眼前竟是一座由布丁杯、焦糖醬和甜點盒堆成的「布丁王宮」。在王座中央，一顆頭戴焦糖皇冠、披著酒紅披風的大布丁正得意洋洋地揮舞權杖。牠就是——焦糖大王。「歡迎來到本王的王國！這裡所有的布丁、焦糖、鮮奶油，全部都歸本王所有！誰敢把布丁帶走，本王就親自出手制裁！」但小湘很快發現，王宮裡雖然堆滿甜點，卻冷冷清清，沒有半個賓客。", after: "焦糖大王被打敗後，披風慢慢垂了下來，連皇冠都歪到一邊。牠委屈地小聲承認，其實牠不是想真的把所有布丁據為己有；牠只是想辦一場最盛大的布丁宴會，邀請大家一起來吃甜點。可是邀請卡全被焦糖黏住，送不出去；小怪們又誤會了牠的命令，直接把附近的布丁全偷回王宮。結果宴會沒有客人，只有越堆越高的布丁山。小湘幫牠整理王宮，也答應協助送出真正的邀請。偷吃鬼糰子自告奮勇當試吃員，襪子遊俠說可以幫忙跑腿，碎碎念便當盒則唸起「甜點也要分食均衡」。焦糖大王紅著臉，小小聲地說：「……那、那下次宴會，你也要來喔。因為布丁嘛……果然還是大家一起吃，才最好吃。」" } },
-  'sneeze-cloud': { stage: '2-1', name: '噴嚏烏雲', emoji: '🌧️', art: 'chapter-02/ch2-01-sneeze-cloud', power: 45, minutes: 60, weak: ['weather'],
+  'sneeze-cloud': { bio: "灰紫色的軟綿綿小烏雲，戴著酒紅小雨傘帽和護目鏡，抱著繡有雨傘的小手帕。怕打噴嚏時淋濕別人，明明很善良卻老是造成小型暴風雨。", stage: '2-1', name: '噴嚏烏雲', emoji: '🌧️', art: 'chapter-02/ch2-01-sneeze-cloud', power: 45, minutes: 60, weak: ['weather'],
     intro: "「哈——啾！先、先不要靠近我……我不是故意把山路淋濕的啦！」", weakTag: "晴空止嚏！", weakHit: "「咦？風變暖了……哈、哈……欸？！這次居然沒有打出來！」噴嚏烏雲的雨滴短暫停在半空中，鼻尖也不再紅通通。",
     win: "「呼……鼻子終於通了！謝謝你們。這把小傘借你，路上別淋濕喔。」", lose: "「哈啾！嗚……我不是想贏，是你們一直站在風口啦！」" },
-  'lost-shadow': { stage: '2-2', name: '迷路影子', emoji: '👤', art: 'chapter-02/ch2-02-lost-shadow', power: 55, minutes: 60, weak: ['weather', 'county'],
+  'lost-shadow': { bio: "怕生、怕強光、方向感很差的墨紫色影子小人。揹著行囊、提著小燈，手上的地圖老是拿反；看起來神祕，實際上只想有人帶牠回家。", stage: '2-2', name: '迷路影子', emoji: '👤', art: 'chapter-02/ch2-02-lost-shadow', power: 55, minutes: 60, weak: ['weather', 'county'],
     intro: "「請、請問……出口在哪邊？我已經經過這棵樹五次了……」", weakTag: "方向感覺醒！", weakHit: "「欸？！你們一下就知道怎麼走？！」地圖被風吹得翻回正面，迷路影子的眼睛亮了起來，「原來我一直拿反了嗎……！」",
     win: "「我輸了……咦，你們願意帶我出去嗎？我、我會乖乖跟著的！」", lose: "「原、原來你們也迷路了？太好了……不是！我的意思是，對不起啦！」", clue: "迷路影子的地圖背面畫著一條被蘑菇堵住的山路，旁邊寫著：「紅色斑點菇，請勿踩踏！」" },
-  'angry-mushroom': { stage: '2-3', name: '生氣蘑菇', emoji: '🍄', art: 'chapter-02/ch2-03-angry-mushroom', power: 65, minutes: 75, weak: ['animals'],
+  'angry-mushroom': { bio: "紅色斑點蘑菇，鼓著臉頰、頭頂冒煙。被踩到就氣到噴孢子，消氣也很快。", stage: '2-3', name: '生氣蘑菇', emoji: '🍄', art: 'chapter-02/ch2-03-angry-mushroom', power: 65, minutes: 75, weak: ['animals'],
     intro: '「是誰踩到我的！給我站出來！」', weakHit: '動物小湘蹭蹭蘑菇，蘑菇的臉頰慢慢消氣了。', win: '「……下次走路看路啦。」', lose: '蘑菇噴了一大團孢子，大家咳個不停。' },
-  'thunder-king': { stage: '2-B', name: '雷雷大魔王', emoji: '⛈️', art: 'chapter-02/ch2-boss-thunder-king', power: 95, minutes: 120, boss: true, weak: ['weather'],
+  'thunder-king': { bio: "山谷深處的一大朵深紫色雷雲，閃電頭髮、嗓門很大。打雷其實只是想讓大家注意到他。", stage: '2-B', name: '雷雷大魔王', emoji: '⛈️', art: 'chapter-02/ch2-boss-thunder-king', power: 95, minutes: 120, boss: true, weak: ['weather'],
     intro: '「轟隆隆——！誰敢踏進我的山谷！」', weakHit: '天氣小湘撐開一片晴天，雷雲的閃電頭髮垂了下來。', win: '「……你們會再來找我玩嗎？」', lose: '「轟隆！再來幾次都一樣！」',
     story: { before: '山谷裡已經打雷打了一整個月，大家都不敢靠近。聽說雷雲最深的地方，住著一位大魔王……', after: '雷雷大魔王其實只是怕寂寞，才一直打雷想讓大家注意到他。現在山谷放晴了，他每天都在等小湘們來玩。' } },
+  // EX-01 書靈咕咕（皮寶設定，11/17）：打倒焦糖大王後解鎖，可以重複討伐。弱點「書頁／日常」→ 書頁對應到紀念限定系列（像收在書裡的回憶），可再調整。
+  gugu: { stage: 'EX-01', name: '書靈咕咕', emoji: '👻', art: 'ex/ex-01-book-spirit-gugu', power: 48, minutes: 60, weak: ['memorial', 'daily'], extra: true, requires: 'caramel-king',
+    bio: '棲息於研究室禁書庫的神祕書靈。自稱只對文學感興趣，卻會偷偷記錄所有人的八卦。最討厭折書角、劇透，以及不把借來的書還回去的人。',
+    intro: '「噓……這裡是圖書館。要打架的話，請先抽號碼牌。」', weakTag: '劇透攻擊', weakHit: '「等等！你居然知道這本書的結局？！不准劇透！」',
+    win: '「好啦……這本禁書借你。但不准折書角。」', lose: '「吵鬧的讀者，全部列入黑名單。下次請保持安靜。」' },
 };
+// 特殊關卡（不在章節順序裡，各自有解鎖條件）
+export const EXTRA_STAGES = [{ id: 'gugu', title: '特殊關卡 · 禁書庫' }];
+// 預留：特殊書頁與隱藏故事（第一版沒有內容，也不發放；之後有支線再填）
+export const SPECIAL_PAGES = [];
 export const CHAPTERS = [
   { id: 1, name: '布丁失竊事件', stages: ['mochi', 'sock', 'bento', 'caramel-king'], bg: 'conv' },
   { id: 2, name: '烏雲山谷', stages: ['sneeze-cloud', 'lost-shadow', 'angry-mushroom', 'thunder-king'], bg: 'mountain' },
@@ -66,7 +76,13 @@ const isStr = (v) => typeof v === 'string';
 export function ensureBattle(state) {
   const old = state.battle || {};
   const stages = {};
-  for (const [id, v] of Object.entries(old.stages || {})) if (ENEMIES[id] && v) stages[id] = { stars: v.stars | 0, best: v.best | 0, last: v.last | 0, clears: v.clears | 0, tries: v.tries | 0 };
+  for (const [id, v] of Object.entries(old.stages || {})) {
+    if (!ENEMIES[id] || !v) continue;
+    stages[id] = { stars: v.stars | 0, best: v.best | 0, last: v.last | 0, clears: v.clears | 0, tries: v.tries | 0 };
+    if (isStr(v.firstAt)) stages[id].firstAt = v.firstAt; // 首次通關日期（改版前通關的沒有這個欄位）
+    if (v.review && isStr(v.review.kind) && isStr(v.review.text)) stages[id].review = v.review; // 咕咕書評：結算時選定並保存
+    if (typeof v.lastWin === 'boolean') stages[id].lastWin = v.lastWin;
+  }
   state.battle = {
     active: Array.isArray(old.active) ? old.active.filter((a) => a && (ENEMIES[a.enemy] || a.snapshot) && Array.isArray(a.nos) && isStr(a.until) && a.report) : [],
     stages,
@@ -79,6 +95,7 @@ export function ensureBattle(state) {
     week: isStr(old.week) ? old.week : '',
     weekBest: Number.isSafeInteger(old.weekBest) ? old.weekBest : 0,
     wildWins: Number.isSafeInteger(old.wildWins) ? old.wildWins : 0,
+    pages: Array.isArray(old.pages) ? old.pages.filter(isStr) : [], // 預留：收集到的特殊書頁 id
   };
   ensureWild(state);
   return state.battle;
@@ -96,6 +113,7 @@ export function enemyFor(state, key) {
 
 export const unlocked = (state, enemy) => {
   if (typeof enemy === 'string' && enemy.startsWith('wild:')) return Boolean(enemyFor(state, enemy));
+  if (ENEMIES[enemy]?.requires) return Boolean(state.battle?.stages?.[ENEMIES[enemy].requires]?.clears);
   const i = ORDER.indexOf(enemy);
   return i === 0 || Boolean(state.battle?.stages?.[ORDER[i - 1]]?.clears);
 };
@@ -208,7 +226,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   const stars = starsOf(f.ratio, win);
   const minutes = Math.round(enemy.minutes * (f.weakHit ? 0.75 : 1));
   const log = [enemy.intro, ...nos.map(actionLine)];
-  if (f.weakHit) log.push(`✦ 效果拔群${enemy.weakTag ? `｜${enemy.weakTag}` : ''}！${enemy.weakHit}`);
+  if (f.weakHit) log.push(`✦ 效果拔群${enemy.weakTag ? `｜${enemy.weakTag.replace(/[！!]+$/, '')}` : ''}！${enemy.weakHit}`);
   if (f.heroParty) log.push('✦ 勇者小隊集結！三人連攜，全隊力量大增！');
   log.push(win ? enemy.win : enemy.lose);
   const advice = win ? null : diagnose(state, nos, enemyId, free.filter((no) => !nos.includes(no)));
@@ -219,6 +237,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
       ? { badges: (enemy.boss ? 3 : 1) + (stars === 3 && prev.stars < 3 ? 1 : 0), energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
       : { badges: 0, energy: 5, fossils: 0 };
   const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries };
+  if (enemy.story && !enemy.wild && !b.story[`${enemyId}:before`]) b.story[`${enemyId}:before`] = iso(now); // 看過 Boss 開場故事
   const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + minutes * 60e3)), report, ...(wildEntry ? { snapshot: wildEntry } : {}) };
   b.active.push(battle);
   return battle;
@@ -228,7 +247,7 @@ export const isBack = (battle, now = Date.now()) => Date.parse(battle.until) <= 
 export const battleNos = (state) => new Set((state.battle?.active || []).flatMap((a) => a.nos));
 
 // 收下戰報：發獎勵、記分數、讓小湘休息
-export function collectBattle(state, id, now = new Date()) {
+export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const b = ensureBattle(state);
   const i = b.active.findIndex((a) => a.id === id);
   if (i < 0 || !isBack(b.active[i], now.getTime())) return null;
@@ -247,7 +266,7 @@ export function collectBattle(state, id, now = new Date()) {
   } else {
     st = (b.stages[battle.enemy] ||= { stars: 0, best: 0, last: 0, clears: 0, tries: 0 });
     st.tries += 1; st.last = r.score;
-    if (r.win) { st.clears += 1; st.stars = Math.max(st.stars, r.stars); }
+    if (r.win) { st.clears += 1; st.stars = Math.max(st.stars, r.stars); if (st.clears === 1 && !st.firstAt) st.firstAt = now.toISOString(); }
   }
   const record = r.score > (enemy.wild ? r.prevBest : st.best); if (!enemy.wild && record) st.best = r.score;
   const best = enemy.wild ? b.weekBest : st.best;
@@ -260,7 +279,14 @@ export function collectBattle(state, id, now = new Date()) {
   const firstClear = r.win && st.clears === 1;
   const story = enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
   const clue = firstClear && enemy.clue ? enemy.clue : null;
-  return { ...battle, report: r, record, best, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, wild: Boolean(enemy.wild) };
+  // 咕咕書評：依結果挑一種，結算時就決定並存起來（檔案館讀存好的，不會每次重抽）
+  const prevStage = enemy.wild ? null : { clears: st.clears - (r.win ? 1 : 0), best: r.prevBest, tries: r.tries, lastWin: st.lastWin };
+  const kind = reviewKind(r, enemy, prevStage);
+  const lines = GUGU_REVIEWS[kind] || [];
+  const note = observe(kind, r, enemy, prevStage);
+  const review = lines.length ? { kind, text: lines[Math.floor(rand() * lines.length) % lines.length], ...(note ? { note } : {}), at: now.toISOString() } : null;
+  if (!enemy.wild) { st.lastWin = r.win; if (review) st.review = review; }
+  return { ...battle, report: r, record, best, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild) };
 }
 
 // 特訓：花徽章讓一位小湘永久變強
@@ -347,3 +373,33 @@ export function ensureWild(state, date = todayKey()) {
   return b.wild;
 }
 export const weekBest = (state, now = new Date()) => (state.battle?.week === weekOf(now) ? state.battle.weekBest : 0);
+
+// 咕咕書評的種類（依 REVIEW_ORDER 由上往下取第一個符合的）
+export function reviewKind(r, enemy, prev) {
+  const p = prev || { clears: 0, best: 0, tries: 0, lastWin: undefined };
+  const hit = {
+    firstBoss: r.win && enemy.boss && p.clears === 0,
+    record: p.tries > 0 && p.best > 0 && r.score > p.best,
+    threeStar: r.win && r.stars === 3,
+    firstWin: r.win && p.clears === 0,
+    comeback: r.win && p.lastWin === false,
+    weakHit: r.win && r.weakHit,
+    repeat: r.win && p.clears > 0,
+    defeat: !r.win,
+  };
+  return REVIEW_ORDER.find((k) => hit[k]) || (r.win ? 'repeat' : 'defeat');
+}
+
+// 咕咕的觀察筆記：嘴上嫌棄，其實每一場都有在看。只用真實紀錄，沒有可說的就不寫。
+export function observe(kind, r, enemy, prev) {
+  if (!prev) return null; // 野外不記
+  const losses = Math.max(0, (prev.tries || 0) - (prev.clears || 0));
+  const gain = r.score - (r.prevLast || 0);
+  if (kind === 'record' && prev.best) return `（上次最高 ${prev.best}，這次 ${r.score}。……我有記下來。）`;
+  if (kind === 'comeback' && losses) return `（之前輸了 ${losses} 次。我都看到了。）`;
+  if ((kind === 'firstWin' || kind === 'firstBoss' || kind === 'threeStar') && prev.clears === 0 && prev.tries > 0) return `（第 ${prev.tries + 1} 次挑戰才贏。……我可沒有在數。）`;
+  if (kind === 'repeat' && prev.clears >= 2) return `（這是第 ${prev.clears + 1} 次打倒${enemy.name}了。）`;
+  if (kind === 'defeat' && prev.tries > 0 && gain > 0) return `（不過比上次多了 ${gain} 分。……只是順便提一下。）`;
+  if (kind === 'defeat' && prev.tries === 0) return '（第一次來就挑這本，膽子倒是不小。）';
+  return null;
+}

@@ -182,7 +182,10 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 | `angry-mushroom` | 2-3 | 生氣蘑菇 | `chapter-02/ch2-03-angry-mushroom.webp` |
 | `thunder-king` | 2-B | 雷雷大魔王（Boss） | `chapter-02/ch2-boss-thunder-king.webp` |
 
+| `gugu` | EX-01 | 書靈咕咕（特殊關卡、檔案館館長） | `ex/ex-01-book-spirit-gugu.webp` ✅ 已交付 |
+
 檔名不同也沒關係，告訴工程或改 `js/battle.js` 裡該敵人的 `art` 欄位即可。
+咕咕的頭像（檔案館、書評）直接從立繪裁切：圓形框、放大 1.5 倍、對準畫面上方 18% 的位置（臉）。如果臉不在那裡，調 `css/companion.css` 的 `.gugu-avatar img` 的 `object-position` 即可。
 
 文字（開場、被剋制反應與小標、勝敗台詞、章節線索、Boss 故事）都在 `js/battle.js` 的 `ENEMIES`，可以直接改。`data/enemies/*.json` 的台詞已同步進去（1-1 偷吃鬼糰子、1-2 襪子遊俠、1-3 碎碎念便當盒、1-Boss 焦糖大王故事初稿）。
 徽章限定角色（騎士、魔法師、勇者）完成後，在 `BADGE_HEROES` 填上角色編號，勇者小隊連攜就會生效。
