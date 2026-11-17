@@ -1,0 +1,47 @@
+/* Light palettes need matching surfaces and opaque ink, including locked/read-only information. */
+:root[data-theme="cream"] { --t-muted:#614b3a; --t-accent:#70482f; }
+:root[data-theme="sakura"] { --t-muted:#684454; --t-accent:#7e3e5b; }
+:root[data-theme="daylight"] { --t-muted:#3f5970; --t-accent:#2d5477; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) { --t-success:#205f3c; --t-warning:#754b15; --t-danger:#9b2c40; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__card.card { background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__card.is-owned::after { opacity:.08; mix-blend-mode:normal; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .header__title { background:none; color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.whats-new__entry h3,.battle-head b,.battle-stage-card__info span,.battle-score .is-record b,.battle-log .is-special,.battle-result__stars,.dex-bond__hearts) { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.whats-new__entry small,.wheel-total,.wheel-left,.dex-bond__today,.bond-up__reward,.battle-stage-card__info small,.battle-enemy small,.battle-enemy p,.battle-score small,.battle-log .is-power,.train-row small) { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.wheel-stake,.errand-tabs button,.battle-stage-card,.train-row) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.wheel-stake[aria-checked="true"],.errand-tabs button[aria-selected="true"],.battle-stage-card.is-boss,.battle-stage-card.is-shiny,.battle-score .is-record) { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.errand-tabs,.battle-forecast,.battle-log,.battle-intro,.battle-story,.battle-advice,.battle-score>div,.dex-bond,.dex-bond__unlocks li) { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-bond__unlocks li { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-bond__unlocks li.is-open { background:var(--t-selected); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__bond { background:var(--t-selected); color:var(--t-accent); box-shadow:inset 0 0 0 1px var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.battle-forecast[data-level="good"] b,.battle-score .is-up b) { color:var(--t-success); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .battle-forecast[data-level="ok"] b { color:var(--t-warning); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .battle-forecast[data-level="risk"] b { color:var(--t-danger); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.battle-stage-card.is-locked,.battle-stage-card.is-done,.ach-tile.is-locked,.room-wheel.is-spent,.research-primary:disabled,.egg-cat:disabled,.fossil-offer:disabled,.errand-siang:disabled) { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.battle-stage-card.is-locked,.battle-stage-card.is-done) .enemy-art { opacity:.55; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.research-partner:disabled,.research-text-button:disabled,.growth-claim:disabled) { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) button:disabled { color:var(--t-muted); border-color:var(--t-line); border-style:dashed; cursor:default; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-choice__state { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-choice:disabled:not([aria-pressed="true"]) { background:var(--t-raised); color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(input,textarea)::placeholder { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .update-pill { background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .update-pill b { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .update-pill small { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .letter-badge { background:#a72c4c; color:#fff; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .chapter-reward { background:var(--t-raised); color:var(--t-accent); border-color:var(--t-line); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.banner,.float-gain) { background:var(--t-panel); border:1px solid var(--t-line); border-radius:8px; padding:3px 8px; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.banner__en,.banner__zh,.float-gain) { color:var(--t-text); text-shadow:none; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .album-item small { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .snap-btn.is-done { opacity:1; background:var(--t-raised); color:var(--t-muted); border:1px dashed var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .view--incubate #cultivate:focus-visible { outline-color:var(--t-accent); }
+@media(hover:hover) { :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .view--incubate #cultivate:hover:not(:disabled) { background:var(--t-selected); color:var(--t-text); } }
+/* Story archive and reviews use the same daylight ink and surfaces. */
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive,.archive-entry,.gugu-review) { --rose-gold:var(--t-accent); --rose-gold-soft:var(--t-line); background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive__head h2,.archive-card b,.archive-facts dd,.archive-story p,.archive-bio,.archive-lines,.archive-clues ul,.gugu-review p) { color:var(--t-text); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive__head small,.archive__greet,.archive-note,.archive-card small,.archive-facts dt,.archive-entry small,.archive-clues small) { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive-card,.archive__tabs button) { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive-card.is-locked,.archive-file.is-uncleared) { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive__tabs button small { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive__tabs button[aria-selected="true"] { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); box-shadow:inset 0 -2px 0 var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive__head,.archive-story p) { border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive-stars,.gugu-review p.gugu-review__note) { color:var(--t-accent); opacity:1; }

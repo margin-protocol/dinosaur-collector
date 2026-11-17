@@ -2441,9 +2441,9 @@ function drawWheel() {
   svg.innerHTML = SEGMENTS.map((seg, i) => {
     const a0 = i * 360 / n; const a1 = (i + 1) * 360 / n; const [x0, y0] = pt(a0, r); const [x1, y1] = pt(a1, r);
     const mid = (a0 + a1) / 2; const [tx, ty] = pt(mid, r * 0.64);
-    const dark = ['#ffd36b', '#f0b03a', '#7fb0d8'].includes(seg.color);
+    const dark = ['#ffd36b', '#f0b03a', '#7fb0d8', '#8a7aa8', '#e07ac0', '#b08a5a'].includes(seg.color);
     return `<path d="M0 0L${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${seg.color}" stroke="#1c1520" stroke-width="1.5"/>`
-      + `<text x="${tx.toFixed(2)}" y="${ty.toFixed(2)}" transform="rotate(${mid} ${tx.toFixed(2)} ${ty.toFixed(2)})" text-anchor="middle" dominant-baseline="central" font-size="${seg.short.length > 2 ? 12 : 15}" font-weight="700" fill="${dark ? '#2a1d10' : '#fff'}">${seg.short}</text>`;
+      + `<text x="${tx.toFixed(2)}" y="${ty.toFixed(2)}" transform="rotate(${mid} ${tx.toFixed(2)} ${ty.toFixed(2)})" text-anchor="middle" dominant-baseline="central" font-size="${seg.short.length > 2 ? 12 : 15}" font-weight="700" fill="${dark ? '#1c1520' : '#fff'}">${seg.short}</text>`;
   }).join('') + `<circle r="${r}" fill="none" stroke="#ffd9a8" stroke-width="3"/>`;
 }
 function renderWheel(resultText) {

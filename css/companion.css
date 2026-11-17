@@ -443,3 +443,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .archive-entry__icon { font-size:22px; } .archive-entry b { display:block; font-size:14px; } .archive-entry small { font-size:11px; color:#f6e6dcb3; }
 .battle-stage-card.is-extra { border-color:#e3b6a066; background:linear-gradient(120deg,#6b233833,#ffffff08); grid-column:span 2; }
 .gugu-review p.gugu-review__note { margin-top:4px; font-size:12px; color:var(--rose-gold); opacity:.9; }
+
+/* Closed archives must retain the native dialog hidden state. */
+.archive:not([open]) { display:none; }
