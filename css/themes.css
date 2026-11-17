@@ -121,3 +121,8 @@ html { background:var(--t-bg); }
 #cultivate svg { stroke:currentColor; }
 /* Affection story labels follow the palette, including readable daylight themes. */
 .bond-up__unlock,.dex-bond__unlocks b { color:var(--t-accent); }
+/* Travel labels must stay readable on light palettes as well. */
+.errand-place small,.errand-trip small { color:var(--t-muted); }
+.errand-story b,.room-errand.is-back { color:var(--t-accent); }
+.errand-story,.errand-pick { background:var(--t-raised); border-color:var(--t-line); }
+.errand-place[aria-pressed="true"],.errand-siang[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); }
