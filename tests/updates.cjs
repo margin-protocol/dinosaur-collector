@@ -12,7 +12,7 @@ bump=true;await p.evaluate(()=>window.__checkUpdates());await p.locator('#update
 await p.waitForTimeout(700);if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.evaluate(()=>localStorage.setItem('siang-collector:seen-version','2026.11.01'));
 await Promise.all([p.waitForNavigation(),p.click('#update-pill')]);
-await p.locator('#whats-new[open]').waitFor({timeout:8000});assert.match(await p.textContent('#whats-new-list'),/每日願望/);
+await p.locator('#whats-new[open]').waitFor({timeout:8000});assert(( await p.textContent('#whats-new-list')).includes(require('../changelog.json')[0].title));
 await p.waitForTimeout(700);if(process.env.SHOT2) await p.screenshot({path:process.env.SHOT2});
 await p.click('#whats-new-ok');assert.equal(await p.evaluate(()=>localStorage.getItem('siang-collector:seen-version')),latest);
 await p.reload();await p.waitForTimeout(2500);assert(!(await p.locator('#whats-new').evaluate(d=>d.open)),'seen: not shown again');
