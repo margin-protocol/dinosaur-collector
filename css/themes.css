@@ -126,3 +126,14 @@ html { background:var(--t-bg); }
 .errand-story b,.room-errand.is-back { color:var(--t-accent); }
 .errand-story,.errand-pick { background:var(--t-raised); border-color:var(--t-line); }
 .errand-place[aria-pressed="true"],.errand-siang[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); }
+
+/* 字體統一（湘 11/17）：中文用明體 Noto Serif TC，英文與數字用 Cormorant Garamond。
+   拉丁字型放在最前面，只有它沒有的字（中文）才落到明體；數字用等高、等寬的樣式，戰力分數比較整齊。 */
+:root {
+  --font-serif-mix: "Cormorant Garamond", "Noto Serif TC", "Noto Serif CJK TC", "Songti TC", serif;
+  --font-body: var(--font-serif-mix);
+  --font-display: var(--font-serif-mix);
+  --font-latin: var(--font-serif-mix);
+  --font-mono: var(--font-serif-mix);
+}
+body, button, input, select, textarea { font-variant-numeric: lining-nums tabular-nums; }
