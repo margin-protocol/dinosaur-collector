@@ -2565,10 +2565,14 @@ document.addEventListener('visibilitychange', () => { if (!document.hidden) tick
 // ── 討伐
 let battleEnemy = null; let battlePicked = [];
 const enemyArt = (id, cls = '') => {
-  const box = document.createElement('div'); box.className = `enemy-art ${cls}`;
-  const img = document.createElement('img'); img.alt = battle.ENEMIES[id].name; img.src = battle.enemyArtPath(id);
-  img.onerror = () => { img.remove(); const e = document.createElement('span'); e.className = 'enemy-art__emoji'; e.textContent = battle.ENEMIES[id].emoji; box.append(e); };
-  box.append(img); return box;
+  const e = battle.enemyFor(state, id) || battle.ENEMIES[id];
+  const box = document.createElement('div'); box.className = `enemy-art ${cls}${e?.trait?.shiny ? ' is-shiny' : ''}`;
+  if (e?.trait) { box.style.setProperty('--hue', `${e.trait.hue}deg`); box.style.setProperty('--scale', e.trait.scale); }
+  const img = document.createElement('img'); img.alt = e.name; img.src = battle.enemyArtPath(id, state);
+  img.onerror = () => { img.remove(); const em = document.createElement('span'); em.className = 'enemy-art__emoji'; em.textContent = e.emoji; box.prepend(em); };
+  box.append(img);
+  if (e?.trait) box.append(Object.assign(document.createElement('i'), { className: 'enemy-art__trait', textContent: e.trait.icon }));
+  return box;
 };
 const allBusy = () => new Set([...busyNos(state), ...battle.battleNos(state)]);
 function showErrandTab(tab) {
@@ -2589,7 +2593,7 @@ function renderBattle() {
     const row = document.createElement('div'); const back = battle.isBack(a, now); row.className = `errand-trip${back ? ' is-back' : ''}`;
     const who = document.createElement('div'); who.className = 'errand-trip__who'; who.append(enemyArt(a.enemy, 'is-mini'));
     const text = document.createElement('div'); const t = document.createElement('b'); const sm = document.createElement('small');
-    t.textContent = `討伐 ${battle.ENEMIES[a.enemy].name}`; sm.textContent = back ? '回來了！看戰報' : `還要 ${battle.fmtMinutes(Date.parse(a.until) - now)} · ${a.nos.map(no => CHARACTERS[no].name).join('、')}`;
+    t.textContent = `討伐 ${(battle.enemyFor(state, a.enemy) || battle.ENEMIES[a.enemy]).name}`; sm.textContent = back ? '回來了！看戰報' : `還要 ${battle.fmtMinutes(Date.parse(a.until) - now)} · ${a.nos.map(no => CHARACTERS[no].name).join('、')}`;
     text.append(t, sm); row.append(who, text);
     if (back) { const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.textContent = '戰報'; btn.addEventListener('click', () => void collectBattle(a.id)); row.append(btn); }
     return row;
@@ -2597,7 +2601,30 @@ function renderBattle() {
   const inStage = Boolean(battleEnemy); const inTrain = !$('battle-train').hidden;
   $('battle-map').hidden = inStage || inTrain; $('battle-stage').hidden = !inStage;
   if (!inStage && !inTrain) {
-    $('battle-map').replaceChildren(...battle.CHAPTERS.map(ch => {
+    const wild = state.battle.wild?.list || [];
+    const wildSec = document.createElement('section'); wildSec.className = 'battle-chapter battle-wild';
+    const wh = document.createElement('h3'); wh.className = 'egg-choices__heading'; wh.textContent = '野外巡邏 · 今天的野生小怪';
+    const wnote = document.createElement('p'); wnote.className = 'residents-intro';
+    const wb = battle.weekBest(state);
+    wnote.textContent = `每天換一批，強度跟著你的隊伍變化。打跑的那隻今天不會再出現。${wb ? `本週最高分 ${wb}` : ''}`;
+    const wgrid = document.createElement('div'); wgrid.className = 'battle-stages';
+    const busyKeys = new Set(state.battle.active.map(a => a.enemy));
+    wgrid.append(...wild.map(w => {
+      const e = battle.wildEnemy(w);
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = `battle-stage-card${e.boss ? ' is-boss' : ''}${e.trait.shiny ? ' is-shiny' : ''}${w.defeated ? ' is-done' : ''}`;
+      btn.disabled = w.defeated || busyKeys.has(w.key);
+      btn.append(enemyArt(w.key));
+      const info = document.createElement('div'); info.className = 'battle-stage-card__info';
+      info.innerHTML = '<small></small><b></b><span></span>';
+      info.querySelector('small').textContent = e.boss ? '流浪 Boss' : e.trait.shiny ? '稀有！' : '野生';
+      info.querySelector('b').textContent = e.name;
+      info.querySelector('span').textContent = w.defeated ? '✓ 已經打跑了' : busyKeys.has(w.key) ? '隊伍討伐中…' : `戰力 ${e.power}`;
+      btn.append(info);
+      btn.addEventListener('click', () => { battleEnemy = w.key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
+      return btn;
+    }));
+    wildSec.append(wh, wnote, wgrid);
+    $('battle-map').replaceChildren(wildSec, ...battle.CHAPTERS.map(ch => {
       const sec = document.createElement('section'); sec.className = 'battle-chapter';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = `第 ${ch.id} 章 · ${ch.name}`;
       const grid = document.createElement('div'); grid.className = 'battle-stages';
@@ -2619,9 +2646,10 @@ function renderBattle() {
   if (inStage) renderBattleStage();
 }
 function renderBattleStage() {
-  const id = battleEnemy; const e = battle.ENEMIES[id]; const st = state.battle.stages[id];
+  const id = battleEnemy; const e = battle.enemyFor(state, id); const st = e.wild ? null : state.battle.stages[id];
+  if (!e) { battleEnemy = null; renderBattle(); return; }
   $('battle-enemy-art').replaceChildren(enemyArt(id, 'is-big'));
-  $('battle-enemy-stage').textContent = `${e.stage}${e.boss ? ' · BOSS' : ''}`;
+  $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}`;
   $('battle-enemy-name').textContent = e.name;
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;
   $('battle-story').hidden = !e.story; if (e.story) $('battle-story').textContent = e.story.before;
@@ -2655,6 +2683,16 @@ function renderBattleStage() {
   $('battle-go').textContent = full ? '隊伍都派出去了' : `出發討伐${fc ? `（約 ${Math.round(e.minutes * (fc.weakHit ? 0.75 : 1))} 分鐘）` : ''}`;
 }
 $('battle-back').addEventListener('click', () => { battleEnemy = null; renderBattle(); });
+// 野生小怪的戰報：那一天的名單可能已經換掉，用出發時存下的資料畫
+function wildArtFrom(snapshot) {
+  const e = battle.wildEnemy(snapshot);
+  const box = document.createElement('div'); box.className = `enemy-art is-big${e.trait.shiny ? ' is-shiny' : ''}`;
+  box.style.setProperty('--hue', `${e.trait.hue}deg`); box.style.setProperty('--scale', e.trait.scale);
+  const img = document.createElement('img'); img.alt = e.name; img.src = `assets/enemies/${e.art || e.base}.webp`;
+  img.onerror = () => { img.remove(); box.prepend(Object.assign(document.createElement('span'), { className: 'enemy-art__emoji', textContent: e.emoji })); };
+  box.append(img, Object.assign(document.createElement('i'), { className: 'enemy-art__trait', textContent: e.trait.icon }));
+  return box;
+}
 $('battle-go').addEventListener('click', async () => {
   if (!battleEnemy || !battlePicked.length) return;
   const id = battleEnemy; const nos = [...battlePicked];
@@ -2663,20 +2701,20 @@ $('battle-go').addEventListener('click', async () => {
   if (t.result.error) { $('battle-status').textContent = t.result.error; return; }
   battleEnemy = null; battlePicked = [];
   renderAll(); renderBattle();
-  toast(`出發討伐${battle.ENEMIES[id].name}！${battle.fmtMinutes(Date.parse(t.result.battle.until) - Date.now())}後回來。`);
+  toast(`出發討伐${battle.enemyFor(state, id).name}！${battle.fmtMinutes(Date.parse(t.result.battle.until) - Date.now())}後回來。`);
 });
 async function collectBattle(id) {
   const t = await updateState(current => battle.collectBattle(current, id));
   state = t.state; renderAll(); renderBattle();
   if (!t.result) return;
-  const r = t.result; const rep = r.report; const e = battle.ENEMIES[r.enemy];
-  $('battle-result-art').replaceChildren(enemyArt(r.enemy, 'is-big'));
+  const r = t.result; const rep = r.report; const e = r.snapshot ? battle.wildEnemy(r.snapshot) : battle.ENEMIES[r.enemy];
+  $('battle-result-art').replaceChildren(r.snapshot ? wildArtFrom(r.snapshot) : enemyArt(r.enemy, 'is-big'));
   $('battle-result-eyebrow').textContent = `${e.stage} · ${e.name}`;
   $('battle-result-title').textContent = rep.win ? '討伐成功！' : '先撤退了……';
   $('battle-result-stars').textContent = rep.win ? `${'★'.repeat(rep.stars)}${'☆'.repeat(3 - rep.stars)}` : '';
   const delta = r.delta === null ? '第一次挑戰' : r.delta > 0 ? `比上次 +${r.delta}` : r.delta < 0 ? `比上次 ${r.delta}` : '跟上次一樣';
   $('battle-result-score').innerHTML = '';
-  for (const [label, value, cls] of [['這次分數', rep.score, ''], ['歷史最高', r.best, r.record ? 'is-record' : ''], ['進步', delta, r.delta > 0 ? 'is-up' : '']]) {
+  for (const [label, value, cls] of [['這次分數', rep.score, ''], [r.wild ? '本週最高' : '歷史最高', r.best, r.record ? 'is-record' : ''], ['進步', r.wild && r.delta === null ? '新的對手' : delta, r.delta > 0 ? 'is-up' : '']]) {
     const box = document.createElement('div'); box.className = cls; box.innerHTML = '<small></small><b></b>';
     box.querySelector('small').textContent = label; box.querySelector('b').textContent = value; $('battle-result-score').append(box);
   }

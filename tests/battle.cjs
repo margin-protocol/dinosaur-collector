@@ -12,8 +12,8 @@ const solo=await p.evaluate(async k=>{const m=await import('/js/battle.js');cons
 assert.deepEqual(solo,[1,1]);
 // UI: open 討伐, 1-1 open, 1-2 locked
 await p.click('#home-errand');await p.click('#tab-battle');
-assert(await p.locator('.battle-stage-card').nth(1).isDisabled());
-await p.locator('.battle-stage-card').first().click();await p.click('.errand-siang:has(img[alt="原味小湘"])');
+assert(await p.locator('.battle-chapter:not(.battle-wild) .battle-stage-card').nth(1).isDisabled());
+await p.locator('.battle-chapter:not(.battle-wild) .battle-stage-card').first().click();await p.click('.errand-siang:has(img[alt="原味小湘"])');
 assert.match(await p.textContent('#battle-forecast'),/13 vs 8 · 輕鬆勝利/);assert.match(await p.textContent('#battle-forecast'),/剋制/);
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.click('#battle-go');await p.waitForTimeout(300);
@@ -27,7 +27,7 @@ s=await save();const first=s.battle.stages.mochi;assert.equal(first.clears,1);as
 await p.click('#battle-result-ok');
 // fight 1-1 again with a stronger origin (bond Lv.3) → higher score, "比上次 +N", new record
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.affection={'001':{pts:30,day:'',today:0,home:''}};s.battle.rest={};localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.waitForTimeout(400);
-await p.click('#home-errand');await p.click('#tab-battle');await p.locator('.battle-stage-card').first().click();await p.click('.errand-siang:has(img[alt="原味小湘"])');await p.click('#battle-go');await p.waitForTimeout(300);
+await p.click('#home-errand');await p.click('#tab-battle');await p.locator('.battle-chapter:not(.battle-wild) .battle-stage-card').first().click();await p.click('.errand-siang:has(img[alt="原味小湘"])');await p.click('#battle-go');await p.waitForTimeout(300);
 await fastForward();await p.reload();await p.waitForTimeout(400);
 await p.click('#home-errand');await p.click('#tab-battle');await p.click('#battle-active .btn');await p.locator('#battle-result[open]').waitFor();
 const scoreText=await p.textContent('#battle-result-score');assert.match(scoreText,/比上次 \+\d+/);assert.match(scoreText,/新紀錄/);

@@ -3,6 +3,7 @@
 // 戰敗提示依實際原因；保留分數、歷史最高與進步；徽章可以拿來特訓，讓下一次打得更好。
 import { CHARACTERS, SERIES } from './eggs.js';
 import { levelOf } from './affection.js';
+import { todayKey } from './wishes.js';
 
 // 敵人。圖片照皮寶的命名放在 assets/enemies/chapter-0N/（沒有圖就顯示 emoji）。
 // 文字欄位都可以直接改：intro 開場、weakHit 被剋制的反應（weakTag 是戰報上的小標）、win 玩家打贏時敵人說的話、
@@ -62,18 +63,34 @@ export function ensureBattle(state) {
   const stages = {};
   for (const [id, v] of Object.entries(old.stages || {})) if (ENEMIES[id] && v) stages[id] = { stars: v.stars | 0, best: v.best | 0, last: v.last | 0, clears: v.clears | 0, tries: v.tries | 0 };
   state.battle = {
-    active: Array.isArray(old.active) ? old.active.filter((a) => a && ENEMIES[a.enemy] && Array.isArray(a.nos) && isStr(a.until) && a.report) : [],
+    active: Array.isArray(old.active) ? old.active.filter((a) => a && (ENEMIES[a.enemy] || a.snapshot) && Array.isArray(a.nos) && isStr(a.until) && a.report) : [],
     stages,
     badges: Number.isSafeInteger(old.badges) ? old.badges : 0,
     train: old.train && typeof old.train === 'object' ? old.train : {},
     rest: old.rest && typeof old.rest === 'object' ? old.rest : {},
     story: old.story && typeof old.story === 'object' ? old.story : {}, // 看過的 Boss 故事
     total: Number.isSafeInteger(old.total) ? old.total : 0,
+    wild: old.wild && isStr(old.wild.date) && Array.isArray(old.wild.list) ? old.wild : null,
+    week: isStr(old.week) ? old.week : '',
+    weekBest: Number.isSafeInteger(old.weekBest) ? old.weekBest : 0,
+    wildWins: Number.isSafeInteger(old.wildWins) ? old.wildWins : 0,
   };
+  ensureWild(state);
   return state.battle;
 }
 
+// 章節敵人或野生小怪（wild:<id>）都用這個取得資料
+export function enemyFor(state, key) {
+  if (ENEMIES[key]) return { key, ...ENEMIES[key] };
+  if (typeof key === 'string' && key.startsWith('wild:')) {
+    const w = state.battle?.wild?.list?.find((x) => x.key === key) || state.battle?.active?.find((a) => a.enemy === key)?.snapshot;
+    return w ? wildEnemy(w) : null;
+  }
+  return null;
+}
+
 export const unlocked = (state, enemy) => {
+  if (typeof enemy === 'string' && enemy.startsWith('wild:')) return Boolean(enemyFor(state, enemy));
   const i = ORDER.indexOf(enemy);
   return i === 0 || Boolean(state.battle?.stages?.[ORDER[i - 1]]?.clears);
 };
@@ -91,7 +108,7 @@ export function siangPower(state, no) {
 }
 
 export function teamPower(state, nos, enemyId) {
-  const enemy = ENEMIES[enemyId];
+  const enemy = enemyFor(state, enemyId);
   const members = nos.map((no) => siangPower(state, no)).filter(Boolean);
   const raw = members.reduce((n, m) => n + m.power, 0);
   const counts = {};
@@ -107,7 +124,7 @@ export function teamPower(state, nos, enemyId) {
 // 預估：勝率與評語
 export function forecast(state, nos, enemyId) {
   const team = teamPower(state, nos, enemyId);
-  const ratio = team.total / ENEMIES[enemyId].power;
+  const ratio = team.total / enemyFor(state, enemyId).power;
   const chance = ratio >= 1 ? 1 : ratio < 0.7 ? 0 : (ratio - 0.7) / 0.3;
   const label = ratio >= 1.6 ? '輕鬆勝利' : ratio >= 1.2 ? '穩穩的' : ratio >= 1 ? '勢均力敵' : ratio >= 0.7 ? '有點危險' : '還打不贏';
   return { ...team, ratio, chance, label };
@@ -133,7 +150,7 @@ export function available(state, now = Date.now(), busy = new Set()) {
 export function bestTeam(state, enemyId, pool) {
   const ranked = [...pool].sort((a, b) => siangPower(state, b).power - siangPower(state, a).power);
   const candidates = [ranked.slice(0, TEAM_MAX)];
-  const weak = pool.filter((no) => ENEMIES[enemyId].weak.includes(CHARACTERS[no]?.series)).sort((a, b) => siangPower(state, b).power - siangPower(state, a).power);
+  const weak = pool.filter((no) => enemyFor(state, enemyId).weak.includes(CHARACTERS[no]?.series)).sort((a, b) => siangPower(state, b).power - siangPower(state, a).power);
   if (weak.length) candidates.push([weak[0], ...ranked.filter((no) => no !== weak[0]).slice(0, TEAM_MAX - 1)]);
   for (const series of new Set(pool.map((no) => CHARACTERS[no].series))) {
     const same = ranked.filter((no) => CHARACTERS[no].series === series);
@@ -144,7 +161,7 @@ export function bestTeam(state, enemyId, pool) {
 
 // 戰敗原因：先看換隊能不能贏，再看哪一項成長最有效
 export function diagnose(state, nos, enemyId, pool) {
-  const enemy = ENEMIES[enemyId];
+  const enemy = enemyFor(state, enemyId);
   const now = forecast(state, nos, enemyId);
   const best = bestTeam(state, enemyId, [...new Set([...pool, ...nos])]);
   if (best && best.ratio >= 1 && best.total > now.total * 1.05) {
@@ -168,8 +185,11 @@ export function diagnose(state, nos, enemyId, pool) {
 // 出發：先算好結果存起來（重新整理不會重抽）。回傳錯誤字串或 battle 物件
 export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math.random, busy = new Set() } = {}) {
   const b = ensureBattle(state);
-  const enemy = ENEMIES[enemyId];
+  const enemy = enemyFor(state, enemyId);
   if (!enemy) return '找不到這個對手。';
+  const wildEntry = enemy.wild ? b.wild.list.find((x) => x.key === enemyId) : null;
+  if (wildEntry?.defeated) return '這隻已經被打跑了，明天會有新的野生小怪。';
+  if (b.active.some((a) => a.enemy === enemyId)) return '已經有隊伍在打這隻了。';
   if (!unlocked(state, enemyId)) return '要先打贏前一關。';
   nos = [...new Set(nos || [])];
   if (!nos.length) return '先選一位小湘。';
@@ -187,12 +207,14 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   if (f.heroParty) log.push('✦ 勇者小隊集結！三人連攜，全隊力量大增！');
   log.push(win ? enemy.win : enemy.lose);
   const advice = win ? null : diagnose(state, nos, enemyId, free.filter((no) => !nos.includes(no)));
-  const prev = b.stages[enemyId] || { stars: 0, best: 0, last: 0, clears: 0, tries: 0 };
-  const loot = win
-    ? { badges: (enemy.boss ? 3 : 1) + (stars === 3 && prev.stars < 3 ? 1 : 0), energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
-    : { badges: 0, energy: 5, fossils: 0 };
+  const prev = enemy.wild ? { stars: 0, best: b.weekBest, last: wildEntry?.last || 0, clears: 0, tries: wildEntry?.tries || 0 } : (b.stages[enemyId] || { stars: 0, best: 0, last: 0, clears: 0, tries: 0 });
+  const loot = enemy.wild
+    ? (win ? { badges: Math.max(1, Math.round((enemy.boss ? 3 : 1) * enemy.reward)), energy: Math.round(enemy.power * 0.4 * enemy.reward), fossils: (enemy.trait.id === 'shiny' ? 3 : 0) + (enemy.boss ? 2 : 0) } : { badges: 0, energy: 5, fossils: 0 })
+    : win
+      ? { badges: (enemy.boss ? 3 : 1) + (stars === 3 && prev.stars < 3 ? 1 : 0), energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
+      : { badges: 0, energy: 5, fossils: 0 };
   const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries };
-  const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + minutes * 60e3)), report };
+  const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + minutes * 60e3)), report, ...(wildEntry ? { snapshot: wildEntry } : {}) };
   b.active.push(battle);
   return battle;
 }
@@ -206,11 +228,24 @@ export function collectBattle(state, id, now = new Date()) {
   const i = b.active.findIndex((a) => a.id === id);
   if (i < 0 || !isBack(b.active[i], now.getTime())) return null;
   const [battle] = b.active.splice(i, 1);
-  const { report: r } = battle; const enemy = ENEMIES[battle.enemy];
-  const st = (b.stages[battle.enemy] ||= { stars: 0, best: 0, last: 0, clears: 0, tries: 0 });
-  st.tries += 1; st.last = r.score;
-  const record = r.score > st.best; if (record) st.best = r.score;
-  if (r.win) { st.clears += 1; st.stars = Math.max(st.stars, r.stars); }
+  const { report: r } = battle; const enemy = battle.snapshot ? wildEnemy(battle.snapshot) : ENEMIES[battle.enemy];
+  let st;
+  if (enemy.wild) {
+    // 野外：記「本週最高分」，打贏的那隻今天就不會再出現
+    const week = weekOf(now);
+    if (b.week !== week) { b.week = week; b.weekBest = 0; }
+    const entry = b.wild?.list.find((x) => x.key === battle.enemy);
+    if (entry) { entry.tries = (entry.tries || 0) + 1; entry.last = r.score; if (r.win) entry.defeated = true; }
+    st = { best: b.weekBest, clears: r.win ? 1 : 0 };
+    if (r.score > b.weekBest) b.weekBest = r.score;
+    if (r.win) b.wildWins += 1;
+  } else {
+    st = (b.stages[battle.enemy] ||= { stars: 0, best: 0, last: 0, clears: 0, tries: 0 });
+    st.tries += 1; st.last = r.score;
+    if (r.win) { st.clears += 1; st.stars = Math.max(st.stars, r.stars); }
+  }
+  const record = r.score > (enemy.wild ? r.prevBest : st.best); if (!enemy.wild && record) st.best = r.score;
+  const best = enemy.wild ? b.weekBest : st.best;
   b.badges += r.loot.badges; state.energy += r.loot.energy; if (r.loot.fossils) state.fossils = (state.fossils || 0) + r.loot.fossils;
   if (r.loot.firstBoss) state.wishEgg.stock += 1;
   const restUntil = iso(new Date(now.getTime() + REST_MINUTES * 60e3));
@@ -220,7 +255,7 @@ export function collectBattle(state, id, now = new Date()) {
   const firstClear = r.win && st.clears === 1;
   const story = enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
   const clue = firstClear && enemy.clue ? enemy.clue : null;
-  return { ...battle, report: r, record, best: st.best, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue };
+  return { ...battle, report: r, record, best, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, wild: Boolean(enemy.wild) };
 }
 
 // 特訓：花徽章讓一位小湘永久變強
@@ -246,4 +281,64 @@ export function bossIntro(state, enemyId) {
 export const restLeft = (state, no, now = Date.now()) => Math.max(0, Date.parse(state.battle?.rest?.[no] || 0) - now);
 export const fmtMinutes = (ms) => { const m = Math.ceil(ms / 60e3); return m >= 60 ? `${Math.floor(m / 60)} 小時 ${m % 60} 分` : `${Math.max(1, m)} 分鐘`; };
 
-export const enemyArtPath = (id) => `assets/enemies/${ENEMIES[id]?.art || id}.webp`;
+export const enemyArtPath = (id, state) => { const e = state ? enemyFor(state, id) : ENEMIES[id]; return `assets/enemies/${e?.art || id}.webp`; };
+
+// ── 野外巡邏：每天隨機生成野生小怪（用現有敵人的圖＋隨機個性）
+export const WILD_TRAITS = [
+  { id: 'sleepy', label: '愛睏的', icon: '💤', power: 0.75, reward: 0.8, scale: 0.92, hue: 0, line: '打了一個大大的呵欠，眼睛快閉起來了。' },
+  { id: 'tiny', label: '迷你的', icon: '🔹', power: 0.6, reward: 0.7, scale: 0.72, hue: 0, line: '小小一隻，但看起來很努力。' },
+  { id: 'lost', label: '迷路的', icon: '❓', power: 0.85, reward: 0.9, scale: 1, hue: 0, line: '東張西望，好像在找回家的路。' },
+  { id: 'hungry', label: '肚子餓的', icon: '🍽️', power: 0.95, reward: 1, scale: 1, hue: 10, line: '肚子咕嚕咕嚕叫，看到什麼都想吃。' },
+  { id: 'angry', label: '生氣的', icon: '💢', power: 1.15, reward: 1.2, scale: 1.02, hue: -20, line: '氣到冒煙，誰靠近就跟誰吵架！' },
+  { id: 'proud', label: '驕傲的', icon: '👑', power: 1.25, reward: 1.3, scale: 1.05, hue: 30, line: '抬頭挺胸：「本大爺很強的！」' },
+  { id: 'giant', label: '巨大的', icon: '⬆️', power: 1.45, reward: 1.6, scale: 1.18, hue: 0, line: '比平常大了好幾號，影子把大家都蓋住了！' },
+  { id: 'shiny', label: '閃亮的', icon: '✨', power: 1.2, reward: 2, scale: 1, hue: 0, shiny: true, rare: true, line: '全身閃閃發光，好像是很稀有的品種！' },
+];
+const WILD_SERIES = ['daily', 'weather', 'animals', 'friends', 'county', 'holiday', 'date'];
+export const WILD_PER_DAY = 4;
+const BOSS_IDS = Object.keys(ENEMIES).filter((id) => ENEMIES[id].boss);
+const MINION_IDS = Object.keys(ENEMIES).filter((id) => !ENEMIES[id].boss);
+
+function seeded(text) {
+  let h = 2166136261;
+  for (const ch of text) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); }
+  return () => { h += 0x6d2b79f5; let t = h; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; };
+}
+function weekOf(date) { const d = new Date(date); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; }
+
+// 目前最強三人的戰力（不含加成），當作野生小怪的強度基準
+function strength(state) {
+  const powers = Object.keys(state.dex || {}).map((no) => siangPower(state, no)?.power || 0).sort((a, b) => b - a);
+  return Math.max(10, powers.slice(0, TEAM_MAX).reduce((n, p) => n + p, 0));
+}
+
+export function wildEnemy(w) {
+  const base = ENEMIES[w.base]; const trait = WILD_TRAITS.find((t) => t.id === w.trait) || WILD_TRAITS[0];
+  return {
+    key: w.key, wild: true, base: w.base, trait, boss: Boolean(w.boss), stage: w.boss ? '野外 · 流浪 Boss' : '野外', name: `${trait.label}${base.name}`,
+    emoji: base.emoji, art: base.art, power: w.power, minutes: Math.round(base.minutes * (w.boss ? 1 : 0.8)), weak: w.weak, reward: trait.reward * (w.boss ? 1.5 : 1),
+    intro: `${trait.line}${base.intro}`, weakHit: base.weakHit, weakTag: base.weakTag, win: base.win, lose: base.lose, clue: null, story: null,
+  };
+}
+
+// 每天換一批：強度從「很好打」到「要努力」，偶爾有閃亮小怪或流浪 Boss
+export function ensureWild(state, date = todayKey()) {
+  const b = state.battle;
+  if (b.wild?.date === date) return b.wild;
+  const rand = seeded(`wild:${date}`);
+  const pick = (list) => list[Math.floor(rand() * list.length) % list.length];
+  const base = strength(state);
+  const ratios = [0.55, 0.85, 1.05, 1.35];
+  const commons = WILD_TRAITS.filter((t) => !t.rare);
+  const list = ratios.map((ratio, i) => {
+    const wandering = i === WILD_PER_DAY - 1 && rand() < 0.15;
+    const enemy = wandering ? pick(BOSS_IDS) : pick(MINION_IDS);
+    const trait = rand() < 0.12 ? WILD_TRAITS.find((t) => t.shiny) : pick(commons);
+    const weak = [...new Set([pick(WILD_SERIES), ...(rand() < 0.4 ? [pick(WILD_SERIES)] : [])])];
+    const power = Math.max(6, Math.round(base * ratio * (wandering ? 1.15 : 1) * (0.9 + rand() * 0.2)));
+    return { key: `wild:${date}:${i}`, base: enemy, trait: trait.id, boss: wandering, weak, power, defeated: false };
+  });
+  b.wild = { date, list };
+  return b.wild;
+}
+export const weekBest = (state, now = new Date()) => (state.battle?.week === weekOf(now) ? state.battle.weekBest : 0);
