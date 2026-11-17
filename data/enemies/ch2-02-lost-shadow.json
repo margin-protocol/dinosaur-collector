@@ -1,0 +1,29 @@
+{
+  "id": "ch2-02",
+  "enemyId": "lost-shadow",
+  "chapter": 2,
+  "stage": "2-2",
+  "name": "迷路影子",
+  "type": "normal",
+  "image": "assets/enemies/chapter-02/ch2-02-lost-shadow.webp",
+  "weaknesses": [
+    "weather",
+    "county"
+  ],
+  "weakTag": "方向感覺醒！",
+  "personality": "怕生、怕強光、方向感很差的墨紫色影子小人。揹著行囊、提著小燈，手上的地圖老是拿反；看起來神祕，實際上只想有人帶牠回家。",
+  "lines": {
+    "opening": "「請、請問……出口在哪邊？我已經經過這棵樹五次了……」",
+    "countered": "「欸？！你們一下就知道怎麼走？！」地圖被風吹得翻回正面，迷路影子的眼睛亮了起來，「原來我一直拿反了嗎……！」",
+    "enemyVictory": "「原、原來你們也迷路了？太好了……不是！我的意思是，對不起啦！」",
+    "enemyDefeat": "「我輸了……咦，你們願意帶我出去嗎？我、我會乖乖跟著的！」"
+  },
+  "bossStory": null,
+  "chapterClue": "迷路影子的地圖背面畫著一條被蘑菇堵住的山路，旁邊寫著：「紅色斑點菇，請勿踩踏！」",
+  "metadata": {
+    "version": 1,
+    "status": "art-and-copy-approved",
+    "artSize": "1024x1024 transparent WebP",
+    "note": "普通小怪。js/battle.js 的 win 是玩家勝利時敵人的台詞，lose 是玩家敗北時敵人的台詞；Boss 故事欄位為 null。"
+  }
+}
