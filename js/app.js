@@ -2327,7 +2327,7 @@ function showErrandResult(r, replay = false) {
   if (r.story) { $('errand-story-title').textContent = `📖 ${r.story.title}${r.storyFirst ? '（新故事！）' : ''}`; $('errand-story-text').textContent = r.story.text; }
   $('errand-result-gains').replaceChildren(...(r.gains || []).map(g => Object.assign(document.createElement('li'), { textContent: g })));
   $('errand-result-ok').textContent = replay ? '關閉' : '收下';
-  $('errand-result').showModal();
+  $('errand-result').showModal(); $('errand-result').scrollTop = 0;
 }
 async function collectErrand(id) {
   const t = await updateState(current => {
@@ -2745,7 +2745,7 @@ async function collectBattle(id) {
   const storyText = [r.clue && `🔍 線索：${r.clue}`, r.story && `📖 ${r.story}`].filter(Boolean).join('\n\n');
   $('battle-result-story').hidden = !storyText; $('battle-result-story').textContent = storyText;
   $('battle-result-gains').replaceChildren(...r.gains.map(g => Object.assign(document.createElement('li'), { textContent: g })));
-  $('battle-result').showModal(); buzz(rep.win ? [20, 40, 30] : 15);
+  $('battle-result').showModal(); $('battle-result').scrollTop = 0; $('battle-result-ok').blur(); buzz(rep.win ? [20, 40, 30] : 15); // 長戰報從最上面（分數）開始看
   restart($('chip-energy'), 'is-bump');
 }
 $('battle-result-ok').addEventListener('click', () => $('battle-result').close());
