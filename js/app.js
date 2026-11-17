@@ -32,6 +32,7 @@ import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitl
 import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
+import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -2373,3 +2374,69 @@ function openAlbum() {
 }
 $('open-album').addEventListener('click', openAlbum);
 $('close-album').addEventListener('click', () => $('album-dialog').close());
+
+// ── 小恐龍轉盤
+let wheelStake = STAKES[0];
+let wheelTurn = 0; // 累計角度，轉盤不會倒轉回去
+let wheelBusy = false;
+function drawWheel() {
+  const svg = $('wheel'); const n = SEGMENTS.length; const r = 96;
+  const pt = (deg, rad) => { const a = (deg - 90) * Math.PI / 180; return [Math.cos(a) * rad, Math.sin(a) * rad]; };
+  svg.innerHTML = SEGMENTS.map((seg, i) => {
+    const a0 = i * 360 / n; const a1 = (i + 1) * 360 / n; const [x0, y0] = pt(a0, r); const [x1, y1] = pt(a1, r);
+    const mid = (a0 + a1) / 2; const [tx, ty] = pt(mid, r * 0.64);
+    const dark = ['#ffd36b', '#f0b03a', '#7fb0d8'].includes(seg.color);
+    return `<path d="M0 0L${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z" fill="${seg.color}" stroke="#1c1520" stroke-width="1.5"/>`
+      + `<text x="${tx.toFixed(2)}" y="${ty.toFixed(2)}" transform="rotate(${mid} ${tx.toFixed(2)} ${ty.toFixed(2)})" text-anchor="middle" dominant-baseline="central" font-size="${seg.short.length > 2 ? 12 : 15}" font-weight="700" fill="${dark ? '#2a1d10' : '#fff'}">${seg.short}</text>`;
+  }).join('') + `<circle r="${r}" fill="none" stroke="#ffd9a8" stroke-width="3"/>`;
+}
+function renderWheel(resultText) {
+  const left = spinsLeft(state);
+  $('wheel-left').textContent = left ? `今天還可以轉 ${left} 次 · 目前能量 ${state.energy}` : `今天的 ${WHEEL_SPINS} 次都轉完了，明天再來！`;
+  $('wheel-stakes').replaceChildren(...STAKES.map(stake => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'wheel-stake';
+    b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(stake === wheelStake));
+    b.disabled = wheelBusy || !left; b.innerHTML = `押 <b>${stake}</b>`;
+    b.addEventListener('click', () => { wheelStake = stake; renderWheel(); });
+    return b;
+  }));
+  $('wheel-spin').disabled = wheelBusy || !left || state.energy < wheelStake;
+  $('wheel-spin').textContent = !left ? '明天再來' : state.energy < wheelStake ? '能量不夠' : `押 ${wheelStake} 能量，轉！`;
+  if (resultText !== undefined) $('wheel-result').textContent = resultText;
+  const t = state.wheel?.total;
+  $('wheel-total').textContent = t?.spins ? `一共轉了 ${t.spins} 次 · 贏 ${t.won} · 輸 ${t.lost}${t.jackpots ? ` · 大獎 ${t.jackpots} 次` : ''}` : '';
+}
+function openWheel() {
+  if (!$('wheel').childElementCount) drawWheel();
+  renderWheel('');
+  if (!$('wheel-dialog').open) { $('wheel-dialog').showModal(); syncRoomActivity(); }
+}
+$('wheel-spin').addEventListener('click', async () => {
+  if (wheelBusy) return;
+  wheelBusy = true;
+  const stake = wheelStake;
+  const t = await updateState(current => { const r = spinWheel(current, stake); return typeof r === 'string' ? { error: r } : r; });
+  state = t.state;
+  if (t.result.error) { wheelBusy = false; renderWheel(t.result.error); return; }
+  const { index, payout, fossils, net } = t.result; const seg = SEGMENTS[index];
+  renderWheel('轉呀轉……');
+  const center = (index + 0.5) * 360 / SEGMENTS.length;
+  const jitter = (Math.random() - 0.5) * (360 / SEGMENTS.length) * 0.4;
+  wheelTurn += 360 * 5 + ((360 - center - jitter - (wheelTurn % 360)) % 360 + 360) % 360;
+  const wheelEl = $('wheel');
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  wheelEl.style.transition = reduce ? 'none' : 'transform 3.2s cubic-bezier(.17,.67,.21,1)';
+  wheelEl.style.transform = `rotate(${wheelTurn}deg)`;
+  buzz(10);
+  await sleep(reduce ? 50 : 3300);
+  wheelBusy = false;
+  const gain = net > 0 ? `+${net}` : net < 0 ? `${net}` : '±0';
+  renderWheel(`${seg.label}！${seg.line}（能量 ${gain}${fossils ? `，化石 +${fossils}` : ''}）`);
+  renderResources(); restart($('chip-energy'), 'is-bump');
+  if (net > 0) buzz(seg.id === 'jackpot' ? [40, 60, 40, 60, 120] : [20, 40, 30]);
+  if (seg.id === 'jackpot') say('大獎！我們發財了！', 'happy', 5000);
+  if (payout === 0) say('沒關係，明天再轉一次！', 'normal', 3500);
+});
+$('open-wheel').addEventListener('click', () => { $('function-center').close(); openWheel(); });
+$('close-wheel').addEventListener('click', () => $('wheel-dialog').close());
+$('wheel-dialog').addEventListener('close', syncRoomActivity);
