@@ -1,0 +1,28 @@
+{
+  "id": "ch1-03",
+  "enemyId": "bento",
+  "chapter": 1,
+  "stage": "1-3",
+  "name": "碎碎念便當盒",
+  "type": "normal",
+  "image": "assets/enemies/chapter-01/ch1-03-nagging-bento.webp",
+  "weaknesses": [
+    "friends"
+  ],
+  "weakTag": "友情分菜術",
+  "personality": "暴躁又愛操心的便當盒怪。打開的盒蓋像帽子，拿木製飯匙當指揮棒；把配菜當成小牙齒一樣念個不停，實際上很在乎大家有沒有好好吃飯。",
+  "lines": {
+    "opening": "停——！青椒還沒吃！紅蘿蔔也不准偷偷撥到旁邊！",
+    "countered": "咦？！你們居然互相分掉不愛吃的菜……這、這不是友情嗎！我才沒有感動！",
+    "enemyVictory": "不准挑食！飯粒剩三顆也不行——全部吃完再走！",
+    "enemyDefeat": "好、好啦！今天就放你們走……但便當盒要記得帶回家喔！"
+  },
+  "bossStory": null,
+  "chapterClue": "便當盒底部壓著一張皺皺的配送單：「焦糖王宮，布丁一百份，街角舊倉庫收。」",
+  "metadata": {
+    "version": 1,
+    "status": "art-and-copy-approved",
+    "artSize": "1024x1024 transparent WebP",
+    "note": "一般敵人，Boss 故事欄位為 null。js/battle.js 的 ENEMIES.bento 是遊戲直接使用的版本；不修改戰力、獎勵或掉落數值。"
+  }
+}

@@ -19,7 +19,11 @@ export const ENEMIES = {
     win: '「嗚哇！還你還你！可是這雙真的好好看嘛！」', lose: '「追不到我吧！你的另一隻襪子我也收下囉！」',
     clue: '牠的戰利品袋裡夾著一張沾著焦糖的便當菜單，背面寫著：「青椒不可以剩下！」' },
   bento: { stage: '1-3', name: '碎碎念便當盒', emoji: '🍱', art: 'chapter-01/ch1-03-nagging-bento', power: 22, minutes: 45, weak: ['friends'],
-    intro: '「青椒不吃就不准走！」', weakHit: '摯友小湘們互相分著吃青椒，便當盒感動得說不出話。', win: '「……好啦，下次少放一點青椒。」', lose: '「便當要吃完才能走喔！」' },
+    intro: '「停——！青椒還沒吃！紅蘿蔔也不准偷偷撥到旁邊！」', weakTag: '友情分菜術',
+    weakHit: '「咦？！你們居然互相分掉不愛吃的菜……這、這不是友情嗎！我才沒有感動！」便當盒眼角冒出小淚光。',
+    win: '「好、好啦！今天就放你們走……但便當盒要記得帶回家喔！」',
+    lose: '「不准挑食！飯粒剩三顆也不行——全部吃完再走！」',
+    clue: '便當盒底部壓著一張皺皺的配送單：「焦糖王宮，布丁一百份，街角舊倉庫收。」' },
   'caramel-king': { stage: '1-B', name: '焦糖大王', emoji: '🍮', art: 'chapter-01/ch1-boss-caramel-king', power: 40, minutes: 90, boss: true, weak: ['daily'],
     intro: '「全世界的布丁都是本王的！」', weakHit: '日常小湘們一起喊「分享才好吃！」，焦糖王冠晃了一下。', win: '「本王……本王只是想有人陪我一起吃布丁……」', lose: '「哈哈哈！布丁王國永垂不朽！」',
     story: { // 皮寶初稿（docs/COMBAT_CHAPTER01_ENEMY_HANDOFF.md）
