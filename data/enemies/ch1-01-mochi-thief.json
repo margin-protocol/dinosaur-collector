@@ -1,0 +1,28 @@
+{
+  "id": "ch1-01",
+  "chapter": 1,
+  "stage": "1-1",
+  "name": "偷吃鬼糰子",
+  "type": "normal",
+  "image": "assets/enemies/chapter-01/ch1-01-mochi-thief.webp",
+  "weaknesses": [
+    "dessert",
+    "daily"
+  ],
+  "personality": "裝無辜、愛偷吃甜點；抱著比自己還大的金湯匙，嘴角總沾著焦糖。",
+  "lines": {
+    "opening": "噓！我只吃一口……真的只有一口！你沒看到吧？",
+    "countered": "咦？！你們連焦糖味都聞得出來！我的偷吃術失效啦！",
+    "enemyVictory": "嘿嘿！這些布丁就先借我保管～下次再來抓我呀！",
+    "enemyDefeat": "嗚……好啦，布丁還你！可是湯匙可以留下嗎？"
+  },
+  "bossStory": null,
+  "chapterClue": "糰子逃跑時掉下的金湯匙，背面竟刻著一枚小小的焦糖王冠。",
+  "metadata": {
+    "version": 1,
+    "status": "art-and-copy-approved",
+    "note": "敵人為普通小怪，Boss 專屬故事欄位為 null；請勿直接將敵人勝負文案與玩家勝負混淆。",
+    "artSize": "1024x1024 transparent WebP",
+    "battleStatus": "awaiting engineering integration"
+  }
+}
