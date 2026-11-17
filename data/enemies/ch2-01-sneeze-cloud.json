@@ -23,5 +23,6 @@
     "status": "approved",
     "artSize": "1024x1024 transparent WebP",
     "note": "2-1 為普通小怪，Boss 故事留空；遊戲實際文字已同步到 js/battle.js。"
-  }
+  },
+  "chapterClue": "噴嚏烏雲打完最後一個噴嚏，吹落一張濕濕的尋人啟事：「找出口中，看到請往有燈的方向喊我。——影子」"
 }
