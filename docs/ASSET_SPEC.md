@@ -174,8 +174,8 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 | 程式 id | 關卡 | 名字 | 圖片路徑 |
 |---|---|---|---|
 | `mochi` | 1-1 | 偷吃鬼糰子 | `chapter-01/ch1-01-mochi-thief.webp` ✅ 已交付 |
-| `sock` ✅ 已交付 | 1-2 | 襪子遊俠 | `chapter-01/ch1-02-sock-ranger.webp` |
-| `bento` ✅ 已交付 | 1-3 | 碎碎念便當盒 | `chapter-01/ch1-03-nagging-bento.webp` |
+| `sock` | 1-2 | 襪子遊俠 | `chapter-01/ch1-02-sock-ranger.webp` ✅ 已交付 |
+| `bento` | 1-3 | 碎碎念便當盒 | `chapter-01/ch1-03-nagging-bento.webp` ✅ 已交付 |
 | `caramel-king` | 1-B | 焦糖大王（Boss） | `chapter-01/ch1-boss-caramel-king.webp` |
 | `sneeze-cloud` | 2-1 | 噴嚏烏雲 | `chapter-02/ch2-01-sneeze-cloud.webp` |
 | `lost-shadow` | 2-2 | 迷路影子 | `chapter-02/ch2-02-lost-shadow.webp` |
