@@ -9,7 +9,7 @@ async function colorFile(page,id){const value=await page.evaluate(async id=>{con
 (async()=>{
  const browser=await chromium.launch(launch);
  for(const width of [360,390,430]){
-  const context=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
+  const context=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}); await context.addInitScript(()=>{globalThis.SIANG_CLASSIC_WISHES=true;});
   const page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
   await page.goto('http://127.0.0.1:8000');await page.locator('#intro-ok').click();await page.locator('#intro').waitFor({state:'hidden'});await page.locator('#home-wishes').click();
   assert.equal(await page.locator('#wish-portrait').getAttribute('data-presenter'),'egg');
@@ -67,7 +67,7 @@ async function colorFile(page,id){const value=await page.evaluate(async id=>{con
   await context.close();
  }
  // 固定在台灣時區，跨日判定才不會受執行環境的時區影響
- const midnightContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',timezoneId:'Asia/Taipei'});
+ const midnightContext=await browser.newContext({viewport:{width:390,height:844},reducedMotion:'reduce',timezoneId:'Asia/Taipei'}); await midnightContext.addInitScript(()=>{globalThis.SIANG_CLASSIC_WISHES=true;});
  const midnight=await midnightContext.newPage();await midnight.clock.install({time:new Date('2026-11-16T23:59:00+08:00')});
  await midnight.goto('http://127.0.0.1:8000');await midnight.locator('#intro-ok').click();await midnight.locator('#home-wishes').click();
  const staleId=await midnight.locator('.mission:not([hidden])').getAttribute('data-wish');const staleFile=await colorFile(midnight,staleId);

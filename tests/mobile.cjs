@@ -4,7 +4,7 @@ const assert=require('node:assert/strict');
  for(const [engine,type] of Object.entries(process.env.CHROMIUM_ONLY ? {chromium} : {chromium,webkit})) {
  const browser=await type.launch({headless:true,...(engine==='chromium'?{...(process.env.CHROMIUM_PATH ? {executablePath:process.env.CHROMIUM_PATH} : {}),args:['--no-sandbox']}: {})});
  for(const width of [360,390,430]) {
- const context=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:'reduce'});
+ const context=await browser.newContext({viewport:{width,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true,reducedMotion:'reduce'}); await context.addInitScript(()=>{globalThis.SIANG_CLASSIC_WISHES=true;});
  const page=await context.newPage(); const errors=[]; page.on('pageerror',e=>errors.push(e.message));
  await page.goto('http://127.0.0.1:8000'); await page.locator('#intro-ok').click();
  await page.waitForFunction(()=>Array.from(document.images).every(i=>i.complete));

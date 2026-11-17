@@ -7,7 +7,7 @@ const KEY = 'siang-collector:v1';
   const browser = await chromium.launch({ headless: true, executablePath: process.env.CHROMIUM_PATH, args: ['--no-sandbox'] });
   fs.mkdirSync('docs/review/tutorial', { recursive: true });
   for (const width of [360, 390, 430]) {
-    const ctx = await browser.newContext({ viewport: { width, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+    const ctx = await browser.newContext({ viewport: { width, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' }); await ctx.addInitScript(()=>{globalThis.SIANG_CLASSIC_WISHES=true;});
     const page = await ctx.newPage(); const errors = []; page.on('pageerror', e => errors.push(e.message));
     const read = () => page.evaluate(k => JSON.parse(localStorage.getItem(k)), KEY);
     const resume = async () => {

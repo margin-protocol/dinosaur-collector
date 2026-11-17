@@ -1,4 +1,5 @@
 import test from 'node:test';
+globalThis.SIANG_CLASSIC_WISHES = true;
 import assert from 'node:assert/strict';
 import { hydrateProgression, completeDaily, playerLevel, growthGoals, goalProgress, claimGrowth, ensureDaily, reconcileGrowthEnergy } from '../js/progression.js';
 import { todayKey, wishesFor } from '../js/wishes.js';
@@ -7,7 +8,7 @@ test('migration preserves legacy resources, collection and paid daily wishes wit
   const id = wishesFor(todayKey())[0].id;
   const legacy = { seenIntro: true, egg: { id: 'ordinary', warmth: 80, since: '2026-11-01' }, energy: 71, fossils: 6, hatched: 3, dex: { '001': { at: '2026-11-01' } }, wishes: { date: todayKey(), done: [id], stage: 'young' } };
   const migrated = hydrateProgression(structuredClone(legacy));
-  for (const key of Object.keys(legacy)) assert.deepEqual(migrated[key], legacy[key]);
+  for (const key of Object.keys(legacy)) { if (key === 'wishes') { const { ids, base, ...rest } = migrated.wishes; assert.deepEqual(rest, legacy.wishes); assert.equal(ids.length, 3); } else assert.deepEqual(migrated[key], legacy[key]); }
   assert.equal(migrated.player.xp, 0);
   assert.equal(completeDaily(migrated, todayKey(), id).awarded, false);
   assert.equal(migrated.energy, 71);

@@ -7,6 +7,10 @@ export function selectedPresenter(state) {
   return owned[0] || null;
 }
 export function presenterCopy(wish, date, stage, id) {
+  if (wish.kind && wish.kind !== 'color') {
+    const base = wishCopy({ ...wish, id: 'red', color: '' }, date, stage);
+    return { name: wish.name, line: wish.line, hint: wish.hint, speaker: id ? CHARACTERS[id].name : base.speaker };
+  }
   const copy = wishCopy(wish, date, stage);
   if (!id) return copy;
   copy.speaker = CHARACTERS[id].name;

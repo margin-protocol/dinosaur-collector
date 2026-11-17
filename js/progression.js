@@ -1,4 +1,4 @@
-import { todayKey, wishesFor, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';
+import { todayKey, wishesFor, legacyWishesFor, wishById, actProgress, QUIZZES, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';
 import { ensureWishEgg, stampDay } from './wish-egg.js';
 import { ensureTravel } from './travel.js';
 import { ensureWeather } from './weather.js';
@@ -21,17 +21,30 @@ const unique = values => [...new Set(Array.isArray(values) ? values.filter(v => 
 export const playerLevel = state => Math.floor(count(state.player?.xp) / XP_PER_LEVEL) + 1;
 export const rankTitle = level => ['初見研究者', '新芽研究者', '同行研究者', '尋光研究者'][level - 1] || '星願研究者';
 
+const dayBase = state => ({ pets: count(state.bonus?.total?.pets), greets: count(state.bonus?.total?.greets), explores: count(state.bonus?.total?.explores), departed: count(state.errands?.departed) });
 export function ensureDaily(state, date = todayKey()) {
-  if (!state.wishes || state.wishes.date !== date) state.wishes = { date, done: [], stage: state.dex['001'] ? 'young' : 'egg' };
+  if (!state.wishes || state.wishes.date !== date) {
+    const ids = wishesFor(date).map(w => w.id);
+    // 還沒有小湘的話，摸摸頭、打招呼、出門做不到，換成小恐龍的問題
+    if (!Object.keys(state.dex || {}).length && /^act:(pet|greet|errand)$/.test(ids[1])) ids[1] = `quiz:${Number(date.replaceAll('-', '')) % QUIZZES.length}`;
+    state.wishes = { date, done: [], stage: state.dex['001'] ? 'young' : 'egg', ids, base: dayBase(state) };
+  }
   if (!state.wishes.stage) state.wishes.stage = state.dex['001'] ? 'young' : 'egg';
-  const valid = wishesFor(date).map(w => w.id);
+  // 改版當天已經開始的一天：沿用原本的三個顏色願望，不會中途換掉
+  if (!Array.isArray(state.wishes.ids) || state.wishes.ids.length !== WISHES_PER_DAY || !state.wishes.ids.every(id => wishById(id))) state.wishes.ids = legacyWishesFor(date).map(w => w.id);
+  if (!state.wishes.base || typeof state.wishes.base !== 'object') state.wishes.base = dayBase(state);
+  const valid = state.wishes.ids;
   state.wishes.done = unique(state.wishes.done).filter(id => valid.includes(id));
+}
+export function todaysWishList(state) {
+  ensureDaily(state);
+  return state.wishes.ids.map(wishById);
 }
 
 // Old progress is preserved. Only verifiable current-day completions seed counters;
 // previously paid wishes receive neither energy nor retroactive XP on migration.
 export function hydrateProgression(state) {
-  const oldDone = state.wishes?.date === todayKey() ? unique(state.wishes.done).filter(id => wishesFor(todayKey()).some(w => w.id === id)) : [];
+  const oldDone = state.wishes?.date === todayKey() ? unique(state.wishes.done).filter(id => WISH_POOL.some(w => w.id === id)) : [];
   const old = state.player;
   if (!old || old.version !== 1) {
     state.player = { version: 1, xp: 0, claimed: [], energyClaimed: [], stats: { wishes: oldDone.length, fed: Math.max(count(state.egg?.warmth), state.hatched > 0 ? 10 : 0), colors: oldDone, days: oldDone.length ? [todayKey()] : [] } };
@@ -59,13 +72,16 @@ export function hydrateProgression(state) {
 }
 export function completeDaily(state, date, id) {
   ensureDaily(state);
-  if (date !== todayKey() || !wishesFor(date).some(w => w.id === id) || state.wishes.done.includes(id)) return { awarded: false };
+  const wish = date === todayKey() && state.wishes.ids.includes(id) ? wishById(id) : null;
+  if (!wish || state.wishes.done.includes(id)) return { awarded: false };
+  if (wish.kind === 'act' && !actProgress(wish, state)?.ready) return { awarded: false };
   const levelBefore = playerLevel(state);
   state.wishes.done.push(id);
   state.energy += WISH_REWARD;
   state.player.xp += DAILY_XP;
   state.player.stats.wishes += 1;
-  state.player.stats.colors = unique([...state.player.stats.colors, id]);
+  if (wish.kind === 'color') state.player.stats.colors = unique([...state.player.stats.colors, id]);
+  if (wish.kind === 'duo') state.player.stats.colors = unique([...state.player.stats.colors, ...wish.colors]);
   state.player.stats.days = unique([...state.player.stats.days, date]);
   const stamp = state.wishes.done.length >= WISHES_PER_DAY ? stampDay(state, date) : null;
   return { awarded: true, levelBefore, stamp };

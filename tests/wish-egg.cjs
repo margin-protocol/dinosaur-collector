@@ -1,6 +1,6 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
-const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'}); await c.addInitScript(()=>{globalThis.SIANG_CLASSIC_WISHES=true;});const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 const key='siang-collector:v1';
 await p.goto('http://127.0.0.1:8000');await p.locator('#intro-ok').click();
 // module-level test of stamp logic via import in page

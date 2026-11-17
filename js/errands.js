@@ -89,6 +89,7 @@ export function ensureErrands(state) {
     cards: old.cards && typeof old.cards === 'object' ? old.cards : {},
     countyWeek: str(old.countyWeek) ? old.countyWeek : '',
     total: Number.isSafeInteger(old.total) ? old.total : 0,
+    departed: Number.isSafeInteger(old.departed) ? old.departed : 0,
   };
   return state.errands;
 }
@@ -140,6 +141,7 @@ export function depart(state, { place, task, nos }, now = new Date(), rand = Mat
 
   const errand = { id: `${now.getTime().toString(36)}-${nos.join('')}`, ...(spot ? { place } : { task }), nos, start: now.toISOString(), until: new Date(now.getTime() + hours * HOUR).toISOString(), loot };
   er.active.push(errand);
+  er.departed += 1;
   return errand;
 }
 

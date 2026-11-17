@@ -25,10 +25,10 @@ import { applyReward, validReward, describeReward } from './gifts.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
-import { WISH_REWARD, PASS_RATIO, WISH_POOL, wishesFor, todayKey, analyzePhoto } from './wishes.js';
+import { WISH_REWARD, PASS_RATIO, WISH_POOL, todayKey, analyzePhoto, photoStats, judge, actProgress, quizReply, isPhotoWish } from './wishes.js';
 import { createMissions } from './missions.js';
 import { createResearch } from './research.js';
-import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward } from './progression.js';
+import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward, todaysWishList } from './progression.js';
 import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
@@ -76,7 +76,7 @@ eggButton.type = 'button';
 eggButton.className = 'egg-hit';
 incubator.el.append(eggButton);
 
-const wishBook = createMissions({ book: $('book'), steps: $('book-gems'), onShoot: (wish, file) => onPhoto(wish, file), onSelect: renderWishCompanion });
+const wishBook = createMissions({ book: $('book'), steps: $('book-gems'), onShoot: (wish, file) => onPhoto(wish, file), onClaim: (wish, choice) => onClaimWish(wish, choice), onSelect: renderWishCompanion });
 let viewedChapter = null;
 let wishTab = 'daily';
 let claimBusy = false;
@@ -126,7 +126,7 @@ function syncRoomActivity() {
 function todaysWishes() {
   ensureDaily(state);
   const id = selectedPresenter(state);
-  return wishesFor(state.wishes.date).map(w => ({ ...w, date: state.wishes.date, done: state.wishes.done.includes(w.id), copy: presenterCopy(w, state.wishes.date, state.wishes.stage, id) }));
+  return todaysWishList(state).map(w => ({ ...w, date: state.wishes.date, done: state.wishes.done.includes(w.id), progress: actProgress(w, state), copy: presenterCopy(w, state.wishes.date, state.wishes.stage, id) }));
 }
 
 /* ---------- 畫面 ---------- */
@@ -961,24 +961,22 @@ async function onPhoto(wish, file) {
 
 async function processPhoto(wish, file, photoDate) {
   renderWishes({ scanning: wish.id });
-  let ratio;
+  let verdict;
   try {
-    [ratio] = await Promise.all([analyzePhoto(file, wish, $('photo-thumb')), sleep(700)]);
+    const [stats] = await Promise.all([photoStats(file, $('photo-thumb')), sleep(700)]);
+    verdict = judge(wish, stats, new Date());
   } catch {
     renderWishes();
     toast('這張照片讀不出來，再拍一次試試。');
     return;
   }
-  const pct = Math.round(ratio * 100);
-  const need = Math.round(PASS_RATIO * 100);
-
-  if (ratio < PASS_RATIO) {
+  if (!verdict.pass) {
     renderWishes();
-    $('photo-fill').style.width = `${Math.min(100, pct)}%`;
+    $('photo-fill').style.width = `${Math.min(100, Math.round((verdict.pct / Math.max(1, verdict.need)) * 100))}%`;
     $('photo-fill').style.background = wish.swatch;
-    $('photo-title').textContent = '顏色不夠多';
-    $('photo-text').textContent = `${wish.color}只佔畫面的 ${pct}%，需要 ${need}%。靠近一點，讓它填滿畫面再拍一次。`;
-    $('photo-ok').textContent = '再試一次';
+    $('photo-title').textContent = verdict.title;
+    $('photo-text').textContent = verdict.text;
+    $('photo-ok').textContent = verdict.early ? '知道了' : '再試一次';
     $('photo').showModal();
     buzz(8);
     return;
@@ -989,6 +987,12 @@ async function processPhoto(wish, file, photoDate) {
   const photo = await freshPhoto(file);
   if (photo.duplicate) { renderWishes(); toast('這張照片今天已經用過了喔，換一張新的吧～'); return; }
   const transaction = await updateState(current => { const r = completeDaily(current, photoDate, wish.id); if (r.awarded && photo.hash) rememberPhoto(current, photo.hash, todayKey()); return r; });
+  if (transaction.result.awarded && wish.kind === 'theme') saveAlbumPhoto(wish, photoDate);
+  await celebrateWish(wish, transaction);
+}
+
+// 願望達成的演出（拍照、陪伴、小恐龍的問題共用）
+async function celebrateWish(wish, transaction, extra = '') {
   state = transaction.state;
   if (!transaction.result.awarded) { renderAll(); return; }
   renderHome();
@@ -999,7 +1003,7 @@ async function processPhoto(wish, file, photoDate) {
   await sleep(950);
   const gem = $('book-gems').querySelector('[aria-pressed="true"] .progress-gem');
   pageSparks(gem);
-  toast(`願望達成 · +${WISH_REWARD} 能量 · +${DAILY_XP} XP`);
+  toast(`${extra ? `${extra} · ` : ''}願望達成 · +${WISH_REWARD} 能量 · +${DAILY_XP} XP`);
   announceLevel(transaction.result);
   await sleep(450);
   if (gem) await flyOrbToChip(gem);
@@ -2328,3 +2332,44 @@ async function showWhatsNew(tries = 0) {
   $('whats-new').addEventListener('cancel', () => markSeen(list), { once: true });
 }
 setTimeout(() => void showWhatsNew(), 1500);
+
+// ── 不用拍照的願望（陪伴、小恐龍的問題）
+let claimWishBusy = false;
+async function onClaimWish(wish, choice) {
+  if (claimWishBusy || wish.date !== todayKey()) return;
+  claimWishBusy = true;
+  try {
+    const transaction = await updateState(current => completeDaily(current, wish.date, wish.id));
+    if (!transaction.result.awarded) { state = transaction.state; renderAll(); if (wish.kind === 'act') toast('還沒完成喔，再加油一下！'); return; }
+    const reply = wish.kind === 'quiz' ? quizReply(wish, choice) : '';
+    if (reply) say(reply, 'happy', 5000);
+    await celebrateWish(wish, transaction, reply ? `小恐龍：「${reply}」` : '');
+  } finally { claimWishBusy = false; state = loadState(); renderAll(); }
+}
+
+// ── 每日相簿：主題照片的小縮圖，只存在這支手機
+const ALBUM_KEY = 'siang-collector:daily-album:v1';
+const ALBUM_MAX = 60;
+function loadAlbum() { try { const list = JSON.parse(localStorage.getItem(ALBUM_KEY) || '[]'); return Array.isArray(list) ? list : []; } catch { return []; } }
+function saveAlbumPhoto(wish, date) {
+  try {
+    const src = $('photo-thumb'); const c = document.createElement('canvas'); c.width = c.height = 200;
+    c.getContext('2d').drawImage(src, 0, 0, 200, 200);
+    const list = loadAlbum().filter(e => !(e.date === date && e.id === wish.id));
+    list.unshift({ id: wish.id, date, title: wish.hint, img: c.toDataURL('image/jpeg', 0.72) });
+    localStorage.setItem(ALBUM_KEY, JSON.stringify(list.slice(0, ALBUM_MAX)));
+  } catch { /* 空間不夠就算了，不影響願望 */ }
+}
+function openAlbum() {
+  const list = loadAlbum();
+  $('album-grid').replaceChildren(...(list.length ? list.map(e => {
+    const fig = document.createElement('figure'); fig.className = 'album-item';
+    const img = document.createElement('img'); img.src = e.img; img.alt = e.title;
+    const cap = document.createElement('figcaption'); cap.innerHTML = `<b></b><small></small>`;
+    cap.querySelector('b').textContent = e.title.replace(/^拍/, ''); cap.querySelector('small').textContent = e.date.slice(5).replace('-', '/');
+    fig.append(img, cap); return fig;
+  }) : [Object.assign(document.createElement('p'), { className: 'residents-intro', textContent: '完成每天的主題拍照，照片就會收進這裡。' })]));
+  $('album-dialog').showModal();
+}
+$('open-album').addEventListener('click', openAlbum);
+$('close-album').addEventListener('click', () => $('album-dialog').close());

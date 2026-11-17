@@ -35,15 +35,173 @@ function seeded(seedText) {
   };
 }
 
-export function wishesFor(dateKey) {
+// 改版前的抽法（全部是單色）。改版當天已經開始的願望沿用這個，不會中途換掉。
+export function legacyWishesFor(dateKey) {
   const rand = seeded(dateKey);
   const pool = [...WISH_POOL];
   for (let i = pool.length - 1; i > 0; i -= 1) {
     const j = Math.floor(rand() * (i + 1));
     [pool[i], pool[j]] = [pool[j], pool[i]];
   }
-  return pool.slice(0, WISHES_PER_DAY);
+  return pool.slice(0, WISHES_PER_DAY).map((w) => ({ ...w, kind: 'color' }));
 }
+
+// ── 每日三個願望：一個顏色類、一個不用拍照的、一個主題拍照
+const byId = (id) => WISH_POOL.find((w) => w.id === id);
+const VARIANTS = [ // 顏色類的變化與出現權重
+  ['color', 45], ['duo', 20], ['rainbow', 10], ['bright', 8], ['dark', 7], ['morning', 5], ['night', 5],
+];
+const DUOS = [['red', 'green'], ['yellow', 'blue'], ['pink', 'green'], ['blue', 'white'], ['red', 'white'], ['yellow', 'pink'], ['green', 'blue'], ['red', 'yellow']];
+
+export const THEMES = [
+  '拍一個圓形的東西', '拍今天吃的一樣東西', '拍一個讓你笑出來的東西', '拍一個有字的東西', '拍你的鞋子',
+  '拍一個毛茸茸的東西', '拍窗外的風景', '拍一個很小很小的東西', '拍一個有很多個的東西', '拍一個亮晶晶的東西',
+  '拍你今天的飲料', '拍一個方形的東西', '拍一個你每天都會用的東西', '拍一片葉子或一朵花', '拍一個影子',
+  '拍天花板', '拍一個像臉的東西', '拍你現在坐的地方', '拍一個有條紋的東西', '拍一個軟軟的東西',
+  '拍一個有點舊的東西', '拍一個你想送給湘的東西', '拍一個門或一扇窗', '拍一個有數字的東西', '拍一個會發光的東西',
+  '拍地板上的花紋', '拍一個你覺得可愛的東西', '拍一個有圖案的杯子或碗', '拍一個交通工具', '拍一個招牌',
+  '拍今天的天空', '拍一個透明的東西', '拍一個有洞的東西', '拍你包包裡的一樣東西', '拍一個像小湘的東西',
+  '拍一個有愛心形狀的東西', '拍一個堆起來的東西', '拍一個有雲的地方', '拍一個在轉的或會動的東西', '拍一個讓你覺得放鬆的地方',
+];
+
+export const QUIZZES = [
+  ['布丁還是蛋糕？', '布丁', '蛋糕', '布丁！我也是布丁派！', '蛋糕也好好吃，下次分我一口。'],
+  ['下雨天要待在家還是出門踩水？', '待在家', '出門踩水', '那我們一起窩著，我幫你顧蛋。', '踩水！我要穿雨鞋！'],
+  ['早上醒來先做什麼？', '滑手機', '賴床', '我也會先看看蛋有沒有動靜。', '再五分鐘……我也要。'],
+  ['如果可以養一隻動物？', '貓', '狗', '貓咪會不會想吃恐龍蛋……', '狗狗可以陪我們散步！'],
+  ['夏天還是冬天？', '夏天', '冬天', '夏天的冰最好吃了。', '冬天可以一起抱著蛋取暖。'],
+  ['火鍋要吃什麼鍋？', '麻辣', '昆布', '辣辣的！我會吐火！', '清清淡淡的也很好喝。'],
+  ['假日想去海邊還是山上？', '海邊', '山上', '我想撿貝殼！', '山上的空氣涼涼的。'],
+  ['珍奶要大珠還是小珠？', '大珠', '小珠', 'Q 彈！嚼嚼嚼。', '小小的一口一顆。'],
+  ['想要超能力的話？', '瞬間移動', '讀心術', '這樣就可以一下子到湘身邊了。', '那你猜猜我現在在想什麼？'],
+  ['睡覺要抱什麼？', '枕頭', '布偶', '軟軟的枕頭最好。', '布偶！可以抱我嗎？'],
+  ['甜的還是鹹的？', '甜的', '鹹的', '甜甜的人生！', '鹹酥雞也算吧？'],
+  ['看電影要看什麼？', '動畫', '恐怖片', '我喜歡會唱歌的那種。', '我、我才不怕……可以牽手嗎？'],
+  ['今天的心情像什麼天氣？', '晴天', '陰天', '太好了！一起曬太陽。', '沒關係，我陪你等放晴。'],
+  ['如果有一天假，要做什麼？', '睡一整天', '出去玩', '睡飽飽也是很重要的事。', '帶我一起去！'],
+  ['喜歡什麼顏色的恐龍？', '綠色', '粉紅色', '就是我！嘿嘿。', '粉紅色的恐龍好像也很可愛……'],
+];
+
+const ACTS = {
+  pet: { name: '摸摸頭時間', line: '小湘說她今天想被摸摸頭。', hint: '在首頁幫小湘摸摸頭 3 次（手指在小湘身上來回滑）', metric: 'pets', need: 3, swatch: '#f0a8c0', label: '陪伴' },
+  greet: { name: '說聲早安', line: '去跟大家打個招呼吧！', hint: '在首頁點小湘打招呼 2 次', metric: 'greets', need: 2, swatch: '#f0c47a', label: '陪伴' },
+  errand: { name: '幫忙跑腿', line: '冰箱好像空空的……誰可以出門一下？', hint: '派一位小湘出門（首頁「出門」）', metric: 'departed', need: 1, swatch: '#8fc6a8', label: '出門' },
+  explore: { name: '聽聽附近', line: '附近好像有小湘的聲音，要不要去聽聽看？', hint: '在首頁按一次「探索附近」', metric: 'explores', need: 1, swatch: '#8fb6e0', label: '探索' },
+};
+
+const KIND_INFO = {
+  duo: (a, b) => ({ swatch: a.swatch, label: `${a.color.slice(0, 1)}＋${b.color.slice(0, 1)}`, name: `${a.color.replace(/或.*/, '')}遇見${b.color.replace(/或.*/, '')}`, line: `想看一張同時有${a.color}和${b.color}的照片！`, hint: `拍一張同時有${a.color}和${b.color}的照片`, condition: '兩種顏色各占畫面 12% 以上' }),
+  rainbow: () => ({ swatch: '#e07ac0', label: '彩虹', name: '彩虹收集', line: '想看好多好多顏色擠在一起！', hint: '拍一張有很多顏色的照片', condition: '至少 3 種顏色、各占 6% 以上' }),
+  bright: () => ({ swatch: '#fff1b8', label: '明亮', name: '亮晶晶的地方', line: '想看很亮很亮的地方，像太陽一樣。', hint: '拍一個很明亮的畫面（陽光、白天的窗邊、燈）', condition: '明亮的部分占畫面 50% 以上' }),
+  dark: () => ({ swatch: '#3b3352', label: '暗暗的', name: '夜色收藏', line: '想看暗暗的、安安靜靜的地方。', hint: '拍一個暗暗的畫面（夜晚、關燈的房間）', condition: '暗的部分占畫面 55% 以上' }),
+  morning: () => ({ swatch: '#bfe3f2', label: '早晨', name: '早晨的天空', line: '早上的天空是什麼顏色呢？', hint: '早上 5 點到 11 點之間，拍一張天空或窗外', condition: '限早上 5:00–10:59 · 明亮部分占 40% 以上', window: [5, 11] }),
+  night: () => ({ swatch: '#2c2a4a', label: '夜晚', name: '夜裡的一盞燈', line: '晚上的燈，看起來特別溫暖。', hint: '晚上 7 點以後，拍一盞亮著的燈或夜景', condition: '限晚上 19:00–04:59 · 畫面要暗、但有亮光', window: [19, 5] }),
+};
+
+// 由 id 還原願望（id 裡帶著參數，存檔只要存 id）
+export function wishById(id) {
+  if (typeof id !== 'string') return null;
+  const color = byId(id);
+  if (color) return { ...color, kind: 'color' };
+  const [kind, a, b] = id.split(':');
+  if (kind === 'duo' && byId(a) && byId(b)) return { id, kind, colors: [a, b], ...KIND_INFO.duo(byId(a), byId(b)) };
+  if (['rainbow', 'bright', 'dark', 'morning', 'night'].includes(kind) && !a) return { id, kind, ...KIND_INFO[kind]() };
+  if (kind === 'theme' && THEMES[Number(a)]) {
+    const text = THEMES[Number(a)];
+    return { id, kind, swatch: '#c9a7e8', label: '主題', name: text.replace(/^拍/, ''), line: `今天的題目：${text}！`, hint: text, condition: '拍了就算 · 照片會存進每日相簿' };
+  }
+  if (kind === 'act' && ACTS[a]) return { id, kind, act: a, ...ACTS[a], condition: `進度會自動記錄，完成後按「收下」` };
+  if (kind === 'quiz' && QUIZZES[Number(a)]) {
+    const [q, x, y] = QUIZZES[Number(a)];
+    return { id, kind, swatch: '#9bd3a8', label: '小恐龍', name: '小恐龍想問你', line: q, hint: `${x}，還是${y}？`, condition: '選一個回答就算', options: [x, y] };
+  }
+  return null;
+}
+
+export function wishesFor(dateKey) {
+  if (globalThis.SIANG_CLASSIC_WISHES) return legacyWishesFor(dateKey); // 舊測試用：只抽單色
+  const rand = seeded(`v2:${dateKey}`);
+  const pickW = (list) => { const total = list.reduce((n, [, w]) => n + w, 0); let r = rand() * total; for (const [k, w] of list) { r -= w; if (r < 0) return k; } return list[0][0]; };
+  const pick = (list) => list[Math.floor(rand() * list.length) % list.length];
+  const variant = pickW(VARIANTS);
+  let first;
+  if (variant === 'color') first = pick(WISH_POOL).id;
+  else if (variant === 'duo') first = `duo:${pick(DUOS).join(':')}`;
+  else first = variant;
+  const second = rand() < 0.3 ? `quiz:${Math.floor(rand() * QUIZZES.length)}` : `act:${pick(Object.keys(ACTS))}`;
+  // 主題按日期輪替，40 天內不重複
+  const [y, m, d] = dateKey.split('-').map(Number);
+  const day = Math.floor(Date.UTC(y, m - 1, d) / 86400000);
+  const third = `theme:${(day * 17) % THEMES.length}`;
+  return [first, second, third].map(wishById);
+}
+
+export const isPhotoWish = (w) => !['act', 'quiz'].includes(w?.kind);
+
+// 一次算出照片的顏色分布與明暗
+export async function photoStats(file, previewCanvas) {
+  const img = await loadImage(file);
+  const N = 48;
+  const c = document.createElement('canvas'); c.width = N; c.height = N;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.drawImage(img, 0, 0, N, N);
+  const { data } = ctx.getImageData(0, 0, N, N);
+  const colors = Object.fromEntries(WISH_POOL.map((w) => [w.id, 0]));
+  let bright = 0; let dark = 0; let glow = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    const [h, s, v] = toHsv(data[i], data[i + 1], data[i + 2]);
+    for (const w of WISH_POOL) if (w.test(h, s, v)) colors[w.id] += 1;
+    if (v > 0.62) bright += 1;
+    if (v < 0.25) dark += 1;
+    if (v > 0.85) glow += 1;
+  }
+  const n = N * N;
+  if (previewCanvas) {
+    const size = previewCanvas.width; const side = Math.min(img.width, img.height);
+    previewCanvas.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
+  }
+  for (const k of Object.keys(colors)) colors[k] /= n;
+  return { colors, bright: bright / n, dark: dark / n, glow: glow / n };
+}
+
+const inWindow = ([from, to], hour) => (from <= to ? hour >= from && hour < to : hour >= from || hour < to);
+// 判定照片：回傳 { pass, pct, need, title, text }
+export function judge(wish, stats, now = new Date()) {
+  const pct = (x) => Math.round(x * 100);
+  const fail = (title, text, value, need) => ({ pass: false, title, text, pct: pct(value), need: pct(need) });
+  if (wish.window && !inWindow(wish.window, now.getHours())) {
+    return { pass: false, title: '時間不對喔', text: wish.kind === 'morning' ? '這個願望要在早上 5 點到 11 點之間拍。' : '這個願望要在晚上 7 點以後拍。', pct: 0, need: 100, early: true };
+  }
+  switch (wish.kind) {
+    case 'color': { const r = stats.colors[wish.id]; return r >= PASS_RATIO ? { pass: true } : fail('顏色不夠多', `${wish.color}只佔畫面的 ${pct(r)}%，需要 ${pct(PASS_RATIO)}%。靠近一點，讓它填滿畫面再拍一次。`, r, PASS_RATIO); }
+    case 'duo': {
+      const [a, b] = wish.colors; const ra = stats.colors[a]; const rb = stats.colors[b]; const low = Math.min(ra, rb);
+      if (low >= 0.12) return { pass: true };
+      const miss = ra < rb ? byId(a) : byId(b);
+      return fail('還差一種顏色', `${byId(a).color} ${pct(ra)}%、${byId(b).color} ${pct(rb)}%，兩種都要 12% 以上。多一點${miss.color}再拍拍看。`, low, 0.12);
+    }
+    case 'rainbow': {
+      const many = Object.values(stats.colors).filter((r) => r >= 0.06).length;
+      return many >= 3 ? { pass: true } : fail('顏色還不夠多', `這張找到 ${many} 種顏色，要 3 種以上。把不同顏色的東西擺在一起拍拍看！`, many / 3, 1);
+    }
+    case 'bright': return stats.bright >= 0.5 ? { pass: true } : fail('還不夠亮', `明亮的部分佔 ${pct(stats.bright)}%，需要 50%。去窗邊或燈下拍拍看。`, stats.bright, 0.5);
+    case 'dark': return stats.dark >= 0.55 ? { pass: true } : fail('還不夠暗', `暗的部分佔 ${pct(stats.dark)}%，需要 55%。關燈或晚上再拍拍看。`, stats.dark, 0.55);
+    case 'morning': return stats.bright >= 0.4 ? { pass: true } : fail('天空好像還沒亮', `明亮的部分佔 ${pct(stats.bright)}%，需要 40%。對著天空或窗外拍拍看。`, stats.bright, 0.4);
+    case 'night': return stats.dark >= 0.35 && stats.glow >= 0.02 ? { pass: true } : fail('要暗暗的、有一盞燈', `暗的部分 ${pct(stats.dark)}%（要 35%）、亮光 ${pct(stats.glow)}%（要 2%）。`, Math.min(stats.dark / 0.35, stats.glow / 0.02, 1), 1);
+    case 'theme': return { pass: true };
+    default: return { pass: false, title: '這個願望不用拍照', text: '', pct: 0, need: 100 };
+  }
+}
+
+// 不用拍照的願望：今天的進度（以當天開始時的累計數字為基準）
+export function actProgress(wish, state) {
+  if (wish?.kind !== 'act') return null;
+  const total = { ...(state.bonus?.total || {}), departed: state.errands?.departed || 0 };
+  const base = state.wishes?.base || {};
+  const cur = Math.max(0, (total[wish.metric] || 0) - (base[wish.metric] || 0));
+  return { cur: Math.min(cur, wish.need), need: wish.need, ready: cur >= wish.need };
+}
+export const quizReply = (wish, choice) => { const q = QUIZZES[Number(wish.id.split(':')[1])]; return q ? q[choice === 1 ? 4 : 3] : ''; };
 
 function toHsv(r, g, b) {
   const max = Math.max(r, g, b);
