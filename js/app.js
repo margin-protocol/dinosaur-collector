@@ -94,9 +94,12 @@ const PET_LINES = ['好舒服～', '再摸一下嘛！', '嘿嘿，好害羞…�
 const room = createRoom($('resident-lanes'), character => {
   say(character.line, 'happy', 4000);
   room.peek(character.no, no => openDexDetail(no));
-  void updateState(current => greet(current, character.no, todayKey())).then(t => {
+  // 點一下 = 打招呼，也算摸摸頭一次（很多人是用點的，不是用滑的）
+  void updateState(current => ({ greet: greet(current, character.no, todayKey()), pet: pet(current, todayKey()) })).then(t => {
     state = t.state;
-    if (t.result) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`${character.name}很開心！+${t.result} 能量（每位每天一次）`); }
+    const { greet: g, pet: pt } = t.result;
+    if (g) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`${character.name}很開心！+${g + pt} 能量`); }
+    else if (pt) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`摸摸頭 +${pt} 能量（今天還有 ${PET.perDay - state.bonus.pets.count} 次）`); }
     const task = state.dino.task;
     if (task?.type === 'greet' && task.target === character.no) void finishTask();
   });

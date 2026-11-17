@@ -22,7 +22,7 @@ const unique = values => [...new Set(Array.isArray(values) ? values.filter(v => 
 export const playerLevel = state => Math.floor(count(state.player?.xp) / XP_PER_LEVEL) + 1;
 export const rankTitle = level => ['初見研究者', '新芽研究者', '同行研究者', '尋光研究者'][level - 1] || '星願研究者';
 
-const dayBase = state => ({ pets: count(state.bonus?.total?.pets), greets: count(state.bonus?.total?.greets), explores: count(state.bonus?.total?.explores), departed: count(state.errands?.departed) });
+const dayBase = state => ({ pets: count(state.bonus?.total?.pets), greets: count(state.bonus?.total?.greets), taps: count(state.bonus?.total?.taps), explores: count(state.bonus?.total?.explores), departed: count(state.errands?.departed) });
 export function ensureDaily(state, date = todayKey()) {
   if (!state.wishes || state.wishes.date !== date) {
     const ids = wishesFor(date).map(w => w.id);

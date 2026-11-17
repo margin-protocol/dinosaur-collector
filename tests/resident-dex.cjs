@@ -5,9 +5,12 @@ const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTou
 await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');
 await p.evaluate(()=>{const k='siang-collector:v1';const s=JSON.parse(localStorage.getItem(k));s.dex={'001':{at:'2026-11-10T00:00:00Z'},'005':{at:'2026-11-11T00:00:00Z'}};localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:residents:v1',JSON.stringify(['001','005']));});
 await p.reload();await p.waitForTimeout(600);
+const before=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v1')).bonus.total);
 await p.locator('.resident-slot[data-character="005"] .resident-static').click();
+await p.waitForTimeout(300);const after=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v1')).bonus.total);
+assert.equal(after.pets,(before.pets||0)+1,'a tap counts as petting');assert.equal(after.taps,(before.taps||0)+1);
 const btn=p.locator('.resident-dex[data-character="005"]');await btn.waitFor();await p.waitForTimeout(350);
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await btn.click();await p.locator('#dex-detail[open]').waitFor();
 assert.match(await p.textContent('#dex-detail-no'),/005/);
-assert.equal(errs.length,0,errs.join('\n'));console.log('resident tap → 看圖鑑 → dex detail PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
+assert.equal(errs.length,0,errs.join('\n'));console.log('resident tap → counts as petting, 看圖鑑 → dex detail PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

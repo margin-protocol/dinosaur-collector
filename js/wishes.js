@@ -84,8 +84,8 @@ export const QUIZZES = [
 ];
 
 const ACTS = {
-  pet: { name: '摸摸頭時間', line: '小湘說她今天想被摸摸頭。', hint: '在首頁幫小湘摸摸頭 3 次（手指在小湘身上來回滑）', metric: 'pets', need: 3, swatch: '#f0a8c0', label: '陪伴' },
-  greet: { name: '說聲早安', line: '去跟大家打個招呼吧！', hint: '在首頁點小湘打招呼 2 次', metric: 'greets', need: 2, swatch: '#f0c47a', label: '陪伴' },
+  pet: { name: '摸摸頭時間', line: '小湘說她今天想被摸摸頭。', hint: '在首頁摸摸小湘 3 次（點她，或手指在她身上來回滑）', metric: 'pets', need: 3, swatch: '#f0a8c0', label: '陪伴' },
+  greet: { name: '說聲早安', line: '去跟大家打個招呼吧！', hint: '在首頁點小湘打招呼 3 次', metric: 'taps', need: 3, swatch: '#f0c47a', label: '陪伴' },
   errand: { name: '幫忙跑腿', line: '冰箱好像空空的……誰可以出門一下？', hint: '派一位小湘出門（首頁「出門」）', metric: 'departed', need: 1, swatch: '#8fc6a8', label: '出門' },
   explore: { name: '聽聽附近', line: '附近好像有小湘的聲音，要不要去聽聽看？', hint: '在首頁按一次「探索附近」', metric: 'explores', need: 1, swatch: '#8fb6e0', label: '探索' },
 };
@@ -198,7 +198,7 @@ export function judge(wish, stats, now = new Date()) {
 export function actProgress(wish, state) {
   if (wish?.kind !== 'act') return null;
   const total = { ...(state.bonus?.total || {}), departed: state.errands?.departed || 0 };
-  const base = state.wishes?.base || {};
+  const base = { taps: total.taps || 0, ...(state.wishes?.base || {}) };
   const cur = Math.max(0, (total[wish.metric] || 0) - (base[wish.metric] || 0));
   return { cur: Math.min(cur, wish.need), need: wish.need, ready: cur >= wish.need };
 }

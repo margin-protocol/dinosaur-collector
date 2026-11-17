@@ -22,7 +22,7 @@ export function ensureBonus(state) {
     pets: { date: day(old.pets).date, count: Number.isSafeInteger(old.pets?.count) ? old.pets.count : 0 },
     snacks: { date: day(old.snacks).date, count: Number.isSafeInteger(old.snacks?.count) ? old.snacks.count : 0 },
     // 累計次數（成就用，不會每天歸零）
-    total: Object.fromEntries(['pets', 'snacks', 'snaps', 'greets', 'tasks', 'nightHatch', 'explores', 'gifts'].map((k) => [k, Number.isSafeInteger(old.total?.[k]) ? old.total[k] : 0])),
+    total: Object.fromEntries(['pets', 'snacks', 'snaps', 'greets', 'taps', 'tasks', 'nightHatch', 'explores', 'gifts'].map((k) => [k, Number.isSafeInteger(old.total?.[k]) ? old.total[k] : 0])),
     // 今天拍過的照片指紋（只存雜湊，不存照片），用來提醒重複的照片
     photos: { date: day(old.photos).date, hashes: Array.isArray(old.photos?.hashes) ? old.photos.hashes.filter((h) => typeof h === 'string').slice(-40) : [] },
   };
@@ -63,6 +63,7 @@ export function takeSnap(state, today) {
 
 export function greet(state, no, today) {
   const b = ensureBonus(state);
+  b.total.taps = (b.total.taps || 0) + 1; // 每點一次都算（每日願望「打招呼」用）
   if (b.greets.date !== today) b.greets = { date: today, ids: [] };
   if (b.greets.ids.includes(no)) return 0;
   b.greets.ids.push(no); b.total.greets += 1; state.energy += GREET_REWARD; return GREET_REWARD;
