@@ -19,7 +19,7 @@ export function createMissions({ book, steps, onShoot, onClaim = () => {}, onSel
       card.dataset.wish = wish.id; card.hidden = i !== index;
       card.style.setProperty('--mission-color', wish.swatch);
       const heading = node('h2', 'mission-title', wish.copy.name);
-      card.append(node('div', 'mission-number', `WISH 0${i + 1} / 03`), heading, node('p', 'mission-hint', wish.copy.hint), node('p', 'mission-condition', wish.condition || '目標顏色占畫面 25% 以上'));
+      card.append(node('div', 'mission-number', `WISH 0${i + 1} / 03`), heading, node('p', 'mission-hint', wish.copy.hint), node('p', 'mission-condition', wish.condition || '目標顏色占畫面 18% 以上'));
       const rewards = node('div', 'mission-rewards');
       rewards.innerHTML = `<span><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3c1 4 5 6 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9Z"/></svg> +${reward} 能量</span><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 2 2.6 7.4L22 12l-7.4 2.6L12 22l-2.6-7.4L2 12l7.4-2.6Z"/></svg> +${DAILY_XP} XP</span>`;
       if (!wish.done) card.append(rewards);

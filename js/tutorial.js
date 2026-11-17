@@ -32,7 +32,7 @@ export function tutorialStep(state, { needed, giftAvailable, residents = 0, view
   };
   if (!ready && (!(state.player?.stats?.wishes > 0) || state.energy <= 0)) return {
     id: 'wish', number: 3, title: state.player?.stats?.wishes ? '再帶一點溫暖回來' : '陪小湘找找世界的顏色',
-    copy: '今日願望每天三個。拍照或選相簿，讓指定顏色占畫面 25% 以上，每項就能得到 35 能量與 10 XP。照片只在手機辨色。',
+    copy: '今日願望每天三個。拍照或選相簿，讓指定顏色占畫面 18% 以上，每項就能得到 35 能量與 10 XP。照片只在手機辨色。',
     action: view === 'wish' ? '找到拍照探索' : '前往今日願望', view: 'wish', target: '.mission:not([hidden]) .mission-shoot, #snap-label',
   };
   return {

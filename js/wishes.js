@@ -5,17 +5,18 @@ import { WISH_COPY, STAGE_COLUMN, STAGE_SPEAKER } from './wish-copy.js';
 
 export const WISH_REWARD = 35; // 每個願望給的保溫能量
 export const WISHES_PER_DAY = 3;
-export const PASS_RATIO = 0.25; // 目標顏色要佔畫面至少 25%
+export const PASS_RATIO = 0.18; // 目標顏色要佔畫面至少 18%（11/17 玩家回饋：原本 25% 太嚴格）
 
 const inHue = (h, from, to) => (from <= to ? h >= from && h < to : h >= from || h < to);
 
+// 色彩範圍刻意互相重疊一點：偏紅的淡粉紅（像衛生紙包裝）同時算粉紅，也不會漏掉
 export const WISH_POOL = [
-  { id: 'red', color: '紅色', swatch: '#d2203f', line: '想看紅色的東西……', test: (h, s, v) => inHue(h, 340, 15) && s >= 0.4 && v >= 0.25 },
-  { id: 'yellow', color: '黃色或橘色', swatch: '#f0b03a', line: '想看黃色或橘色的東西！', test: (h, s, v) => inHue(h, 20, 70) && s >= 0.35 && v >= 0.35 },
-  { id: 'green', color: '綠色', swatch: '#4fae6a', line: '想看綠綠的東西，植物也可以。', test: (h, s, v) => inHue(h, 70, 170) && s >= 0.25 && v >= 0.2 },
-  { id: 'blue', color: '藍色', swatch: '#3f8fe0', line: '想看藍色，天空也可以。', test: (h, s, v) => inHue(h, 170, 260) && s >= 0.25 && v >= 0.25 },
-  { id: 'pink', color: '粉紅色或紫色', swatch: '#e07ac0', line: '想看粉紅色或紫色的東西～', test: (h, s, v) => inHue(h, 260, 340) && s >= 0.2 && v >= 0.3 },
-  { id: 'white', color: '白色', swatch: '#f4f1ec', line: '想看白白的東西。', test: (h, s, v) => s < 0.14 && v > 0.78 },
+  { id: 'red', color: '紅色', swatch: '#d2203f', line: '想看紅色的東西……', test: (h, s, v) => inHue(h, 335, 18) && s >= 0.35 && v >= 0.2 },
+  { id: 'yellow', color: '黃色或橘色', swatch: '#f0b03a', line: '想看黃色或橘色的東西！', test: (h, s, v) => inHue(h, 18, 72) && s >= 0.25 && v >= 0.3 },
+  { id: 'green', color: '綠色', swatch: '#4fae6a', line: '想看綠綠的東西，植物也可以。', test: (h, s, v) => inHue(h, 70, 175) && s >= 0.18 && v >= 0.15 },
+  { id: 'blue', color: '藍色', swatch: '#3f8fe0', line: '想看藍色，天空也可以。', test: (h, s, v) => inHue(h, 170, 262) && s >= 0.18 && v >= 0.2 },
+  { id: 'pink', color: '粉紅色或紫色', swatch: '#e07ac0', line: '想看粉紅色或紫色的東西～', test: (h, s, v) => (inHue(h, 255, 345) && s >= 0.14 && v >= 0.25) || (inHue(h, 330, 12) && s >= 0.1 && s < 0.6 && v >= 0.5) },
+  { id: 'white', color: '白色', swatch: '#f4f1ec', line: '想看白白的東西。', test: (h, s, v) => s < 0.18 && v > 0.7 },
 ];
 
 export function todayKey(d = new Date()) {
@@ -90,8 +91,8 @@ const ACTS = {
 };
 
 const KIND_INFO = {
-  duo: (a, b) => ({ swatch: a.swatch, label: `${a.color.slice(0, 1)}＋${b.color.slice(0, 1)}`, name: `${a.color.replace(/或.*/, '')}遇見${b.color.replace(/或.*/, '')}`, line: `想看一張同時有${a.color}和${b.color}的照片！`, hint: `拍一張同時有${a.color}和${b.color}的照片`, condition: '兩種顏色各占畫面 12% 以上' }),
-  rainbow: () => ({ swatch: '#e07ac0', label: '彩虹', name: '彩虹收集', line: '想看好多好多顏色擠在一起！', hint: '拍一張有很多顏色的照片', condition: '至少 3 種顏色、各占 6% 以上' }),
+  duo: (a, b) => ({ swatch: a.swatch, label: `${a.color.slice(0, 1)}＋${b.color.slice(0, 1)}`, name: `${a.color.replace(/或.*/, '')}遇見${b.color.replace(/或.*/, '')}`, line: `想看一張同時有${a.color}和${b.color}的照片！`, hint: `拍一張同時有${a.color}和${b.color}的照片`, condition: '兩種顏色各占畫面 8% 以上' }),
+  rainbow: () => ({ swatch: '#e07ac0', label: '彩虹', name: '彩虹收集', line: '想看好多好多顏色擠在一起！', hint: '拍一張有很多顏色的照片', condition: '至少 3 種顏色、各占 5% 以上' }),
   bright: () => ({ swatch: '#fff1b8', label: '明亮', name: '亮晶晶的地方', line: '想看很亮很亮的地方，像太陽一樣。', hint: '拍一個很明亮的畫面（陽光、白天的窗邊、燈）', condition: '明亮的部分占畫面 50% 以上' }),
   dark: () => ({ swatch: '#3b3352', label: '暗暗的', name: '夜色收藏', line: '想看暗暗的、安安靜靜的地方。', hint: '拍一個暗暗的畫面（夜晚、關燈的房間）', condition: '暗的部分占畫面 55% 以上' }),
   morning: () => ({ swatch: '#bfe3f2', label: '早晨', name: '早晨的天空', line: '早上的天空是什麼顏色呢？', hint: '早上 5 點到 11 點之間，拍一張天空或窗外', condition: '限早上 5:00–10:59 · 明亮部分占 40% 以上', window: [5, 11] }),
@@ -176,12 +177,12 @@ export function judge(wish, stats, now = new Date()) {
     case 'color': { const r = stats.colors[wish.id]; return r >= PASS_RATIO ? { pass: true } : fail('顏色不夠多', `${wish.color}只佔畫面的 ${pct(r)}%，需要 ${pct(PASS_RATIO)}%。靠近一點，讓它填滿畫面再拍一次。`, r, PASS_RATIO); }
     case 'duo': {
       const [a, b] = wish.colors; const ra = stats.colors[a]; const rb = stats.colors[b]; const low = Math.min(ra, rb);
-      if (low >= 0.12) return { pass: true };
+      if (low >= 0.08) return { pass: true };
       const miss = ra < rb ? byId(a) : byId(b);
-      return fail('還差一種顏色', `${byId(a).color} ${pct(ra)}%、${byId(b).color} ${pct(rb)}%，兩種都要 12% 以上。多一點${miss.color}再拍拍看。`, low, 0.12);
+      return fail('還差一種顏色', `${byId(a).color} ${pct(ra)}%、${byId(b).color} ${pct(rb)}%，兩種都要 8% 以上。多一點${miss.color}再拍拍看。`, low, 0.08);
     }
     case 'rainbow': {
-      const many = Object.values(stats.colors).filter((r) => r >= 0.06).length;
+      const many = Object.values(stats.colors).filter((r) => r >= 0.05).length;
       return many >= 3 ? { pass: true } : fail('顏色還不夠多', `這張找到 ${many} 種顏色，要 3 種以上。把不同顏色的東西擺在一起拍拍看！`, many / 3, 1);
     }
     case 'bright': return stats.bright >= 0.5 ? { pass: true } : fail('還不夠亮', `明亮的部分佔 ${pct(stats.bright)}%，需要 50%。去窗邊或燈下拍拍看。`, stats.bright, 0.5);
