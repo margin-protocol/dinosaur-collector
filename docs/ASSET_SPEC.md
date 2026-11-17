@@ -163,3 +163,26 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 7. `ordinary` 蛋，之後才是其他蛋種與角色
 
 背景到了以後，工程會把介面改成配合場景的樣子（半透明玻璃面板、配合場景的銀色金屬），並在實機上確認文字可讀性。
+
+## 討伐敵人（2026-11-17）
+
+照皮寶 11/17 的命名放到 `assets/enemies/chapter-0N/<檔名>.webp`，就會自動取代 emoji 佔位，不用改程式。
+
+- 正方形透明背景，建議 1024×1024；全身入鏡、腳踩在畫面下方約 92% 的位置（跟小湘立繪一樣）
+- Q 版可愛，Boss 可以更華麗但不嚇人；每張 ≤ 250KB（WebP）
+
+| 程式 id | 關卡 | 名字 | 圖片路徑 |
+|---|---|---|---|
+| `mochi` | 1-1 | 偷吃鬼糰子 | `chapter-01/ch1-01-mochi-thief.webp` ✅ 已交付 |
+| `sock` | 1-2 | 襪子遊俠 | `chapter-01/ch1-02-sock-ranger.webp` |
+| `bento` | 1-3 | 碎碎念便當盒 | `chapter-01/ch1-03-nagging-bento.webp` |
+| `caramel-king` | 1-B | 焦糖大王（Boss） | `chapter-01/ch1-boss-caramel-king.webp` |
+| `sneeze-cloud` | 2-1 | 噴嚏烏雲 | `chapter-02/ch2-01-sneeze-cloud.webp` |
+| `lost-shadow` | 2-2 | 迷路影子 | `chapter-02/ch2-02-lost-shadow.webp` |
+| `angry-mushroom` | 2-3 | 生氣蘑菇 | `chapter-02/ch2-03-angry-mushroom.webp` |
+| `thunder-king` | 2-B | 雷雷大魔王（Boss） | `chapter-02/ch2-boss-thunder-king.webp` |
+
+檔名不同也沒關係，告訴工程或改 `js/battle.js` 裡該敵人的 `art` 欄位即可。
+
+文字（開場、被剋制反應與小標、勝敗台詞、章節線索、Boss 故事）都在 `js/battle.js` 的 `ENEMIES`，可以直接改。`data/enemies/*.json` 的台詞已同步進去（1-1 偷吃鬼糰子、1-Boss 焦糖大王故事初稿）。
+徽章限定角色（騎士、魔法師、勇者）完成後，在 `BADGE_HEROES` 填上角色編號，勇者小隊連攜就會生效。

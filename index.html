@@ -208,7 +208,10 @@
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8M10 17h4"/></svg><span>成就</span><span class="dot" id="achievement-badge" hidden></span>
     </button>
     <button class="nav__item" type="button" id="open-errands">
-      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21l3-9 4 2 2 7M8 12l1-5 4 1 3 4M13 4.5a1.5 1.5 0 1 0 0-.01"/></svg><span>派小湘出門</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21l3-9 4 2 2 7M8 12l1-5 4 1 3 4M13 4.5a1.5 1.5 0 1 0 0-.01"/></svg><span>出門與討伐</span>
+    </button>
+    <button class="nav__item" type="button" id="open-battle">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg><span>討伐</span>
     </button>
     <button class="nav__item" type="button" id="open-wheel">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg><span>小恐龍轉盤</span>
@@ -262,12 +265,37 @@
 <dialog class="residents-dialog sheet postcard-dialog" id="postcard-dialog" aria-labelledby="postcard-title"><div class="drawer-heading"><div><small>POSTCARD</small><h2 id="postcard-title">寄照片給湘</h2></div><button class="close-button" type="button" id="close-postcard" aria-label="關閉寄照片給湘">×</button></div><p class="residents-intro">想跟湘分享什麼都可以，拍照或從相簿選。寄出的照片會收進記憶檔案，湘回覆後也會出現在那裡。</p><form id="postcard-form" class="cloud-form"><label class="postcard-pick" id="postcard-pick"><img id="postcard-preview" alt="" hidden><span id="postcard-pick-text">選一張照片</span><input type="file" accept="image/*" id="postcard-input" hidden></label><textarea id="postcard-text" rows="3" maxlength="300" placeholder="想說的話（可不填）"></textarea><button class="btn" type="submit" id="postcard-send">寄出</button></form><p class="cloud-status" id="postcard-status" role="status"></p></dialog>
 <dialog class="residents-dialog sheet egg-offer" id="egg-offer" aria-labelledby="egg-offer-title"><small class="county-call__eyebrow">NEW EGG</small><h2 id="egg-offer-title">挑一顆蛋吧</h2><p class="residents-intro">小恐龍找到三顆蛋，摸摸看、聽聽看，選一顆帶回培養架。</p><div class="egg-offer__list" id="egg-offer-list"></div></dialog>
 <dialog class="residents-dialog sheet errand-dialog" id="errand-dialog" aria-labelledby="errand-title"><div class="drawer-heading"><div><small>ERRANDS</small><h2 id="errand-title">派小湘出門</h2></div><button class="close-button" type="button" id="close-errands" aria-label="關閉派小湘出門">×</button></div>
+<div class="errand-tabs" role="tablist"><button type="button" role="tab" id="tab-errand" aria-selected="true">出門</button><button type="button" role="tab" id="tab-battle" aria-selected="false">討伐<i class="letter-badge" id="battle-tab-badge" hidden></i></button></div>
+<div id="errand-pane">
 <div id="errand-active" class="errand-active"></div>
 <h3 class="egg-choices__heading">去哪裡</h3><div id="errand-places" class="errand-places"></div>
 <h3 class="egg-choices__heading">在家幫忙</h3><div id="errand-tasks" class="errand-places"></div>
 <div id="errand-pick" class="errand-pick" hidden><p class="residents-intro" id="errand-pick-hint"></p><div id="errand-siangs" class="errand-siangs"></div><button class="btn" type="button" id="errand-go">出發</button></div>
 <p class="cloud-status" id="errand-status" role="status" aria-live="polite"></p>
-<h3 class="egg-choices__heading">旅行相簿</h3><p class="residents-intro" id="errand-collection"></p><div id="errand-album" class="errand-album"></div></dialog>
+<h3 class="egg-choices__heading">旅行相簿</h3><p class="residents-intro" id="errand-collection"></p><div id="errand-album" class="errand-album"></div></div>
+<div id="battle-pane" hidden>
+<div class="battle-head"><span>🛡️ 徽章 <b id="battle-badges">0</b></span><span id="battle-slots"></span><button class="text-action" type="button" id="open-train">特訓 ⟶</button></div>
+<div id="battle-active" class="errand-active"></div>
+<div id="battle-map"></div>
+<section id="battle-stage" class="battle-stage" hidden>
+<button class="text-action" type="button" id="battle-back">⟵ 回關卡列表</button>
+<div class="battle-enemy"><div class="battle-enemy__art" id="battle-enemy-art"></div><div><small id="battle-enemy-stage"></small><h3 id="battle-enemy-name"></h3><p id="battle-enemy-meta"></p></div></div>
+<p class="battle-story" id="battle-story" hidden></p>
+<p class="battle-intro" id="battle-enemy-intro"></p>
+<p class="residents-intro">選 1～3 位小湘（打完要休息 1 小時）。剋制的系列會打得比較快、分數比較高，但不是一定要帶。</p>
+<div id="battle-siangs" class="errand-siangs"></div>
+<div class="battle-forecast" id="battle-forecast"></div>
+<button class="btn" type="button" id="battle-go">出發討伐</button>
+<p class="cloud-status" id="battle-status" role="status" aria-live="polite"></p>
+</section>
+<section id="battle-train" class="battle-train" hidden>
+<button class="text-action" type="button" id="train-back">⟵ 回關卡列表</button>
+<p class="residents-intro">用徽章特訓小湘，戰力永久提升（每級 +8%，最多 5 級）。好感度每級 +20%、重複孵到每次 +1 星（+10%）。</p>
+<div id="train-list" class="train-list"></div>
+<p class="cloud-status" id="train-status" role="status" aria-live="polite"></p>
+</section>
+</div></dialog>
+<dialog class="residents-dialog sheet battle-result" id="battle-result" aria-labelledby="battle-result-title"><div class="battle-enemy__art battle-result__art" id="battle-result-art"></div><small class="county-call__eyebrow" id="battle-result-eyebrow"></small><h2 id="battle-result-title"></h2><p class="battle-result__stars" id="battle-result-stars"></p><div class="battle-score" id="battle-result-score"></div><ol class="battle-log" id="battle-result-log"></ol><p class="battle-advice" id="battle-result-advice" hidden></p><p class="battle-story" id="battle-result-story" hidden></p><ul class="errand-gains" id="battle-result-gains"></ul><button class="btn" type="button" id="battle-result-ok">收下</button></dialog>
 <dialog class="residents-dialog sheet errand-result" id="errand-result" aria-labelledby="errand-result-title"><div id="errand-result-card"></div><small class="county-call__eyebrow" id="errand-result-eyebrow">WELCOME BACK</small><h2 id="errand-result-title"></h2><p class="errand-result__line" id="errand-result-line"></p><div class="errand-story" id="errand-result-story" hidden><b id="errand-story-title"></b><p id="errand-story-text"></p></div><ul class="errand-gains" id="errand-result-gains"></ul><button class="btn" type="button" id="errand-result-ok">收下</button></dialog>
 <dialog class="residents-dialog sheet bond-up" id="bond-up" aria-labelledby="bond-up-title"><img class="bond-up__img" id="bond-up-img" alt=""><small class="county-call__eyebrow">BOND LEVEL UP</small><h2 id="bond-up-title"></h2><p class="bond-up__unlock" id="bond-up-unlock"></p><p class="bond-up__text" id="bond-up-text"></p><p class="bond-up__reward" id="bond-up-reward"></p><button class="btn" type="button" id="bond-up-ok">好開心</button></dialog>
 <dialog class="residents-dialog sheet wheel-dialog" id="wheel-dialog" aria-labelledby="wheel-title"><div class="drawer-heading"><div><small>LUCKY WHEEL</small><h2 id="wheel-title">小恐龍轉盤</h2></div><button class="close-button" type="button" id="close-wheel" aria-label="關閉小恐龍轉盤">×</button></div>

@@ -38,7 +38,9 @@ const assert = require('node:assert/strict');
     await page.locator('#residents-done').click();
     await page.reload();
     assert.deepEqual(await page.locator('.resident-slot').evaluateAll(nodes=>nodes.map(n=>n.dataset.character)), ['001','003','004']);
-    assert.equal(await page.evaluate(() => localStorage.getItem('siang-collector:v1')), before, 'roster must not mutate game progress');
+    // 新住進首頁的小湘隔天開始每天 ♡+2（好感度），其他進度都不能被改動
+    const strip = (raw) => { const o = JSON.parse(raw); delete o.affection; return JSON.stringify(o); };
+    assert.equal(strip(await page.evaluate(() => localStorage.getItem('siang-collector:v1'))), strip(before), 'roster must not mutate game progress');
     // A second tab observes roster changes through the storage event.
     const second=await context.newPage(); await second.goto('http://127.0.0.1:8000');
     await page.locator('#open-residents').click();
