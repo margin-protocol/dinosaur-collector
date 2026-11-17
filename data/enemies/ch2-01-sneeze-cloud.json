@@ -1,0 +1,27 @@
+{
+  "id": "ch2-01",
+  "enemyId": "sneeze-cloud",
+  "chapter": 2,
+  "stage": "2-1",
+  "name": "噴嚏烏雲",
+  "type": "normal",
+  "image": "assets/enemies/chapter-02/ch2-01-sneeze-cloud.webp",
+  "weaknesses": [
+    "weather"
+  ],
+  "weakTag": "晴空止嚏！",
+  "personality": "灰紫色的軟綿綿小烏雲，戴著酒紅小雨傘帽和護目鏡，抱著繡有雨傘的小手帕。怕打噴嚏時淋濕別人，明明很善良卻老是造成小型暴風雨。",
+  "lines": {
+    "opening": "「哈——啾！先、先不要靠近我……我不是故意把山路淋濕的啦！」",
+    "countered": "「咦？風變暖了……哈、哈……欸？！這次居然沒有打出來！」噴嚏烏雲的雨滴短暫停在半空中，鼻尖也不再紅通通。",
+    "enemyVictory": "「哈啾！嗚……我不是想贏，是你們一直站在風口啦！」",
+    "enemyDefeat": "「呼……鼻子終於通了！謝謝你們。這把小傘借你，路上別淋濕喔。」"
+  },
+  "bossStory": null,
+  "metadata": {
+    "version": 1,
+    "status": "approved",
+    "artSize": "1024x1024 transparent WebP",
+    "note": "2-1 為普通小怪，Boss 故事留空；遊戲實際文字已同步到 js/battle.js。"
+  }
+}

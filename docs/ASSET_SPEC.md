@@ -177,7 +177,7 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 | `sock` | 1-2 | 襪子遊俠 | `chapter-01/ch1-02-sock-ranger.webp` ✅ 已交付 |
 | `bento` | 1-3 | 碎碎念便當盒 | `chapter-01/ch1-03-nagging-bento.webp` ✅ 已交付 |
 | `caramel-king` | 1-B | 焦糖大王（Boss） | `chapter-01/ch1-boss-caramel-king.webp` ✅ 已交付 |
-| `sneeze-cloud` | 2-1 | 噴嚏烏雲 | `chapter-02/ch2-01-sneeze-cloud.webp` |
+| `sneeze-cloud` | 2-1 | 噴嚏烏雲 | `chapter-02/ch2-01-sneeze-cloud.webp` ✅ 已交付 |
 | `lost-shadow` | 2-2 | 迷路影子 | `chapter-02/ch2-02-lost-shadow.webp` |
 | `angry-mushroom` | 2-3 | 生氣蘑菇 | `chapter-02/ch2-03-angry-mushroom.webp` |
 | `thunder-king` | 2-B | 雷雷大魔王（Boss） | `chapter-02/ch2-boss-thunder-king.webp` |
