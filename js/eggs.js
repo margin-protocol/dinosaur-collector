@@ -188,7 +188,7 @@ export const CHARACTERS = {
   '035': { no: '035', name: '綠島小湘', rarity: 'SR', line: '「燈塔幫我們看著海，你只要負責看著我就好。」', image: 'siang-035-green-island', series: 'county', county: '綠島', special: true },
   // 摯友小湘（台詞為德寶初稿）：普通蛋可開出
   '036': { no: '036', name: '摯友小湘（把拔ver）', rarity: 'SR', line: '「把拔又累到睡著了，我們小聲一點喔。」', image: 'siang-036-friend-baba', series: 'friends' },
-  '037': { no: '037', name: '摯友小湘（ㄊㄧver）', rarity: 'SR', line: '「ㄊㄧ說抱抱可以充電，你要不要也來一下？」', image: 'siang-037-friend-ti', series: 'friends' },
+  '037': { no: '037', name: '摯友小湘（ㄊㄧver）', rarity: 'SR', line: '「ㄊㄧ說練完再吃！十五年了，這句話我最熟。」', image: 'siang-037-friend-ti', series: 'friends' },
   '038': { no: '038', name: '摯友小湘（史蒂芬灰ver）', rarity: 'SR', line: '「史蒂芬灰在聽歌，我們一起跟著哼吧～」', image: 'siang-038-friend-steven-gray', series: 'friends' },
   '039': { no: '039', name: '摯友小湘（Serry ver）', rarity: 'SR', line: '「Serry 說今天的光線很好，來拍一張！」', image: 'siang-039-friend-serry', series: 'friends' },
   '040': { no: '040', name: '摯友小湘（Achio ver）', rarity: 'SR', line: '「Achio 說運動完要補充水分，你今天喝水了嗎？」', image: 'siang-040-friend-achio', series: 'friends' },

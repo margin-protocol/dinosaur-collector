@@ -2,6 +2,7 @@
 // 在首頁點她、摸摸頭、餵布丁（每位每天上限 15 點）、住在首頁、一起出門、重複孵到她都會增加。
 // 升級送獎勵，並解鎖新台詞、小故事；滿級在圖鑑變成閃亮卡。
 import { CHARACTERS } from './eggs.js';
+import { BOND_STORIES, BOND_LINES } from './bond-copy.js';
 
 export const LEVELS = [0, 10, 30, 60, 100]; // Lv.1～Lv.5 需要的累計點數
 export const MAX_LEVEL = LEVELS.length;
@@ -10,15 +11,15 @@ export const GAIN = { tap: 1, pet: 1, snack: 3, home: 2, errand: 4, story: 2, du
 const CAPPED = new Set(['tap', 'pet', 'snack']);
 export const LEVEL_REWARDS = { 2: { energy: 10 }, 3: { fossils: 3 }, 4: { energy: 20 }, 5: { fossils: 10 } };
 
-// 各系列的台詞（Lv.2、Lv.4、Lv.5）與小故事（Lv.3）。{name} 會換成小湘的名字。
+// 系列預設台詞與後備故事；個別人物文案優先。{name} 會換成小湘的名字。
 const SERIES_TEXT = {
   daily: {
     lines: ['今天也有好好吃飯嗎？我有喔！', '跟你在一起的普通日子，是我最喜歡的日子。', '不管明天怎樣，今天有你就夠了。'],
     story: '{name}偷偷在冰箱貼了一張便條：「記得喝水、記得休息、記得我。」字有點歪，但很認真。',
   },
   friends: {
-    lines: ['你知道嗎？你已經是我的摯友名單第一名了。', '有什麼不開心的都可以跟我說，我很會聽喔。', '朋友就是，就算不說話待在一起也很舒服。'],
-    story: '{name}把你們一起拍的照片印出來，貼在床頭。旁邊用小字寫著：「最好的朋友。不准換。」',
+    lines: ['今天要聊近況，還是先一起去吃點東西？', '不用特地找話題啊，我就是來陪你坐一下。', '以後也這樣，想到什麼好笑的，就拿來跟你講。'],
+    story: '{name}把合照印出來，卻發現每張都有一個人眨眼。挑了半天，她乾脆全部留下，說這樣才知道大家是輪流笑場的。',
   },
   animals: {
     lines: ['（蹭蹭）……這是我們的打招呼方式！', '我把最喜歡的地方讓給你坐。', '你的手好溫暖，可以再摸一下嗎？'],
@@ -58,7 +59,8 @@ const fill = (text, no) => text.replaceAll('{name}', CHARACTERS[no]?.name || '�
 
 export function bondText(no) {
   const t = SERIES_TEXT[CHARACTERS[no]?.series] || FALLBACK;
-  return { 2: fill(t.lines[0], no), 3: fill(t.story, no), 4: fill(t.lines[1], no), 5: fill(t.lines[2], no) };
+  const lines = BOND_LINES[no] || {};
+  return { 2: fill(lines[2] || t.lines[0], no), 3: fill(BOND_STORIES[no] || t.story, no), 4: fill(lines[4] || t.lines[1], no), 5: fill(lines[5] || t.lines[2], no) };
 }
 export const UNLOCK_LABEL = { 2: '新台詞', 3: '小故事', 4: '新台詞', 5: '閃亮卡＋最後的悄悄話' };
 

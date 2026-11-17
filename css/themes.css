@@ -119,3 +119,5 @@ html { background:var(--t-bg); }
 .egg-select-entry { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
 .egg-select-entry:active { background:var(--t-selected); }
 #cultivate svg { stroke:currentColor; }
+/* Affection story labels follow the palette, including readable daylight themes. */
+.bond-up__unlock,.dex-bond__unlocks b { color:var(--t-accent); }
