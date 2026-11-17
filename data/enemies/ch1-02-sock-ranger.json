@@ -1,0 +1,28 @@
+{
+  "id": "ch1-02",
+  "enemyId": "sock",
+  "chapter": 1,
+  "stage": "1-2",
+  "name": "襪子遊俠",
+  "type": "normal",
+  "image": "assets/enemies/chapter-01/ch1-02-sock-ranger.webp",
+  "weaknesses": [
+    "animals"
+  ],
+  "weakTag": "飛毛腿失速",
+  "personality": "一隻戴酒紅頭巾的奶油紫條紋獨眼襪子小盜賊。跳得飛快，專偷單邊襪子；背著裝滿贓物的布袋，愛炫耀腳程。",
+  "lines": {
+    "opening": "左腳的歸我，右腳的也歸我！嘿嘿！",
+    "countered": "等等！你怎麼跑得比我還快？！犯規啦！",
+    "enemyVictory": "追不到我吧！你的另一隻襪子我也收下囉！",
+    "enemyDefeat": "嗚哇！還你還你！可是這雙真的好好看嘛！"
+  },
+  "bossStory": null,
+  "chapterClue": "牠的戰利品袋裡夾著一張沾著焦糖的便當菜單，背面寫著：「青椒不可以剩下！」",
+  "metadata": {
+    "version": 1,
+    "status": "approved",
+    "artSize": "1024x1024 transparent WebP",
+    "note": "普通敵人，Boss 開場和過關後故事只屬於焦糖大王；js/battle.js 的 ENEMIES.sock 為實際遊戲使用版本。"
+  }
+}
