@@ -180,7 +180,7 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 | `sneeze-cloud` | 2-1 | 噴嚏烏雲 | `chapter-02/ch2-01-sneeze-cloud.webp` ✅ 已交付 |
 | `lost-shadow` | 2-2 | 迷路影子 | `chapter-02/ch2-02-lost-shadow.webp` ✅ 已交付 |
 | `angry-mushroom` | 2-3 | 生氣蘑菇 | `chapter-02/ch2-03-angry-mushroom.webp` ✅ 已交付 |
-| `thunder-king` | 2-B | 雷雷大魔王（Boss） | `chapter-02/ch2-boss-thunder-king.webp` |
+| `thunder-king` | 2-B | 雷雷大魔王（Boss） | `chapter-02/ch2-boss-thunder-king.webp` ✅ 已交付 |
 
 | `gugu` | EX-01 | 書靈咕咕（特殊關卡、檔案館館長） | `ex/ex-01-book-spirit-gugu.webp` ✅ 已交付 |
 
