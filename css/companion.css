@@ -403,7 +403,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .archive__head h2 { margin:2px 0; font-size:19px; letter-spacing:.06em; color:#f6e6dc; }
 .archive__greet { margin:0; font-size:12px; color:#f6e6dcb3; }
 .gugu-avatar, .gugu-review__avatar { display:grid; place-items:center; width:56px; height:56px; border-radius:50%; overflow:hidden; background:radial-gradient(circle at 50% 35%, #e3b6a03d, #2a1119 70%); box-shadow:0 0 0 1.5px #e3b6a099, 0 4px 14px #0008; font-size:28px; }
-.gugu-avatar img, .gugu-review__avatar img { width:150%; height:150%; object-fit:cover; object-position:50% 18%; }
+.gugu-avatar img, .gugu-review__avatar img { width:100%; height:100%; object-fit:cover; transform:scale(1.75); transform-origin:46% 42%; } /* 放大到咕咕的臉（眼睛約在 46%, 44%） */
 .archive__tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; padding:10px 14px; }
 .archive__tabs button { position:relative; padding:9px 4px 8px; border:1px solid #e3b6a026; border-radius:12px 12px 4px 4px; background:#ffffff08; color:#f6e6dcb3; font-size:13px; }
 .archive__tabs button small { display:block; margin-top:1px; font-size:11px; color:var(--rose-gold); opacity:.8; }
