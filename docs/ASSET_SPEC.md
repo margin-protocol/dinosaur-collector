@@ -216,3 +216,9 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 - **No.066 陰天小湘（SSR）**：`assets/characters/siang-066-overcast.webp` ✅ 正式透明 WebP 已交付（1024 × 1024，約 263 KB）。
 - 詳細美術 Canon／工程接入注意事項：[`SIANG_066_OVERCAST_ART.md`](SIANG_066_OVERCAST_ART.md)。
 - 圖鑑系列建議「天氣與時間」，與 No.065 天氣觀測師區隔為「陰天安靜日常」；**美術已交付但尚未在角色表或蛋池實裝，取得方式未定**。
+
+## No.067｜打雷小湘（SSR）美術交付（2026-11-18）
+
+- **No.067 打雷小湘（SSR）**：`assets/characters/siang-067-thunder.webp`，1024 × 1024 透明 WebP（約 263 KB），正式美術已交付。
+- 詳細 Canon 與接入備註：[`SIANG_067_THUNDER_ART.md`](SIANG_067_THUNDER_ART.md)。
+- 天氣與時間系列；**角色表、蛋池與取得條件尚未實裝**，由湘與德寶後續確認。
