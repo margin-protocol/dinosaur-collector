@@ -234,3 +234,9 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 - **No.069 起霧小湘**：`assets/characters/siang-069-fog.webp`，1024×1024 透明 WebP；英倫偵探／迷霧探索風，已定稿。
 - 美術 Canon 與接入說明：[`SIANG_069_FOG_ART.md`](SIANG_069_FOG_ART.md)。
 - 稀有度**待湘確認**（暫建議 SR）；角色表、蛋池與取得條件尚未實裝。
+
+## No.070｜冰雹小湘（SSR）美術規格（2026-11-18）
+
+- 預定正式素材：`assets/characters/siang-070-hail.webp`（**圖檔待上傳**）。
+- 美術 Canon：[`SIANG_070_HAIL_ART.md`](SIANG_070_HAIL_ART.md)。
+- SSR 天氣系列；尚未接入角色表與蛋池，取得方式待確認。
