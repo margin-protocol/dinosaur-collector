@@ -24,7 +24,7 @@ import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
 import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
 import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
 import { applyReward, validReward, describeReward } from './gifts.js';
-import { fetchWeather, recordWeather, isNight, rainingToday, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
+import { fetchWeather, recordWeather, isNight, rainingToday, weatherBoosts, KIND_NAMES, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, WISH_POOL, todayKey, analyzePhoto, photoStats, judge, actProgress, quizReply, isPhotoWish } from './wishes.js';
@@ -190,6 +190,7 @@ function renderHome() {
   if (egg.pool) {
     if (rainingToday(state, todayKey()) && egg.pool[RAIN_BOOST.no]) omens.push('今天下雨了……雨傘小湘好像比較容易出現');
     if (isNight() && egg.pool[NIGHT_BOOST.no]) omens.push('深夜了……好像有誰還醒著（夜貓小湘比較容易出現）');
+    if (egg.id === 'weather') for (const b of weatherBoosts(state, todayKey())) if (egg.pool[b.no]) omens.push(`${b.hint}${CHARACTERS[b.no].name}比較容易出現`);
   }
   if (FLAVORS[state.egg.flavor]) omens.push(`${FLAVORS[state.egg.flavor].hint}……${FLAVORS[state.egg.flavor].tip}`);
   if (state.egg.shiny) omens.push('✨ 閃亮的蛋：稀有的小湘更容易出現');
@@ -438,6 +439,7 @@ function hatchBoosts(s, now = new Date()) {
   const boosts = [];
   if (rainingToday(s, todayKey(now))) boosts.push(RAIN_BOOST);
   if (isNight(now)) boosts.push(NIGHT_BOOST);
+  if (s.egg?.id === 'weather') boosts.push(...weatherBoosts(s, todayKey(now), now));
   return boosts;
 }
 
@@ -533,7 +535,7 @@ function renderEggChoices() {
   else if (eggCategory === 'keepsake') fresh = [...(state.egg.id === 'keepsake' ? [eggCard(egg)] : []), ...state.gifts.eggs.filter(g => g.egg === 'keepsake').map(keepsakeCard)];
   else fresh = [eggCard(egg)];
   if (!fresh.length) fresh = [eggCard(egg)];
-  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '下雨天打開遊戲（已允許定位）時取得，每天最多一顆。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣時收到，固定孵出紀念的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
+  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣時收到，固定孵出紀念的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
   $('egg-picker-note').textContent = detailText;
   $('egg-choices').replaceChildren(back, ...(shelved.length ? [heading('暫放中'), ...shelved, heading('可以培育')] : []), ...fresh);
 }
@@ -547,7 +549,7 @@ function eggCard(egg) {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = current && state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'weather' ? `雨天的蛋，雨傘小湘最常出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'weather' ? `天氣的蛋，今天的天氣決定誰比較容易出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
     const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
@@ -556,7 +558,7 @@ function eggCard(egg) {
       const own = document.createElement('p'); own.className = 'egg-choice__stock';
       own.textContent = egg.id === 'wish'
         ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
-        : egg.id === 'weather' ? `持有 ${stock} 顆（下雨天打開遊戲時取得，每天最多一顆）`
+        : egg.id === 'weather' ? `持有 ${stock} 顆（每天第一次感應到天氣時取得）`
         : egg.id === 'cipher' ? `持有 ${stock} 顆（輸入湘給的暗號、完成她的委託時取得）`
         : egg.id === 'date' ? `持有 ${stock} 顆（見面時掃描湘的約會 QR Code 取得）`
         : egg.id === 'keepsake' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'keepsake').map(e => CHARACTERS[e.character]?.name).join('、')}` : '節日、小湘生日、走遍臺灣時會收到')
@@ -1284,7 +1286,7 @@ function showCountyCall({ county, result, error, weather }) {
   $('county-call').showModal(); syncRoomActivity();
 }
 
-// 查天氣（失敗就算了，不影響探索）；下雨可能送天氣蛋
+// 查天氣（失敗就算了，不影響探索）；每天第一次感應到天氣送天氣蛋
 async function checkWeather(pos) {
   let kind;
   try { kind = await fetchWeather(pos.lat, pos.lon); } catch { return null; }
@@ -1292,7 +1294,8 @@ async function checkWeather(pos) {
   state = transaction.state; renderAll();
   return transaction.result;
 }
-const weatherNote = (w) => (w?.egg ? '外面在下雨，雨裡撿到一顆「天氣蛋」！到「選擇蛋」把它拿出來吧。' : '');
+const WEATHER_GIFT = { rain: '外面在下雨，雨裡撿到一顆「天氣蛋」！', thunder: '外面在打雷！雷聲裡滾來一顆「天氣蛋」！', hail: '外面下冰雹了！冰塊堆裡有一顆「天氣蛋」！', snow: '外面在下雪！雪地裡撿到一顆「天氣蛋」！', fog: '外面起霧了，霧裡撿到一顆「天氣蛋」！', windy: '外面風好大，一顆「天氣蛋」被吹到你腳邊！', clear: '今天是晴天，陽光下撿到一顆「天氣蛋」！', cloudy: '今天陰陰的，窗邊多了一顆「天氣蛋」。' };
+const weatherNote = (w) => (w?.egg ? `${w.rainbow ? '雨停了，天空出現彩虹！' : ''}${WEATHER_GIFT[w.kind] || '撿到一顆「天氣蛋」！'}到「選擇蛋」把它拿出來吧。` : '');
 function announceWeather(w) { if (w?.egg) toast(weatherNote(w)); }
 
 async function explore({ silent = false } = {}) {

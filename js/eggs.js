@@ -58,12 +58,13 @@ export const EGGS = {
     code: 'RAIN',
     warmthNeeded: 150,
     hatches: null,
-    stocked: true, // 下雨天打開遊戲（已允許定位）時取得，每天最多一顆
-    // 雨天的蛋：雨傘小湘最常見，喜歡雨的園丁、書頁也比較容易出現
+    stocked: true, // 每天第一次感應到天氣時取得（需允許定位），每天最多一顆
+    // 天氣的蛋：天氣小湘為主；當天的天氣與時間會讓對應的小湘更容易出現（js/weather.js 的 weatherBoosts）
     pool: {
-      '003': 40, '006': 12, '007': 12, // 雨傘、園丁、書頁
-      '001': 8, '005': 8, '004': 8, // 原味、甜點、夜貓
-      '010': 6, '013': 6, // SR
+      '003': 22, '071': 18, '068': 12, '075': 12, // R：雨傘、下雨、晴天、夕陽
+      '006': 5, '007': 5, '004': 5, // 喜歡雨的園丁、書頁、夜貓
+      '069': 5, '073': 5, '074': 4, '072': 3, '010': 3, // SR：起霧、大風、彩虹、下雪、星塵
+      '066': 1.5, '067': 1.5, '070': 1, '065': 1, // SSR：陰天、打雷、冰雹、天氣觀測師
     },
     // 正式天氣蛋圖層：assets/eggs/weather/{shell,glow,cracks}.webp
   },
@@ -222,6 +223,18 @@ export const CHARACTERS = {
   '062': { no: '062', name: '騎士小湘', rarity: 'SR', line: '「別怕，我會保護你的！……等一下，盾牌是不是拿反了？」', image: 'siang-062-knight', series: 'hero', special: true, badge: true },
   '063': { no: '063', name: '魔法師小湘', rarity: 'SR', line: '「站好不要動喔！這次的魔法……應該不會爆炸吧？」', image: 'siang-063-mage', series: 'hero', special: true, badge: true },
   '064': { no: '064', name: '勇者小湘', rarity: 'SSR', line: '「魔王打完了嗎？那我可以回家吃點心了吧？」', image: 'siang-064-hero', series: 'hero', special: true, badge: true },
+  // 天氣小湘（2026-11-18 皮寶交付）：主要從天氣蛋孵出，當天的天氣／時間會讓對應的小湘更容易出現（js/weather.js）
+  '065': { no: '065', name: '天氣觀測師小湘', rarity: 'SSR', line: '「今天想要什麼天氣？我偷偷幫你向天空許願！」', image: 'siang-065-weather-observer', series: 'weather' },
+  '066': { no: '066', name: '陰天小湘', rarity: 'SSR', line: '「今天沒有太陽也沒關係呀，我們就在這裡待久一點。」', image: 'siang-066-overcast', series: 'weather' },
+  '067': { no: '067', name: '打雷小湘', rarity: 'SSR', line: '「轟隆！嚇到了嗎？嘿嘿，我有先把雷聲調小喔！」', image: 'siang-067-thunder', series: 'weather' },
+  '068': { no: '068', name: '晴天小湘', rarity: 'R', line: '「太陽出來啦！今天要不要跟我出去拍漂亮的天空？」', image: 'siang-068-sunny', series: 'weather' },
+  '069': { no: '069', name: '起霧小湘', rarity: 'SR', line: '「霧這麼濃，正好可以偷偷去探險。你要跟緊我喔！」', image: 'siang-069-fog', series: 'weather' },
+  '070': { no: '070', name: '冰雹小湘', rarity: 'SSR', line: '「你看你看！天空掉下來的寶石！……欸，怎麼越來越大顆了？！」', image: 'siang-070-hail', series: 'weather' },
+  '071': { no: '071', name: '下雨小湘', rarity: 'R', line: '「下雨了耶！我們去踩水坑好不好？」', image: 'siang-071-rain', series: 'weather' },
+  '072': { no: '072', name: '下雪小湘', rarity: 'SR', line: '「你看！我堆了一個跟你一樣可愛的雪人！」', image: 'siang-072-snow', series: 'weather' },
+  '073': { no: '073', name: '大風小湘', rarity: 'SR', line: '「等一下！我的帽子要飛走了啦啊啊啊！」', image: 'siang-073-windy', series: 'weather' },
+  '074': { no: '074', name: '彩虹小湘', rarity: 'SR', line: '「快看！雨停之後，天空偷偷送我們禮物了！」', image: 'siang-074-rainbow', series: 'weather' },
+  '075': { no: '075', name: '夕陽小湘', rarity: 'R', line: '「再等一下下，今天的天空還沒拍完呢。」', image: 'siang-075-sunset', series: 'weather' },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序

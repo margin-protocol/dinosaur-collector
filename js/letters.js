@@ -11,7 +11,7 @@ export const MILESTONE_LETTERS = [
     body: '家裡越來越熱鬧了。\n大家都說，飼養員很溫柔。\n\n我說：那當然，\n是我先發現的。\n\n—— 小湘 ♡' },
   { id: 'first-county', title: '第一站', hint: '第一次探索縣市', when: (s) => Object.keys(s.travel?.visits || {}).length >= 1,
     body: '你帶我們出門了！\n原來外面的世界這麼大。\n\n下次去哪裡，\n也記得帶上我。\n\n—— 小湘 ♡' },
-  { id: 'first-rain', title: '下雨天', hint: '在雨天撿到天氣蛋', when: (s) => Boolean(s.weather?.granted),
+  { id: 'first-rain', title: '下雨天', hint: '在雨天撿到天氣蛋', when: (s) => Boolean(s.weather?.rained && s.weather.granted === s.weather.rained),
     body: '下雨了。\n記得帶傘，不要淋濕。\n\n如果忘了帶，\n就打給我，\n我去接你。\n\n—— 小湘 ♡' },
   { id: 'night-owl', title: '晚安', hint: '遇見夜貓小湘', when: (s) => Boolean(s.dex?.['004']),
     body: '夜貓小湘偷偷跟我說，\n你最近很晚睡。\n\n不准熬夜喔。\n晚安，好夢。\n\n—— 小湘 ♡' },
