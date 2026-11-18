@@ -193,6 +193,8 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 ## 徽章限定小湘｜討伐角色美術（2026-11-18）
 
 - **No.062 騎士小湘（SR）**：`assets/characters/siang-062-knight.webp` ✅ 正式透明 WebP 已交付。
+- **No.063 魔法師小湘（SR）**：`assets/characters/siang-063-mage.webp` ✅ 正式透明 WebP 已交付。
+- 美術與接入備註：[`SIANG_063_MAGE_ART.md`](SIANG_063_MAGE_ART.md)。
 - 正式角色規格與接入注意事項：[`SIANG_062_KNIGHT_ART.md`](SIANG_062_KNIGHT_ART.md)。
 - No.062 為預留編號；此提交僅含圖片與文件，**尚未新增到 `js/eggs.js` 或啟用徽章兌換**。
-- 後續魔法師、勇者小湘定稿後，再一起確認完整連攜與解鎖設定。
+- 後續勇者小湘定稿後，再一起確認完整連攜與解鎖設定。
