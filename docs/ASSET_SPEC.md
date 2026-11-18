@@ -194,7 +194,8 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 
 - **No.062 騎士小湘（SR）**：`assets/characters/siang-062-knight.webp` ✅ 正式透明 WebP 已交付。
 - **No.063 魔法師小湘（SR）**：`assets/characters/siang-063-mage.webp` ✅ 正式透明 WebP 已交付。
-- 美術與接入備註：[`SIANG_063_MAGE_ART.md`](SIANG_063_MAGE_ART.md)。
-- 正式角色規格與接入注意事項：[`SIANG_062_KNIGHT_ART.md`](SIANG_062_KNIGHT_ART.md)。
-- No.062 為預留編號；此提交僅含圖片與文件，**尚未新增到 `js/eggs.js` 或啟用徽章兌換**。
-- 後續勇者小湘定稿後，再一起確認完整連攜與解鎖設定。
+- **No.064 勇者小湘（SSR）**：`assets/characters/siang-064-hero.webp` ✅ 正式透明 WebP 已交付。
+- 詳細美術與接入規格：[`SIANG_062_KNIGHT_ART.md`](SIANG_062_KNIGHT_ART.md)、[`SIANG_063_MAGE_ART.md`](SIANG_063_MAGE_ART.md)、[`SIANG_064_HERO_ART.md`](SIANG_064_HERO_ART.md)。
+- No.062–064 均為**預留編號及已交付圖片**，目前**尚未接入 `js/eggs.js`、徽章兌換、角色養成或戰鬥能力**，不可視為已開放取得。
+- 騎士／魔法師：SR；勇者：SSR，設計上需完成前兩章才能兌換。徽章成本、角色數值與三人「勇者小隊」連攜於工程接入時再定。
+- 這三隻都不應放進普通蛋池；角色名稱、數值欄位、存檔格式由德寶確認後再啟用。
