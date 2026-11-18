@@ -278,7 +278,7 @@
 <p class="cloud-status" id="errand-status" role="status" aria-live="polite"></p>
 <h3 class="egg-choices__heading">旅行相簿</h3><p class="residents-intro" id="errand-collection"></p><div id="errand-album" class="errand-album"></div></div>
 <div id="battle-pane" hidden>
-<div class="battle-head"><span>🛡️ 徽章 <b id="battle-badges">0</b></span><span id="battle-slots"></span><button class="text-action" type="button" id="open-train">特訓 ⟶</button></div>
+<div class="battle-head"><span>🛡️ 徽章 <b id="battle-badges">0</b></span><span id="battle-slots"></span><button class="text-action" type="button" id="open-train">特訓與兌換 ⟶</button></div>
 <button class="archive-entry" type="button" id="open-archive-battle"><span class="archive-entry__icon" aria-hidden="true">📖</span><span><b>咕咕的故事檔案館</b><small>重讀解鎖過的故事、看討伐紀錄</small></span><span aria-hidden="true">⟶</span></button>
 <div id="battle-active" class="errand-active"></div>
 <div id="battle-map"></div>
@@ -295,6 +295,11 @@
 </section>
 <section id="battle-train" class="battle-train" hidden>
 <button class="text-action" type="button" id="train-back">⟵ 回關卡列表</button>
+<h3 class="egg-choices__heading">徽章兌換 · 勇者小隊</h3>
+<p class="residents-intro">只能用討伐徽章換到的三位小湘。三人同一隊出發，會發動勇者小隊連攜（戰力 +50%）。</p>
+<div id="hero-shop" class="train-list"></div>
+<p class="cloud-status" id="hero-status" role="status" aria-live="polite"></p>
+<h3 class="egg-choices__heading">特訓</h3>
 <p class="residents-intro">用徽章特訓小湘，戰力永久提升（每級 +8%，最多 5 級）。好感度每級 +20%、重複孵到每次 +1 星（+10%）。</p>
 <div id="train-list" class="train-list"></div>
 <p class="cloud-status" id="train-status" role="status" aria-live="polite"></p>

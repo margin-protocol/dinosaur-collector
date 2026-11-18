@@ -5,6 +5,7 @@ import { CHARACTERS, SERIES } from './eggs.js';
 import { levelOf } from './affection.js';
 import { todayKey } from './wishes.js';
 import { GUGU_REVIEWS, REVIEW_ORDER } from './gugu-reviews.js';
+import { HERO_SHOP, HERO_LINES, PARTY_LINES, PARTY_REPORT, heroOffer } from './badge-heroes.js';
 
 // 敵人。圖片照皮寶的命名放在 assets/enemies/chapter-0N/（沒有圖就顯示 emoji）。
 // 文字欄位都可以直接改：intro 開場、weakHit 被剋制的反應（weakTag 是戰報上的小標）、win 玩家打贏時敵人說的話、
@@ -70,8 +71,8 @@ export const SERIES_BONUS = 0.15; // 同系列 2 位以上
 export const WEAK_BONUS = 0.3; // 帶了剋制的系列
 export const TEAM_MAX = 3;
 export const REST_MINUTES = 60; // 打完要休息
-// 徽章限定角色（皮寶製作中）：角色編號確定後填上，勇者小隊連攜就會生效
-export const BADGE_HEROES = { knight: null, mage: null, hero: null };
+// 徽章限定角色：騎士、魔法師、勇者三人同隊時發動勇者小隊連攜
+export const BADGE_HEROES = Object.fromEntries(HERO_SHOP.map((x) => [x.key, x.no]));
 export const HERO_PARTY_BONUS = 0.5;
 
 const iso = (d) => d.toISOString();
@@ -165,7 +166,7 @@ const ACTIONS = {
   friends: '{name}大喊「大家加油！」，隊伍士氣上升！', date: '{name}拋了一個飛吻，對手害羞得愣住了。', holiday: '{name}放了一串小煙火，砰砰砰！',
   county: '{name}拿出家鄉名產，丟！', recipe: '{name}丟出剛烤好的餅乾，香到對手分心。', memorial: '{name}拿出珍藏的照片，閃光攻擊！', special: '{name}身上冒出神秘的光芒。',
 };
-const actionLine = (no) => (ACTIONS[CHARACTERS[no]?.series] || ACTIONS.daily).replaceAll('{name}', CHARACTERS[no].name);
+const actionLine = (no) => (HERO_LINES[no] ? `${CHARACTERS[no].name}：「${HERO_LINES[no].dispatch}」` : (ACTIONS[CHARACTERS[no]?.series] || ACTIONS.daily).replaceAll('{name}', CHARACTERS[no].name));
 
 // 目前能派的小湘（有收集、沒有在出門或討伐、沒有在休息）
 export function available(state, now = Date.now(), busy = new Set()) {
@@ -231,8 +232,11 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   const minutes = Math.round(enemy.minutes * (f.weakHit ? 0.75 : 1));
   const log = [enemy.intro, ...nos.map(actionLine)];
   if (f.weakHit) log.push(`✦ 效果拔群${enemy.weakTag ? `｜${enemy.weakTag.replace(/[！!]+$/, '')}` : ''}！${enemy.weakHit}`);
-  if (f.heroParty) log.push('✦ 勇者小隊集結！三人連攜，全隊力量大增！');
+  if (f.heroParty) log.push(...PARTY_LINES.map((l) => `${l.speaker}：「${l.text}」`), `✦ ${PARTY_REPORT}`);
   log.push(win ? enemy.win : enemy.lose);
+  // 隊伍裡有徽章限定小湘：由最稀有的那位說勝利／戰敗台詞
+  const speaker = nos.filter((no) => HERO_LINES[no]).sort((a, c) => (RARITY_POWER[CHARACTERS[c].rarity] || 0) - (RARITY_POWER[CHARACTERS[a].rarity] || 0))[0];
+  if (speaker) log.push(`${CHARACTERS[speaker].name}：「${HERO_LINES[speaker][win ? 'victory' : 'defeat']}」`);
   const advice = win ? null : diagnose(state, nos, enemyId, free.filter((no) => !nos.includes(no)));
   const prev = enemy.wild ? { stars: 0, best: b.weekBest, last: wildEntry?.last || 0, clears: 0, tries: wildEntry?.tries || 0 } : (b.stages[enemyId] || { stars: 0, best: 0, last: 0, clears: 0, tries: 0 });
   const loot = enemy.wild
@@ -291,6 +295,26 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const review = lines.length ? { kind, text: lines[Math.floor(rand() * lines.length) % lines.length], ...(note ? { note } : {}), at: now.toISOString() } : null;
   if (!enemy.wild) { st.lastWin = r.win; if (review) st.review = review; }
   return { ...battle, report: r, record, best, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild) };
+}
+
+// 徽章兌換：勇者小隊只能用徽章換，不進任何蛋池
+export function heroStatus(state, no) {
+  const offer = heroOffer(no); if (!offer) return null;
+  const owned = Boolean(state.dex?.[no]);
+  const missing = (offer.requires || []).filter((id) => !state.battle?.stages?.[id]?.clears);
+  const badges = state.battle?.badges || 0;
+  return { ...offer, owned, missing, locked: missing.length > 0, short: Math.max(0, offer.cost - badges), ready: !owned && !missing.length && badges >= offer.cost };
+}
+export function redeemHero(state, no, now = new Date()) {
+  const b = ensureBattle(state);
+  const st = heroStatus(state, no);
+  if (!st) return '這位小湘不能用徽章兌換。';
+  if (st.owned) return `${CHARACTERS[no].name}已經在隊伍裡了。`;
+  if (st.locked) return `還不能兌換：${st.requireText}。`;
+  if (b.badges < st.cost) return `徽章不夠，還差 ${st.cost - b.badges} 個。`;
+  b.badges -= st.cost;
+  state.dex[no] = { at: now.toISOString(), story: { from: 'badge', cost: st.cost } };
+  return { no, cost: st.cost, line: HERO_LINES[no].redeem };
 }
 
 // 特訓：花徽章讓一位小湘永久變強

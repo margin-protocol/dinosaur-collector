@@ -9,6 +9,7 @@ import { unlockedMilestones, allLetters, unreadCount, lockedMilestones } from '.
 import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
 import { activeHolidays, HOLIDAYS, TAIWAN_NO } from './holidays.js';
 import { INTROS, MYSTERY_INTROS } from './intros.js';
+import { HERO_SHOP } from './badge-heroes.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
@@ -852,6 +853,7 @@ function storyText(c, entry) {
   if (!st) return '';
   const when = new Date(entry.at);
   const date = `${when.getFullYear()} 年 ${when.getMonth() + 1} 月 ${when.getDate()} 日`;
+  if (st.from === 'badge') return `${date}，你用 ${st.cost} 枚討伐徽章，把她迎進了隊伍。`;
   const days = st.since && !Number.isNaN(Date.parse(st.since)) ? Math.max(0, Math.round((Date.parse(entry.at) - Date.parse(st.since)) / 864e5)) : null;
   const source = st.county ? `在${st.county}探索時收到的縣市蛋`
     : st.from?.startsWith('recipe:') ? '兩位小湘一起入住、偷偷準備的紀念蛋'
@@ -1476,6 +1478,7 @@ function howToGet(c) {
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const rec = state.recipes[recipe.id]; return `隱藏配方：${state.dex[c.no] || rec.days.length ? recipe.text : '某兩位小湘一起入住首頁，就會發生什麼……'}${rec.done ? '' : rec.days.length ? `（已累積 ${rec.days.length} / ${recipe.days} 天）` : ''}`; }
+  if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
   if (c.series === 'date') return '約會時掃描 QR Code 取得約會蛋（開發中）';
   const eggs = Object.values(EGGS).filter(e => e.pool?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
@@ -2776,7 +2779,32 @@ function renderTrain() {
     row.append(siangImg(no), info, btn); return row;
   }));
 }
-$('open-train').addEventListener('click', () => { battleEnemy = null; $('battle-train').hidden = false; $('train-status').textContent = ''; renderBattle(); renderTrain(); });
+// 徽章兌換：勇者小隊
+function renderHeroShop() {
+  $('hero-shop').replaceChildren(...HERO_SHOP.map(({ no }) => {
+    const h = battle.heroStatus(state, no); const c = CHARACTERS[no];
+    const row = document.createElement('div'); row.className = `train-row${h.owned ? ' is-owned' : ''}`;
+    const img = siangImg(no); if (!h.owned) { img.classList.add('is-locked'); img.alt = '尚未兌換的小湘'; }
+    const info = document.createElement('div'); info.innerHTML = '<b></b><small></small>';
+    info.querySelector('b').textContent = `${c.name} · ${c.rarity}`;
+    info.querySelector('small').textContent = h.owned ? '已經加入隊伍 ✓' : h.locked ? `🔒 ${h.requireText}` : h.short ? `還差 ${h.short} 枚徽章` : '可以兌換了！';
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn btn--quiet';
+    btn.textContent = h.owned ? '已兌換' : `🛡️ ${h.cost}`; btn.disabled = !h.ready;
+    btn.addEventListener('click', () => void redeemHeroFor(no));
+    row.append(img, info, btn); return row;
+  }));
+}
+async function redeemHeroFor(no) {
+  const t = await updateState(current => battle.redeemHero(current, no));
+  state = t.state;
+  if (typeof t.result === 'string') { $('hero-status').textContent = t.result; return; }
+  welcomeResident(no, state.dex);
+  $('hero-status').textContent = `${CHARACTERS[no].name}：「${t.result.line}」`;
+  $('battle-badges').textContent = state.battle.badges;
+  renderAll(); renderHeroShop(); renderTrain(); buzz([20, 40, 30]);
+  toast(`${CHARACTERS[no].name}加入了！「${t.result.line}」`);
+}
+$('open-train').addEventListener('click', () => { battleEnemy = null; $('battle-train').hidden = false; $('train-status').textContent = ''; $('hero-status').textContent = ''; renderBattle(); renderHeroShop(); renderTrain(); });
 $('train-back').addEventListener('click', () => { $('battle-train').hidden = true; renderBattle(); });
 $('errand-dialog').addEventListener('close', () => { battleEnemy = null; $('battle-train').hidden = true; showErrandTab('errand'); });
 setInterval(() => { if (!document.hidden && !$('battle-pane').hidden && $('errand-dialog').open && !battleEnemy) renderBattle(); }, 30 * 1000);
@@ -2943,6 +2971,8 @@ function todayItems() {
   if (guide.isUnlocked(state, 'battle') && owned) {
     const backs = (state.battle?.active || []).filter(a => battle.isBack(a)).length;
     const wildLeft = (state.battle?.wild?.list || []).filter(w => !w.defeated).length;
+    const heroReady = HERO_SHOP.find(({ no }) => battle.heroStatus(state, no).ready);
+    if (heroReady) add('hero', `徽章夠換${CHARACTERS[heroReady.no].name}了`, '討伐 → 特訓與兌換', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); $('open-train').click(); });
     if (backs) add('battle-back', `${backs} 份戰報可以看`, '討伐回來了', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); });
     else if ((state.battle?.active?.length || 0) < battle.teamSlots(state) && wildLeft) add('battle', `討伐野生小怪（今天還有 ${wildLeft} 隻）`, '打贏拿徽章，可以特訓小湘', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); });
   }

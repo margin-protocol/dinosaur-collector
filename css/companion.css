@@ -384,6 +384,8 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .train-row img { width:44px; height:44px; object-fit:contain; }
 .train-row b { display:block; font-size:13px; } .train-row small { font-size:11px; opacity:.75; }
 .train-row .btn { min-height:34px; padding:4px 12px; font-size:13px; }
+.train-row img.is-locked { filter:brightness(0); opacity:.6; }
+.train-row.is-owned { opacity:.8; }
 /* 野生小怪的變化：顏色、大小、個性小圖示 */
 .enemy-art img, .enemy-art__emoji { filter:hue-rotate(var(--hue, 0deg)); transform:scale(var(--scale, 1)); transform-origin:50% 85%; }
 .enemy-art__trait { position:absolute; right:3%; bottom:3%; display:grid; place-items:center; width:22px; height:22px; border-radius:50%; background:#1c1520e6; box-shadow:0 0 0 1px #ffffff2a; font-size:12px; font-style:normal; line-height:1; }

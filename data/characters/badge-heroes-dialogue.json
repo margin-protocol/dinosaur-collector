@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "copy-approved-for-engineering-review",
+  "status": "implemented",
   "series": "討伐徽章限定／勇者小隊",
   "note": "文案交付，不代表已實裝；實際戰鬥顯示時機、兌換與連攜由工程接入。",
   "characters": [
@@ -83,9 +83,8 @@
     "battleReport": "勇者小隊集結！盾牌擋住攻擊，星光照亮戰場，勇者小湘終於放下點心拔出了大劍！"
   },
   "engineeringNotes": [
-    "角色 062–064 尚未接入 js/eggs.js，文案 JSON 不會自動被遊戲讀取。",
-    "角色只能由徽章兌換取得，勇者須符合兩章 Boss 通關條件；勿加入普通蛋池。",
-    "BADGE_HEROES 的編號須等角色表、兌換、存檔及平衡完成後才設定。",
-    "出戰、勝敗、待機、羈絆、兌換及連攜文案可依 UI 容量選擇顯示；不修改現有戰鬥數值。"
+    "11/18 已接入：js/badge-heroes.js（台詞複本，改台詞時兩邊一起改）、js/eggs.js（series: hero）、js/battle.js（BADGE_HEROES、heroStatus、redeemHero）。",
+    "兌換價格：騎士 20、魔法師 20、勇者 40（需 caramel-king 與 thunder-king 都通關）；不在任何蛋池。",
+    "使用位置：出戰＝戰報行動、勝利／戰敗＝隊中最稀有的那位、羈絆＝好感 Lv.5、待機＝好感 Lv.2、兌換＝兌換成功提示、三人連攜＝戰報。戰鬥數值未改。"
   ]
 }

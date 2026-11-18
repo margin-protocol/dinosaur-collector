@@ -1,6 +1,6 @@
 # 討伐徽章限定小湘｜正式角色台詞交付
 
-> 2026-11-18 文案交付。角色圖已定稿，但程式尚未接入；本次不改遊戲 JS。
+> 2026-11-18 文案交付。**11/18 德寶已接入遊戲**（js/badge-heroes.js；兌換價格 20／20／40，勇者需打倒兩章 Boss）。
 
 - 機器可讀資料：[`data/characters/badge-heroes-dialogue.json`](../data/characters/badge-heroes-dialogue.json)
 - 角色：No.062 騎士小湘（SR）、No.063 魔法師小湘（SR）、No.064 勇者小湘（SSR）
