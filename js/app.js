@@ -24,6 +24,7 @@ import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
 import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
 import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
 import { applyReward, validReward, describeReward } from './gifts.js';
+import { WEATHER_LINES } from './weather-lines.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, weatherBoosts, KIND_NAMES, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
@@ -938,7 +939,7 @@ function showReveal(c, duplicate) {
   $('reveal-greeting').textContent = duplicate ? '是你呀，我們又見面了。' : '初次見面，請多指教。';
   $('reveal-no').textContent = `No.${c.no} ｜ ${c.rarity}`;
   $('reveal-name').textContent = c.name;
-  $('reveal-line').textContent = c.line;
+  $('reveal-line').textContent = WEATHER_LINES[c.no]?.hatch || c.line;
   $('reveal-bonus').hidden = !duplicate;
   $('reveal-bonus').textContent = `再次相遇的禮物 · 化石碎片 +${DUPLICATE_FOSSILS}`;
   $('reveal-ok').textContent = duplicate ? '收下化石' : '一起回家';

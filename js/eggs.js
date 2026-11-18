@@ -224,7 +224,7 @@ export const CHARACTERS = {
   '063': { no: '063', name: '魔法師小湘', rarity: 'SR', line: '「站好不要動喔！這次的魔法……應該不會爆炸吧？」', image: 'siang-063-mage', series: 'hero', special: true, badge: true },
   '064': { no: '064', name: '勇者小湘', rarity: 'SSR', line: '「魔王打完了嗎？那我可以回家吃點心了吧？」', image: 'siang-064-hero', series: 'hero', special: true, badge: true },
   // 天氣小湘（2026-11-18 皮寶交付）：主要從天氣蛋孵出，當天的天氣／時間會讓對應的小湘更容易出現（js/weather.js）
-  '065': { no: '065', name: '天氣觀測師小湘', rarity: 'SSR', line: '「今天想要什麼天氣？我偷偷幫你向天空許願！」', image: 'siang-065-weather-observer', series: 'weather' },
+  '065': { no: '065', name: '天氣觀測師', rarity: 'SSR', line: '「今天想要什麼天氣？我偷偷幫你向天空許願！」', image: 'siang-065-weather-observer', series: 'weather' },
   '066': { no: '066', name: '陰天小湘', rarity: 'SSR', line: '「今天沒有太陽也沒關係呀，我們就在這裡待久一點。」', image: 'siang-066-overcast', series: 'weather' },
   '067': { no: '067', name: '打雷小湘', rarity: 'SSR', line: '「轟隆！嚇到了嗎？嘿嘿，我有先把雷聲調小喔！」', image: 'siang-067-thunder', series: 'weather' },
   '068': { no: '068', name: '晴天小湘', rarity: 'R', line: '「太陽出來啦！今天要不要跟我出去拍漂亮的天空？」', image: 'siang-068-sunny', series: 'weather' },

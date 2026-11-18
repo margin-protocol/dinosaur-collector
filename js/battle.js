@@ -6,6 +6,8 @@ import { levelOf } from './affection.js';
 import { todayKey } from './wishes.js';
 import { GUGU_REVIEWS, REVIEW_ORDER } from './gugu-reviews.js';
 import { HERO_SHOP, HERO_LINES, PARTY_LINES, PARTY_REPORT, heroOffer } from './badge-heroes.js';
+import { WEATHER_LINES } from './weather-lines.js';
+const SPOKEN = { ...WEATHER_LINES, ...HERO_LINES }; // 有專屬出戰／勝敗台詞的小湘
 
 // 敵人。圖片照皮寶的命名放在 assets/enemies/chapter-0N/（沒有圖就顯示 emoji）。
 // 文字欄位都可以直接改：intro 開場、weakHit 被剋制的反應（weakTag 是戰報上的小標）、win 玩家打贏時敵人說的話、
@@ -166,7 +168,7 @@ const ACTIONS = {
   friends: '{name}大喊「大家加油！」，隊伍士氣上升！', date: '{name}拋了一個飛吻，對手害羞得愣住了。', holiday: '{name}放了一串小煙火，砰砰砰！',
   county: '{name}拿出家鄉名產，丟！', recipe: '{name}丟出剛烤好的餅乾，香到對手分心。', memorial: '{name}拿出珍藏的照片，閃光攻擊！', special: '{name}身上冒出神秘的光芒。',
 };
-const actionLine = (no) => (HERO_LINES[no] ? `${CHARACTERS[no].name}：「${HERO_LINES[no].dispatch}」` : (ACTIONS[CHARACTERS[no]?.series] || ACTIONS.daily).replaceAll('{name}', CHARACTERS[no].name));
+const actionLine = (no) => (SPOKEN[no] ? `${CHARACTERS[no].name}：「${SPOKEN[no].dispatch}」` : (ACTIONS[CHARACTERS[no]?.series] || ACTIONS.daily).replaceAll('{name}', CHARACTERS[no].name));
 
 // 目前能派的小湘（有收集、沒有在出門或討伐、沒有在休息）
 export function available(state, now = Date.now(), busy = new Set()) {
@@ -235,8 +237,8 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   if (f.heroParty) log.push(...PARTY_LINES.map((l) => `${l.speaker}：「${l.text}」`), `✦ ${PARTY_REPORT}`);
   log.push(win ? enemy.win : enemy.lose);
   // 隊伍裡有徽章限定小湘：由最稀有的那位說勝利／戰敗台詞
-  const speaker = nos.filter((no) => HERO_LINES[no]).sort((a, c) => (RARITY_POWER[CHARACTERS[c].rarity] || 0) - (RARITY_POWER[CHARACTERS[a].rarity] || 0))[0];
-  if (speaker) log.push(`${CHARACTERS[speaker].name}：「${HERO_LINES[speaker][win ? 'victory' : 'defeat']}」`);
+  const speaker = nos.filter((no) => SPOKEN[no]).sort((a, c) => (RARITY_POWER[CHARACTERS[c].rarity] || 0) - (RARITY_POWER[CHARACTERS[a].rarity] || 0))[0];
+  if (speaker) log.push(`${CHARACTERS[speaker].name}：「${SPOKEN[speaker][win ? 'victory' : 'defeat']}」`);
   const advice = win ? null : diagnose(state, nos, enemyId, free.filter((no) => !nos.includes(no)));
   const prev = enemy.wild ? { stars: 0, best: b.weekBest, last: wildEntry?.last || 0, clears: 0, tries: wildEntry?.tries || 0 } : (b.stages[enemyId] || { stars: 0, best: 0, last: 0, clears: 0, tries: 0 });
   const loot = enemy.wild

@@ -13,13 +13,14 @@ const r=await p.evaluate(async()=>{
  const missing=ids.filter(n=>!E.CHARACTERS[n]||E.CHARACTERS[n].series!=='weather'||!E.EGGS.weather.pool[n]);
  let plain=0,boosted=0;for(let i=0;i<20000;i++){if(E.rollFor({id:'weather'})==='072')plain++;if(E.rollFor({id:'weather'},[{no:'072',times:4}])==='072')boosted++;}
  const imgs=await Promise.all(ids.map(n=>fetch(`/assets/characters/${E.CHARACTERS[n].image}.webp`).then(x=>x.ok)));
- return {kinds,day1,again,bow,boosts,obs,missing,plain,boosted,imgs,weather:s.weather};
+ const L=(await import('/js/weather-lines.js')).WEATHER_LINES,B=(await import('/js/bond-copy.js')).BOND_LINES;const lines=ids.every(n=>L[n]?.hatch&&L[n].dispatch&&L[n].victory&&L[n].defeat&&B[n][2]===L[n].idle&&B[n][5]===L[n].bond);
+ return {lines,kinds,day1,again,bow,boosts,obs,missing,plain,boosted,imgs,weather:s.weather};
 });
 assert.deepEqual(r.kinds,['clear','cloudy','fog','rain','thunder','hail','snow','windy']);
 assert.equal(r.day1.egg,true,'晴天也送一顆天氣蛋');assert.equal(r.again.egg,false,'同一天只送一顆');
 assert.equal(r.bow.rainbow,true);assert.equal(r.weather.rained,'2026-11-20');
 assert.deepEqual(r.boosts,['068','074','075']);assert.deepEqual(r.obs,['065']);
-assert.deepEqual(r.missing,[]);assert(r.boosted>r.plain*2.5,JSON.stringify(r));assert(r.imgs.every(Boolean));
+assert.deepEqual(r.missing,[]);assert(r.lines,'皮寶的台詞都接上了');assert(r.boosted>r.plain*2.5,JSON.stringify(r));assert(r.imgs.every(Boolean));
 // 圖鑑：天氣系列看得到新成員的剪影與線索
 await p.locator('#intro-ok').click();
 await p.evaluate(()=>{const k='siang-collector:v1',s=JSON.parse(localStorage.getItem(k));s.hatched=3;s.dex={'001':{at:'x'},'071':{at:'x'},'074':{at:'x'}};s.weather={date:null,kind:null,stock:1,granted:null,rained:null,seen:[]};localStorage.setItem(k,JSON.stringify(s));});
