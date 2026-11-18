@@ -21,6 +21,7 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.battle-stage-card.is-locked,.battle-stage-card.is-done) .enemy-art { opacity:.55; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.research-partner:disabled,.research-text-button:disabled,.growth-claim:disabled) { opacity:1; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) button:disabled { color:var(--t-muted); border-color:var(--t-line); border-style:dashed; cursor:default; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-choice[aria-pressed="true"] { background:var(--t-selected); color:var(--t-text); border-color:var(--t-accent); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-choice__state { color:var(--t-accent); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-choice:disabled:not([aria-pressed="true"]) { background:var(--t-raised); color:var(--t-muted); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(input,textarea)::placeholder { color:var(--t-muted); opacity:1; }
