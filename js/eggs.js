@@ -276,12 +276,32 @@ export function characterSources(image) {
 }
 
 // 讓 <img> 在載入失敗時自動換下一個候選路徑
+// 載入圖片，失敗就依序換下一個來源（最後通常是佔位圖）。
+// 網路不穩時（例如 LTE 斷一下）第一個來源會先重試一次；如果最後落到佔位圖，
+// 等網路恢復或切回遊戲時會再試一次正式圖，不會一直卡在佔位圖。（11/18 暗號蛋只剩虛線外框）
+const waitingForRetry = new Set();
+function retryPlaceholders() {
+  for (const job of [...waitingForRetry]) {
+    if (!job.img.isConnected) { waitingForRetry.delete(job); continue; }
+    if (job.tries >= 3) { waitingForRetry.delete(job); continue; }
+    job.tries += 1; job.restart();
+  }
+}
+if (typeof window !== 'undefined') {
+  window.addEventListener('online', retryPlaceholders);
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) retryPlaceholders(); });
+}
 export function loadWithFallback(img, sources) {
-  let i = 0;
+  let i = 0; let retried = false;
+  const job = { img, tries: 0, restart: () => { i = 0; retried = true; waitingForRetry.delete(job); setSrc(sources[0]); } };
+  const setSrc = (src) => { img.removeAttribute('src'); img.src = src; };
   img.onerror = () => {
+    if (i === 0 && !retried && sources.length > 1) { retried = true; setTimeout(() => setSrc(sources[0]), 1200); return; }
     i += 1;
-    if (i < sources.length) img.src = sources[i];
-    else img.onerror = null;
+    if (i < sources.length) {
+      img.src = sources[i];
+      if (i === sources.length - 1 && /_placeholder/.test(sources[i])) waitingForRetry.add(job);
+    } else img.onerror = null;
   };
   img.src = sources[0];
 }
