@@ -240,3 +240,9 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 - 預定正式素材：`assets/characters/siang-070-hail.webp`（✅ **1024×1024 透明 WebP 已交付，293 KB**）。
 - 美術 Canon：[`SIANG_070_HAIL_ART.md`](SIANG_070_HAIL_ART.md)。
 - SSR 天氣系列；尚未接入角色表與蛋池，取得方式待確認。
+
+## No.073｜大風小湘（SR）美術交付（2026-11-18）
+
+- **No.073 大風小湘（SR）**：`assets/characters/siang-073-windy.webp` ✅ 正式透明 WebP 已交付（1024×1024，約 392 KB，腳底 y=940）。
+- 角色 Canon 與接入說明：[`SIANG_073_WINDY_ART.md`](SIANG_073_WINDY_ART.md)。
+- 系列：天氣與時間；**僅圖片與美術規格交付，尚未接入 `js/eggs.js`、圖鑑或蛋池**。編號 071／072 是否留給其他天氣小湘，後續再由德寶確認。
