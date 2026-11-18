@@ -204,3 +204,9 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 
 - No.062～064 角色正式台詞與三人連攜文案：[`BADGE_HEROES_DIALOGUE.md`](BADGE_HEROES_DIALOGUE.md)；機器可讀資料 `data/characters/badge-heroes-dialogue.json`。
 - **文案已交付，尚未實裝**；由德寶接入角色、徽章兌換與 UI，不影響既有戰鬥規則。
+
+## No.065｜天氣觀測師（SSR）美術交付（2026-11-18）
+
+- **No.065 天氣觀測師（SSR）**：`assets/characters/siang-065-weather-observer.webp` ✅ 正式透明 WebP 已交付（1024 × 1024，約 381 KB）。
+- 詳細美術 Canon 與接入備註：[`SIANG_065_WEATHER_OBSERVER_ART.md`](SIANG_065_WEATHER_OBSERVER_ART.md)。
+- 圖鑑系列建議：天氣與時間；**編號預留，美術已交付，但尚未加入角色資料與任何蛋池**。取得方式由湘與德寶後續確認。
