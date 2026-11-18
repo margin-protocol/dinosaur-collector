@@ -222,3 +222,9 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 - **No.067 打雷小湘（SSR）**：`assets/characters/siang-067-thunder.webp`，1024 × 1024 透明 WebP（約 263 KB），正式美術已交付。
 - 詳細 Canon 與接入備註：[`SIANG_067_THUNDER_ART.md`](SIANG_067_THUNDER_ART.md)。
 - 天氣與時間系列；**角色表、蛋池與取得條件尚未實裝**，由湘與德寶後續確認。
+
+## No.068｜晴天小湘（R）美術交付（2026-11-18）
+
+- 正式透明素材：`assets/characters/siang-068-sunny.webp`（1024×1024，約 198 KB）；僅角色本體、無場景或貓。
+- 美術 Canon 與接入規格：[`SIANG_068_SUNNY_ART.md`](SIANG_068_SUNNY_ART.md)。
+- 天氣與時間系列；**尚未加入圖鑑資料或蛋池**，取得方式待確認。
