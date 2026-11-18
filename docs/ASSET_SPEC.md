@@ -237,6 +237,6 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 
 ## No.070｜冰雹小湘（SSR）美術規格（2026-11-18）
 
-- 預定正式素材：`assets/characters/siang-070-hail.webp`（**圖檔待上傳**）。
+- 預定正式素材：`assets/characters/siang-070-hail.webp`（✅ **1024×1024 透明 WebP 已交付，293 KB**）。
 - 美術 Canon：[`SIANG_070_HAIL_ART.md`](SIANG_070_HAIL_ART.md)。
 - SSR 天氣系列；尚未接入角色表與蛋池，取得方式待確認。
