@@ -446,3 +446,41 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 
 /* Closed archives must retain the native dialog hidden state. */
 .archive:not([open]) { display:none; }
+
+/* ── 玩家指引 ── */
+/* 研究者手記分組 */
+.function-center .nav-group { grid-column:1 / -1; display:grid; gap:8px; }
+.nav-group + .nav-group { margin-top:6px; }
+.nav-group__title { margin:4px 2px 0; font-size:12px; letter-spacing:.2em; color:var(--rose-light, #f0d6c8); opacity:.85; display:flex; align-items:center; gap:8px; }
+.nav-group__title::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,#f0d6c84d,transparent); }
+.nav-group__grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+.function-center .nav-group .nav__item { min-height:74px; gap:5px; padding:8px 6px; }
+.function-center .nav-group .nav__item[data-view="home"] { grid-column:auto; flex-direction:column; min-height:74px; }
+.nav__sub { display:block; font-size:10.5px; letter-spacing:.02em; opacity:.62; line-height:1.3; text-align:center; }
+/* 今天可以做的事 */
+.today-pill { display:inline-flex; align-items:center; gap:8px; margin-top:8px; padding:6px 12px 6px 10px; border-radius:999px; border:1px solid var(--t-line, #f0d6c855); background:var(--t-raised, #1c1520b3); color:var(--t-text, #f6ede6); font-size:13px; backdrop-filter:blur(6px); }
+.today-pill__dot { width:8px; height:8px; border-radius:50%; background:#f08aae; box-shadow:0 0 8px #f08aae; animation:today-pulse 1.8s ease-in-out infinite; }
+.today-pill.is-done .today-pill__dot { background:#9fe0b0; box-shadow:none; animation:none; }
+@keyframes today-pulse { 50% { opacity:.4; } }
+@media (prefers-reduced-motion:reduce) { .today-pill__dot { animation:none; } }
+.today-list { list-style:none; margin:0; padding:0; display:grid; gap:8px; }
+.today-item { width:100%; display:grid; grid-template-columns:1fr auto; align-items:center; gap:10px; padding:11px 14px; border-radius:14px; border:1px solid #ffffff1c; background:#ffffff0b; color:inherit; text-align:left; }
+.today-item b { display:block; font-size:14px; } .today-item small { font-size:11.5px; opacity:.7; }
+/* 新功能 */
+.unlock-dialog { text-align:center; }
+.unlock-dialog__icon { font-size:46px; margin:4px 0 2px; }
+.unlock-dialog__tip { margin:6px 0 14px; padding:10px 12px; border-radius:12px; background:#ffffff0d; font-size:13.5px; line-height:1.7; text-align:left; }
+/* 小恐龍第一次解說 */
+.guide-tip { display:grid; grid-template-columns:44px 1fr; gap:10px; align-items:center; margin:0 0 12px; padding:10px 12px; border-radius:16px; background:linear-gradient(135deg,#8fc6a81f,#ffd9a81a); border:1px solid #9fe0b055; text-align:left; animation:tip-in .3s ease-out; }
+.guide-tip__dino { width:44px; height:44px; object-fit:contain; grid-row:span 2; }
+.guide-tip small { font-size:11px; letter-spacing:.06em; color:#9fe0b0; }
+.guide-tip p { margin:2px 0 0; font-size:13px; line-height:1.6; }
+.guide-tip__ok { grid-column:2; justify-self:end; padding:4px 12px; border-radius:999px; border:1px solid #9fe0b077; background:none; color:#9fe0b0; font-size:12px; }
+@keyframes tip-in { from { opacity:0; transform:translateY(-6px); } }
+.view > .guide-tip { margin:8px 16px 12px; }
+/* 玩法指南的功能清單 */
+.guide-features { margin:4px 0 12px; display:grid; gap:8px; }
+#guide-features { display:grid; gap:6px; }
+.guide-feature { padding:8px 12px; border-radius:12px; background:#ffffff0a; }
+.guide-feature b { font-size:13px; } .guide-feature p { margin:3px 0 0; font-size:12.5px; line-height:1.6; opacity:.85; }
+.guide-feature.is-locked { opacity:.55; }

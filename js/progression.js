@@ -8,6 +8,7 @@ import { ensureErrands } from './errands.js';
 import { ensureWheel } from './wheel.js';
 import { ensureAffection } from './affection.js';
 import { ensureBattle } from './battle.js';
+import { ensureGuide } from './guide.js';
 import { ensureBonus } from './energy.js';
 import { ensureLetters } from './letters.js';
 import { ensureDino } from './dino.js';
@@ -71,6 +72,7 @@ export function hydrateProgression(state) {
   ensureWheel(state);
   ensureAffection(state);
   ensureBattle(state);
+  ensureGuide(state);
   // 三選一只給剛換上的普通蛋；蛋已經換了或開始孵，就收起選單
   if (state.eggOffer && !(Array.isArray(state.eggOffer) && state.egg?.id === 'ordinary' && !state.egg.warmth && !state.egg.flavor)) state.eggOffer = null;
   if (!state.cradle || !(state.cradle.slots >= 1)) state.cradle = { slots: 1 };

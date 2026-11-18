@@ -38,6 +38,7 @@ const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
+import * as guide from './guide.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -708,6 +709,7 @@ function renderAll() {
   if (document.getElementById('letter-badge')) renderLetterBadge();
   if (document.getElementById('errand-badge')) renderErrandBadge();
   if (document.getElementById('wheel-badge')) renderWheelBadge();
+  if (document.getElementById('today-pill')) { applyGates(); renderToday(); }
   if (document.getElementById('snap-count')) renderSnap();
   if (document.getElementById('explore')) $('explore').hidden = !(state.hatched > 0 || Boolean(state.dex['001']));
   renderResources();
@@ -729,6 +731,7 @@ function showView(name, options = {}) {
   }
   if ($('function-center').open) $('function-center').close();
   $('back-home').hidden = name === 'home';
+  if (['wish', 'incubate', 'dex'].includes(name)) setTimeout(() => showTip(name, document.querySelector(`.view[data-view="${name}"]`)), 50);
   $('location-label').textContent = { home: '日常 / HOME', incubate: '培育 / INCUBATION', wish: '願望 / WISHES', dex: '圖鑑 / COLLECTION', research: '研究 / RESEARCH' }[name];
   const nextHash = name === 'home' ? '#home' : `#${name}`;
   if (location.hash !== nextHash) history[options.replace ? 'replaceState' : 'pushState'](null, '', nextHash);
@@ -1494,6 +1497,7 @@ function openDexDetail(no) {
   $('dex-detail-story').hidden = !story;
   $('dex-detail-at').textContent = !story && owned && at && !Number.isNaN(Date.parse(at)) ? `相遇日期：${new Date(at).toLocaleDateString('zh-TW')}` : '';
   renderBond(no, owned);
+  if (owned) showTip('bond', $('dex-detail-bond'));
   $('dex-detail').classList.toggle('is-shiny', owned && bondInfo(state, no, todayKey()).max);
   $('dex-detail').showModal();
 }
@@ -2315,6 +2319,7 @@ function openErrands() {
   errandChoice = null; errandPicked = []; $('errand-status').textContent = '';
   renderErrands();
   if (!$('errand-dialog').open) { $('errand-dialog').showModal(); syncRoomActivity(); }
+  showTip('errand', $('errand-pane'));
 }
 function showErrandResult(r, replay = false) {
   $('errand-result-card').replaceChildren(r.place ? tripCard(r) : Object.assign(document.createElement('div'), { className: 'trip-card', style: 'background:linear-gradient(160deg,#6a5a7a,#2a2236)' }));
@@ -2466,6 +2471,7 @@ function openWheel() {
   if (!$('wheel').childElementCount) drawWheel();
   renderWheel('');
   if (!$('wheel-dialog').open) { $('wheel-dialog').showModal(); syncRoomActivity(); }
+  showTip('wheel', $('wheel-dialog').querySelector('.wheel-wrap'), 'before');
 }
 $('wheel-spin').addEventListener('click', async () => {
   if (wheelBusy) return;
@@ -2583,7 +2589,7 @@ function showErrandTab(tab) {
   $('errand-pane').hidden = tab !== 'errand'; $('battle-pane').hidden = tab !== 'battle';
   $('errand-title').textContent = tab === 'battle' ? '討伐' : '派小湘出門';
   $('errand-title').previousElementSibling.textContent = tab === 'battle' ? 'BATTLE' : 'ERRANDS';
-  if (tab === 'battle') renderBattle();
+  if (tab === 'battle') { renderBattle(); showTip('battle', $('battle-pane')); }
 }
 $('tab-errand').addEventListener('click', () => showErrandTab('errand'));
 $('tab-battle').addEventListener('click', () => showErrandTab('battle'));
@@ -2863,9 +2869,115 @@ function openArchive(tab = archiveTab) {
   $('archive-greet').textContent = GUGU_GREETS[Math.floor(Math.random() * GUGU_GREETS.length)];
   renderArchive();
   if (!$('archive').open) { $('archive').showModal(); syncRoomActivity(); }
+  showTip('archive', $('archive-body'));
 }
 document.querySelectorAll('[data-archive-tab]').forEach(t => t.addEventListener('click', () => { archiveTab = t.dataset.archiveTab; renderArchive(); }));
 $('open-archive').addEventListener('click', () => { $('function-center').close(); openArchive('battle'); });
 $('open-archive-battle').addEventListener('click', () => openArchive('battle'));
 $('close-archive').addEventListener('click', () => $('archive').close());
 $('archive').addEventListener('close', syncRoomActivity);
+
+// ── 玩家指引：第一次打開的小恐龍解說、功能逐步出現、今天可以做的事
+function automatedGuide() { return navigator.webdriver && !window.__testGuide; }
+function showTip(id, host, where = 'prepend') {
+  if (!host || !guide.tipWanted(state, id) || host.querySelector?.(`.guide-tip[data-tip="${id}"]`) || document.querySelector(`.guide-tip[data-tip="${id}"]`)) return;
+  const f = guide.FEATURES[id];
+  const card = document.createElement('div'); card.className = 'guide-tip'; card.dataset.tip = id;
+  card.innerHTML = '<img class="guide-tip__dino" src="assets/mascot/dinosaur-idle.webp" alt=""><div><small></small><p></p></div><button type="button" class="guide-tip__ok">知道了</button>';
+  card.querySelector('small').textContent = `${f.icon} ${f.name}`;
+  card.querySelector('p').textContent = f.tip;
+  card.querySelector('button').addEventListener('click', async () => { card.remove(); state = (await updateState(current => guide.markSeen(current, id))).state; });
+  if (where === 'before') host.before(card); else host.prepend(card);
+}
+function applyGates() {
+  const GATE_ELEMENTS = { errand: ['home-errand', 'open-errands'], wheel: ['home-wheel', 'open-wheel'], battle: ['open-battle', 'tab-battle'], archive: ['open-archive', 'open-archive-battle'] }; // 放在函式裡：renderAll 在檔案尾端之前就會跑
+  for (const [id, els] of Object.entries(GATE_ELEMENTS)) {
+    if (guide.isUnlocked(state, id)) continue;
+    for (const el of els) { const node = document.getElementById(el); if (node) node.hidden = true; }
+  }
+  // 討伐分頁鎖著時，出門視窗的分頁列整個收起來
+  $('errand-dialog').querySelector('.errand-tabs').hidden = !guide.isUnlocked(state, 'battle');
+  if (!automatedGuide() && guide.GATED.some(id => !state.guide?.unlocked?.includes(id) && guide.FEATURES[id].unlock(state))) void checkUnlocks();
+}
+var unlockBusy = false; var unlockQueue = [];
+async function checkUnlocks() {
+  if (unlockBusy) return; unlockBusy = true;
+  try {
+    const t = await updateState(current => guide.unlockNew(current));
+    state = t.state;
+    if (t.result.length) { unlockQueue.push(...t.result); applyGates(); renderAll(); showNextUnlock(); }
+  } finally { unlockBusy = false; }
+}
+function showNextUnlock(tries = 0) {
+  if (!unlockQueue.length || $('unlock-dialog').open) return;
+  if (document.querySelector('dialog[open]')) { if (tries < 40) setTimeout(() => showNextUnlock(tries + 1), 1500); return; }
+  const id = unlockQueue.shift(); const f = guide.FEATURES[id];
+  $('unlock-icon').textContent = f.icon; $('unlock-title').textContent = `新功能：${f.name}`; $('unlock-tip').textContent = f.tip;
+  $('unlock-dialog').dataset.feature = id; $('unlock-dialog').showModal(); syncRoomActivity(); buzz([15, 30, 15]);
+}
+const OPEN_FEATURE = { errand: () => openErrands(), wheel: () => openWheel(), battle: () => { openErrands(); showErrandTab('battle'); }, archive: () => openArchive('battle') };
+$('unlock-go').addEventListener('click', () => { const id = $('unlock-dialog').dataset.feature; $('unlock-dialog').close(); OPEN_FEATURE[id]?.(); });
+$('unlock-later').addEventListener('click', () => $('unlock-dialog').close());
+$('unlock-dialog').addEventListener('close', () => { syncRoomActivity(); setTimeout(showNextUnlock, 300); });
+
+// 今天可以做的事：列出還沒做的，點一下就過去
+function todayItems() {
+  const items = []; const today = todayKey(); const add = (key, label, detail, go) => items.push({ key, label, detail, go });
+  const owned = Object.keys(state.dex || {}).length;
+  if (!$('daily-gift').hidden) add('gift', '領今天的見面禮', '首頁右邊的禮物', () => { $('today-dialog').close(); $('daily-gift').click(); });
+  if (!$('letter-badge')?.hidden) add('letter', '看新的紙條', '首頁右邊的紙條', () => { $('today-dialog').close(); $('home-letter').click(); });
+  const done = state.wishes?.date === today ? state.wishes.done.length : 0;
+  if (done < 3) add('wish', `完成今日願望（${done} / 3）`, '拍顏色、陪小湘、主題拍照各一個', () => showView('wish'));
+  if (state.eggOffer) add('offer', '挑一顆新蛋', '小恐龍找到三顆蛋', () => showView('incubate'));
+  else if ($('enter-incubator').classList.contains('is-ready')) add('hatch', '蛋可以破殼了！', '去培育室迎接新夥伴', () => showView('incubate'));
+  else if (state.energy >= 10) add('feed', `幫蛋保溫（能量 ${state.energy}）`, '能量用來孵蛋', () => showView('incubate'));
+  if (owned && state.bonus?.explored !== today) add('explore', '按一次「探索附近」', '每天第一次會送一顆蛋', () => { $('today-dialog').close(); $('explore').click(); });
+  if (guide.isUnlocked(state, 'wheel') && owned >= 1 && spinsLeft(state) > 0) add('wheel', `小恐龍轉盤（還有 ${spinsLeft(state)} 次）`, '押一點能量轉轉看', () => { $('today-dialog').close(); openWheel(); });
+  if (guide.isUnlocked(state, 'errand') && owned) {
+    const back = returned(state).length;
+    if (back) add('errand-back', `${back} 趟出門回來了`, '收下她們帶回來的東西', () => { $('today-dialog').close(); openErrands(); });
+    else if ((state.errands?.active?.length || 0) < ERRAND_SLOTS) add('errand', '派小湘出門', `還可以再派 ${ERRAND_SLOTS - (state.errands?.active?.length || 0)} 趟`, () => { $('today-dialog').close(); openErrands(); });
+  }
+  if (guide.isUnlocked(state, 'battle') && owned) {
+    const backs = (state.battle?.active || []).filter(a => battle.isBack(a)).length;
+    const wildLeft = (state.battle?.wild?.list || []).filter(w => !w.defeated).length;
+    if (backs) add('battle-back', `${backs} 份戰報可以看`, '討伐回來了', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); });
+    else if ((state.battle?.active?.length || 0) < battle.teamSlots(state) && wildLeft) add('battle', `討伐野生小怪（今天還有 ${wildLeft} 隻）`, '打贏拿徽章，可以特訓小湘', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); });
+  }
+  const pettable = room.residents().filter(no => bondInfo(state, no, today).left > 0 && !bondInfo(state, no, today).max);
+  if (pettable.length) add('bond', '摸摸首頁的小湘', `${pettable.map(no => CHARACTERS[no].name).join('、')}今天還能增加好感`, () => $('today-dialog').close());
+  return items;
+}
+function renderToday() {
+  const items = todayItems();
+  $('today-pill').hidden = !state.seenIntro;
+  $('today-pill-text').textContent = items.length ? `今天還有 ${items.length} 件事可以做` : '今天的事都做完了 ✓';
+  $('today-pill').classList.toggle('is-done', !items.length);
+  if ($('today-dialog').open) fillToday(items);
+}
+function fillToday(items = todayItems()) {
+  $('today-intro').textContent = items.length ? '點一下就會帶你過去。做完的會自動消失。' : '今天的事都做完了，辛苦了！明天見～';
+  $('today-list').replaceChildren(...items.map(it => {
+    const li = document.createElement('li'); const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'today-item';
+    btn.innerHTML = '<span class="today-item__text"><b></b><small></small></span><span aria-hidden="true">›</span>';
+    btn.querySelector('b').textContent = it.label; btn.querySelector('small').textContent = it.detail;
+    btn.addEventListener('click', it.go); li.append(btn); return li;
+  }));
+}
+$('today-pill').addEventListener('click', () => { fillToday(); $('today-dialog').showModal(); syncRoomActivity(); });
+$('close-today').addEventListener('click', () => $('today-dialog').close());
+$('today-dialog').addEventListener('close', syncRoomActivity);
+setInterval(() => { if (!document.hidden) renderToday(); }, 60 * 1000);
+// 玩法指南：各功能說明（還沒解鎖的會寫解鎖條件）
+function renderGuideFeatures() {
+  $('guide-features').replaceChildren(...Object.entries(guide.FEATURES).map(([id, f]) => {
+    const open = guide.isUnlocked(state, id);
+    const card = document.createElement('div'); card.className = `guide-feature${open ? '' : ' is-locked'}`;
+    card.innerHTML = '<b></b><p></p>';
+    card.querySelector('b').textContent = `${f.icon} ${f.name}${open ? '' : '（還沒出現）'}`;
+    card.querySelector('p').textContent = open ? f.tip : `${f.unlockText}後就會出現。`;
+    return card;
+  }));
+}
+$('open-tutorial').addEventListener('click', renderGuideFeatures);
+document.getElementById('tutorial-more')?.addEventListener('click', renderGuideFeatures);
