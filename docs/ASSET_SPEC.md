@@ -246,3 +246,10 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 - **No.073 大風小湘（SR）**：`assets/characters/siang-073-windy.webp` ✅ 正式透明 WebP 已交付（1024×1024，約 392 KB，腳底 y=940）。
 - 角色 Canon 與接入說明：[`SIANG_073_WINDY_ART.md`](SIANG_073_WINDY_ART.md)。
 - 系列：天氣與時間；**僅圖片與美術規格交付，尚未接入 `js/eggs.js`、圖鑑或蛋池**。編號 071／072 是否留給其他天氣小湘，後續再由德寶確認。
+
+## No.071｜下雨小湘（R）美術交付（2026-11-18）
+
+- **No.071 下雨小湘（R）**：`assets/characters/siang-071-rain.webp` ✅ 1024×1024 透明 WebP 正式交付（約 195 KB）。
+- 特色：黃色連帽雨衣、透明雨鞋、開心踩水花；不拿雨傘，與 No.003 雨傘小湘區別。
+- 美術 Canon 與接入備註：[`SIANG_071_RAIN_ART.md`](SIANG_071_RAIN_ART.md)。
+- 天氣與時間系列；**美術已交付，尚未加入圖鑑或蛋池，取得方式待確認**。
