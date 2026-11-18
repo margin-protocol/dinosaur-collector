@@ -1,3 +1,4 @@
+import { featureIcon } from './ui-icons.js';
 import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
 import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
@@ -2156,6 +2157,7 @@ attachSnackDrag($('snack'), {
 });
 
 setupThemes({ onOpen: syncRoomActivity });
+for (const id of ['home-errand', 'open-errands']) $(id).querySelector('svg')?.replaceWith(featureIcon('errand'));
 renderAll();
 renderExplore();
 void autoBackup().catch(() => {}).then(() => syncFromCloud(true));
@@ -2884,7 +2886,7 @@ function showTip(id, host, where = 'prepend') {
   const f = guide.FEATURES[id];
   const card = document.createElement('div'); card.className = 'guide-tip'; card.dataset.tip = id;
   card.innerHTML = '<img class="guide-tip__dino" src="assets/mascot/dinosaur-idle.webp" alt=""><div><small></small><p></p></div><button type="button" class="guide-tip__ok">知道了</button>';
-  card.querySelector('small').textContent = `${f.icon} ${f.name}`;
+  card.querySelector('small').replaceChildren(featureIcon(f.icon), document.createTextNode(f.name));
   card.querySelector('p').textContent = f.tip;
   card.querySelector('button').addEventListener('click', async () => { card.remove(); state = (await updateState(current => guide.markSeen(current, id))).state; });
   if (where === 'before') host.before(card); else host.prepend(card);
@@ -2912,7 +2914,7 @@ function showNextUnlock(tries = 0) {
   if (!unlockQueue.length || $('unlock-dialog').open) return;
   if (document.querySelector('dialog[open]')) { if (tries < 40) setTimeout(() => showNextUnlock(tries + 1), 1500); return; }
   const id = unlockQueue.shift(); const f = guide.FEATURES[id];
-  $('unlock-icon').textContent = f.icon; $('unlock-title').textContent = `新功能：${f.name}`; $('unlock-tip').textContent = f.tip;
+  $('unlock-icon').replaceChildren(featureIcon(f.icon)); $('unlock-title').textContent = `新功能：${f.name}`; $('unlock-tip').textContent = f.tip;
   $('unlock-dialog').dataset.feature = id; $('unlock-dialog').showModal(); syncRoomActivity(); buzz([15, 30, 15]);
 }
 const OPEN_FEATURE = { errand: () => openErrands(), wheel: () => openWheel(), battle: () => { openErrands(); showErrandTab('battle'); }, archive: () => openArchive('battle') };
@@ -2974,7 +2976,7 @@ function renderGuideFeatures() {
     const open = guide.isUnlocked(state, id);
     const card = document.createElement('div'); card.className = `guide-feature${open ? '' : ' is-locked'}`;
     card.innerHTML = '<b></b><p></p>';
-    card.querySelector('b').textContent = `${f.icon} ${f.name}${open ? '' : '（還沒出現）'}`;
+    card.querySelector('b').replaceChildren(featureIcon(f.icon), document.createTextNode(`${f.name}${open ? '' : '（還沒出現）'}`));
     card.querySelector('p').textContent = open ? f.tip : `${f.unlockText}後就會出現。`;
     return card;
   }));
