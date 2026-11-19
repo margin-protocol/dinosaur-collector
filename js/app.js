@@ -2910,7 +2910,7 @@ function renderBattle() {
     $('battle-map').replaceChildren(wildSec, ...battle.CHAPTERS.map(ch => {
       const sec = document.createElement('section'); sec.className = 'battle-chapter';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = `第 ${ch.id} 章 · ${ch.name}`;
-      if (PLACES[ch.bg]) { sec.classList.add('has-scene'); sec.style.setProperty('--scene', `url("${placeUrl(ch.bg)}")`); }
+      const chScene = sceneOf(ch); if (chScene) { sec.classList.add('has-scene'); sec.style.setProperty('--scene', `url("${chScene}")`); }
       const grid = document.createElement('div'); grid.className = 'battle-stages';
       grid.append(...ch.stages.map(id => {
         const e = battle.ENEMIES[id]; const st = b.stages[id]; const open = battle.unlocked(state, id);
@@ -2948,7 +2948,9 @@ function renderBattle() {
 // 討伐場景：章節的 bg 剛好是出門地點（conv 便利商店、mountain 山上）時，借用那張地點背景；沒有圖的章節維持原樣
 // 注意：CSS 變數裡的 url() 會以 css/ 資料夾為起點解析，所以要給完整網址
 function placeUrl(key) { return new URL(`assets/places/${key}.webp`, document.baseURI).href; } // function：renderAll 可能在這行之前就跑
-function chapterScene(id) { const ch = battle.CHAPTERS.find(c => c.stages.includes(id)); return ch && PLACES[ch.bg] ? placeUrl(ch.bg) : null; }
+// 章節自己有 scene 圖就用它（第 3 章玩具星球），不然借用同名的出門地點圖（第 1 章便利商店、第 2 章山上）
+function sceneOf(ch) { return ch?.scene ? new URL(ch.scene, document.baseURI).href : ch && PLACES[ch.bg] ? placeUrl(ch.bg) : null; }
+function chapterScene(id) { return sceneOf(battle.CHAPTERS.find(c => c.stages.includes(id))); }
 function renderBattleStage() {
   const id = battleEnemy; const e = battle.enemyFor(state, id); const st = e.wild ? null : state.battle.stages[id];
   if (!e) { battleEnemy = null; renderBattle(); return; }

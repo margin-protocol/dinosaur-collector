@@ -82,7 +82,7 @@ export const SPECIAL_PAGES = [];
 export const CHAPTERS = [
   { id: 1, name: '布丁失竊事件', stages: ['mochi', 'sock', 'bento', 'caramel-king'], bg: 'conv' },
   { id: 2, name: '烏雲山谷', stages: ['sneeze-cloud', 'lost-shadow', 'angry-mushroom', 'thunder-king'], bg: 'mountain' },
-  { id: 3, name: '故障的玩具星球', stages: ['toy-bunny', 'glitch-gummy', 'melody-guard', 'director-giggle'], bg: 'toy-planet' },
+  { id: 3, name: '故障的玩具星球', stages: ['toy-bunny', 'glitch-gummy', 'melody-guard', 'director-giggle'], bg: 'toy-planet', scene: 'assets/scene/ch3-toy-planet-battle.webp' },
 ];
 const ORDER = CHAPTERS.flatMap((c) => c.stages);
 

@@ -1,4 +1,4 @@
-// 地點背景：出門選地點、在家幫忙都有縮圖；討伐第 1、2 章借用便利商店／山上當場景，第 3 章沒有圖就維持原樣
+// 地點背景：出門選地點、在家幫忙都有縮圖；討伐第 1、2 章借用便利商店／山上當場景，第 3 章用玩具星球
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const p=await (await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -13,7 +13,8 @@ await p.click('#tab-battle');await p.waitForTimeout(400);
 const scenes=await p.$$eval('.battle-chapter',secs=>secs.map(s=>s.style.getPropertyValue('--scene')));
 assert.match(scenes.join('|'),/places\/conv\.webp/);assert.match(scenes.join('|'),/places\/mountain\.webp/);
 const loaded=await p.evaluate(async()=>Promise.all([...document.querySelectorAll('.battle-chapter.has-scene')].map(s=>new Promise(r=>{const u=s.style.getPropertyValue('--scene').match(/url\("(.+)"\)/)[1];const i=new Image();i.onload=()=>r(true);i.onerror=()=>r(false);i.src=u;}))));
-assert(loaded.length===2&&loaded.every(Boolean),'chapter scene urls resolve');
+assert.match(scenes.join('|'),/scene\/ch3-toy-planet-battle\.webp/);
+assert(loaded.length===3&&loaded.every(Boolean),'chapter scene urls resolve');
 await p.locator('.battle-chapter.has-scene .battle-stage-card').first().click();await p.waitForTimeout(300);
 assert.equal(await p.locator('#battle-enemy-art .enemy-art.has-scene').count(),1);
 assert.deepEqual(errs,[]);console.log('place thumbnails and chapter scenes PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1);});
