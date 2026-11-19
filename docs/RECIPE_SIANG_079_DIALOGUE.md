@@ -1,5 +1,7 @@
 # No.079｜史前探險小湘完整台詞（SSR）
 
+> **歷史交件／提案文件**：保留造型、文案與當時決策；內文的「尚未實裝」、共同入住／雨夜配方等狀態不代表現況。目前取得方式、已交付素材與規則以 [專案盤點](REPOSITORY_AUDIT.md)、[README](../README.md) 與正式程式為準。開發團隊 No.088 的同住成就仍有效。
+
 > 2026-11-19 文案交件。**Canon 已鎖定**：No.051 恐龍小湘＋No.065 天氣觀測師小湘，共同入住累積 4 天，獲得固定 No.079 的 `keepsake` 紀念蛋。**文案已交件，不代表角色已在遊戲實裝。**
 
 [美術與工程交接](SIANG_079_PREHISTORIC_EXPLORER_ART.md)｜[機器可讀 JSON](../data/characters/recipe-079-dialogue.json)

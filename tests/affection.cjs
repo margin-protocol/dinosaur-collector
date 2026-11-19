@@ -1,4 +1,4 @@
-// 小湘好感度：點／摸／布丁加好感（每天上限）、住首頁每天 +2、升級視窗與獎勵、圖鑑顯示解鎖、出門與重複孵化加好感、滿級閃亮卡
+// 小湘好感度：點／摸／布丁加好感（每天上限）、住首頁每天 +3、升級視窗與獎勵、圖鑑顯示解鎖、出門與重複孵化加好感、滿級閃亮卡
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -32,4 +32,4 @@ assert.deepEqual(u,[6,15,156,true,[3,4,5],30,13,0]);
 const mig=await p.evaluate(async()=>{const m=await import('/js/affection.js');const s={dex:{'001':{at:'x'},'002':{at:'x'}},affection:{'001':{pts:30},'002':{pts:100}}};m.ensureAffection(s);const once=[s.affection['001'].pts,s.affection['002'].pts,m.levelOf(s.affection['001'].pts),m.levelOf(s.affection['002'].pts)];m.ensureAffection(s);
 const c=[m.gain(s,'001','tap','d',15).added,m.gain(s,'001','cook','d',7).added,m.gain(s,'001','cook','d',7).added,m.gain(s,'001','cook','d',7).added,m.cookLeft(s,'001','d')];return [...once,s.affection['001'].pts,...c];});
 assert.deepEqual(mig,[45,150,3,5,70,15,7,3,0,0]);
-assert.equal(errs.length,0,errs.join('\n'));console.log('affection: home +2, taps, level-up popup & reward, daily cap, dex section, errand/duplicate, max level PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
+assert.equal(errs.length,0,errs.join('\n'));console.log('affection: home +3, taps, level-up popup & reward, daily cap, dex section, errand/duplicate, max level PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

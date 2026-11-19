@@ -1,4 +1,4 @@
-// 小湘口味（皮寶 data/SIANG_KITCHEN_TASTE_PROFILES.json 轉出；094 金門小湘德寶補）
+// 小湘口味（與 data/SIANG_KITCHEN_TASTE_PROFILES.json 對齊，新增角色時同步維護）
 // like／dislike 是食物標籤；secret 是隱藏最愛的精確食材組合（順序無關）
 export const TASTES = {
   '001': { like: '怪味', dislike: '濃甜', secret: ["mushroom", "strawberry"] }, // 原味小湘

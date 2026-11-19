@@ -1,5 +1,7 @@
 # No.088 未完待續小湘｜To Be Continued Siang｜台詞交接
 
+> **歷史交件／提案文件**：保留造型、文案與當時決策；內文的「尚未實裝」、共同入住／雨夜配方等狀態不代表現況。目前取得方式、已交付素材與規則以 [專案盤點](REPOSITORY_AUDIT.md)、[README](../README.md) 與正式程式為準。開發團隊 No.088 的同住成就仍有效。
+
 > 2026-11-19｜湘寶同意 No.088 SSR 隱藏配方企劃；配方搭檔為 No.086＋No.087，**共同入住 3 天仍是建議、未單獨確認**。本文件為交件草稿，尚未實裝。
 
 [美術規格](SIANG_088_TO_BE_CONTINUED_ART.md)｜[工程 JSON](../data/characters/recipe-088-dialogue.json)

@@ -1,5 +1,7 @@
 # No.080｜月光花園小湘完整台詞（SSR）
 
+> **歷史交件／提案文件**：保留造型、文案與當時決策；內文的「尚未實裝」、共同入住／雨夜配方等狀態不代表現況。目前取得方式、已交付素材與規則以 [專案盤點](REPOSITORY_AUDIT.md)、[README](../README.md) 與正式程式為準。開發團隊 No.088 的同住成就仍有效。
+
 > 日期：2026-11-19｜配方 Canon：No.006 園丁小湘＋No.004 夜貓小湘，同住累積 3 個夜晚，取得固定 No.080 的 `keepsake` 紀念蛋。**文字已交件，不代表遊戲功能已實裝。**
 
 [美術規格](SIANG_080_MOONLIT_GARDEN_ART.md)｜[機器可讀 JSON](../data/characters/recipe-080-dialogue.json)

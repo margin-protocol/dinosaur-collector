@@ -1,6 +1,6 @@
 {
-  "version": 1,
-  "status": "draft",
+  "version": 2,
+  "status": "implemented",
   "ingredients": [
     {
       "id": "strawberry",
@@ -1112,6 +1112,61 @@
         "cloud",
         "moon",
         "rainbow"
+      ]
+    },
+    {
+      "no": "094",
+      "name": "金門小湘",
+      "like": "濃甜",
+      "dislike": "刺激",
+      "secret_combo": [
+        "caramel",
+        "gear",
+        "star"
+      ]
+    },
+    {
+      "no": "095",
+      "name": "Koda 小湘",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "milk",
+        "pudding"
+      ]
+    },
+    {
+      "no": "096",
+      "name": "爬爬小湘",
+      "like": "果香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "moon",
+        "rainbow",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "097",
+      "name": "貓爬小湘",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "milk",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "098",
+      "name": "摯友小湘（派派ver）",
+      "like": "酥脆",
+      "dislike": "綿軟",
+      "secret_combo": [
+        "caramel",
+        "gear",
+        "lightning"
       ]
     }
   ]

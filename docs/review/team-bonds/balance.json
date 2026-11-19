@@ -1365,6 +1365,130 @@
     ]
   },
   {
+    "id": "islands",
+    "name": "離島守護聯盟",
+    "nos": [
+      "092",
+      "093",
+      "094"
+    ],
+    "clue": "一位等海發光，一位查好潮汐，一位抱著風獅爺說這裡我來守護。",
+    "power": 0.05,
+    "speed": 0.15,
+    "effect": "戰力 +5% · 討伐時間 −15%",
+    "names": [
+      "馬祖小湘",
+      "澎湖小湘",
+      "金門小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 110.8,
+        "minutes": 26,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 13.85
+      },
+      {
+        "id": "sock",
+        "power": 110.8,
+        "minutes": 26,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 11.08
+      },
+      {
+        "id": "bento",
+        "power": 110.8,
+        "minutes": 38,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 5.036363636363636
+      },
+      {
+        "id": "caramel-king",
+        "power": 110.8,
+        "minutes": 77,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.77
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 110.8,
+        "minutes": 51,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.462222222222222
+      },
+      {
+        "id": "lost-shadow",
+        "power": 144.1,
+        "minutes": 38,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.62
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 110.8,
+        "minutes": 64,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.7046153846153846
+      },
+      {
+        "id": "thunder-king",
+        "power": 110.8,
+        "minutes": 102,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.1663157894736842
+      },
+      {
+        "id": "toy-bunny",
+        "power": 110.8,
+        "minutes": 64,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.1079999999999999
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 110.8,
+        "minutes": 64,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.0072727272727273
+      },
+      {
+        "id": "melody-guard",
+        "power": 110.8,
+        "minutes": 77,
+        "chance": 0.6213333333333334,
+        "stars": 0,
+        "ratio": 0.8864
+      },
+      {
+        "id": "director-giggle",
+        "power": 110.8,
+        "minutes": 102,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6715151515151515
+      },
+      {
+        "id": "gugu",
+        "power": 110.8,
+        "minutes": 51,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.308333333333333
+      }
+    ]
+  },
+  {
     "id": "gallery",
     "name": "留給明天的光",
     "nos": [

@@ -5,7 +5,7 @@
   "stage": "3-1",
   "name": "發條兔",
   "type": "normal",
-  "image": "assets/enemies/chapter-03/ch3-01-toy-bunny.webp",
+  "image": "assets/enemies/chapter-03/ch3-01-tick-tock-bunny.webp",
   "power": 100,
   "minutes": 75,
   "weaknesses": [

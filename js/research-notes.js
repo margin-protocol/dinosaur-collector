@@ -1,5 +1,5 @@
 // 研究筆記：只記錄實驗過的「兩人組合」，不消耗能量、不發放角色或蛋。
-// 真正配方獎勵由 js/recipes.js 的「一起入住數日」機制結算，避免重複領獎。
+// 真正配方獎勵由 js/lab.js 的調配倒數結算，這裡只記探索歷史，避免重複領獎。
 import { CHARACTERS } from './eggs.js';
 import { RECIPES } from './recipes.js';
 

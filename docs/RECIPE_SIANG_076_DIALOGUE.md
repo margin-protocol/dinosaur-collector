@@ -1,5 +1,7 @@
 # No.076｜星夜書房小湘完整台詞（SR）
 
+> **歷史交件／提案文件**：保留造型、文案與當時決策；內文的「尚未實裝」、共同入住／雨夜配方等狀態不代表現況。目前取得方式、已交付素材與規則以 [專案盤點](REPOSITORY_AUDIT.md)、[README](../README.md) 與正式程式為準。開發團隊 No.088 的同住成就仍有效。
+
 > 2026-11-19 文案交付。依 [配方 Canon](RECIPE_SIANG_076-081_CANON.md)：No.007 書頁小湘＋No.010 星塵小湘，共同入住 3 個夜晚，取得固定 No.076 的紀念蛋。**文案已交付，尚未代表遊戲已實裝**。
 
 [機器可讀 JSON](../data/characters/recipe-076-dialogue.json)｜[美術與工程交接](SIANG_076_STARRY_LIBRARY_ART.md)

@@ -1,14 +1,14 @@
 # 素材規格｜給美術部（皮寶）
 
 > 工程：德寶（Claude）· 對應 `ART_DIRECTION_V0.7.md` 第 5、9 節
-> 日期：2026-11-15
+> 初稿：2026-11-15；現況校對：2026-11-20。已交付／缺件以 [盤點報告](REPOSITORY_AUDIT.md) 為準。
 
 程式已經照「可替換素材」架構做好：**檔案放到指定路徑、用指定檔名，就會自動取代佔位圖，不用改程式。**
 每個檔案會先找 `.webp`，沒有再找 `.png`，都沒有才顯示佔位圖。
 
 ## 1. 培養架與恐龍蛋（三層結構）
 
-培養架是首頁的**固定共用裝置**，所有蛋共用同一組。蛋是可替換的，夾在前後景之間。
+培養架是培育頁的**固定共用裝置**，所有蛋共用同一組。蛋是可替換的，夾在前後景之間。
 
 由下往上的疊法：
 
@@ -21,7 +21,7 @@
 | 5 | 前景環形架 | `assets/incubator/cradle-front.png` | 固定，蓋在蛋前面 |
 | 6 | 破殼閃光 | 程式產生 | 最上層 |
 
-每個檔案可以用 `.png` 或 `.webp`。目前已登記的蛋 id：`origin`（小湘本源蛋）、`ordinary`（普通蛋）、`wish`（願望蛋）、`county`（縣市蛋）。縣市蛋正式素材資料夾必須用 `county`，不是概念圖名稱 `regional`。新蛋種請先告訴工程要用的 id。
+每個檔案可以用 `.png` 或 `.webp`。目前已登記的蛋 id：`origin`、`ordinary`、`wish`、`weather`、`cipher`、`keepsake`、`date`、`county`，八種三層均已交付。縣市蛋正式素材資料夾必須用 `county`，不是概念圖名稱 `regional`。新蛋種請先告訴工程要用的 id。
 
 ### 共同座標系統（最重要）
 
@@ -33,7 +33,7 @@
   - 蛋（含本源蛋的花朵）範圍約 x 421–871、y 250–822
   - **蛋底中心落在 (646, 822)**，微微浮在環的中間（湘選定的位置）；程式的晃動與破殼放大都以這個點為中心
   - 蛋本體寬約 360、高約 570
-- 參考檔：`assets/eggs/origin/shell.webp` 的蛋底在 (627, 860)，程式再把它往右移 1.5%、往上移 3% 顯示，所以新蛋可以照上面的新座標畫，**或**照 `shell.webp` 的位置畫，兩種都會顯示在同一個地方（工程會調整）
+- 參考檔：`assets/eggs/origin/shell.webp` 的蛋底在 (627, 860)，程式再把它往右移 1.5%、往下移 0.8%（現行 css/game.css 預設） 顯示，所以新蛋可以照上面的新座標畫，**或**照 `shell.webp` 的位置畫，兩種都會顯示在同一個地方（工程會調整）
 - **建議改用 2048×2048 畫布交付**（位置等比例放大：蛋底中心 (1055, 1341)）。蛋在新架構裡只佔畫布約 36% 寬，1254 的畫布在高解析度手機上會有點糊
 
 ### 培養架（`cradle-back`、`cradle-front`）
@@ -104,7 +104,7 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 - 首頁上牠會站在蛋的左側，所以**身體朝右、看向蛋**的姿勢最好
 - 表情差分（選用）：`dinosaur-happy`、`dinosaur-remind`、`dinosaur-cheer`，與 idle 同尺寸、同腳底位置
 
-## 4. 首頁背景場景（目前最優先）
+## 4. 首頁背景場景（已交付）
 
 湘提供的示意圖是橫式，手機是直式，需要**重新構圖一張直式**，不是直接裁切。
 
@@ -139,9 +139,9 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 
 - 背景 JPG/WebP **≤ 400KB**、前景 PNG **≤ 250KB**；超過交給工程壓縮
 
-## 6. App 圖示
+## 5. App 圖示
 
-路徑：`assets/icons/icon-512.png`、`icon-192.png`
+現行路徑：`assets/icons/siang-icon-v2-512.png`、`siang-icon-v2-192.png`、`siang-icon-v2-180.png`。更新圖示須另取版本檔名，以避開主畫面快取。
 
 - 正方形、**不透明背景**（建議 `#191518`）
 - 主體放在中央 60% 的範圍內，Android 會把圖示裁成圓形或圓角
@@ -152,17 +152,11 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 - 放進 repo 的檔案：蛋每個圖層 **≤ 300KB**、角色 **≤ 300KB**、吉祥物 **≤ 150KB**
 - 超過的話交給工程轉成 WebP 即可
 
-## 7. 建議製作順序
+## 7. 已交付與下一張
 
-1. ~~`origin` 蛋的三層蛋圖~~（已完成並上線）
-2. ~~`cradle-back`、`cradle-front` 共用培養架~~（v0.1 已上線）
-3. **`home-bg` 首頁背景**（目前最優先）（有空的話連同 `home-fg` 前景）
-4. `dinosaur-idle.png`
-5. `siang-001-original.png` → 確認黑影圖鑑與揭曉畫面
-6. App 圖示
-7. `ordinary` 蛋，之後才是其他蛋種與角色
+角色立繪、八種三層蛋、三層培養架、小恐龍、首頁背景、App 圖示、九張出門／在家場景和 13 位敵人正式圖都已存在。目前需要補的是「離島守護聯盟」三人羈絆合照（092／093／094），見 [盤點報告](REPOSITORY_AUDIT.md)。
 
-背景到了以後，工程會把介面改成配合場景的樣子（半透明玻璃面板、配合場景的銀色金屬），並在實機上確認文字可讀性。
+`home-fg`、恐龍表情差分與上下半蛋殼屬於未接入的選配規劃，不是目前漏載的必要圖片。畫之前先設計對應互動；不要只放檔案就宣稱已啟用。
 
 ## 討伐敵人（2026-11-17）
 
@@ -188,96 +182,11 @@ No.001 已更新為 `siang-001-hd/` 的 1254px 獨立透明影格，含待機、
 咕咕的頭像（檔案館、書評）直接從立繪裁切：圓形框，以臉（約 46%, 42%）為中心放大 1.75 倍。立繪改版的話，調 `css/companion.css` 的 `.gugu-avatar img` 的 `transform-origin` 即可。
 
 文字（開場、被剋制反應與小標、勝敗台詞、章節線索、Boss 故事）都在 `js/battle.js` 的 `ENEMIES`，可以直接改。`data/enemies/*.json` 的台詞已同步進去（1-1 偷吃鬼糰子、1-2 襪子遊俠、1-3 碎碎念便當盒、1-Boss 焦糖大王故事初稿）。
-徽章限定角色（騎士、魔法師、勇者）完成後，在 `BADGE_HEROES` 填上角色編號，勇者小隊連攜就會生效。
+第三章四位敵人的正式圖位於 `assets/enemies/chapter-03/`，已全部接入。發條兔正式檔名為 `ch3-01-tick-tock-bunny.webp`。
 
-## 徽章限定小湘｜討伐角色美術（2026-11-18）
+## 徽章限定與天氣小湘（目前狀態）
 
-- **No.062 騎士小湘（SR）**：`assets/characters/siang-062-knight.webp` ✅ 正式透明 WebP 已交付。
-- **No.063 魔法師小湘（SR）**：`assets/characters/siang-063-mage.webp` ✅ 正式透明 WebP 已交付。
-- **No.064 勇者小湘（SSR）**：`assets/characters/siang-064-hero.webp` ✅ 正式透明 WebP 已交付。
-- 詳細美術與接入規格：[`SIANG_062_KNIGHT_ART.md`](SIANG_062_KNIGHT_ART.md)、[`SIANG_063_MAGE_ART.md`](SIANG_063_MAGE_ART.md)、[`SIANG_064_HERO_ART.md`](SIANG_064_HERO_ART.md)。
-- No.062–064 均為**預留編號及已交付圖片**，目前**尚未接入 `js/eggs.js`、徽章兌換、角色養成或戰鬥能力**，不可視為已開放取得。
-- 騎士／魔法師：SR；勇者：SSR，設計上需完成前兩章才能兌換。徽章成本、角色數值與三人「勇者小隊」連攜於工程接入時再定。
-- 這三隻都不應放進普通蛋池；角色名稱、數值欄位、存檔格式由德寶確認後再啟用。
-
-### 討伐徽章限定角色台詞
-
-- No.062～064 角色正式台詞與三人連攜文案：[`BADGE_HEROES_DIALOGUE.md`](BADGE_HEROES_DIALOGUE.md)；機器可讀資料 `data/characters/badge-heroes-dialogue.json`。
-- **文案已交付，尚未實裝**；由德寶接入角色、徽章兌換與 UI，不影響既有戰鬥規則。
-
-## No.065｜天氣觀測師（SSR）美術交付（2026-11-18）
-
-- **No.065 天氣觀測師（SSR）**：`assets/characters/siang-065-weather-observer.webp` ✅ 正式透明 WebP 已交付（1024 × 1024，約 381 KB）。
-- 詳細美術 Canon 與接入備註：[`SIANG_065_WEATHER_OBSERVER_ART.md`](SIANG_065_WEATHER_OBSERVER_ART.md)。
-- 圖鑑系列建議：天氣與時間；**編號預留，美術已交付，但尚未加入角色資料與任何蛋池**。取得方式由湘與德寶後續確認。
-
-## No.066｜陰天小湘（SSR）美術交付（2026-11-18）
-
-- **No.066 陰天小湘（SSR）**：`assets/characters/siang-066-overcast.webp` ✅ 正式透明 WebP 已交付（1024 × 1024，約 263 KB）。
-- 詳細美術 Canon／工程接入注意事項：[`SIANG_066_OVERCAST_ART.md`](SIANG_066_OVERCAST_ART.md)。
-- 圖鑑系列建議「天氣與時間」，與 No.065 天氣觀測師區隔為「陰天安靜日常」；**美術已交付但尚未在角色表或蛋池實裝，取得方式未定**。
-
-## No.067｜打雷小湘（SSR）美術交付（2026-11-18）
-
-- **No.067 打雷小湘（SSR）**：`assets/characters/siang-067-thunder.webp`，1024 × 1024 透明 WebP（約 263 KB），正式美術已交付。
-- 詳細 Canon 與接入備註：[`SIANG_067_THUNDER_ART.md`](SIANG_067_THUNDER_ART.md)。
-- 天氣與時間系列；**角色表、蛋池與取得條件尚未實裝**，由湘與德寶後續確認。
-
-## No.068｜晴天小湘（R）美術交付（2026-11-18）
-
-- 正式透明素材：`assets/characters/siang-068-sunny.webp`（1024×1024，約 198 KB）；僅角色本體、無場景或貓。
-- 美術 Canon 與接入規格：[`SIANG_068_SUNNY_ART.md`](SIANG_068_SUNNY_ART.md)。
-- 天氣與時間系列；**尚未加入圖鑑資料或蛋池**，取得方式待確認。
-
-## No.069｜起霧小湘美術交付（2026-11-18）
-
-- **No.069 起霧小湘**：`assets/characters/siang-069-fog.webp`，1024×1024 透明 WebP；英倫偵探／迷霧探索風，已定稿。
-- 美術 Canon 與接入說明：[`SIANG_069_FOG_ART.md`](SIANG_069_FOG_ART.md)。
-- 稀有度**SR（湘已確認）**；角色表、蛋池與取得條件尚未實裝。
-
-## No.070｜冰雹小湘（SSR）美術規格（2026-11-18）
-
-- 預定正式素材：`assets/characters/siang-070-hail.webp`（✅ **1024×1024 透明 WebP 已交付，293 KB**）。
-- 美術 Canon：[`SIANG_070_HAIL_ART.md`](SIANG_070_HAIL_ART.md)。
-- SSR 天氣系列；尚未接入角色表與蛋池，取得方式待確認。
-
-## No.073｜大風小湘（SR）美術交付（2026-11-18）
-
-- **No.073 大風小湘（SR）**：`assets/characters/siang-073-windy.webp` ✅ 正式透明 WebP 已交付（1024×1024，約 392 KB，腳底 y=940）。
-- 角色 Canon 與接入說明：[`SIANG_073_WINDY_ART.md`](SIANG_073_WINDY_ART.md)。
-- 系列：天氣與時間；**僅圖片與美術規格交付，尚未接入 `js/eggs.js`、圖鑑或蛋池**。編號 071／072 是否留給其他天氣小湘，後續再由德寶確認。
-
-## No.071｜下雨小湘（R）美術交付（2026-11-18）
-
-- **No.071 下雨小湘（R）**：`assets/characters/siang-071-rain.webp` ✅ 1024×1024 透明 WebP 正式交付（約 195 KB）。
-- 特色：黃色連帽雨衣、透明雨鞋、開心踩水花；不拿雨傘，與 No.003 雨傘小湘區別。
-- 美術 Canon 與接入備註：[`SIANG_071_RAIN_ART.md`](SIANG_071_RAIN_ART.md)。
-- 天氣與時間系列；**美術已交付，尚未加入圖鑑或蛋池，取得方式待確認**。
-
-## No.072｜下雪小湘（SR）美術交付（2026-11-18）
-
-- **No.072 下雪小湘（SR）**：`assets/characters/siang-072-snow.webp` ✅ 1024×1024 透明 WebP 正式交付（約 316 KB）。
-- 單人立繪，毛帽、酒紅格紋圍巾、毛線手套與冬靴；無雪人，與 No.070 冰雹小湘區別為溫暖冬日日常。
-- 美術 Canon 與接入備註：[`SIANG_072_SNOW_ART.md`](SIANG_072_SNOW_ART.md)。
-- 天氣與時間系列；**美術已交付，尚未加入角色表或蛋池，取得方式待確認**。
-
-## No.074｜彩虹小湘（SR）美術交付（2026-11-18）
-
-- **No.074 彩虹小湘（SR）**：`assets/characters/siang-074-rainbow.webp` ✅ 1024×1024 透明 WebP 正式交付（約 369 KB）。
-- 雨後彩虹、彩色透明服飾、彩虹髮飾與雨靴；定稿包含彩虹與水花等小型透明裝飾，與 No.071 下雨小湘區分。
-- 美術 Canon 與接入規格：[`SIANG_074_RAINBOW_ART.md`](SIANG_074_RAINBOW_ART.md)。
-- 天氣與時間系列；**美術已交付，尚未加入圖鑑或蛋池，取得方式待確認**。
-
-## No.075｜夕陽小湘（R）美術交付（2026-11-18）
-
-- **No.075 夕陽小湘（R）**：`assets/characters/siang-075-sunset.webp` ✅ 正式透明 WebP 已交付（1024×1024，約 326 KB；腳底 y=940）。
-- 夕陽橘金針織毛衣、底片相機、黃昏色髮飾，維持 R 級溫柔攝影日常氛圍。
-- 角色 Canon／工程備註：[`SIANG_075_SUNSET_ART.md`](SIANG_075_SUNSET_ART.md)。
-- 天氣與時間系列；**目前僅交付美術和文案，尚未接入 `js/eggs.js`、圖鑑或蛋池**。
-
-## No.065–075 天氣小湘台詞（2026-11-18）
-
-- 正式交付 11 位角色共 99 句文字：[角色台詞閱讀版](WEATHER_SIANG_DIALOGUE_065-075.md)。
-- 程式資料：`data/characters/weather-065-075-dialogue.json`（JSON）。
-- No.069「起霧小湘」稀有度已由湘確認為 SR；已同步修正美術規格。
-- **僅文案交付，尚未新增／修改遊戲角色、蛋池、天氣觸發、戰鬥或存檔。**
+- No.062／063／064 正式透明立繪、台詞、角色與討伐皆已接入。玩家以 20／20／40 徽章兌換固定角色紀念蛋，再注入能量孵化；勇者需先打倒前兩章 Boss。不進隨機蛋池，詳見 `js/badge-heroes.js`。
+- No.065–075 天氣角色均已接入天氣蛋池與天氣／時段權重，立繪、圖鑑、好感故事與台詞皆已交付，詳見 `js/eggs.js`、`js/weather.js`。
+- 各角色 `SIANG_0xx_*_ART.md` 保留造型 Canon 與交件歷史；內文當時的「尚未接入」並非現況。取得條件與稀有度以正式角色資料為準。
+- 台詞交件：[`BADGE_HEROES_DIALOGUE.md`](BADGE_HEROES_DIALOGUE.md)、[`WEATHER_SIANG_DIALOGUE_065-075.md`](WEATHER_SIANG_DIALOGUE_065-075.md)。

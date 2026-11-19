@@ -1,4 +1,4 @@
-// node --experimental-default-type=module tests/wish-character-voices.mjs
+// node tests/wish-character-voices.mjs
 import assert from 'node:assert/strict';
 import { CHARACTERS } from '../js/eggs.js';
 import { WISH_CHARACTER_VOICES } from '../js/wish-character-voices.js';
@@ -6,8 +6,8 @@ import { presenterCopy } from '../js/wish-presenter.js';
 import { WISH_POOL, wishById, wishesFor } from '../js/wishes.js';
 
 const ids = Object.keys(CHARACTERS);
-assert.equal(ids.length, 91);
-assert.deepEqual(Object.keys(WISH_CHARACTER_VOICES).sort(), ids.sort());
+assert(ids.length > 0, 'character catalog must not be empty');
+assert.deepEqual(Object.keys(WISH_CHARACTER_VOICES).sort(), [...ids].sort());
 const date = '2026-11-19';
 for (const id of ids) {
   const voice = WISH_CHARACTER_VOICES[id];
@@ -45,4 +45,4 @@ assert.equal(egg.speaker, '蛋裡的小湘');
 assert.equal(presenterCopy(wishById('quiz:0'), date, 'egg', null).line, wishById('quiz:0').line);
 const wishes = wishesFor(date);
 assert.equal(wishes.length, 3);
-console.log('wish character voices: all 91 characters, 87 new color voices, nine task kinds, commissions, egg fallback PASS');
+console.log(`wish character voices: all ${ids.length} characters, nine task kinds, commissions, egg fallback PASS`);

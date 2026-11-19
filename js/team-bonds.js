@@ -1,4 +1,4 @@
-// LV5 隱藏羈絆 v1：36 位不重複；power 是取代通用 +10% 的隊伍倍率。
+// LV5 隱藏羈絆 v1：每位只參與一組；power 是取代通用 +10% 的隊伍倍率。
 import { CHARACTERS } from './eggs.js';
 import { LEVELS } from './affection.js';
 export const TEAM_BONDS = [

@@ -27,4 +27,4 @@ s=await save();assert.equal(s.wishEgg.stock,before+1);assert.deepEqual(s.bingo.c
 // next week resets
 await p.click('#close-bingo');await day('2026-11-30');s=await save();assert.equal(s.bingo.week,'2026-11-30');assert.deepEqual(s.bingo.claimed,[]);
 assert.equal(errs.length,0,errs.join('\n'));
-console.log('recipes and bingo: pair days, rain condition, recipe eggs, weekly board, line claim, weekly reset PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
+console.log('recipes and bingo: home cohabitation grants no recipe eggs, weekly board, line claim, weekly reset PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
