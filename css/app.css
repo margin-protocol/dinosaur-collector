@@ -11,6 +11,8 @@ body {
 }
 button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulation; }
 button:focus-visible { outline: 2px solid var(--bio-cyan); outline-offset: 3px; }
+/* 用手指點的時候不要畫焦點框（iPhone 關掉彈窗後會把焦點還給首頁小湘，畫出一個大框框，11/19 湘回報）；按 Tab 用鍵盤時照樣顯示 */
+:root[data-input="pointer"] :is(button, [role="button"], [tabindex]):focus { outline: none; }
 [hidden] { display: none !important; }
 .visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
