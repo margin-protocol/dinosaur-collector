@@ -108,7 +108,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .letter-item small { display:block; font:11px var(--font-body); color:var(--pearl); }
 .letter-item .letter-new { font:10px var(--font-body); color:#ffb3c4; }
 .letter-item svg { width:22px; height:22px; stroke:#e8c9d4; fill:none; stroke-width:1.3; }
-.letter-item.is-mail { border-color:#c9a8ff88; background:#2f2640; }
+.letter-item.is-mail.is-unread { border-color:#c9a8ff88; background:#2f2640; }
 .letter-read__title { margin:0 0 6px; font:400 18px var(--font-display); letter-spacing:.1em; text-align:center; }
 
 .explore-pill.is-compact { padding:0; width:40px; height:40px; min-height:40px; justify-content:center; border-radius:50%; box-shadow:none; opacity:.75; }
@@ -353,7 +353,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .errand-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:0 0 12px; padding:4px; border-radius:14px; background:#00000026; }
 .errand-tabs button { position:relative; padding:8px 0; border:0; border-radius:10px; background:none; color:inherit; font:14px var(--font-display); opacity:.7; }
 .errand-tabs button[aria-selected="true"] { background:#ffd9a822; color:#ffd9a8; opacity:1; }
-.errand-tabs .letter-badge { position:absolute; top:4px; right:14px; }
+.errand-tabs .letter-badge { position:static; display:inline-block; margin-left:6px; vertical-align:2px; }
 .battle-head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:10px; font-size:13px; }
 .battle-head b { color:#ffd9a8; font-size:15px; }
 .enemy-art { position:relative; display:grid; place-items:center; aspect-ratio:1; border-radius:14px; background:radial-gradient(circle at 50% 60%, #ffffff18, #00000022 70%); overflow:hidden; }

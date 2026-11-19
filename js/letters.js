@@ -71,6 +71,7 @@ export function ensureLetters(state) {
   state.letters = {
     read: Array.isArray(old.read) ? [...new Set(old.read.filter(str))] : [],
     mail: Array.isArray(old.mail) ? old.mail.filter((m) => m && str(m.id) && str(m.body)) : [], // 湘寄來、已驗證的紙條
+    seen: old.seen && typeof old.seen === 'object' ? Object.fromEntries(Object.entries(old.seen).filter(([k, v]) => str(k) && str(v))) : {}, // 里程碑紙條第一次出現的時間（排序用）
   };
   return state.letters;
 }
@@ -78,10 +79,21 @@ export function ensureLetters(state) {
 // 里程碑紙條由目前進度直接推算（不另外寫進存檔），已達成就算解鎖
 export const unlockedMilestones = (state, chars) => MILESTONE_LETTERS.filter((m) => m.when(state, chars));
 
+// 排序：沒讀過的在最上面，其他依時間新到舊（湘寄的紙條不再永遠置頂）；最初的紙條固定在最後
 export function allLetters(state, chars) {
-  const mail = [...state.letters.mail].sort((a, b) => String(b.at).localeCompare(String(a.at))).map((m) => ({ ...m, kind: 'mail' }));
-  const ms = unlockedMilestones(state, chars).reverse().map((m) => ({ ...m, kind: 'milestone' }));
-  return [...mail, ...ms, { ...INTRO_LETTER, kind: 'intro' }];
+  const seen = state.letters.seen || {};
+  const read = new Set(state.letters.read);
+  const mail = state.letters.mail.map((m) => ({ ...m, kind: 'mail', time: String(m.at || '') }));
+  const ms = unlockedMilestones(state, chars).map((m, i) => ({ ...m, kind: 'milestone', time: seen[m.id] || '', order: i }));
+  const list = [...mail, ...ms].sort((a, b) => (read.has(a.id) - read.has(b.id)) || b.time.localeCompare(a.time) || ((b.order ?? -1) - (a.order ?? -1)));
+  return [...list, { ...INTRO_LETTER, kind: 'intro' }];
+}
+// 新解鎖、還沒記時間的里程碑紙條：記下現在（在存檔交易裡呼叫）
+export function stampLetters(state, chars, now = new Date()) {
+  ensureLetters(state);
+  let n = 0;
+  for (const m of unlockedMilestones(state, chars)) if (!state.letters.seen[m.id]) { state.letters.seen[m.id] = now.toISOString(); n++; }
+  return n;
 }
 export const unreadCount = (state, chars) => allLetters(state, chars).filter((x) => x.kind !== 'intro' && !state.letters.read.includes(x.id)).length;
 export const lockedMilestones = (state, chars) => MILESTONE_LETTERS.filter((m) => !m.when(state, chars));

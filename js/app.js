@@ -5,7 +5,7 @@ import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, COUNTY
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
-import { unlockedMilestones, allLetters, unreadCount, lockedMilestones } from './letters.js';
+import { unlockedMilestones, allLetters, unreadCount, lockedMilestones, stampLetters } from './letters.js';
 import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
 import { activeHolidays, HOLIDAYS, TAIWAN_NO } from './holidays.js';
 import { INTROS, MYSTERY_INTROS } from './intros.js';
@@ -1809,9 +1809,15 @@ function renderLetterBadge() {
   }
 }
 function openLetterBox() {
+  if (unlockedMilestones(state, CHARACTERS).some(m => !state.letters.seen?.[m.id])) void updateState(current => stampLetters(current, CHARACTERS)).then(t => { state = t.state; if ($('letter-box').open) renderLetterList(); });
+  renderLetterList();
+  $('letter-box').showModal(); syncRoomActivity();
+}
+function renderLetterList() {
   const read = state.letters.read;
   $('letter-list').replaceChildren(...allLetters(state, CHARACTERS).map(letter => {
-    const item = document.createElement('button'); item.type = 'button'; item.className = `letter-item${letter.kind === 'mail' ? ' is-mail' : ''}`;
+    const unread = letter.kind !== 'intro' && !read.includes(letter.id);
+    const item = document.createElement('button'); item.type = 'button'; item.className = `letter-item${letter.kind === 'mail' ? ' is-mail' : ''}${unread ? ' is-unread' : ''}`;
     item.innerHTML = LETTER_ICON;
     const text = document.createElement('span'); text.textContent = letter.title || '湘寄來的紙條';
     const sub = document.createElement('small'); sub.textContent = letter.kind === 'mail' ? `湘寄來的 · ${new Date(letter.at).toLocaleDateString('zh-TW')}` : letter.kind === 'intro' ? '最初的紙條' : `里程碑 · ${letter.hint}`;
@@ -1823,7 +1829,6 @@ function openLetterBox() {
   }));
   const locked = lockedMilestones(state, CHARACTERS).length;
   $('letter-locked').textContent = locked ? `還有 ${locked} 張紙條等你發現。` : '所有里程碑紙條都收齊了！';
-  $('letter-box').showModal(); syncRoomActivity();
 }
 function readLetter(letter) {
   $('letter-read-title').textContent = letter.kind === 'intro' ? '' : letter.title || '湘寄來的紙條';
@@ -1836,7 +1841,7 @@ function readLetter(letter) {
 }
 $('close-letter-box').addEventListener('click', () => $('letter-box').close());
 $('letter-box').addEventListener('close', syncRoomActivity);
-$('letter-read-ok').addEventListener('click', () => { $('letter-read').close(); if ($('letter-box').open) openLetterBox(); });
+$('letter-read-ok').addEventListener('click', () => { $('letter-read').close(); if ($('letter-box').open) renderLetterList(); });
 
 // 湘從審核室寄來的紙條：letters/<id>.json，驗證印章後存到本機（離線也能看）
 async function fetchMail() {
