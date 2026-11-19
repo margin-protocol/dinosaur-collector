@@ -12,7 +12,8 @@ import { FRIEND_LINES } from './friend-lines.js';
 import { NAP_LINES } from './nap-lines.js';
 import { DEVTEAM_LINES } from './devteam-lines.js';
 import { EXTRA_LINES } from './extra-lines.js';
-const SPOKEN = { ...WEATHER_LINES, ...RECIPE_LINES, ...FRIEND_LINES, ...NAP_LINES, ...DEVTEAM_LINES, ...EXTRA_LINES, ...HERO_LINES }; // 有專屬出戰／勝敗台詞的小湘
+import { BATTLE_PERSONAL_LINES } from './battle-personal-lines.js';
+const SPOKEN = { ...BATTLE_PERSONAL_LINES, ...WEATHER_LINES, ...RECIPE_LINES, ...FRIEND_LINES, ...NAP_LINES, ...DEVTEAM_LINES, ...EXTRA_LINES, ...HERO_LINES }; // 有專屬出戰／勝敗台詞的小湘
 
 // 敵人。圖片照皮寶的命名放在 assets/enemies/chapter-0N/（沒有圖就顯示 emoji）。
 // 文字欄位都可以直接改：intro 開場、weakHit 被剋制的反應（weakTag 是戰報上的小標）、win 玩家打贏時敵人說的話、
