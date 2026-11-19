@@ -252,6 +252,8 @@ export const CHARACTERS = {
   '086': { no: '086', name: '加班皮寶', rarity: 'SSR', line: "「湘寶！這張真的最後一張！……欸等一下，我又想到新的了！！」", image: 'siang-086-overtime-pibao', series: 'devteam', special: true },
   '087': { no: '087', name: '崩潰德寶', rarity: 'SSR', line: "「……妳們又新增三隻？？？？？」", image: 'siang-087-crashing-debao', series: 'devteam', special: true },
   '088': { no: '088', name: '靈感爆發小湘', rarity: 'UR', line: "「欸欸欸欸欸！！！！我突然想到一個超棒的！！！」", image: 'siang-088-idea-overload-siang', series: 'devteam', special: true },
+  // 研究所小湘（湘 11/19）：湘正取研究所那天用暗號送給所有玩家；之後再放進普通蛋池。台詞與圖鑑介紹等皮寶交稿
+  '089': { no: '089', name: '研究所小湘', rarity: 'SSR', line: '「研究計畫寫好了，接下來就是好好當學生！」', image: 'siang-089-grad-school', series: 'memorial', special: true },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序
