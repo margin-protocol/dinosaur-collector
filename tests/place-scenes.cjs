@@ -1,4 +1,4 @@
-// 地點背景：出門選地點有縮圖；討伐第 1、2 章借用便利商店／山上當場景，第 3 章沒有圖就維持原樣
+// 地點背景：出門選地點、在家幫忙都有縮圖；討伐第 1、2 章借用便利商店／山上當場景，第 3 章沒有圖就維持原樣
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const p=await (await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -7,7 +7,8 @@ await p.evaluate(()=>{const k='siang-collector:v1';const s=JSON.parse(localStora
 await p.reload();await p.waitForTimeout(600);await p.click('#home-errand');await p.waitForTimeout(600);
 const thumbs=await p.$$eval('#errand-places .errand-place__img',imgs=>imgs.map(i=>i.complete&&i.naturalWidth>0));
 assert.equal(thumbs.length,6);assert(thumbs.every(Boolean),'all six place thumbnails load');
-assert.equal(await p.locator('#errand-tasks .errand-place__img').count(),0,'home tasks keep emoji');
+const homeThumbs=await p.$$eval('#errand-tasks .errand-place__img',imgs=>imgs.map(i=>i.complete&&i.naturalWidth>0));
+assert.equal(homeThumbs.length,3);assert(homeThumbs.every(Boolean),'home task thumbnails load');
 await p.click('#tab-battle');await p.waitForTimeout(400);
 const scenes=await p.$$eval('.battle-chapter',secs=>secs.map(s=>s.style.getPropertyValue('--scene')));
 assert.match(scenes.join('|'),/places\/conv\.webp/);assert.match(scenes.join('|'),/places\/mountain\.webp/);

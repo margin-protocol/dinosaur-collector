@@ -2477,9 +2477,9 @@ function siangImg(no, cls = '') {
 }
 function tripCard(entry) {
   const card = document.createElement('div'); card.className = 'trip-card'; card.dataset.place = entry.place || 'home';
-  const bg = document.createElement('img'); bg.className = 'trip-card__img'; bg.alt = ''; bg.src = `assets/places/${entry.place}.webp`; bg.onerror = () => bg.remove();
+  const bg = document.createElement('img'); bg.className = 'trip-card__img'; bg.alt = ''; bg.src = `assets/places/${entry.place || (entry.task ? `home-${entry.task}` : 'home')}.webp`; bg.onerror = () => bg.remove();
   const who = document.createElement('div'); who.className = 'trip-card__who'; who.append(...entry.nos.map(no => siangImg(no)));
-  const tag = document.createElement('span'); tag.className = 'trip-card__tag'; tag.textContent = `${PLACES[entry.place]?.emoji || ''} ${PLACES[entry.place]?.name || ''}`;
+  const tag = document.createElement('span'); tag.className = 'trip-card__tag'; const spot = PLACES[entry.place] || HOME_TASKS[entry.task]; tag.textContent = `${spot?.emoji || ''} ${spot?.name || ''}`;
   card.append(bg, who, tag);
   if (entry.story) { const st = document.createElement('span'); st.className = 'trip-card__story'; st.textContent = '📖'; card.append(st); }
   return card;
@@ -2518,8 +2518,8 @@ function renderErrands() {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-place';
     btn.setAttribute('aria-pressed', String(errandChoice?.[kind] === key)); btn.disabled = full;
     btn.innerHTML = `<span aria-hidden="true">${info.emoji}</span>${info.name}<small>${info.hours} 小時</small>`;
-    if (kind === 'place') { // 地點縮圖（皮寶的地點背景）；圖載不到就留 emoji
-      const img = document.createElement('img'); img.className = 'errand-place__img'; img.alt = ''; img.loading = 'lazy'; img.src = `assets/places/${key}.webp`;
+    { // 地點縮圖（皮寶的地點背景；在家幫忙是 home-*.webp）；圖載不到就留 emoji
+      const img = document.createElement('img'); img.className = 'errand-place__img'; img.alt = ''; img.loading = 'lazy'; img.src = `assets/places/${kind === 'task' ? `home-${key}` : key}.webp`;
       img.onload = () => btn.classList.add('has-img'); img.onerror = () => img.remove(); btn.prepend(img);
     }
     btn.addEventListener('click', () => { errandChoice = { [kind]: key }; errandPicked = []; $('errand-status').textContent = ''; renderErrands(); $('errand-pick').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
@@ -2574,9 +2574,8 @@ function openErrands() {
   showTip('errand', $('errand-pane'));
 }
 function showErrandResult(r, replay = false) {
-  $('errand-result-card').replaceChildren(r.place ? tripCard(r) : Object.assign(document.createElement('div'), { className: 'trip-card', style: 'background:linear-gradient(160deg,#6a5a7a,#2a2236)' }));
-  if (!r.place) $('errand-result-card').firstChild.append(Object.assign(document.createElement('div'), { className: 'trip-card__who' }));
-  if (!r.place) $('errand-result-card').querySelector('.trip-card__who').append(...r.nos.map(no => siangImg(no)));
+  // 出門和在家幫忙都用同一種照片卡（在家幫忙的背景是 assets/places/home-*.webp）
+  $('errand-result-card').replaceChildren(tripCard(r));
   $('errand-result-eyebrow').textContent = replay ? new Date(r.at).toLocaleDateString('zh-TW') : 'WELCOME BACK';
   $('errand-result-title').textContent = r.place ? `${r.names}從${PLACES[r.place].name}回來了` : `${r.names}的${HOME_TASKS[r.task].name}完成了`;
   $('errand-result-line').textContent = r.place ? `「${r.line}」${r.boost ? '她好像特別喜歡那裡。' : ''}` : '';
