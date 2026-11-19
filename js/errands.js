@@ -1,6 +1,7 @@
 // 派小湘出門：跑腿、系列加成、遠行帶回縣市蛋、在家幫忙、兩隻一起出門的隱藏故事
 // 出發時就決定好帶回什麼（存進存檔），重新整理不會重抽。
 import { CHARACTERS, COUNTY_CHARACTER } from './eggs.js';
+import { PLACE_REPORTS, SERIES_REPORTS, CHARACTER_REPORTS, HOME_REPORTS, HOME_SERIES_REPORTS, NOTE_TEXTS, PAIR_STORY_VARIANTS } from './errand-copy.js';
 
 export const ERRAND_SLOTS = 2; // 同時最多兩趟
 export const STORY_BONUS = 3; // 第一次發現故事 +3 化石
@@ -9,17 +10,17 @@ const HOUR = 3600e3;
 
 export const PLACES = {
   conv: { name: '便利商店', emoji: '🏪', hours: 1, affinity: ['daily'], energy: [10, 16],
-    lines: ['買了一瓶牛奶回來，還有找零。', '店員說她很可愛，送了一張集點貼紙。', '在門口被自動門嚇了一跳，假裝沒事走進去。'] },
+    lines: PLACE_REPORTS.conv },
   park: { name: '公園', emoji: '🌳', hours: 2, affinity: ['animals', 'friends'], energy: [18, 28],
-    lines: ['撿了好多葉子回來，還跟松鼠打了招呼。', '盪鞦韆盪太高，回來有點暈。', '在草地上睡了一個午覺，頭上沾了一根草。'] },
+    lines: PLACE_REPORTS.park },
   market: { name: '夜市', emoji: '🏮', hours: 3, affinity: ['date', 'holiday'], energy: [25, 35], snack: true,
-    lines: ['夜市好香！帶了一個布丁回來給你。', '撈金魚失敗了，但老闆送她一隻小鴨。', '吃了一整條大腸包小腸，現在很撐。'] },
+    lines: PLACE_REPORTS.market },
   beach: { name: '海邊', emoji: '🌊', hours: 4, affinity: ['weather'], energy: [12, 18], fossils: [1, 2],
-    lines: ['在沙灘挖到一塊奇怪的石頭，好像是化石！', '海浪把鞋子捲走了一下下，又自己漂回來。', '撿了一整口袋的貝殼，倒出來都是沙。'] },
+    lines: PLACE_REPORTS.beach },
   mountain: { name: '山上', emoji: '⛰️', hours: 6, affinity: ['animals', 'weather'], energy: [15, 22], fossils: [2, 3], egg: 0.15,
-    lines: ['爬到山頂看到好多雲，還撿到一塊會發亮的石頭。', '山上好冷，但她說風景值得。', '在步道旁邊發現一顆圓圓的東西，抱回來了。'] },
+    lines: PLACE_REPORTS.mountain },
   faraway: { name: '遠行', emoji: '🚃', hours: 8, affinity: ['county'], energy: [18, 26], fossils: [2, 2], countyEgg: 0.35,
-    lines: ['坐了好久的車，去了好遠好遠的地方。', '在陌生的城市迷路了，還好遇到好心人。', '車窗外一直在下雨，她數了一路的雨滴。'] },
+    lines: PLACE_REPORTS.faraway },
 };
 
 export const HOME_TASKS = {
@@ -28,20 +29,6 @@ export const HOME_TASKS = {
   dino: { name: '陪小恐龍', emoji: '🦖', hours: 3, desc: '陪小恐龍玩，回來 +15 能量，下一個小恐龍委託獎勵加倍' },
 };
 
-const NOTES = [
-  '今天幫你偷偷數了蛋的心跳，一百零三下。',
-  '我把布丁藏在冰箱最裡面，不准偷吃。（可以吃一口）',
-  '小恐龍說牠想要一頂帽子，你覺得紅色還是黃色？',
-  '今天天氣很好，我把一點陽光收在口袋裡，晚點分你。',
-  '你今天有喝水嗎？沒有的話現在去！',
-  '我練習了一個新表情，下次見面給你看。',
-  '我在圖鑑裡找到一根頭髮，應該是你的。',
-  '累了就先休息，蛋會等你，我也會。',
-  '今天的願望我幫你多許了一個，是秘密。',
-  '我覺得你拍照越來越好看了，真的。',
-  '剛剛夢到我們一起去吃火鍋，醒來好餓。',
-  '謝謝你把我孵出來，我很喜歡這裡。',
-];
 
 // 兩隻一起出門的隱藏故事（由上往下找第一個符合的）
 export const STORIES = [
@@ -74,6 +61,64 @@ export const storyFor = (nos) => {
   return a && b ? STORIES.find((s) => s.test(a, b)) || null : null;
 };
 
+
+// 抽回報：專屬 > 系列 > 地點，但避開同人同地點最近 5 句。
+// 紀錄寫進既有 errands 子狀態，不影響獎勵；出發時選好並持久化，回來不重抽。
+function trimHistoryKeys(memory, cap = 100) {
+  while (Object.keys(memory).length > cap) delete memory[Object.keys(memory)[0]];
+}
+function safeRecent(memory, key) {
+  return Array.isArray(memory[key]) ? memory[key] : [];
+}
+function pickFresh(memory, key, choices, rand, keep = 5) {
+  const unique = [...new Set(choices)];
+  const recent = safeRecent(memory, key);
+  const fresh = unique.filter((x) => !recent.includes(x));
+  const chosen = pick(fresh.length ? fresh : unique, rand);
+  memory[key] = [...recent.filter((v) => v !== chosen).slice(1 - keep), chosen];
+  trimHistoryKeys(memory);
+  return chosen;
+}
+function chooseLine(er, key, base, series, personal, rand) {
+  const recent = safeRecent(er.recentLines, key);
+  const groups = [
+    { list: personal.filter((x) => !recent.includes(x)), weight: 5 },
+    { list: series.filter((x) => !recent.includes(x)), weight: 3 },
+    { list: base.filter((x) => !recent.includes(x)), weight: 2 },
+  ].filter((g) => g.list.length);
+  if (!groups.length) return pickFresh(er.recentLines, key, [...personal, ...series, ...base], rand);
+  const total = groups.reduce((s, g) => s + g.weight, 0);
+  let n = rand() * total;
+  const group = groups.find((g) => (n -= g.weight) < 0) || groups[groups.length - 1];
+  const chosen = pick(group.list, rand);
+  er.recentLines[key] = [...recent.filter((v) => v !== chosen).slice(-4), chosen];
+  trimHistoryKeys(er.recentLines);
+  return chosen;
+}
+function reportFor(er, place, nos, rand) {
+  const participants = nos.map((no) => CHARACTERS[no]).filter(Boolean);
+  const series = [...new Set(participants.map((c) => c.series))].flatMap((s) => SERIES_REPORTS[s]?.[place] || []);
+  // 單人出門才使用個人主角台詞，避免兩位一起出門時主詞不明。
+  const personal = nos.length === 1 ? (CHARACTER_REPORTS[nos[0]]?.[place] || []) : [];
+  const key = `place:${place}:${[...nos].sort().join('-')}`;
+  return chooseLine(er, key, PLACE_REPORTS[place] || [], series, personal, rand);
+}
+function homeReportFor(er, task, no, rand) {
+  const series = HOME_SERIES_REPORTS[CHARACTERS[no]?.series]?.[task] || [];
+  return chooseLine(er, `home:${task}:${no}`, HOME_REPORTS[task] || [], series, [], rand);
+}
+function storyVariationFor(er, storyId, nos, rand) {
+  const n = 1 + (PAIR_STORY_VARIANTS[storyId]?.length || 0);
+  const key = `story:${storyId}:${[...nos].sort().join('-')}`;
+  // 第一次隨機、之後避免最近兩次用同篇。種類 ID 不變，因此首次收藏獎勵只給一次。
+  const recent = safeRecent(er.recentStories, key);
+  const options = Array.from({ length: n }, (_, i) => i).filter((i) => !recent.includes(i));
+  const selected = pick(options.length ? options : Array.from({ length: n }, (_, i) => i), rand);
+  er.recentStories[key] = [...recent.filter((i) => i !== selected).slice(-2), selected];
+  trimHistoryKeys(er.recentStories);
+  return selected;
+}
+
 function weekOf(date) {
   const d = new Date(date); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day);
   return d.toISOString().slice(0, 10);
@@ -90,6 +135,8 @@ export function ensureErrands(state) {
     countyWeek: str(old.countyWeek) ? old.countyWeek : '',
     total: Number.isSafeInteger(old.total) ? old.total : 0,
     departed: Number.isSafeInteger(old.departed) ? old.departed : 0,
+    recentLines: old.recentLines && typeof old.recentLines === 'object' && !Array.isArray(old.recentLines) ? old.recentLines : {},
+    recentStories: old.recentStories && typeof old.recentStories === 'object' && !Array.isArray(old.recentStories) ? old.recentStories : {},
   };
   return state.errands;
 }
@@ -124,7 +171,7 @@ export function depart(state, { place, task, nos }, now = new Date(), rand = Mat
     if (spot.snack) loot.snack = 1;
     if (spot.egg && rand() < spot.egg * (boost ? 1.5 : 1)) loot.egg = 'wish';
     if (boost) loot.boost = true;
-    loot.line = pick(spot.lines, rand);
+    loot.line = reportFor(er, place, nos, rand);
     if (spot.countyEgg) {
       const week = weekOf(now);
       const pending = new Set(state.travel?.eggs || []);
@@ -134,10 +181,10 @@ export function depart(state, { place, task, nos }, now = new Date(), rand = Mat
       if (homes.length) loot.cards = homes;
     }
     const story = storyFor(nos);
-    if (story) loot.story = story.id;
-  } else if (task === 'guard') loot.warmth = 20;
-  else if (task === 'note') loot.note = pick(NOTES, rand);
-  else if (task === 'dino') { loot.energy = 15; loot.dino = true; }
+    if (story) { loot.story = story.id; loot.storyVariant = storyVariationFor(er, story.id, nos, rand); }
+  } else if (task === 'guard') { loot.warmth = 20; loot.line = homeReportFor(er, task, nos[0], rand); }
+  else if (task === 'note') { loot.note = pickFresh(er.recentLines, `paper:${nos[0]}`, NOTE_TEXTS, rand, 6); loot.line = homeReportFor(er, task, nos[0], rand); }
+  else if (task === 'dino') { loot.energy = 15; loot.dino = true; loot.line = homeReportFor(er, task, nos[0], rand); }
 
   const errand = { id: `${now.getTime().toString(36)}-${nos.join('')}`, ...(spot ? { place } : { task }), nos, start: now.toISOString(), until: new Date(now.getTime() + hours * HOUR).toISOString(), loot };
   er.active.push(errand);
@@ -184,7 +231,10 @@ export function collect(state, id, { eggs, now = new Date() } = {}) {
     const s = STORIES.find((x) => x.id === loot.story);
     const first = !er.stories[loot.story];
     if (first) { er.stories[loot.story] = now.toISOString(); state.fossils = (state.fossils || 0) + STORY_BONUS; }
-    story = { id: s.id, title: s.title, text: s.text(PLACES[errand.place]), first };
+    const variant = Number.isInteger(loot.storyVariant) ? loot.storyVariant : 0; // 舊存檔沿用原稿
+    const alt = variant > 0 ? PAIR_STORY_VARIANTS[s.id]?.[variant - 1] : null;
+    const storyText = alt ? alt.replaceAll('{place}', PLACES[errand.place].name) : s.text(PLACES[errand.place]);
+    story = { id: s.id, title: s.title, text: storyText, first };
     if (first) gains.push(`發現新故事（+${STORY_BONUS} 化石）`);
   }
   er.total += 1;

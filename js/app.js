@@ -2578,7 +2578,7 @@ function showErrandResult(r, replay = false) {
   $('errand-result-card').replaceChildren(tripCard(r));
   $('errand-result-eyebrow').textContent = replay ? new Date(r.at).toLocaleDateString('zh-TW') : 'WELCOME BACK';
   $('errand-result-title').textContent = r.place ? `${r.names}從${PLACES[r.place].name}回來了` : `${r.names}的${HOME_TASKS[r.task].name}完成了`;
-  $('errand-result-line').textContent = r.place ? `「${r.line}」${r.boost ? '她好像特別喜歡那裡。' : ''}` : '';
+  $('errand-result-line').textContent = r.line ? `「${r.line}」${r.place && r.boost ? '她好像特別喜歡那裡。' : ''}` : '';
   $('errand-result-story').hidden = !r.story;
   if (r.story) { $('errand-story-title').textContent = `📖 ${r.story.title}${r.storyFirst ? '（新故事！）' : ''}`; $('errand-story-text').textContent = r.story.text; }
   $('errand-result-gains').replaceChildren(...(r.gains || []).map(g => Object.assign(document.createElement('li'), { textContent: g })));
