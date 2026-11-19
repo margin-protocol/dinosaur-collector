@@ -5,6 +5,7 @@
 ## 文件
 
 - 企劃：[docs/PLAN.md](docs/PLAN.md)
+- 開發團隊三寶隱藏配方企劃：[docs/DEV_TEAM_COLLECTION_PLAN.md](docs/DEV_TEAM_COLLECTION_PLAN.md)（待實裝）
 - 美術方向：[docs/ART_DIRECTION_V0.7.md](docs/ART_DIRECTION_V0.7.md)
 - 素材規格（尺寸、對位、檔名）：[docs/ASSET_SPEC.md](docs/ASSET_SPEC.md)
 - 首頁 UI／UX 精修紀錄與雙平台適配：[docs/UI_HOME.md](docs/UI_HOME.md)
