@@ -36,6 +36,6 @@ await p.evaluate(({k,today})=>{const s=JSON.parse(localStorage.getItem(k));s.din
 await p.evaluate(()=>{document.querySelector('#guide').dataset.mode='task-offer';});await p.click('#bubble');await p.waitForTimeout(500);
 s=await save();assert.ok(s.dino.task);await p.click('#dino-task-skip');await p.waitForTimeout(300);s=await save();assert.equal(s.dino.task,null);
 // animals in dex
-const n=await p.evaluate(async()=>{const {CHARACTERS}=await import('/js/eggs.js');return Object.values(CHARACTERS).filter(c=>c.series==='animals').length;});assert.equal(n,12);
+const n=await p.evaluate(async()=>{const {CHARACTERS}=await import('/js/eggs.js');return Object.values(CHARACTERS).filter(c=>c.series==='animals').length;});assert.equal(n,14,'12 動物裝扮小湘＋Koda 小湘、爬爬小湘（11/20）');
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('dino: compact explore, chatter, greet/color/feed tasks, cap, accept+skip, animals PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

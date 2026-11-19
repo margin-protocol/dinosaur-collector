@@ -29,7 +29,7 @@ export const EGGS = {
       '044': 8, '048': 8, '053': 8, // N 動物
       '045': 5, '046': 5, '047': 5, '050': 5, '054': 5, // R 動物
       '049': 2, '052': 2, '055': 2, // SR 動物
-      '051': 0.6, // SSR 恐龍小湘
+      '051': 0.6, '095': 0.6, '096': 0.6, // SSR 恐龍小湘
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -48,7 +48,7 @@ export const EGGS = {
       '043': 3, // SSR 戀愛小湘（聞止水ver），只在願望蛋
       '045': 6, '046': 6, '047': 6, '050': 6, '054': 6, // R 動物
       '049': 5, '052': 5, '055': 5, // SR 動物
-      '051': 2, // SSR 恐龍小湘
+      '051': 2, '095': 2, '096': 2, // SSR 恐龍小湘
     },
     // 正式三層素材：assets/eggs/wish/{shell,glow,cracks}.webp
   },
@@ -84,7 +84,7 @@ export const EGGS = {
       '044': 6, '048': 6, '053': 6, // N 動物
       '045': 8, '046': 8, '047': 8, '050': 8, '054': 8, // R 動物
       '049': 5, '052': 5, '055': 5, // SR 動物
-      '051': 1.5, // SSR 恐龍小湘
+      '051': 1.5, '095': 1.5, '096': 1.5, // SSR 恐龍小湘
     },
     // 正式三層素材：assets/eggs/cipher/{shell,glow,cracks}.webp
   },
@@ -259,8 +259,10 @@ export const CHARACTERS = {
   '092': { no: '092', name: '馬祖小湘', rarity: 'SR', line: "「我們家晚上的海會發光喔！……欸？！今天沒有？那、那是因為大海今天想早點睡覺啦！！」", image: 'siang-092-matsu', series: 'county', county: '連江縣', special: true },
   '093': { no: '093', name: '澎湖小湘', rarity: 'SR', line: "「澎湖的風才吹不倒我咧！！……哇啊啊啊啊！！你先抓住我啦！！！」", image: 'siang-093-penghu', series: 'county', county: '澎湖縣', special: true },
   '094': { no: '094', name: '金門小湘', rarity: 'SR', line: "「我是金門的守護小湘！！有我在，什麼都不用怕！……欸？你也會保護我喔？……那、那我就休息五分鐘好了♡」", image: 'siang-094-kinmen', series: 'county', county: '金門縣', special: true },
-  // Koda 小湘（湘 11/20）：湘和她的虎斑貓 Koda（老姐姐）。不進蛋池，湘用暗號發送。台詞：docs/SIANG_095_KODA.md
-  '095': { no: '095', name: 'Koda 小湘', rarity: 'SSR', line: "「Koda！！！！妳怎麼又尿我的床啦！！！！！……嗚嗚嗚可是老姐姐真的好可愛喔……」", image: 'siang-095-koda', series: 'memorial', special: true },
+  // Koda 小湘（湘 11/20）：湘和她的虎斑貓 Koda（老姐姐）。動物系列；11/20 湘：Koda、爬爬都進蛋池（普通／願望／暗號蛋，SSR 機率同恐龍小湘）。台詞：docs/SIANG_095_KODA.md
+  '095': { no: '095', name: 'Koda 小湘', rarity: 'SSR', line: "「Koda！！！！妳怎麼又尿我的床啦！！！！！……嗚嗚嗚可是老姐姐真的好可愛喔……」", image: 'siang-095-koda', series: 'animals' },
+  // 爬爬小湘（湘 11/20）：湘和她的莉莉白睫角守宮爬爬。台詞：docs/SIANG_096_PAPA_GECKO.md
+  '096': { no: '096', name: '爬爬小湘', rarity: 'SSR', line: "「爬爬！！！！你怎麼連舔自己的眼睛都那麼可愛啦！！！！！😭♡」", image: 'siang-096-papa-gecko', series: 'animals' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
