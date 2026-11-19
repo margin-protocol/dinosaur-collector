@@ -1,15 +1,15 @@
+import { bondPhotoButton } from './bond-art.js';
 import { TEAM_BONDS, effectText } from './team-bonds.js';
-import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
+import { CHARACTERS } from './eggs.js';
 const el=(tag,text,cls)=>{const e=document.createElement(tag);if(text)e.textContent=text;if(cls)e.className=cls;return e;};
 const action=(text,fn)=>{const b=el('button',text,'btn btn--quiet');b.type='button';b.onclick=fn;return b;};
-function portrait(no){const img=el('img');img.alt=CHARACTERS[no].name;loadWithFallback(img,characterSources(CHARACTERS[no].image));return img;}
 export function renderAtlas(host,state){
   const open=host.querySelector('details')?.open;
   const details=el('details',null,'team-atlas');details.open=Boolean(open);
   const known=state.teamBonds?.unlocked||{};
-  details.append(el('summary',`隱藏羈絆圖鑑 · ${TEAM_BONDS.filter(b=>known[b.id]).length} / 12`),el('p','任意三位 LV5 戰力 +10%；特殊羈絆取代通用加成。照著線索組隊，三位 LV5 一起出發即可收藏三人合照閃卡。'));
+  details.append(el('summary',`隱藏羈絆圖鑑 · ${TEAM_BONDS.filter(b=>known[b.id]).length} / ${TEAM_BONDS.length}`),el('p','任意三位 LV5 戰力 +10%；特殊羈絆取代通用加成。照著線索組隊，三位 LV5 一起出發即可收藏三人合照閃卡。'));
   for(const b of TEAM_BONDS){const card=el('article',null,'team-bond-card');card.append(el('small',known[b.id]?'合照已收藏':'尚未發現'),el('h3',known[b.id]?b.name:'未揭曉的默契'),el('p',b.clue));
-    if(known[b.id]){const photo=el('div',null,'team-bond-photo');photo.setAttribute('role','img');photo.setAttribute('aria-label',`${b.name}三人合照閃卡`);photo.append(...b.nos.map(portrait));card.append(photo,el('p',effectText(b)),el('small',`相遇紀念 · ${known[b.id].slice(0,10)}`));}details.append(card);
+    if(known[b.id]){const photo=bondPhotoButton(b);card.append(photo,el('p',effectText(b)),el('small',`相遇紀念 · ${known[b.id].slice(0,10)}`));}details.append(card);
   }host.replaceChildren(details);
 }
 export function renderTeamTools(host,{state,free,picked,comparison,onChoose,onSave,onDelete}){

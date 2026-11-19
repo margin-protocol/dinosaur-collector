@@ -1,0 +1,290 @@
+[
+  {
+    "id": "dessert",
+    "title": "布丁保衛戰",
+    "characters": [
+      "001",
+      "002",
+      "005"
+    ],
+    "names": [
+      "原味小湘",
+      "草莓小湘",
+      "甜點小湘"
+    ],
+    "references": [
+      "assets/characters/siang-001-hd/idle-open.webp",
+      "assets/characters/siang-002-strawberry.webp",
+      "assets/characters/siang-005-dessert.webp"
+    ],
+    "original": "art/team-bonds/originals/dessert.png",
+    "web": "assets/bonds/dessert.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 330532
+  },
+  {
+    "id": "rainbow",
+    "title": "雨後的捷徑",
+    "characters": [
+      "003",
+      "071",
+      "074"
+    ],
+    "names": [
+      "雨傘小湘",
+      "下雨小湘",
+      "彩虹小湘"
+    ],
+    "references": [
+      "assets/characters/siang-003-umbrella.webp",
+      "assets/characters/siang-071-rain.webp",
+      "assets/characters/siang-074-rainbow.webp"
+    ],
+    "original": "art/team-bonds/originals/rainbow.png",
+    "web": "assets/bonds/rainbow.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 481772
+  },
+  {
+    "id": "midnight",
+    "title": "熄燈後讀一頁",
+    "characters": [
+      "004",
+      "007",
+      "010"
+    ],
+    "names": [
+      "夜貓小湘",
+      "書頁小湘",
+      "星塵小湘"
+    ],
+    "references": [
+      "assets/characters/siang-004-nightowl.webp",
+      "assets/characters/siang-007-bookpage.webp",
+      "assets/characters/siang-010-stardust.webp"
+    ],
+    "original": "art/team-bonds/originals/midnight.png",
+    "web": "assets/bonds/midnight.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 315882
+  },
+  {
+    "id": "garden",
+    "title": "花園慢慢醒",
+    "characters": [
+      "006",
+      "008",
+      "009"
+    ],
+    "names": [
+      "園丁小湘",
+      "晴空小湘",
+      "膠卷小湘"
+    ],
+    "references": [
+      "assets/characters/siang-006-gardener.webp",
+      "assets/characters/siang-008-clearsky.webp",
+      "assets/characters/siang-009-film.webp"
+    ],
+    "original": "art/team-bonds/originals/garden.png",
+    "web": "assets/bonds/garden.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 426750
+  },
+  {
+    "id": "gym",
+    "title": "練完再開飯",
+    "characters": [
+      "036",
+      "037",
+      "040"
+    ],
+    "names": [
+      "摯友小湘（把拔ver）",
+      "摯友小湘（ㄊㄧver）",
+      "摯友小湘（Achio ver）"
+    ],
+    "references": [
+      "assets/characters/siang-036-friend-baba.webp",
+      "assets/characters/siang-037-friend-ti.webp",
+      "assets/characters/siang-040-friend-achio.webp"
+    ],
+    "original": "art/team-bonds/originals/gym.png",
+    "web": "assets/bonds/gym.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 402326
+  },
+  {
+    "id": "paws",
+    "title": "腳印接力賽",
+    "characters": [
+      "044",
+      "048",
+      "055"
+    ],
+    "names": [
+      "貓咪小湘",
+      "狗狗小湘",
+      "兔兔小湘"
+    ],
+    "references": [
+      "assets/characters/siang-044-cat.webp",
+      "assets/characters/siang-048-puppy.webp",
+      "assets/characters/siang-055-bunny.webp"
+    ],
+    "original": "art/team-bonds/originals/paws.png",
+    "web": "assets/bonds/paws.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 396706
+  },
+  {
+    "id": "ocean",
+    "title": "不會游也要出航",
+    "characters": [
+      "045",
+      "046",
+      "054"
+    ],
+    "names": [
+      "小丑魚小湘",
+      "螃蟹小湘",
+      "企鵝小湘"
+    ],
+    "references": [
+      "assets/characters/siang-045-clownfish.webp",
+      "assets/characters/siang-046-crab.webp",
+      "assets/characters/siang-054-penguin.webp"
+    ],
+    "original": "art/team-bonds/originals/ocean.png",
+    "web": "assets/bonds/ocean.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 467818
+  },
+  {
+    "id": "north",
+    "title": "北邊的回家路",
+    "characters": [
+      "016",
+      "017",
+      "018"
+    ],
+    "names": [
+      "臺北市小湘",
+      "新北市小湘",
+      "基隆市小湘"
+    ],
+    "references": [
+      "assets/characters/siang-016-taipei.webp",
+      "assets/characters/siang-017-new-taipei.webp",
+      "assets/characters/siang-018-keelung.webp"
+    ],
+    "original": "art/team-bonds/originals/north.png",
+    "web": "assets/bonds/north.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 411500
+  },
+  {
+    "id": "east",
+    "title": "沿海等日出",
+    "characters": [
+      "032",
+      "033",
+      "034"
+    ],
+    "names": [
+      "宜蘭縣小湘",
+      "花蓮縣小湘",
+      "臺東縣小湘"
+    ],
+    "references": [
+      "assets/characters/siang-032-yilan.webp",
+      "assets/characters/siang-033-hualien.webp",
+      "assets/characters/siang-034-taitung.webp"
+    ],
+    "original": "art/team-bonds/originals/east.png",
+    "web": "assets/bonds/east.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 364330
+  },
+  {
+    "id": "heroes",
+    "title": "慶功宴不能遲到",
+    "characters": [
+      "062",
+      "063",
+      "064"
+    ],
+    "names": [
+      "騎士小湘",
+      "魔法師小湘",
+      "勇者小湘"
+    ],
+    "references": [
+      "assets/characters/siang-062-knight.webp",
+      "assets/characters/siang-063-mage.webp",
+      "assets/characters/siang-064-hero.webp"
+    ],
+    "original": "art/team-bonds/originals/heroes.png",
+    "web": "assets/bonds/heroes.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 410002
+  },
+  {
+    "id": "storm",
+    "title": "天空實驗小隊",
+    "characters": [
+      "065",
+      "067",
+      "070"
+    ],
+    "names": [
+      "天氣觀測師",
+      "打雷小湘",
+      "冰雹小湘"
+    ],
+    "references": [
+      "assets/characters/siang-065-weather-observer.webp",
+      "assets/characters/siang-067-thunder.webp",
+      "assets/characters/siang-070-hail.webp"
+    ],
+    "original": "art/team-bonds/originals/storm.png",
+    "web": "assets/bonds/storm.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 460364
+  },
+  {
+    "id": "gallery",
+    "title": "留給明天的光",
+    "characters": [
+      "076",
+      "077",
+      "080"
+    ],
+    "names": [
+      "星夜書房小湘",
+      "日落底片小湘",
+      "月光花園小湘"
+    ],
+    "references": [
+      "assets/characters/siang-076-starry-library.webp",
+      "assets/characters/siang-077-sunset-film.webp",
+      "assets/characters/siang-080-moonlit-garden.webp"
+    ],
+    "original": "art/team-bonds/originals/gallery.png",
+    "web": "assets/bonds/gallery.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 473502
+  }
+]
