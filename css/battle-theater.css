@@ -49,3 +49,8 @@
 .battle-log p { margin:0; white-space:pre-line; }
 .battle-log__speaker { display:block; margin-bottom:6px; color:var(--t-accent); font:600 13px/1.7 var(--font-display); }
 .battle-log .is-power { margin-left:0; padding:12px 0; opacity:1; color:var(--t-muted); }
+
+.battle-theater__actions { display:flex; align-items:center; gap:8px; flex:none; }
+.battle-theater__head > div:first-child { min-width:0; }
+.battle-result__close { flex:none; width:44px; height:44px; padding:0; font:28px/1 var(--font-display); }
+.battle-result__closebar { display:flex; justify-content:flex-end; position:sticky; top:-24px; z-index:5; padding:24px 0 4px; margin-top:-24px; margin-bottom:8px; background:var(--t-panel); }
