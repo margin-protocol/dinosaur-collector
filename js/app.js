@@ -194,6 +194,10 @@ function renderHome() {
   renderEggRequest();
   $('cultivate-label').textContent = ready ? '迎接新夥伴' : '注入能量';
   $('cultivate').disabled = busy;
+  const pourAll = Math.max(0, Math.min(state.energy, egg.warmthNeeded - state.egg.warmth));
+  $('feed-all').hidden = ready || Boolean(state.eggOffer);
+  $('feed-all').disabled = busy || pourAll <= 0;
+  $('feed-all-amount').textContent = pourAll > 0 ? `（${pourAll} 能量）` : '（沒有能量了）';
   $('incubator-status').textContent = ['安靜生長中', '感受到小小的動靜', '生命正在甦醒', '快要見面了', '準備好相遇了'][s];
   $('incubation-message').textContent = ['裡面的小小生命，正做著柔軟的夢。', '好像聽見了你的聲音，輕輕回應了一下。', '細小的裂痕裡，藏著即將到來的相遇。', '再一點點溫暖，就能見到你了。', '牠已經準備好了。一起迎接新夥伴吧。'][s];
   $('incubation-percent').textContent = `${Math.round(pct)}%`;
@@ -846,6 +850,30 @@ async function onEggTap() {
   } finally { busy = false; state = loadState(); renderAll(); }
 }
 
+// 一鍵餵養：把需要的能量一次注入（最多注到可以破殼為止）
+async function onFeedAll() {
+  if (busy || state.eggOffer) return;
+  busy = true;
+  $('cultivate').disabled = true; $('feed-all').disabled = true;
+  try {
+    const transaction = await updateState(current => {
+      const egg = EGGS[current.egg.id];
+      const amount = Math.max(0, Math.min(current.energy, egg.warmthNeeded - current.egg.warmth));
+      if (!amount) return { type: current.energy <= 0 ? 'empty' : 'full' };
+      const before = stageOf(100 * current.egg.warmth / egg.warmthNeeded);
+      current.energy -= amount; current.egg.warmth += amount; current.player.stats.fed += amount;
+      return { type: 'feed', amount, before, after: stageOf(100 * current.egg.warmth / egg.warmthNeeded), ready: current.egg.warmth >= egg.warmthNeeded };
+    });
+    state = transaction.state;
+    const result = transaction.result;
+    if (result.type !== 'feed') { if (result.type === 'empty') toast('能量不足，完成今日願望就能繼續培育。'); return; }
+    renderResources(); buzz([12, 30, 12]); restart($('chip-energy'), 'is-bump');
+    incubator.press(); await flyOrb(); renderHome(); renderWishes(); incubator.feed(); showGain(`+${result.amount}`);
+    if (result.after > result.before) celebrateStage(result.after);
+    if (result.ready) toast('蛋已經準備好了！按「迎接新夥伴」破殼吧');
+  } finally { busy = false; state = loadState(); renderAll(); }
+}
+
 // 相遇的故事：記下這位小湘是從哪顆蛋、在什麼樣的日子孵出來的（只記第一次相遇）
 function meetingStory(current) {
   const egg = current.egg;
@@ -1179,6 +1207,7 @@ $('egg-choices').addEventListener('click', async event => {
   } finally { busy = false; state = loadState(); renderAll(); }
 });
 $('cultivate').addEventListener('click', onEggTap);
+$('feed-all').addEventListener('click', () => void onFeedAll());
 $('home-wishes').addEventListener('click', () => showView('wish'));
 $('incubate-wishes').addEventListener('click', () => showView('wish'));
 $('enter-incubator').addEventListener('click', () => showView('incubate'));

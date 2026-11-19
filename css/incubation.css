@@ -30,6 +30,11 @@ body[data-view="incubate"] .app { min-height:100svh; height:auto; overflow:visib
 @media(hover:hover) { .view--incubate #cultivate:hover:not(:disabled) { background:linear-gradient(135deg,#60506e,#44394e); } }
 @media(prefers-reduced-motion:reduce) { .view--incubate #cultivate { transition:none; } }
 #cultivate:disabled { opacity:.65; cursor:wait; }
+.feed-all { align-self:center; width:min(100%,280px); min-height:44px; padding:8px 16px; border:1px solid color-mix(in srgb,var(--pearl) 45%,transparent); border-radius:3px; background:none; color:var(--pearl); font:14px var(--font-display); letter-spacing:.08em; }
+.feed-all span { font-size:12px; margin-left:4px; }
+.feed-all:active:not(:disabled) { transform:scale(.97); }
+.feed-all:disabled { opacity:.4; }
+.feed-all[hidden] { display:none; }
 #incubate-wishes { display:flex; justify-content:center; align-items:center; gap:14px; min-height:46px; padding:8px; border:0; background:none; color:var(--pearl); font:12px var(--font-display); }
 #incubate-wish-progress { font:10px var(--font-body); color:var(--silver); }
 body[data-view="incubate"] .game-footer { min-height:70px; padding-top:8px; padding-bottom:calc(var(--safe-bottom) + 18px); }
