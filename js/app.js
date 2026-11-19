@@ -16,7 +16,7 @@ import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
 import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS } from './fossils.js';
 import { FLAVORS, makeOffer, eggLabel, naughtyRequest, NAUGHTY_BONUS } from './egg-traits.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
-import { RECIPES, tickRecipes } from './recipes.js';
+import { RECIPES, tickRecipes, recipeDue, nightKey } from './recipes.js';
 import { ensureBingo, bingoStatus, bingoReady, claimBingo, REWARDS as BINGO_REWARDS } from './bingo.js';
 import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet, pet, feedSnack, snacksLeft, PET, SNACK, photoSeen, rememberPhoto } from './energy.js';
 import { checkIn } from './travel.js';
@@ -25,6 +25,7 @@ import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
 import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
 import { applyReward, validReward, describeReward } from './gifts.js';
 import { WEATHER_LINES } from './weather-lines.js';
+import { RECIPE_LINES } from './recipe-lines.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, weatherBoosts, KIND_NAMES, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
@@ -977,7 +978,8 @@ function showReveal(c, duplicate) {
   $('reveal-greeting').textContent = duplicate ? '是你呀，我們又見面了。' : '初次見面，請多指教。';
   $('reveal-no').textContent = `No.${c.no} ｜ ${c.rarity}`;
   $('reveal-name').textContent = c.name;
-  $('reveal-line').textContent = WEATHER_LINES[c.no]?.hatch || c.line;
+  const hatchLine = WEATHER_LINES[c.no]?.hatch || RECIPE_LINES[c.no]?.hatch;
+  $('reveal-line').textContent = hatchLine ? `「${hatchLine}」` : c.line;
   $('reveal-bonus').hidden = !duplicate;
   $('reveal-bonus').textContent = `再次相遇的禮物 · 化石碎片 +${DUPLICATE_FOSSILS}`;
   $('reveal-ok').textContent = duplicate ? '收下化石' : '一起回家';
@@ -1380,14 +1382,14 @@ $('county-call').addEventListener('close', syncRoomActivity);
 let recipeBusy = false;
 function checkRecipes() {
   if (recipeBusy || !state.seenIntro) return;
-  const ctx = { residents: residentsFor(state.dex), raining: rainingToday(state, todayKey()), today: todayKey() };
-  if (!RECIPES.some(r => !state.recipes[r.id].done && r.members.every(no => ctx.residents.includes(no)) && (!r.rain || ctx.raining) && !state.recipes[r.id].days.includes(ctx.today))) return;
+  const ctx = { residents: residentsFor(state.dex), raining: rainingToday(state, todayKey()), today: todayKey(), night: nightKey() };
+  if (!recipeDue(state, ctx)) return;
   recipeBusy = true;
   void updateState(current => tickRecipes(current, ctx)).then(t => {
     state = t.state; recipeBusy = false; renderAll();
     const { progressed, completed } = t.result;
     if (completed.length) { toast(`🍰 ${completed.map(r => r.members.map(no => CHARACTERS[no].name).join('和')).join('、')}一起做出了驚喜！收到一顆紀念蛋，到「選擇蛋」看看吧。`); say('好像有什麼新的東西誕生了！', 'cheer', 3500); }
-    else if (progressed.length) { const r = progressed[0]; say(`${r.members.map(no => CHARACTERS[no].name).join('和')}好像在偷偷準備什麼……（${state.recipes[r.id].days.length} / ${r.days}）`, 'happy', 4500); }
+    else if (progressed.length) { const r = progressed[0]; say(`${r.members.map(no => CHARACTERS[no].name).join('和')}好像在偷偷準備什麼……（${state.recipes[r.id].days.length} / ${r.days}${r.night ? ' 個夜晚' : ''}）`, 'happy', 4500); }
   });
 }
 
@@ -1520,7 +1522,7 @@ function howToGet(c) {
   const h = HOLIDAYS.find(x => x.no === c.no);
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
-  if (recipe) { const rec = state.recipes[recipe.id]; return `隱藏配方：${state.dex[c.no] || rec.days.length ? recipe.text : '某兩位小湘一起入住首頁，就會發生什麼……'}${rec.done ? '' : rec.days.length ? `（已累積 ${rec.days.length} / ${recipe.days} 天）` : ''}`; }
+  if (recipe) { const rec = state.recipes[recipe.id]; return `隱藏配方：${state.dex[c.no] || rec.days.length ? recipe.text : '某兩位小湘一起入住首頁，就會發生什麼……'}${rec.done ? '' : rec.days.length ? `（已累積 ${rec.days.length} / ${recipe.days} ${recipe.night ? '個夜晚' : recipe.rain ? '個下雨天' : '天'}）` : ''}`; }
   if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
   if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
   const eggs = Object.values(EGGS).filter(e => e.pool?.[c.no]).map(e => e.name);

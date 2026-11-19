@@ -235,6 +235,13 @@ export const CHARACTERS = {
   '073': { no: '073', name: '大風小湘', rarity: 'SR', line: '「等一下！我的帽子要飛走了啦啊啊啊！」', image: 'siang-073-windy', series: 'weather' },
   '074': { no: '074', name: '彩虹小湘', rarity: 'SR', line: '「快看！雨停之後，天空偷偷送我們禮物了！」', image: 'siang-074-rainbow', series: 'weather' },
   '075': { no: '075', name: '夕陽小湘', rarity: 'R', line: '「再等一下下，今天的天空還沒拍完呢。」', image: 'siang-075-sunset', series: 'weather' },
+  // 隱藏配方第二彈（2026-11-19 湘定案、皮寶交付）：只從配方紀念蛋孵出，不進任何蛋池
+  '076': { no: '076', name: '星夜書房小湘', rarity: 'SR', line: "「故事寫到這裡還沒有結束喔，明天的那一頁，要不要一起翻開？」", image: 'siang-076-starry-library', series: 'recipe', special: true },
+  '077': { no: '077', name: '日落底片小湘', rarity: 'SR', line: "「等一下，太陽還沒完全下山！再借我一格底片，好不好？」", image: 'siang-077-sunset-film', series: 'recipe', special: true },
+  '078': { no: '078', name: '貓咪咖啡館小湘', rarity: 'R', line: "「歡迎光臨！先說好，布丁不可以退貨，店長也不接受退摸！」", image: 'siang-078-cat-cafe', series: 'recipe', special: true },
+  '079': { no: '079', name: '史前探險小湘', rarity: 'SSR', line: "「探險隊集合！今天的目標，是找到一個連地圖都還不知道的地方！」", image: 'siang-079-prehistoric-explorer', series: 'recipe', special: true },
+  '080': { no: '080', name: '月光花園小湘', rarity: 'SSR', line: "「噓……月光花正在開呢。你要不要陪我等一下？」", image: 'siang-080-moonlit-garden', series: 'recipe', special: true },
+  '081': { no: '081', name: '彩虹畫家小湘', rarity: 'SR', line: "「天空又沒有規定只能是藍色！今天我要畫一片草莓牛奶色的雲！」", image: 'siang-081-rainbow-painter', series: 'recipe', special: true },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序

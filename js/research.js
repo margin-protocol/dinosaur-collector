@@ -17,7 +17,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
         <button type="button" class="research-slot" data-slot="1"><span class="research-slot-art"></span><span class="research-slot-name"></span><span class="research-slot-action"></span></button>
       </div>
       <p class="research-pair-status" role="status"></p>
-      <div class="research-note-tabs" role="group" aria-label="選擇研究筆記"><button type="button" data-note="0" aria-pressed="true">NOTE 01 · 甜甜的相遇</button><button type="button" data-note="1" aria-pressed="false">NOTE 02 · 雨後花圃</button></div>
+      <div class="research-note-tabs" role="group" aria-label="選擇研究筆記">${RECIPES.map((r, i) => `<button type="button" data-note="${i}" aria-pressed="${i === 0}">NOTE ${String(i + 1).padStart(2, '0')} · ${r.note.title}</button>`).join('')}</div>
       <section class="research-notebook" aria-labelledby="research-note-title"><div class="research-note-meta"><span data-note-no>NOTE 01</span><span class="research-note-state">等待靈感</span></div><h2 id="research-note-title">甜甜的相遇</h2><p class="research-poem">一位喜歡紅色，一位總把點心留給你。<br>兩份小小的偏愛，會不會有新的味道？</p><ul class="research-clues"><li data-clue="002">尋找喜歡甜甜紅色的夥伴</li><li data-clue="005">尋找熟悉點心香氣的夥伴</li></ul></section>
       <button type="button" class="research-primary" data-preview disabled>先選好兩位搭檔</button>
       <p class="research-disclaimer">${onStudy ? "研究不消耗能量或蛋；真正的隱藏配方仍靠兩位小湘一起入住達成，不會重複送獎勵。" : "這是獨立示範，不消耗能量或蛋，也不發放角色。"}</p>
@@ -51,22 +51,15 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     });
     const note = RECIPES[noteIndex];
     const matched = note.members.every(id => slots.includes(id));
-    find('[data-note-no]').textContent = 'NOTE 0' + (noteIndex + 1);
-    find('#research-note-title').textContent = noteIndex === 0 ? '甜甜的相遇' : '雨後花圃';
-    find('.research-poem').textContent = noteIndex === 0
-      ? '一位喜歡紅色，一位總把點心留給你。兩份小小的偏愛，會不會有新的味道？'
-      : '有人細心照料花草，有人總在下雨時出現。雨滴落在花瓣上，會留下什麼故事？';
+    find('[data-note-no]').textContent = 'NOTE ' + String(noteIndex + 1).padStart(2, '0');
+    find('#research-note-title').textContent = note.note.title;
+    find('.research-poem').textContent = note.note.poem;
     root.querySelectorAll('[data-note]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.note) === noteIndex)));
     find('.research-pair-status').textContent = slots.every(Boolean) ? '搭檔就位，可以開始研究了。' : '點選兩側，邀請小湘一起研究。';
     find('.research-note-state').textContent = matched ? '線索相合' : slots.some(Boolean) ? '收集線索中' : '等待靈感';
     root.querySelectorAll('[data-clue]').forEach((clue, i) => {
       const who = note.members[i], found = slots.includes(who);
-      const unknown = noteIndex === 0
-        ? ['尋找喜歡甜甜紅色的夥伴', '尋找熟悉點心香氣的夥伴']
-        : ['尋找熱愛照顧植物的夥伴', '尋找雨天常在身邊的夥伴'];
-      const discovered = noteIndex === 0
-        ? ['找到了甜甜的紅色。', '找到了熟悉點心香氣的夥伴。']
-        : ['有人懂得照料花草。', '有人聽得懂雨滴的聲音。'];
+      const unknown = note.note.clues, discovered = note.note.found;
       clue.classList.toggle('is-found', found);
       clue.textContent = (found ? '✓ ' : '○ ') + (found ? discovered[i] : unknown[i]);
     });
@@ -116,7 +109,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
   const click = async event => {
     const button = event.target.closest('button'); if (!button || button.disabled) return;
     if (button.matches('[data-collect]')) onCollect();
-    if (button.matches('[data-note]')) { noteIndex = Number(button.dataset.note) === 1 ? 1 : 0; update(); }
+    if (button.matches('[data-note]')) { const i = Number(button.dataset.note); noteIndex = RECIPES[i] ? i : 0; update(); }
     if (button.matches('[data-slot]')) { if (ownedFor(getState()).length < 3) { update(); return; } editing = Number(button.dataset.slot); renderPicker(); picker.showModal(); }
     if (button.matches('[data-close-picker]')) closePicker();
     if (button.matches('[data-clear]')) { slots[editing] = null; closePicker(); update(); }
@@ -146,8 +139,8 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
           if (recipe) {
             const days = Math.min(recipe.days, saved.recipes?.[recipe.id]?.days?.length || 0);
             find('.research-result-copy').textContent = (discovered ? '這個配方已完成，成功收藏了研究成果！' :
-              '這兩位搭檔的組合確實有特別的可能。讓她們一起入住首頁，累積 ' + recipe.days + ' 天' +
-              (recipe.rain ? '（需要遇見雨天）' : '') + '，就能依原本的隱藏配方規則取得紀念蛋。當前進度：' + days + ' / ' + recipe.days + ' 天。') +
+              '這兩位搭檔的組合確實有特別的可能。讓她們一起入住首頁，累積 ' + recipe.days + (recipe.night ? ' 個夜晚（晚上 7 點到凌晨 5 點打開遊戲）' : recipe.rain ? ' 個下雨天' : ' 天') +
+              '，就能依原本的隱藏配方規則取得紀念蛋。當前進度：' + days + ' / ' + recipe.days + '。') +
               (outcome.repeat ? ' 這組配方已經記錄過，不會再新增一筆。' : '');
           } else {
             find('.research-result-copy').textContent = outcome.record.kind === 'near'
@@ -171,7 +164,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
       else { image.src = asset('assets/eggs/ordinary/shell.webp'); image.alt = '尚未發現新配方的蛋'; }
       find('.research-result-eyebrow').textContent = matched ? 'A POSSIBLE RECIPE' : 'A LITTLE MORE INSPIRATION';
       find('#research-result-title').textContent = matched ? CHARACTERS[demoRecipe.target].name : '還差一點靈感';
-      find('.research-result-copy').textContent = matched ? (noteIndex === 0 ? '草莓的甜，遇上點心的香。這組搭檔似乎找到了新的可能。' : '花草遇見雨滴，會留下新的故事。這組搭檔似乎找到了新的可能。') : '這組搭檔暫時沒有對上這則線索，換位夥伴再一起看看。';
+      find('.research-result-copy').textContent = matched ? `${demoRecipe.note.found.join('')}這組搭檔似乎找到了新的可能。` : '這組搭檔暫時沒有對上這則線索，換位夥伴再一起看看。';
       result.showModal();
     }
     if (button.matches('[data-close-result]')) { result.close(); find('[data-preview]').focus({preventScroll:true}); }

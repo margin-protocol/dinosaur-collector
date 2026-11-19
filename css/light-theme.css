@@ -51,3 +51,9 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.nav__sub,.today-item small,.guide-feature p) { color:var(--t-muted); opacity:1; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .guide-feature.is-locked { opacity:1; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .guide-tip { background:var(--t-raised); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-note-tabs button { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-note-tabs button[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-history-list li { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-history-list strong { color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.research-history-list small,.research-history-count,.research-history-intro,.research-clues) { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-clues .is-found { color:var(--t-accent); }
