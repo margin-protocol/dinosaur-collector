@@ -358,8 +358,14 @@ export const WILD_TRAITS = [
 ];
 const WILD_SERIES = ['daily', 'weather', 'animals', 'friends', 'county', 'holiday', 'date'];
 export const WILD_PER_DAY = 4;
+// 野外只會遇到「已經解鎖的關卡」的敵人，避免還沒打到的章節、EX 先在野外劇透（湘 11/19 決定）
 const BOSS_IDS = Object.keys(ENEMIES).filter((id) => ENEMIES[id].boss);
 const MINION_IDS = Object.keys(ENEMIES).filter((id) => !ENEMIES[id].boss);
+export const wildBases = (state) => {
+  const open = (ids) => ids.filter((id) => unlocked(state, id));
+  const minions = open(MINION_IDS);
+  return { minions: minions.length ? minions : [ORDER[0]], bosses: open(BOSS_IDS) };
+};
 
 function seeded(text) {
   let h = 2166136261;
@@ -392,9 +398,10 @@ export function ensureWild(state, date = todayKey()) {
   const base = strength(state);
   const ratios = [0.55, 0.85, 1.05, 1.35];
   const commons = WILD_TRAITS.filter((t) => !t.rare);
+  const pool = wildBases(state);
   const list = ratios.map((ratio, i) => {
-    const wandering = i === WILD_PER_DAY - 1 && rand() < 0.15;
-    const enemy = wandering ? pick(BOSS_IDS) : pick(MINION_IDS);
+    const wandering = i === WILD_PER_DAY - 1 && rand() < 0.15 && pool.bosses.length > 0;
+    const enemy = wandering ? pick(pool.bosses) : pick(pool.minions);
     const trait = rand() < 0.12 ? WILD_TRAITS.find((t) => t.shiny) : pick(commons);
     const weak = [...new Set([pick(WILD_SERIES), ...(rand() < 0.4 ? [pick(WILD_SERIES)] : [])])];
     const power = Math.max(6, Math.round(base * ratio * (wandering ? 1.15 : 1) * (0.9 + rand() * 0.2)));
