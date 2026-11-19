@@ -17,11 +17,13 @@ const fresh = () => ({
 
 export function loadState() {
   if (volatileState) return hydrateProgression(JSON.parse(volatileState));
+  let raw = null;
   try {
-    const raw = localStorage.getItem(KEY);
+    raw = localStorage.getItem(KEY);
     if (raw) return hydrateProgression({ ...fresh(), ...JSON.parse(raw) });
   } catch {
-    // 讀不到就當作新遊戲
+    // 讀不到就當作新遊戲，但先把原本那份另存起來（11/19）：不然下一次存檔會把它蓋掉，進度就救不回來了
+    try { if (raw && !localStorage.getItem(`${KEY}:unreadable`)) localStorage.setItem(`${KEY}:unreadable`, raw); } catch {}
   }
   return hydrateProgression(fresh());
 }

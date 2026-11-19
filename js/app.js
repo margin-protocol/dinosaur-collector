@@ -2276,10 +2276,40 @@ function renderCloud(message = '') {
   $('cloud-status').textContent = message;
 }
 
-async function backupNow() {
+// 進度大小：圖鑑幾位為主，孵化次數次之。用來防止「進度不見的新手機」一連上雲端就把舊備份蓋掉（11/19）
+function progressOf(saveText) {
+  try { const s = typeof saveText === 'string' ? JSON.parse(saveText) : saveText; return Object.keys(s?.dex || {}).length * 10000 + (s?.hatched || 0); } catch { return 0; }
+}
+function describeSave(data) {
+  try { const s = JSON.parse(data.keys['siang-collector:v1']); return `${new Date(data.at).toLocaleString('zh-TW')}：圖鑑 ${Object.keys(s.dex || {}).length} 位、孵化 ${s.hatched || 0} 次`; } catch { return new Date(data.at).toLocaleString('zh-TW'); }
+}
+// 雲端上進度最多的那份備份（latest 和每天的備份都看）
+async function bestCloudBackup(cloud) {
+  const files = new Set(['backups/latest.json']);
+  try { for (const f of await cloud.list('backups')) if (f.type === 'file' && /\.json$/.test(f.name)) files.add(`backups/${f.name}`); } catch {}
+  let best = null;
+  for (const path of files) {
+    try {
+      const file = await cloud.getJSON(path); const data = file?.data;
+      if (data?.app !== 'siang-collector' || !data.keys?.['siang-collector:v1']) continue;
+      const score = progressOf(data.keys['siang-collector:v1']);
+      if (!best || score > best.score || (score === best.score && data.at > best.data.at)) best = { path, data, score };
+    } catch {}
+  }
+  return best;
+}
+let forceBackup = false;
+async function backupNow({ auto = false } = {}) {
   const config = cloudConfig();
   if (!config) throw new Error('還沒連線');
   const cloud = createCloud(config);
+  const local = progressOf(localStorage.getItem('siang-collector:v1'));
+  const best = await bestCloudBackup(cloud);
+  if (best && best.score > local && !forceBackup) {
+    const err = new Error(`雲端上有進度比這支手機多的備份（${describeSave(best.data)}），先不備份，免得蓋掉它。要找回進度請按「從雲端還原」。${auto ? '' : '確定要用這支手機的進度覆蓋，請再按一次「立即備份」。'}`);
+    err.regress = true; if (!auto) forceBackup = true; throw err;
+  }
+  forceBackup = false;
   const keys = {};
   for (const k of BACKUP_KEYS) { try { const v = localStorage.getItem(k); if (v !== null) keys[k] = v; } catch {} }
   const data = { app: 'siang-collector', v: 1, at: new Date().toISOString(), keys };
@@ -2292,7 +2322,7 @@ async function backupNow() {
 async function autoBackup() {
   const last = lastBackup();
   if (!cloudConfig() || (last && todayKey(new Date(last)) === todayKey())) return;
-  try { await backupNow(); } catch {}
+  try { await backupNow({ auto: true }); } catch (err) { if (err.regress) renderCloud(err.message); }
 }
 
 $('open-cloud').addEventListener('click', () => { $('function-center').close(); renderCloud(); $('cloud-dialog').showModal(); syncRoomActivity(); });
@@ -2328,18 +2358,18 @@ $('cloud-form').addEventListener('submit', async (event) => {
 });
 $('cloud-backup-now').addEventListener('click', async () => {
   $('cloud-backup-now').disabled = true; $('cloud-status').textContent = '備份中…';
-  try { await backupNow(); renderCloud('備份完成。'); } catch (err) { $('cloud-status').textContent = `備份失敗：${err.message}`; }
+  try { await backupNow(); renderCloud('備份完成。'); } catch (err) { $('cloud-status').textContent = err.regress ? err.message : `備份失敗：${err.message}`; }
   finally { $('cloud-backup-now').disabled = false; }
 });
 let pendingRestore = null;
 $('cloud-restore').addEventListener('click', async () => {
   $('cloud-status').textContent = '讀取雲端備份…';
   try {
-    const file = await createCloud(cloudConfig()).getJSON('backups/latest.json');
-    if (!file || file.data.app !== 'siang-collector' || !file.data.keys?.['siang-collector:v1']) { $('cloud-status').textContent = '雲端還沒有備份。'; return; }
-    pendingRestore = file.data;
-    const saved = JSON.parse(file.data.keys['siang-collector:v1']);
-    $('cloud-status').textContent = `找到 ${new Date(file.data.at).toLocaleString('zh-TW')} 的備份：圖鑑 ${Object.keys(saved.dex || {}).length} 位、能量 ${saved.energy || 0}。`;
+    const best = await bestCloudBackup(createCloud(cloudConfig()));
+    if (!best) { $('cloud-status').textContent = '雲端還沒有備份。'; return; }
+    pendingRestore = best.data;
+    const saved = JSON.parse(best.data.keys['siang-collector:v1']);
+    $('cloud-status').textContent = `找到進度最多的備份（${describeSave(best.data)}、能量 ${saved.energy || 0}）。`;
     $('cloud-restore-confirm').hidden = false;
   } catch (err) { $('cloud-status').textContent = `讀取失敗：${err.message}`; }
 });
