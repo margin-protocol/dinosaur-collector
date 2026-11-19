@@ -107,6 +107,17 @@ export function createRoom(host, onGreet, onPet = () => {}) {
     b.style.left = `${anchor.left - box.left + anchor.width / 2}px`;
     b.style.bottom = `${box.bottom - anchor.top - anchor.height * 0.08}px`;
     l.lane.append(b);
+    // 後排小湘站得比較高，對話框會往上頂到標題區、被「今天的事」按鈕蓋住：往下挪到看得到的地方，左右也不超出螢幕
+    // 左右先收進螢幕內，再看上方有沒有被「今天的事」「探索附近」按鈕蓋住
+    const vw = document.documentElement.clientWidth;
+    let r = b.getBoundingClientRect();
+    if (r.left < 8) b.style.left = `${parseFloat(b.style.left) + (8 - r.left)}px`;
+    else if (r.right > vw - 8) b.style.left = `${parseFloat(b.style.left) - (r.right - vw + 8)}px`;
+    r = b.getBoundingClientRect();
+    const blockers = ['today-pill', 'explore', 'home-subtitle'].map((id) => document.getElementById(id)).filter((el) => el && !el.hidden)
+      .map((el) => el.getBoundingClientRect()).filter((o) => o.width && o.right > r.left && o.left < r.right && o.top < r.bottom);
+    const safeTop = Math.max(8, ...blockers.map((o) => o.bottom + 6));
+    if (r.top < safeTop) b.style.bottom = `${parseFloat(b.style.bottom) - (safeTop - r.top)}px`;
     setTimeout(() => b.remove(), ms);
   }
   // 打招呼後在小湘旁邊冒出「看圖鑑」小按鈕，幾秒後消失
