@@ -4,6 +4,7 @@
 // 讓新的 index.html 配到舊的 app.js（按鈕出現了卻沒有功能）。
 // 圖片（assets/ 底下）改成「有快取就先用快取、背景再更新」：網路不穩也不會變成佔位圖（11/18）。
 const CACHE = 'siang-collector-v2';
+// 主畫面 icon 換圖時要換檔名（例如 siang-icon-v2-180.png）：圖片是快取優先，同檔名會一直拿到舊圖（11/19）
 const isAsset = (url) => url.pathname.includes('/assets/') && /\.(webp|png|jpe?g|svg|gif)$/i.test(url.pathname);
 
 self.addEventListener('install', () => self.skipWaiting());
