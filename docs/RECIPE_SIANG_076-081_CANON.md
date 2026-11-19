@@ -93,3 +93,14 @@
 - **GitHub 上傳與讀回驗證成功**：commit `7f4db2b6f7028f4d5020e3aa1777aa2e01be153e`，Git blob `026e7f5cfdc90513ea17ab45de2973c1f95b310b`。
 - **完整交接文件**：[`SIANG_080_MOONLIT_GARDEN_ART.md`](SIANG_080_MOONLIT_GARDEN_ART.md)，完整台詞與資料另見相關 JSON。
 - **狀態**：正式立繪已入庫；角色、夜晚配方、圖鑑與遊戲互動尚待工程接入及測試，不應提前發布玩家更新公告。
+
+## No.081 彩虹畫家小湘｜SR 正式美術（2026-11-19）
+
+- **角色**：No.081 彩虹畫家小湘／Rainbow Painter Siang，SR；`series: 'recipe'`、`special: true`。
+- **配方**：No.074 彩虹小湘＋No.008 晴空小湘，共同入住累積三個不同本地日期；完成後由配方結算固定孵出 No.081 的 `keepsake` 紀念蛋。**工程尚未實裝**。
+- **初見 Canon**：「天空今天借我當畫布！你想把哪一朵雲塗成粉紅色？」
+- **美術 Canon**：延續原味小湘深棕長捲髮、灰棕眼與 Q 版臉型；奶油白復古畫家貝雷帽、湖水藍短背心、霧紫透明水彩裙，手持玫瑰金畫筆與雲朵形調色盤；粉紅／湖藍／淡金水彩顏料與筆尖彎曲筆觸，無背景或大型彩虹光圈。
+- **正式角色素材**：`assets/characters/siang-081-rainbow-painter.webp`，1024 × 1024、透明 WebP、214,848 bytes，主體非透明區 x≈162–860、y≈80–939。
+- **GitHub 上傳與讀回驗證成功**：commit `9bd20d820edd2606e385651a5ebb828ece59bb81`，Git blob `cb9d723178769b1dccf699d744801994964e082b`。
+- **完整交接文件**：[`SIANG_081_RAINBOW_PAINTER_ART.md`](SIANG_081_RAINBOW_PAINTER_ART.md)，完整角色文字另見其所連結的台詞與 JSON。
+- **狀態**：正式立繪已入庫；圖鑑、角色、配方及存檔仍待工程接入與測試，不能提前宣告遊戲已可取得。
