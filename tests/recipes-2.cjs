@@ -29,7 +29,7 @@ assert.deepEqual(r.cat,['cat-cafe']);assert.equal(r.catEgg,'078');
 await p.locator('#intro-ok').click();
 await p.evaluate(()=>{const k='siang-collector:v1',s=JSON.parse(localStorage.getItem(k));s.hatched=4;s.dex={'001':{at:'x'},'007':{at:'x'},'010':{at:'x'}};localStorage.setItem(k,JSON.stringify(s));});
 await p.reload();await p.evaluate(()=>location.hash='research');await p.waitForTimeout(500);
-assert.equal(await p.locator('[data-note]').count(),9);
+assert.equal(await p.locator('[data-note]').count(),await p.evaluate(async()=>(await import('/js/recipes.js')).RECIPES.length),'每組配方一張研究筆記');
 await p.locator('[data-note="2"]').click();assert.match(await p.locator('#research-note-title').textContent(),/書頁裡的星光/);
 if(process.env.SHOT)await p.screenshot({path:process.env.SHOT,fullPage:true});
 assert.equal(errs.length,0,errs.join('\n'));console.log('recipe Siangs 076–081: registered off-pool, night recipes dedupe by night, day recipes, keepsake eggs, eight research notes PASS');await b.close();
