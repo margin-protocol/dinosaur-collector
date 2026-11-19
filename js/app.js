@@ -778,26 +778,51 @@ function renderDex() {
   }));
 }
 
+// 不在家的小湘：出門中或討伐中，這段時間不能安排入住（已經入住的可以先讓她休息）
+function awayReasons() {
+  const map = new Map();
+  for (const no of awayNos(state)) map.set(no, '出門中');
+  for (const a of state.battle?.active || []) if (!battle.isBack(a)) for (const no of a.nos) map.set(no, '討伐中');
+  for (const no of lab.labNos(state)) map.set(no, '調配中');
+  return map;
+}
 function renderResidents() {
   const selected = residentsFor(state.dex);
   const owned = Object.values(CHARACTERS).filter(character => state.dex[character.no]);
+  const away = awayReasons();
   $('residents-summary').textContent = `已收集 ${owned.length} 位 · 已入住 ${selected.length} / ${ROOM_LIMIT}`;
-  $('residents-list').replaceChildren(...owned.map(character => {
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.className = 'resident-choice';
-    button.dataset.no = character.no;
-    button.setAttribute('aria-pressed', String(selected.includes(character.no)));
-    const image = document.createElement('img');
-    image.alt = '';
-    loadWithFallback(image, characterSources(character.image));
-    const name = document.createElement('span');
-    name.textContent = character.name;
-    const action = document.createElement('span');
-    action.className = 'resident-choice__action';
-    action.textContent = selected.includes(character.no) ? '✓ 入住中' : '安排入住';
-    button.append(image, name, action);
-    return button;
+  // 上方三個入住位置：點一下讓她休息
+  $('residents-current').hidden = !owned.length;
+  $('residents-current').replaceChildren(...Array.from({ length: ROOM_LIMIT }, (_, i) => {
+    const no = selected[i];
+    const slot = document.createElement('button'); slot.type = 'button'; slot.className = `residents-slot${no ? '' : ' is-empty'}`;
+    if (no) {
+      slot.dataset.current = no; slot.setAttribute('aria-label', `${CHARACTERS[no].name}，點一下讓她休息`);
+      const img = document.createElement('img'); img.alt = ''; loadWithFallback(img, characterSources(CHARACTERS[no].image));
+      slot.append(img, Object.assign(document.createElement('span'), { textContent: CHARACTERS[no].name }), Object.assign(document.createElement('i'), { textContent: away.has(no) ? away.get(no) : '×', className: 'residents-slot__x' }));
+    } else { slot.disabled = true; slot.append(Object.assign(document.createElement('span'), { textContent: '空位' })); }
+    return slot;
+  }));
+  // 下方依系列排成小格子
+  const groups = Object.keys(SERIES).map(id => [id, owned.filter(c => c.series === id)]).filter(([, list]) => list.length);
+  $('residents-list').replaceChildren(...groups.flatMap(([id, list]) => {
+    const head = document.createElement('p'); head.className = 'residents-series'; head.textContent = `${SERIES[id].name} · ${list.length}`;
+    const grid = document.createElement('div'); grid.className = 'residents-grid';
+    grid.append(...list.map(character => {
+      const inRoom = selected.includes(character.no); const why = away.get(character.no);
+      const button = document.createElement('button'); button.type = 'button';
+      button.className = `resident-choice${why ? ' is-away' : ''}`; button.dataset.no = character.no;
+      button.setAttribute('aria-pressed', String(inRoom));
+      button.setAttribute('aria-label', `${character.name}${inRoom ? '，入住中' : ''}${why ? `，${why}` : ''}`);
+      if (why && !inRoom) button.disabled = true;
+      const image = document.createElement('img'); image.alt = ''; loadWithFallback(image, characterSources(character.image));
+      const name = document.createElement('span'); name.className = 'resident-choice__name'; name.textContent = character.name.replace(/小湘$/, '') || character.name;
+      button.append(image, name);
+      if (inRoom) button.append(Object.assign(document.createElement('i'), { className: 'resident-choice__check', textContent: '✓' }));
+      if (why) button.append(Object.assign(document.createElement('i'), { className: 'resident-choice__away', textContent: why }));
+      return button;
+    }));
+    return [head, grid];
   }));
   if (!owned.length) {
     const text = document.createElement('p');
@@ -1340,6 +1365,10 @@ $('home-letter').addEventListener('click', openLetterBox);
 $('open-residents').addEventListener('click', () => { renderResidents(); $('residents-feedback').textContent = ''; $('residents').showModal(); syncRoomActivity(); });
 $('close-residents').addEventListener('click', () => $('residents').close());
 $('residents-done').addEventListener('click', () => $('residents').close());
+$('residents-current').addEventListener('click', event => {
+  const slot = event.target.closest('[data-current]'); if (!slot) return;
+  $('residents-list').querySelector(`[data-no="${slot.dataset.current}"]`)?.click();
+});
 $('residents-list').addEventListener('click', event => {
   const button = event.target.closest('button[data-no]');
   if (!button) return;
@@ -1348,7 +1377,9 @@ $('residents-list').addEventListener('click', event => {
   if (!CHARACTERS[no] || !latest.dex[no]) return;
   state = latest;
   let ids = residentsFor(state.dex);
+  const why = awayReasons().get(no);
   if (ids.includes(no)) ids = ids.filter(id => id !== no);
+  else if (why) { $('residents-feedback').textContent = `${CHARACTERS[no].name}${why}，回來之後才能入住喔。`; return; }
   else if (ids.length < ROOM_LIMIT) ids.push(no);
   else { $('residents-feedback').textContent = '首頁最多入住三位，先讓一位休息，再邀請她吧。'; return; }
   if (!saveResidents(ids)) { $('residents-feedback').textContent = '這次安排無法儲存，請再試一次。'; return; }
@@ -1500,6 +1531,33 @@ $('explore-intro').addEventListener('close', syncRoomActivity);
 $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
+
+/* ---------- 長按小湘看她是誰（出門、討伐選人時） ---------- */
+let pressTimer = null, pressShown = false;
+function hidePressTip() { document.querySelector('.press-tip')?.remove(); }
+function showPressTip(btn) {
+  hidePressTip();
+  const c = CHARACTERS[btn.dataset.siang]; if (!c) return;
+  const tip = document.createElement('div'); tip.className = 'press-tip'; tip.setAttribute('role', 'tooltip');
+  const p = battle.siangPower(state, c.no);
+  const b = bondInfo(state, c.no, todayKey());
+  tip.append(Object.assign(document.createElement('b'), { textContent: c.name }), Object.assign(document.createElement('span'), { textContent: `${c.rarity} · ${SERIES[c.series]?.name || ''} · 戰力 ${p.power} · ♥ Lv.${b.level}` }));
+  const host = btn.closest('dialog') || document.body; host.append(tip);
+  const r = btn.getBoundingClientRect(); const hr = host.getBoundingClientRect();
+  const half = tip.offsetWidth / 2 + 8; // 不要超出畫面左右
+  tip.style.left = `${Math.min(Math.max(half, r.left - hr.left + r.width / 2), hr.width - half)}px`;
+  tip.style.top = `${r.top - hr.top + host.scrollTop - 6}px`;
+  buzz(15);
+}
+document.addEventListener('pointerdown', e => {
+  const btn = e.target.closest('.errand-siang[data-siang]'); if (!btn) return;
+  pressShown = false; clearTimeout(pressTimer);
+  pressTimer = setTimeout(() => { pressShown = true; showPressTip(btn); }, 450);
+}, { passive: true });
+for (const type of ['pointerup', 'pointercancel', 'pointerleave', 'scroll']) document.addEventListener(type, () => { clearTimeout(pressTimer); if (pressShown) setTimeout(hidePressTip, 1600); }, { capture: true, passive: true });
+// 長按完不要順便選到她
+document.addEventListener('click', e => { if (pressShown && e.target.closest('.errand-siang[data-siang]')) { e.stopPropagation(); e.preventDefault(); pressShown = false; } }, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest('.errand-siang[data-siang]')) e.preventDefault(); });
 
 /* ---------- 外出合照 ---------- */
 const photoBooth = createPhotoBooth({ dialog: $('photo-dialog'), getState: () => state, onTaken: no => {
@@ -2597,7 +2655,7 @@ function renderErrands() {
     const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
     owned.sort((a, b) => (place ? Number(hasAffinity(place, b)) - Number(hasAffinity(place, a)) : 0));
     $('errand-siangs').replaceChildren(...owned.map(no => {
-      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang'; btn.dataset.siang = no;
       btn.setAttribute('aria-pressed', String(errandPicked.includes(no)));
       btn.disabled = busy.has(no);
       btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: busy.has(no) ? '忙碌中' : CHARACTERS[no].name.replace(/小湘.*/, '') || CHARACTERS[no].name }));
@@ -3017,7 +3075,7 @@ function renderBattleStage() {
   owned.sort((a, b2) => battle.siangPower(state, b2).power - battle.siangPower(state, a).power);
   $('battle-siangs').replaceChildren(...owned.map(no => {
     const p = battle.siangPower(state, no); const rest = battle.restLeft(state, no, now); const off = busy.has(no) || rest > 0;
-    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang'; btn.disabled = off;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang'; btn.dataset.siang = no; btn.disabled = off;
     btn.setAttribute('aria-pressed', String(battlePicked.includes(no)));
     btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: off ? (rest > 0 ? `休息 ${battle.fmtMinutes(rest)}` : '忙碌中') : `戰力 ${p.power}` }));
     if (e.weak.includes(CHARACTERS[no].series)) btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '✦' }));
