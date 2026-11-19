@@ -52,7 +52,7 @@ for(const width of [360,390,430]){
  await page.locator('[data-partner="003"]').click();
  assert.equal(await page.locator('.research-clues .is-found').count(),2);
  await page.locator('[data-preview]').click();await page.locator('.research-result[open]').waitFor();
- assert.match(await page.locator('.research-result-copy').textContent(),/下雨天/);
+ assert.match(await page.locator('.research-result-copy').textContent(),/研究室調配 2 天/);
  await page.locator('[data-close-result]').click();await page.waitForFunction(()=>!document.querySelector('.research-result').open);
  after=await read();assert.equal(after.research.trials.length,2);
  assert.deepEqual(after.dex,before.dex,'no hidden character grants');

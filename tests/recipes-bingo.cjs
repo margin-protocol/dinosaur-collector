@@ -1,4 +1,4 @@
-// 隱藏配方（一起入住累積天數、雨天條件）與每週賓果（週初起點、連線領獎、換週重置）
+// 隱藏配方（一起入住首頁已不再累積，改到研究室調配）與每週賓果（週初起點、連線領獎、換週重置）
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce',timezoneId:'Asia/Taipei'});const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
@@ -7,14 +7,10 @@ await p.clock.install({time:new Date('2026-11-17T10:00:00+08:00')});
 await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=5;s.dex={'001':{at:'x'},'002':{at:'x'},'005':{at:'x'},'003':{at:'x'},'006':{at:'x'}};localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:residents:v1',JSON.stringify(['002','005','006']));},key);
 const day=async(d,rain)=>{await p.clock.setFixedTime(new Date(`${d}T10:00:00+08:00`));if(rain!==undefined)await p.evaluate(([k,d,rain])=>{const s=JSON.parse(localStorage.getItem(k));s.weather={date:d,kind:rain?'rain':'clear',stock:0,granted:null};localStorage.setItem(k,JSON.stringify(s));},[key,d,rain]);await p.reload();await p.waitForTimeout(700);};
-await day('2026-11-17');let s=await save();assert.deepEqual(s.recipes['strawberry-cake'].days,['2026-11-17']);
-await day('2026-11-17');s=await save();assert.equal(s.recipes['strawberry-cake'].days.length,1);
-await day('2026-11-18');await day('2026-11-19');s=await save();assert.equal(s.recipes['strawberry-cake'].done,true);
-assert.equal(s.gifts.eggs.filter(e=>e.character==='011').length,1);
-// rain garden needs 006+003 and rain
-await p.evaluate(()=>localStorage.setItem('siang-collector:residents:v1',JSON.stringify(['006','003'])));
-await day('2026-11-20',false);s=await save();assert.equal(s.recipes['rain-garden'].days.length,0);
-await day('2026-11-21',true);await day('2026-11-22',true);s=await save();assert.equal(s.recipes['rain-garden'].done,true);assert.ok(s.gifts.eggs.some(e=>e.character==='012'));
+// 11/19 起配方改在研究室調配（tests/research-lab.cjs）：一起入住首頁不再累積天數、也不會送蛋
+await day('2026-11-17');let s=await save();assert.deepEqual(s.recipes?.['strawberry-cake']?.days||[],[]);
+await day('2026-11-18');await day('2026-11-19');await day('2026-11-20');s=await save();assert.notEqual(s.recipes?.['strawberry-cake']?.done,true);
+assert.equal((s.gifts?.eggs||[]).filter(e=>e.character==='011').length,0);
 // bingo: new week starts 11/23 (Mon)
 await day('2026-11-23');s=await save();assert.equal(s.bingo.week,'2026-11-23');assert.equal(s.bingo.cells.length,9);
 // complete the first row by bumping metrics

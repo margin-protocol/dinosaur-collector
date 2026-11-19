@@ -12,7 +12,7 @@ await p.goto('http://127.0.0.1:8000/#research');await p.reload();await p.locator
 const items=p.locator('.research-history-open');assert.equal(await items.count(),2);
 await p.locator('.research-history-open',{hasText:'草莓小湘 × 甜點小湘'}).click();await p.locator('.research-result[open]').waitFor();
 assert.equal(await p.textContent('#research-result-title'),'關鍵線索');
-const copy=await p.textContent('.research-result-copy');assert.match(copy,/《甜甜的相遇》/);assert.match(copy,/目前進度：1 \/ 3/);
+const copy=await p.textContent('.research-result-copy');assert.match(copy,/《甜甜的相遇》/);assert.match(copy,/放進研究室調配 3 天/);assert.equal(await p.locator('[data-brew]').isVisible(),true);
 assert.match(await p.textContent('.research-result-eyebrow'),/草莓小湘 × 甜點小湘/);
 await p.locator('[data-close-result]').click();await p.waitForFunction(()=>!document.querySelector('.research-result').open);
 await p.locator('.research-history-open',{hasText:'原味小湘'}).click();await p.locator('.research-result[open]').waitFor();

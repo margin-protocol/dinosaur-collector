@@ -1,15 +1,17 @@
 import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
 import { RECIPES } from './recipes.js';
+import { labStatus, fmtLeft } from './lab.js';
 const asset = path => new URL(path, new URL('../', import.meta.url)).href;
 const ownedFor = state => Object.values(CHARACTERS).filter(c => state.dex?.[c.no]);
 
 // The real game provides onStudy (persistent notes). The independent demo remains read-only.
-export function createResearch({ root, getState, onCollect = () => {}, onStudy = null }) {
+export function createResearch({ root, getState, onCollect = () => {}, onStudy = null, onBrew = null, onCancelBrew = null }) {
   root.innerHTML = `
     <div class="research-eyebrow"><span>RESEARCH / 01</span><span class="research-preview-tag">${onStudy ? "研究筆記" : "介面預覽"}</span></div>
     <h1 class="research-heading">孵化研究室</h1>
     <p class="research-intro">兩位夥伴，一顆蛋。一點新的可能。</p>
     <section class="research-locked" hidden><span class="research-lock-mark" aria-hidden="true">＋</span><h2>先讓家裡熱鬧一點。</h2><p class="research-unlock-copy"></p><button type="button" class="research-primary" data-collect>前往培育 <span aria-hidden="true">⟶</span></button></section>
+    <section class="research-lab" hidden aria-live="polite"></section>
     <div class="research-workspace">
       <div class="research-stage" role="group" aria-label="選擇兩位研究搭檔">
         <button type="button" class="research-slot" data-slot="0"><span class="research-slot-art"></span><span class="research-slot-name"></span><span class="research-slot-action"></span></button>
@@ -20,11 +22,11 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
       <div class="research-note-tabs" role="group" aria-label="選擇研究筆記">${RECIPES.map((r, i) => `<button type="button" data-note="${i}" aria-pressed="${i === 0}">NOTE ${String(i + 1).padStart(2, '0')} · ${r.note.title}</button>`).join('')}</div>
       <section class="research-notebook" aria-labelledby="research-note-title"><div class="research-note-meta"><span data-note-no>NOTE 01</span><span class="research-note-state">等待靈感</span></div><h2 id="research-note-title">甜甜的相遇</h2><p class="research-poem">一位喜歡紅色，一位總把點心留給你。<br>兩份小小的偏愛，會不會有新的味道？</p><ul class="research-clues"><li data-clue="002">尋找喜歡甜甜紅色的夥伴</li><li data-clue="005">尋找熟悉點心香氣的夥伴</li></ul></section>
       <button type="button" class="research-primary" data-preview disabled>先選好兩位搭檔</button>
-      <p class="research-disclaimer">${onStudy ? "研究不消耗能量或蛋；真正的隱藏配方仍靠兩位小湘一起入住達成，不會重複送獎勵。" : "這是獨立示範，不消耗能量或蛋，也不發放角色。"}</p>
+      <p class="research-disclaimer">${onStudy ? "研究不消耗能量或蛋。找到配方後，把兩位小湘放進研究室調配，時間到就會送來紀念蛋。" : "這是獨立示範，不消耗能量或蛋，也不發放角色。"}</p>
       <section class="research-history" ${onStudy ? "" : "hidden"}><h2>研究紀錄 <span class="research-history-count"></span></h2><p class="research-history-intro">每一組搭檔都能留下線索；同一組重新研究不會重複新增紀錄。</p><ol class="research-history-list"></ol></section>
     </div>
     <dialog class="sheet residents-dialog research-picker" aria-labelledby="research-picker-title"><div class="drawer-heading"><div><small>CHOOSE A RESEARCH PARTNER</small><h2 id="research-picker-title">邀請一位夥伴</h2></div><button type="button" class="close-button" data-close-picker aria-label="關閉搭檔選擇">×</button></div><p class="research-picker-copy">只列出你已收集的小湘，同一位只能選一次。</p><div class="research-partner-list"></div><button class="research-text-button" type="button" data-clear>清除此位置</button></dialog>
-    <dialog class="sheet research-result" aria-labelledby="research-result-title"><span class="research-preview-tag">${onStudy ? "研究記錄" : "研究結果預覽"}</span><img class="research-result-image" alt=""><p class="research-result-eyebrow"></p><h2 id="research-result-title"></h2><p class="research-result-copy"></p><p class="research-result-safe">${onStudy ? "研究筆記已保存。配方獎勵仍由入住與孵化機制結算；本次沒有花費或發放物品。" : "這是示範結果，收藏與遊戲進度不會改變。"}</p><button type="button" class="research-primary" data-close-result>回到研究筆記</button></dialog>`;
+    <dialog class="sheet research-result" aria-labelledby="research-result-title"><span class="research-preview-tag">${onStudy ? "研究記錄" : "研究結果預覽"}</span><img class="research-result-image" alt=""><p class="research-result-eyebrow"></p><h2 id="research-result-title"></h2><p class="research-result-copy"></p><p class="research-result-safe">${onStudy ? "研究筆記已保存。找到配方的話，把兩位放進研究室調配，時間到才會送來紀念蛋。" : "這是示範結果，收藏與遊戲進度不會改變。"}</p><button type="button" class="research-primary research-brew" data-brew hidden></button><p class="research-brew-status" role="status"></p><button type="button" class="research-primary" data-close-result>回到研究筆記</button></dialog>`;
   const find = selector => root.querySelector(selector);
   const picker = find('.research-picker'), result = find('.research-result');
   let slots = [null, null], editing = 0, noteIndex = 0, studying = false;
@@ -32,7 +34,33 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     image.alt = character.name;
     loadWithFallback(image, characterSources(character.image).map(asset));
   }
+  // 研究室：正在調配的那一組（一次一組）
+  function renderLab() {
+    const panel = find('.research-lab'); if (!onBrew) { panel.hidden = true; return; }
+    const st = labStatus(getState());
+    panel.hidden = !st; if (!st) { panel.replaceChildren(); return; }
+    const names = st.members.map(no => CHARACTERS[no]?.name || '小湘').join(' × ');
+    panel.innerHTML = `<div class="research-lab__art"></div><div class="research-lab__body"><small>IN THE LAB · 調配中</small><h2></h2><p class="research-lab__who"></p><div class="research-lab__bar"><span></span></div><p class="research-lab__left"></p><button type="button" class="research-lab__cancel" data-cancel-brew>提早帶她們回家</button></div>`;
+    const art = panel.querySelector('.research-lab__art');
+    for (const no of st.members) { const img = new Image(); portrait(img, CHARACTERS[no]); art.append(img); }
+    panel.querySelector('h2').textContent = `《${st.recipe.note.title}》`;
+    panel.querySelector('.research-lab__who').textContent = names;
+    const total = st.recipe.days * 864e5, pct = Math.min(100, Math.round(100 * (total - st.left) / total));
+    panel.querySelector('.research-lab__bar span').style.width = `${pct}%`;
+    panel.querySelector('.research-lab__left').textContent = st.ready ? '調配完成！紀念蛋馬上送到～' : `第 ${st.day} / ${st.recipe.days} 天 · 還要 ${fmtLeft(st.left)}`;
+  }
+  // 研究結果／研究紀錄裡的「放進研究室」按鈕
+  function setBrew(recipe, discovered) {
+    const btn = find('[data-brew]'); find('.research-brew-status').textContent = '';
+    if (!onBrew || !recipe || discovered) { btn.hidden = true; return; }
+    const st = labStatus(getState());
+    btn.hidden = false; btn.dataset.brew = recipe.id;
+    if (st?.recipe.id === recipe.id) { btn.disabled = true; btn.textContent = `調配中 · 還要 ${fmtLeft(st.left)}`; }
+    else if (st) { btn.disabled = true; btn.textContent = '研究室正在調配別組'; }
+    else { btn.disabled = false; btn.textContent = `🧪 放進研究室調配 ${recipe.days} 天`; }
+  }
   function update() {
+    renderLab();
     const owned = ownedFor(getState()), ids = owned.map(c => c.no);
     slots = slots.map(id => ids.includes(id) ? id : null);
     const locked = owned.length < 3;
@@ -108,16 +136,15 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     find('.research-result-eyebrow').textContent = `RESEARCH NOTES · ${pair}`;
     find('#research-result-title').textContent = discovered ? CHARACTERS[recipe.target].name : recipe ? '關鍵線索' : trial.kind === 'near' ? '有點接近了' : '研究紀錄';
     if (recipe) {
-      const days = Math.min(recipe.days, saved.recipes?.[recipe.id]?.days?.length || 0);
-      const how = recipe.days + (recipe.night ? ' 個夜晚（晚上 7 點到凌晨 5 點打開遊戲）' : recipe.rain ? ' 個下雨天' : ' 天');
       find('.research-result-copy').textContent = `《${recipe.note.title}》${recipe.note.poem} ` + (discovered
         ? '這個配方已完成，成功收藏了研究成果！'
-        : `${recipe.note.found.join('')}讓${pair}一起入住首頁，累積 ${how}，就能取得紀念蛋。目前進度：${days} / ${recipe.days}。`);
+        : `${recipe.note.found.join('')}把${pair}放進研究室調配 ${recipe.days} 天，就能取得紀念蛋。`);
     } else {
       find('.research-result-copy').textContent = trial.kind === 'near'
         ? '當時覺得其中一位夥伴和某份配方有關……換一位搭檔試試看吧。'
         : '這組搭檔暫時沒有指向已知配方。';
     }
+    setBrew(recipe, discovered);
     if (!result.open) result.showModal();
   }
   function renderPicker() {
@@ -137,6 +164,16 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
   const click = async event => {
     const button = event.target.closest('button'); if (!button || button.disabled) return;
     if (button.matches('[data-collect]')) onCollect();
+    if (button.matches('[data-brew]') && onBrew) {
+      button.disabled = true;
+      const err = await onBrew(button.dataset.brew);
+      if (err) { find('.research-brew-status').textContent = err; button.disabled = false; return; }
+      result.close(); update(); find('.research-lab')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return;
+    }
+    if (button.matches('[data-cancel-brew]') && onCancelBrew) {
+      if (button.dataset.confirm !== '1') { button.dataset.confirm = '1'; button.textContent = '確定嗎？調配會中斷，要重新開始（再按一次）'; return; }
+      await onCancelBrew(); update(); return;
+    }
     if (button.matches('[data-trial]')) { const trial = (getState().research?.trials || [])[Number(button.dataset.trial)]; if (trial?.members?.length === 2) showTrial(trial); return; }
     if (button.matches('[data-note]')) { const i = Number(button.dataset.note); noteIndex = RECIPES[i] ? i : 0; update(); }
     if (button.matches('[data-slot]')) { if (ownedFor(getState()).length < 3) { update(); return; } editing = Number(button.dataset.slot); renderPicker(); picker.showModal(); }
@@ -166,10 +203,8 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
           find('.research-result-eyebrow').textContent = outcome.repeat ? 'EXISTING NOTES' : recipe ? 'A POSSIBLE RECIPE' : 'RESEARCH LOGGED';
           find('#research-result-title').textContent = discovered ? CHARACTERS[recipe.target].name : recipe ? '找到關鍵線索！' : outcome.record.kind === 'near' ? '有點接近了！' : '留下新的研究紀錄';
           if (recipe) {
-            const days = Math.min(recipe.days, saved.recipes?.[recipe.id]?.days?.length || 0);
             find('.research-result-copy').textContent = (discovered ? '這個配方已完成，成功收藏了研究成果！' :
-              '這兩位搭檔的組合確實有特別的可能。讓她們一起入住首頁，累積 ' + recipe.days + (recipe.night ? ' 個夜晚（晚上 7 點到凌晨 5 點打開遊戲）' : recipe.rain ? ' 個下雨天' : ' 天') +
-              '，就能依原本的隱藏配方規則取得紀念蛋。當前進度：' + days + ' / ' + recipe.days + '。') +
+              `這兩位搭檔的組合確實有特別的可能。把她們放進研究室調配 ${recipe.days} 天，就能取得紀念蛋。調配期間她們會待在研究室，不在首頁，也不能出門或討伐。`) +
               (outcome.repeat ? ' 這組配方已經記錄過，不會再新增一筆。' : '');
           } else {
             find('.research-result-copy').textContent = outcome.record.kind === 'near'
@@ -177,6 +212,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
               : '這組搭檔暫時沒有指向已知配方，但你的嘗試已收進研究筆記。';
             if (outcome.repeat) find('.research-result-copy').textContent += ' 這組搭檔已經研究過了。';
           }
+          setBrew(recipe, discovered);
           if (!result.open) result.showModal();
         } catch (error) {
           studying = false; update();
@@ -193,6 +229,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
       else { image.src = asset('assets/eggs/ordinary/shell.webp'); image.alt = '尚未發現新配方的蛋'; }
       find('.research-result-eyebrow').textContent = matched ? 'A POSSIBLE RECIPE' : 'A LITTLE MORE INSPIRATION';
       find('#research-result-title').textContent = matched ? CHARACTERS[demoRecipe.target].name : '還差一點靈感';
+      setBrew(null);
       find('.research-result-copy').textContent = matched ? `${demoRecipe.note.found.join('')}這組搭檔似乎找到了新的可能。` : '這組搭檔暫時沒有對上這則線索，換位夥伴再一起看看。';
       result.showModal();
     }

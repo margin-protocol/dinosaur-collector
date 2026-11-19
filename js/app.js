@@ -16,7 +16,8 @@ import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
 import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS } from './fossils.js';
 import { FLAVORS, makeOffer, eggLabel, naughtyRequest, NAUGHTY_BONUS } from './egg-traits.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
-import { RECIPES, tickRecipes, recipeDue, nightKey } from './recipes.js';
+import { RECIPES, nightKey } from './recipes.js';
+import * as lab from './lab.js';
 import { ensureBingo, bingoStatus, bingoReady, claimBingo, REWARDS as BINGO_REWARDS } from './bingo.js';
 import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet, pet, feedSnack, snacksLeft, PET, SNACK, photoSeen, rememberPhoto } from './energy.js';
 import { checkIn } from './travel.js';
@@ -176,6 +177,15 @@ const research = createResearch({
     renderAll();
     return { state: transaction.state, result: transaction.result };
   },
+  onBrew: async (recipeId) => {
+    const t = await updateState(current => lab.startBrew(current, recipeId, { busy: new Set([...busyNos(current), ...battle.battleNos(current)]) }));
+    state = t.state; renderAll();
+    if (typeof t.result === 'string') return t.result;
+    const names = t.result.recipe.members.map(no => CHARACTERS[no].name).join('和');
+    toast(`🧪 ${names}進研究室了！${t.result.recipe.days} 天後見～`);
+    return null;
+  },
+  onCancelBrew: async () => { const t = await updateState(current => lab.cancelBrew(current)); state = t.state; renderAll(); },
 });
 
 const tutorial = createTutorial({
@@ -991,7 +1001,7 @@ function storyText(c, entry) {
   if (st.from === 'badge') return `${date}，你用 ${st.cost} 枚討伐徽章，把她迎進了隊伍。`;
   const days = st.since && !Number.isNaN(Date.parse(st.since)) ? Math.max(0, Math.round((Date.parse(entry.at) - Date.parse(st.since)) / 864e5)) : null;
   const source = st.county ? `在${st.county}探索時收到的縣市蛋`
-    : st.from?.startsWith('recipe:') ? '兩位小湘一起入住、偷偷準備的紀念蛋'
+    : st.from?.startsWith('recipe:') ? '兩位小湘在研究室一起調配出來的紀念蛋'
     : st.from?.startsWith('devteam:') ? '開發團隊悄悄送來的紀念蛋'
     : st.from === 'taiwan' ? '走遍臺灣時收到的紀念蛋'
     : st.from === 'code' ? '湘藏在暗號裡的蛋'
@@ -1545,20 +1555,18 @@ function showDevteamEvent() {
   $('devteam-event').showModal(); next();
 }
 
-/* ---------- 隱藏配方 ---------- */
+/* ---------- 隱藏配方：研究室調配（js/lab.js，湘 11/19：放在研究室才有調配的感覺，不再是一起入住首頁） ---------- */
 let recipeBusy = false;
 function checkRecipes() {
-  if (recipeBusy || !state.seenIntro) return;
-  const ctx = { residents: residentsFor(state.dex), raining: rainingToday(state, todayKey()), today: todayKey(), night: nightKey() };
-  if (!recipeDue(state, ctx)) return;
+  if (recipeBusy || !state.seenIntro || !lab.labStatus(state)?.ready) return;
   recipeBusy = true;
-  void updateState(current => tickRecipes(current, ctx)).then(t => {
-    state = t.state; recipeBusy = false; renderAll();
-    const { progressed, completed } = t.result;
-    if (completed.length) { toast(`🍰 ${completed.map(r => r.members.map(no => CHARACTERS[no].name).join('和')).join('、')}一起做出了驚喜！收到一顆紀念蛋，到「選擇蛋」看看吧。`); say('好像有什麼新的東西誕生了！', 'cheer', 3500); }
-    else if (progressed.length) { const r = progressed[0]; say(`${r.members.map(no => CHARACTERS[no].name).join('和')}好像在偷偷準備什麼……（${state.recipes[r.id].days.length} / ${r.days}${r.night ? ' 個夜晚' : ''}）`, 'happy', 4500); }
-  });
+  void updateState(current => lab.finishBrew(current)).then(t => {
+    state = t.state; recipeBusy = false; renderAll(); research.update();
+    const r = t.result;
+    if (r) { toast(`🧪 ${r.members.map(no => CHARACTERS[no].name).join('和')}在研究室調配完成！收到一顆紀念蛋，到「選擇蛋」看看吧。`); say('研究室那邊傳來好香的味道……好像有新的蛋！', 'happy', 5200); }
+  }).catch(() => { recipeBusy = false; });
 }
+setInterval(() => { if (!document.hidden) checkRecipes(); }, 60 * 1000);
 
 /* ---------- 每週賓果 ---------- */
 function renderBingoBadge() {
@@ -1689,7 +1697,7 @@ function howToGet(c) {
   const h = HOLIDAYS.find(x => x.no === c.no);
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
-  if (recipe) { const rec = state.recipes[recipe.id]; return `隱藏配方：${state.dex[c.no] || rec.days.length ? recipe.text : '某兩位小湘一起入住首頁，就會發生什麼……'}${rec.done ? '' : rec.days.length ? `（已累積 ${rec.days.length} / ${recipe.days} ${recipe.night ? '個夜晚' : recipe.rain ? '個下雨天' : '天'}）` : ''}`; }
+  if (recipe) { const st = lab.labStatus(state); const brewing = st?.recipe.id === recipe.id; return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
   if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
   if (c.no === '090') return state.dex[c.no] ? '湘研究所沒考上時，用暗號送給大家的紀念（沒關係，先吃蛋糕）' : '湘有心事的時候，會用暗號送給大家……';
   if (c.no === '089') return state.dex[c.no] ? '湘考上研究所時，用暗號送給大家的紀念' : '湘有好消息的時候，會用暗號送給大家……';
