@@ -88,9 +88,37 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
       const detail = document.createElement('small');
       const recipe = RECIPES.find(r => r.id === trial.recipe);
       const done = recipe && (getState().recipes?.[recipe.id]?.done || getState().dex?.[recipe.target]);
-      detail.textContent = (done ? '配方已完成' : trial.recipe ? '發現關鍵配方線索' : trial.kind === 'near' ? '似乎有一點關聯' : '暫無明確線索') + (trial.at ? ' · ' + String(trial.at).slice(0, 10) : '');
-      line.append(title, detail); list.append(line);
+      detail.textContent = (done ? '配方已完成' : trial.recipe ? '發現關鍵配方線索' : trial.kind === 'near' ? '似乎有一點關聯' : '暫無明確線索') + (trial.at ? ' · ' + String(trial.at).slice(0, 10) : '') + ' ›';
+      // 整列可以點：再看一次這組搭檔找到的線索（11/19 湘）
+      const open = document.createElement('button'); open.type = 'button'; open.className = 'research-history-open';
+      open.dataset.trial = String(entries.indexOf(trial)); open.setAttribute('aria-label', `查看 ${pair} 的研究紀錄`);
+      open.append(title, detail); line.append(open); list.append(line);
     }
+  }
+  // 研究紀錄詳情：用研究結果的視窗再顯示一次（關鍵線索會附上配方筆記和目前進度）
+  function showTrial(trial) {
+    const saved = getState();
+    const recipe = RECIPES.find(r => r.id === trial.recipe);
+    const discovered = recipe && (saved.recipes?.[recipe.id]?.done || saved.dex?.[recipe.target]);
+    const pair = trial.members.map(no => CHARACTERS[no]?.name || '未知小湘').join(' × ');
+    result.dataset.match = String(Boolean(recipe));
+    const image = find('.research-result-image');
+    if (discovered && CHARACTERS[recipe.target]) portrait(image, CHARACTERS[recipe.target]);
+    else { image.src = asset('assets/eggs/ordinary/shell.webp'); image.alt = '尚未孵化的研究樣本'; }
+    find('.research-result-eyebrow').textContent = `RESEARCH NOTES · ${pair}`;
+    find('#research-result-title').textContent = discovered ? CHARACTERS[recipe.target].name : recipe ? '關鍵線索' : trial.kind === 'near' ? '有點接近了' : '研究紀錄';
+    if (recipe) {
+      const days = Math.min(recipe.days, saved.recipes?.[recipe.id]?.days?.length || 0);
+      const how = recipe.days + (recipe.night ? ' 個夜晚（晚上 7 點到凌晨 5 點打開遊戲）' : recipe.rain ? ' 個下雨天' : ' 天');
+      find('.research-result-copy').textContent = `《${recipe.note.title}》${recipe.note.poem} ` + (discovered
+        ? '這個配方已完成，成功收藏了研究成果！'
+        : `${recipe.note.found.join('')}讓${pair}一起入住首頁，累積 ${how}，就能取得紀念蛋。目前進度：${days} / ${recipe.days}。`);
+    } else {
+      find('.research-result-copy').textContent = trial.kind === 'near'
+        ? '當時覺得其中一位夥伴和某份配方有關……換一位搭檔試試看吧。'
+        : '這組搭檔暫時沒有指向已知配方。';
+    }
+    if (!result.open) result.showModal();
   }
   function renderPicker() {
     find('#research-picker-title').textContent = `邀請搭檔 ${editing + 1}`;
@@ -109,6 +137,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
   const click = async event => {
     const button = event.target.closest('button'); if (!button || button.disabled) return;
     if (button.matches('[data-collect]')) onCollect();
+    if (button.matches('[data-trial]')) { const trial = (getState().research?.trials || [])[Number(button.dataset.trial)]; if (trial?.members?.length === 2) showTrial(trial); return; }
     if (button.matches('[data-note]')) { const i = Number(button.dataset.note); noteIndex = RECIPES[i] ? i : 0; update(); }
     if (button.matches('[data-slot]')) { if (ownedFor(getState()).length < 3) { update(); return; } editing = Number(button.dataset.slot); renderPicker(); picker.showModal(); }
     if (button.matches('[data-close-picker]')) closePicker();
@@ -167,7 +196,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
       find('.research-result-copy').textContent = matched ? `${demoRecipe.note.found.join('')}這組搭檔似乎找到了新的可能。` : '這組搭檔暫時沒有對上這則線索，換位夥伴再一起看看。';
       result.showModal();
     }
-    if (button.matches('[data-close-result]')) { result.close(); find('[data-preview]').focus({preventScroll:true}); }
+    if (button.matches('[data-close-result]')) { result.close(); if (!root.contains(document.activeElement)) find('[data-preview]').focus({preventScroll:true}); }
   };
   root.addEventListener('click', click);
   update();

@@ -48,5 +48,8 @@ body[data-view="research"] .game-footer { min-height:70px; padding-top:8px; padd
 .research-history-list {display:grid;gap:8px;margin:12px 0 0;padding:0;list-style:none}
 .research-history-list li {display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #ad90b443;border-radius:10px;background:#282431}
 .research-history-list strong {font:12px/1.6 var(--font-display);color:var(--ivory);min-width:0}
+.research-history-list li:has(> .research-history-open) {padding:0}
+.research-history-open {display:flex;align-items:flex-start;justify-content:space-between;gap:12px;width:100%;padding:11px 12px;border:0;border-radius:10px;background:none;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.research-history-open:active {background:#ffffff14}
 .research-history-list small {font:10px/1.6 var(--font-display);color:var(--silver);text-align:right;max-width:45%}
-@media(max-width:374px) {.research-note-tabs button{font-size:10px}.research-history-list li{flex-direction:column;gap:2px}.research-history-list small{max-width:100%;text-align:left}}
+@media(max-width:374px) {.research-note-tabs button{font-size:10px}.research-history-list li,.research-history-open{flex-direction:column;gap:2px}.research-history-list small{max-width:100%;text-align:left}}
