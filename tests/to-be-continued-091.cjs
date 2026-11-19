@@ -1,4 +1,4 @@
-// 未完待續小湘 No.091：SSR 配方小湘、不在蛋池、立繪、台詞；研究所小湘＋落榜小湘同住 3 天會送來紀念蛋
+// 未完待續小湘 No.091：SSR 配方小湘、不在蛋池、立繪、台詞；研究所小湘＋再接再厲小湘同住 3 天會送來紀念蛋
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const p=await b.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));await p.goto('http://127.0.0.1:8000');
