@@ -34,7 +34,7 @@ if(process.env.SHOT){await p.waitForTimeout(300);await p.screenshot({path:proces
 // saved review is read, not rerolled
 await p.click('#close-archive');await p.click('#open-archive-battle');assert.match(await p.textContent('#archive-body'),/測試書評：三顆星。/);
 // bond + travel tabs
-await p.click('[data-archive-tab="bond"]');const bond=await p.textContent('#archive-body');assert.match(bond,/甜點小湘 · Lv\.3/);assert.match(bond,/原味小湘：好感度 Lv\.3 解鎖/);
+await p.click('[data-archive-tab="bond"]');const bond=await p.textContent('#archive-body');assert.match(bond,/甜點小湘 · Lv\.3/);assert.match(bond,/還沒解鎖 1 位🔒 原味小湘Lv\.1 → Lv\.3/);await p.click(".archive-filter button:nth-child(2)");assert.equal(await p.locator(".archive-story").count(),1);
 if(process.env.SHOT2){await p.locator('#archive-body details').first().click();await p.waitForTimeout(300);await p.screenshot({path:process.env.SHOT2});}
 await p.click('[data-archive-tab="travel"]');assert.match(await p.textContent('#archive-body'),/原味帶路/);assert.match(await p.textContent('#archive-count-travel'),/1\//);
 // opening the archive never writes the save

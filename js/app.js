@@ -3360,6 +3360,24 @@ function guguAvatar(box) {
   img.onerror = () => { img.remove(); box.textContent = '👻'; };
   box.append(img);
 }
+// 長文自動分段（湘 11/20：沒分行太密）：已有換行就照換行；不然每兩句一段，引號裡的句子不拆開
+function storyParas(text) {
+  const raw = String(text || '');
+  if (raw.includes('\n')) return raw.split(/\n+/).map(s => s.trim()).filter(Boolean);
+  const sentences = []; let buf = ''; let depth = 0;
+  for (const ch of raw) {
+    buf += ch;
+    if ('「『'.includes(ch)) depth += 1; else if ('」』'.includes(ch)) depth = Math.max(0, depth - 1);
+    if ((depth === 0 && '。！？'.includes(ch)) || (depth === 0 && '」』'.includes(ch) && /[。！？…]」$|[。！？…]』$/.test(buf))) { sentences.push(buf.trim()); buf = ''; }
+  }
+  if (buf.trim()) sentences.push(buf.trim());
+  const out = []; let cur = '';
+  for (const s of sentences) { if (cur && (cur.length + s.length > 70 || /^[「『]/.test(s))) { out.push(cur); cur = s; } else cur += s; }
+  if (cur) out.push(cur);
+  return out;
+}
+const storyBox = (text) => { const box = el('div', 'archive-text'); box.append(...storyParas(text).map(t => el('p', '', t))); return box; };
+let archiveSeries = 'all';
 function lockedCard(text) { const c = el('div', 'archive-card is-locked'); c.append(el('b', '', '🔒 ？？？'), el('small', '', text)); return c; }
 function renderArchive() {
   const ba = battleArchive(state); const bo = bondArchive(state); const tr = travelArchive(state);
@@ -3378,7 +3396,7 @@ function renderArchive() {
           const text = ch.bossStory[key];
           if (!text) { sec.append(lockedCard(key === 'before' ? '挑戰這一章的 Boss 時解鎖。' : '打倒 Boss 後解鎖。')); continue; }
           const det = el('details', 'archive-card archive-story'); const sum = el('summary');
-          sum.append(el('b', '', `📖 ${label}${ch.bossStory.bossName ? ` · ${ch.bossStory.bossName}` : ''}`)); det.append(sum, el('p', '', text)); sec.append(det);
+          sum.append(el('b', '', `📖 ${label}${ch.bossStory.bossName ? ` · ${ch.bossStory.bossName}` : ''}`)); det.append(sum, storyBox(text)); sec.append(det);
         }
       }
       if (ch.clueTotal) {
@@ -3399,14 +3417,34 @@ function renderArchive() {
     pages.append(el('h3', 'archive-section__title', `特殊書頁 ${ba.pages.owned.length}`), lockedCard('這一頁還是空白的……咕咕說，有些故事要等時候到了才會出現。'));
     body.append(pages);
   } else if (archiveTab === 'bond') {
-    body.append(el('p', 'archive-note', `已相遇 ${bo.met} 位 · 好感度 Lv.3 解鎖每位小湘的小故事。`));
-    for (const x of bo.list) {
-      if (!x.story) { const c = lockedCard(`${x.name}：好感度 Lv.3 解鎖（目前 Lv.${x.level}）`); body.append(c); continue; }
+    // 小湘越來越多（湘 11/20）：依系列篩選；解鎖的故事收合成一行，沒解鎖的縮成小格子
+    body.append(el('p', 'archive-note', `已相遇 ${bo.met} 位 · 解鎖 ${bo.unlocked} 篇 · 好感度 Lv.3 解鎖每位小湘的小故事。`));
+    const seriesOf = (x) => CHARACTERS[x.no]?.series;
+    const groups = Object.keys(SERIES).filter(id => bo.list.some(x => seriesOf(x) === id));
+    if (!groups.includes(archiveSeries)) archiveSeries = 'all';
+    const chips = el('div', 'archive-filter'); chips.setAttribute('role', 'tablist');
+    for (const id of ['all', ...groups]) {
+      const list = id === 'all' ? bo.list : bo.list.filter(x => seriesOf(x) === id);
+      const btn = el('button', '', `${id === 'all' ? '全部' : SERIES[id].short} ${list.filter(x => x.story).length}/${list.length}`);
+      btn.type = 'button'; btn.setAttribute('aria-pressed', String(archiveSeries === id));
+      btn.addEventListener('click', () => { archiveSeries = id; renderArchive(); });
+      chips.append(btn);
+    }
+    body.append(chips);
+    const shown = archiveSeries === 'all' ? bo.list : bo.list.filter(x => seriesOf(x) === archiveSeries);
+    for (const x of shown.filter(x => x.story)) {
       const det = el('details', 'archive-card archive-story'); const sum = el('summary');
       const img = document.createElement('img'); img.className = 'archive-face'; img.alt = ''; loadWithFallback(img, characterSources(x.image));
-      sum.append(img, el('b', '', `${x.name} · Lv.${x.level}`)); det.append(sum, el('p', '', x.story));
+      sum.append(img, el('b', '', `${x.name} · Lv.${x.level}`)); det.append(sum, storyBox(x.story));
       if (x.lines.length) { const ul = el('ul', 'archive-lines'); ul.append(...x.lines.map(l => el('li', '', `Lv.${l.level}「${l.text}」`))); det.append(ul); }
       body.append(det);
+    }
+    const locked = shown.filter(x => !x.story);
+    if (locked.length) {
+      body.append(el('h3', 'archive-section__title', `還沒解鎖 ${locked.length} 位`));
+      const grid = el('div', 'archive-locked-grid');
+      grid.append(...locked.map(x => { const c = el('div', 'archive-locked-chip'); c.append(el('b', '', `🔒 ${x.name}`), el('small', '', `Lv.${x.level} → Lv.3`)); return c; }));
+      body.append(grid);
     }
   } else {
     body.append(el('p', 'archive-note', '兩位小湘一起出門，有時會發生小故事。'));
@@ -3414,7 +3452,7 @@ function renderArchive() {
       if (t.locked) { body.append(lockedCard('讓特定的兩位小湘一起出門就可能發現。')); continue; }
       const det = el('details', 'archive-card archive-story'); const sum = el('summary');
       sum.append(el('b', '', `📖 ${t.title}`), el('small', '', [t.who, t.place, fmtDate(t.at)].filter(Boolean).join(' · ')));
-      det.append(sum, el('p', '', t.text)); body.append(det);
+      det.append(sum, storyBox(t.text)); body.append(det);
     }
   }
 }

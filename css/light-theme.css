@@ -82,3 +82,8 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__stars:not(.is-full) { background:var(--t-selected); color:#8a5a12; box-shadow:inset 0 0 0 1px var(--t-line); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-detail__stars b { color:#b07a1c; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-detail__stars span { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-text { border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive-filter button,.archive-locked-chip) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-filter button[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-locked-chip b { color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-locked-chip small { color:var(--t-muted); }

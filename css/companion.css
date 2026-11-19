@@ -722,3 +722,14 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .dino-task.is-mini .dino-task__body, .dino-task.is-mini .dino-task__btn, .dino-task.is-mini .dino-task__skip, .dino-task.is-mini .dino-task__choice { display:none; }
 .dino-task.is-mini .dino-task__icon { width:34px; height:34px; display:grid; place-items:center; font-size:20px; }
 .dino-task.is-mini .dino-task__icon i { position:absolute; right:-6px; bottom:-6px; padding:1px 4px; border-radius:999px; background:var(--t-accent, #ffd9a8); color:var(--t-ink, #2a2333); }
+/* 檔案館：長文分段、系列篩選、未解鎖小格子（湘 11/20） */
+.archive-text { margin:10px 0 2px; padding-top:10px; border-top:1px solid #e3b6a026; display:grid; gap:.7em; }
+.archive-story .archive-text p { margin:0; padding:0; border:0; }
+.archive-filter { display:flex; gap:6px; overflow-x:auto; padding-bottom:2px; scrollbar-width:none; min-height:38px; align-items:center; }
+.archive-filter::-webkit-scrollbar { display:none; }
+.archive-filter button { flex:none; padding:6px 12px; border-radius:999px; border:1px solid #e3b6a040; background:#ffffff08; color:#f6e6dcb3; font-size:12px; }
+.archive-filter button[aria-pressed="true"] { background:#6b2338; border-color:#e3b6a0aa; color:#fff1e8; }
+.archive-locked-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
+.archive-locked-chip { display:grid; gap:1px; padding:7px 10px; border-radius:10px; border:1px dashed #e3b6a033; background:#00000026; opacity:.7; min-width:0; }
+.archive-locked-chip b { font-size:12px; font-weight:500; color:#f6e6dcb3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.archive-locked-chip small { font-size:10.5px; color:#f6e6dc80; }
