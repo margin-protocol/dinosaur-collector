@@ -98,4 +98,5 @@ export const TASTES = {
   '095': { like: '奶香', dislike: '刺激', secret: ["cloud", "milk", "pudding"] }, // Koda 小湘：老姐姐貓咪，軟軟的奶味（德寶補）
   '096': { like: '果香', dislike: '怪味', secret: ["moon", "rainbow", "strawberry"] }, // 爬爬小湘：守宮愛吃水果泥（德寶補）
   '097': { like: '綿軟', dislike: '刺激', secret: ["cloud", "milk", "strawberry"] }, // 貓爬小湘：Koda 的牛奶＋爬爬的草莓，中間夾一朵雲（德寶補）
+  '098': { like: '酥脆', dislike: '綿軟', secret: ["caramel", "gear", "lightning"] }, // 派派ver：牌桌上的消夜要喀滋喀滋、還要提神（德寶補）
 };
