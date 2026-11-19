@@ -2518,6 +2518,10 @@ function renderErrands() {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-place';
     btn.setAttribute('aria-pressed', String(errandChoice?.[kind] === key)); btn.disabled = full;
     btn.innerHTML = `<span aria-hidden="true">${info.emoji}</span>${info.name}<small>${info.hours} 小時</small>`;
+    if (kind === 'place') { // 地點縮圖（皮寶的地點背景）；圖載不到就留 emoji
+      const img = document.createElement('img'); img.className = 'errand-place__img'; img.alt = ''; img.loading = 'lazy'; img.src = `assets/places/${key}.webp`;
+      img.onload = () => btn.classList.add('has-img'); img.onerror = () => img.remove(); btn.prepend(img);
+    }
     btn.addEventListener('click', () => { errandChoice = { [kind]: key }; errandPicked = []; $('errand-status').textContent = ''; renderErrands(); $('errand-pick').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
     return btn;
   };
@@ -2902,6 +2906,7 @@ function renderBattle() {
     $('battle-map').replaceChildren(wildSec, ...battle.CHAPTERS.map(ch => {
       const sec = document.createElement('section'); sec.className = 'battle-chapter';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = `第 ${ch.id} 章 · ${ch.name}`;
+      if (PLACES[ch.bg]) { sec.classList.add('has-scene'); sec.style.setProperty('--scene', `url("${placeUrl(ch.bg)}")`); }
       const grid = document.createElement('div'); grid.className = 'battle-stages';
       grid.append(...ch.stages.map(id => {
         const e = battle.ENEMIES[id]; const st = b.stages[id]; const open = battle.unlocked(state, id);
@@ -2936,10 +2941,16 @@ function renderBattle() {
   }
   if (inStage) renderBattleStage();
 }
+// 討伐場景：章節的 bg 剛好是出門地點（conv 便利商店、mountain 山上）時，借用那張地點背景；沒有圖的章節維持原樣
+// 注意：CSS 變數裡的 url() 會以 css/ 資料夾為起點解析，所以要給完整網址
+function placeUrl(key) { return new URL(`assets/places/${key}.webp`, document.baseURI).href; } // function：renderAll 可能在這行之前就跑
+function chapterScene(id) { const ch = battle.CHAPTERS.find(c => c.stages.includes(id)); return ch && PLACES[ch.bg] ? placeUrl(ch.bg) : null; }
 function renderBattleStage() {
   const id = battleEnemy; const e = battle.enemyFor(state, id); const st = e.wild ? null : state.battle.stages[id];
   if (!e) { battleEnemy = null; renderBattle(); return; }
-  $('battle-enemy-art').replaceChildren(enemyArt(id, 'is-big'));
+  const bigArt = enemyArt(id, 'is-big'); const scene = e.wild ? null : chapterScene(id);
+  if (scene) { bigArt.classList.add('has-scene'); bigArt.style.setProperty('--scene', `url("${scene}")`); }
+  $('battle-enemy-art').replaceChildren(bigArt);
   $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}`;
   $('battle-enemy-name').textContent = e.name;
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;

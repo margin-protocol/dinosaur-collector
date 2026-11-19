@@ -249,6 +249,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .errand-place { display:grid; gap:2px; justify-items:center; padding:10px 6px; border-radius:14px; border:1px solid #ffffff22; background:#ffffff0a; color:inherit; font:13px var(--font-display); text-align:center; }
 .errand-place span { font-size:22px; line-height:1.2; }
 .errand-place small { font:11px var(--font-body); color:#f6ede6aa; }
+.errand-place__img { width:100%; aspect-ratio:4/3; object-fit:cover; border-radius:9px; margin-bottom:4px; }
+.errand-place.has-img > span { display:none; }
+.errand-place:disabled .errand-place__img { filter:grayscale(.6); opacity:.6; }
 .errand-place[aria-pressed="true"] { border-color:#ffd9a8; background:#ffd9a81f; }
 .errand-pick { margin-top:12px; padding:12px; border-radius:16px; background:#00000026; }
 .errand-siangs { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; max-height:260px; overflow:auto; margin-bottom:12px; }
@@ -357,6 +360,8 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .enemy-art img { width:100%; height:100%; object-fit:contain; }
 .enemy-art__emoji { font-size:34px; filter:drop-shadow(0 3px 4px #0008); }
 .enemy-art.is-mini { width:42px; } .enemy-art.is-mini .enemy-art__emoji { font-size:22px; }
+.enemy-art.has-scene { background:linear-gradient(180deg,#0000 45%,#0000002e), var(--scene) center/cover; }
+.battle-chapter.has-scene > .egg-choices__heading { display:flex; align-items:flex-end; min-height:72px; margin-bottom:8px; padding:10px 12px; border-radius:12px; background:linear-gradient(180deg,#0000 20%,#000000a6), var(--scene) center/cover #3a2f3a; color:#fff8f2; text-shadow:0 1px 6px #000a; }
 .enemy-art.is-big { width:120px; } .enemy-art.is-big .enemy-art__emoji { font-size:64px; }
 .battle-stages { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:6px; }
 .battle-stage-card { display:grid; grid-template-columns:52px 1fr; align-items:center; gap:8px; padding:8px; border-radius:14px; border:1px solid #ffffff1f; background:#ffffff0a; color:inherit; text-align:left; }

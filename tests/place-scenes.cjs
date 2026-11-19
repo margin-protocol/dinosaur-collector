@@ -1,0 +1,18 @@
+// 地點背景：出門選地點有縮圖；討伐第 1、2 章借用便利商店／山上當場景，第 3 章沒有圖就維持原樣
+const {chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
+const p=await (await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'})).newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');await p.waitForTimeout(300);
+await p.evaluate(()=>{const k='siang-collector:v1';const s=JSON.parse(localStorage.getItem(k));s.tutorial=null;s.hatched=2;s.dex={'001':{at:'2026-11-10T00:00:00Z'},'002':{at:'2026-11-10T00:00:00Z'}};localStorage.setItem(k,JSON.stringify(s));});
+await p.reload();await p.waitForTimeout(600);await p.click('#home-errand');await p.waitForTimeout(600);
+const thumbs=await p.$$eval('#errand-places .errand-place__img',imgs=>imgs.map(i=>i.complete&&i.naturalWidth>0));
+assert.equal(thumbs.length,6);assert(thumbs.every(Boolean),'all six place thumbnails load');
+assert.equal(await p.locator('#errand-tasks .errand-place__img').count(),0,'home tasks keep emoji');
+await p.click('#tab-battle');await p.waitForTimeout(400);
+const scenes=await p.$$eval('.battle-chapter',secs=>secs.map(s=>s.style.getPropertyValue('--scene')));
+assert.match(scenes.join('|'),/places\/conv\.webp/);assert.match(scenes.join('|'),/places\/mountain\.webp/);
+const loaded=await p.evaluate(async()=>Promise.all([...document.querySelectorAll('.battle-chapter.has-scene')].map(s=>new Promise(r=>{const u=s.style.getPropertyValue('--scene').match(/url\("(.+)"\)/)[1];const i=new Image();i.onload=()=>r(true);i.onerror=()=>r(false);i.src=u;}))));
+assert(loaded.length===2&&loaded.every(Boolean),'chapter scene urls resolve');
+await p.locator('.battle-chapter.has-scene .battle-stage-card').first().click();await p.waitForTimeout(300);
+assert.equal(await p.locator('#battle-enemy-art .enemy-art.has-scene').count(),1);
+assert.deepEqual(errs,[]);console.log('place thumbnails and chapter scenes PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1);});
