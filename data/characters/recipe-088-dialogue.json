@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "draft-copy-ready-not-implemented",
+  "status": "implemented-as-091",
   "date": "2026-11-19",
   "series": "recipe",
   "characters": [
@@ -14,20 +14,20 @@
       "special": true,
       "personality": "曾經害怕失敗，也曾經害怕成功後讓人失望。現在依然會焦慮、會哭、會迷路，但開始相信人生不是一場只能交出標準答案的考試。",
       "plannedImagePath": "assets/characters/siang-088-to-be-continued.webp",
-      "imageStatus": "not-created-or-uploaded",
+      "imageStatus": "uploaded",
       "recipe": {
         "id": "to-be-continued",
         "members": [
-          "086",
-          "087"
+          "089",
+          "090"
         ],
-        "membersStatus": "proposed-pair",
-        "days": null,
+        "membersStatus": "game-ids",
+        "days": 3,
         "daysCandidate": 3,
-        "daysStatus": "awaiting-confirmation",
-        "target": "088",
+        "daysStatus": "implemented",
+        "target": "091",
         "egg": "keepsake",
-        "implementationStatus": "not-implemented"
+        "implementationStatus": "implemented"
       },
       "lines": {
         "signature": "考上了也好，沒考上也好……嘿嘿，我的故事又還沒寫完！",
@@ -90,7 +90,9 @@
         ],
         "narration": "三隻沉默了三秒，然後一起出門買蛋糕。",
         "implementationStatus": "not-implemented"
-      }
+      },
+      "gameId": "091",
+      "image": "siang-091-to-be-continued"
     }
   ],
   "notes": [
@@ -98,6 +100,7 @@
     "共同入住 3 天是候選，recipe.days 刻意為 null，不可視為已實裝條件。",
     "No.086 和 087 目前只有交接文件，需先確認可取得及入住。",
     "出戰、委託、Lv.2／4、完整圖鑑、神秘線索與六階段日誌尚未撰寫，不以虛構內容填充。",
-    "本次不改 js/recipes.js、js/eggs.js、素材、存檔或玩家公告。"
+    "本次不改 js/recipes.js、js/eggs.js、素材、存檔或玩家公告。",
+    "2026-11-19 德寶：遊戲實際編號 091；配方 089+090 同住 3 天；德寶暫寫圖鑑介紹、神秘線索、出戰、Lv.3 故事、Lv.4 台詞、研究室 found 兩句（見 js/intros.js、js/bond-copy.js、js/extra-lines.js、js/recipes.js）。三隻同住彩蛋未接。"
   ]
 }

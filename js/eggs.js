@@ -256,6 +256,8 @@ export const CHARACTERS = {
   '089': { no: '089', name: '研究所小湘', rarity: 'SSR', line: "「性別不是選擇題啦！……可是論文口試好像是生存題。救命喔！！」", image: 'siang-089-grad-school', series: 'memorial', special: true },
   // 落榜小湘（湘 11/19）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '落榜小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
+  // 未完待續小湘（湘 11/19）：研究所小湘＋落榜小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
+  '091': { no: '091', name: '未完待續小湘', rarity: 'SSR', line: "「考上了也好，沒考上也好……嘿嘿，我的故事又還沒寫完！」", image: 'siang-091-to-be-continued', series: 'recipe', special: true },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序
