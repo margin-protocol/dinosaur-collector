@@ -11,6 +11,7 @@ assert(NOTE_TEXTS.length > 12);
 assert.equal(STORIES.length, 8);
 for (const s of STORIES) assert.equal(PAIR_STORY_VARIANTS[s.id].length, 2, s.id);
 for (const [id] of Object.entries(CHARACTER_REPORTS)) assert(CHARACTERS[id], id);
+for (const id of Object.keys(CHARACTERS)) assert(CHARACTER_REPORTS[id], `missing character-specific errand report: ${id}`);
 for (const [id] of Object.entries(SERIES_REPORTS)) assert(id === 'daily' || Object.values(CHARACTERS).some(c => c.series === id), id);
 
 const at = new Date('2026-11-19T01:00:00.000Z');
