@@ -8,7 +8,8 @@ import { GUGU_REVIEWS, REVIEW_ORDER } from './gugu-reviews.js';
 import { HERO_SHOP, HERO_LINES, PARTY_LINES, PARTY_REPORT, heroOffer } from './badge-heroes.js';
 import { WEATHER_LINES } from './weather-lines.js';
 import { RECIPE_LINES } from './recipe-lines.js';
-const SPOKEN = { ...WEATHER_LINES, ...RECIPE_LINES, ...HERO_LINES }; // 有專屬出戰／勝敗台詞的小湘
+import { FRIEND_LINES } from './friend-lines.js';
+const SPOKEN = { ...WEATHER_LINES, ...RECIPE_LINES, ...FRIEND_LINES, ...HERO_LINES }; // 有專屬出戰／勝敗台詞的小湘
 
 // 敵人。圖片照皮寶的命名放在 assets/enemies/chapter-0N/（沒有圖就顯示 emoji）。
 // 文字欄位都可以直接改：intro 開場、weakHit 被剋制的反應（weakTag 是戰報上的小標）、win 玩家打贏時敵人說的話、
