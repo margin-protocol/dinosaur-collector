@@ -1,3 +1,4 @@
+import { TEAM_BONDS, teamBond, discoverBond, effectText } from './team-bonds.js';
 // 討伐：派 1～3 位小湘去打敵人（像皮克敏那樣派遣，回來看戰報）。
 // 設計原則（皮寶 11/17）：剋制只影響效率與評分、不是通關必要條件；只有原味小湘也能打完入門關；
 // 戰敗提示依實際原因；保留分數、歷史最高與進步；徽章可以拿來特訓，讓下一次打得更好。
@@ -174,8 +175,9 @@ export function teamPower(state, nos, enemyId) {
   const weakHit = Boolean(enemy) && nos.some((no) => enemy.weak.includes(CHARACTERS[no]?.series));
   const heroIds = Object.values(BADGE_HEROES);
   const heroParty = heroIds.every(Boolean) && heroIds.every((no) => nos.includes(no));
-  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (heroParty ? HERO_PARTY_BONUS : 0));
-  return { members, raw: Math.round(raw * 10) / 10, total: Math.round(raw * mult * 10) / 10, sameSeries, weakHit, heroParty };
+  const bond = teamBond(state, nos);
+  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty ? HERO_PARTY_BONUS : 0));
+  return { members, raw: Math.round(raw * 10) / 10, total: Math.round(raw * mult * 10) / 10, sameSeries, weakHit, heroParty, bond };
 }
 
 // 預估：勝率與評語
@@ -184,7 +186,7 @@ export function forecast(state, nos, enemyId) {
   const ratio = team.total / enemyFor(state, enemyId).power;
   const chance = ratio >= 1 ? 1 : ratio < 0.7 ? 0 : (ratio - 0.7) / 0.3;
   const label = ratio >= 1.6 ? '輕鬆勝利' : ratio >= 1.2 ? '穩穩的' : ratio >= 1 ? '勢均力敵' : ratio >= 0.7 ? '有點危險' : '還打不贏';
-  return { ...team, ratio, chance, label };
+  return { ...team, ratio, chance, label, minutes: Math.max(1, Math.round(enemyFor(state, enemyId).minutes * (team.weakHit ? .75 : 1) * (1 - (team.bond?.speed || 0)))), stars: starsOf(ratio, chance === 1) };
 }
 
 export const scoreOf = (ratio, weakHit, win) => (win ? Math.round(ratio * 1000) + (weakHit ? 150 : 0) : Math.round(ratio * 400));
@@ -204,17 +206,24 @@ export function available(state, now = Date.now(), busy = new Set()) {
 }
 
 // 最強隊伍（從可派的小湘裡挑）
-export function bestTeam(state, enemyId, pool) {
-  const ranked = [...pool].sort((a, b) => siangPower(state, b).power - siangPower(state, a).power);
-  const candidates = [ranked.slice(0, TEAM_MAX)];
-  const weak = pool.filter((no) => enemyFor(state, enemyId).weak.includes(CHARACTERS[no]?.series)).sort((a, b) => siangPower(state, b).power - siangPower(state, a).power);
-  if (weak.length) candidates.push([weak[0], ...ranked.filter((no) => no !== weak[0]).slice(0, TEAM_MAX - 1)]);
-  for (const series of new Set(pool.map((no) => CHARACTERS[no].series))) {
-    const same = ranked.filter((no) => CHARACTERS[no].series === series);
-    if (same.length >= 2) candidates.push([...same.slice(0, 2), ...ranked.filter((no) => !same.slice(0, 2).includes(no)).slice(0, 1)].slice(0, TEAM_MAX));
+export function compareTeams(state, enemyId, pool) {
+  const buckets=new Map();
+  for(const no of [...new Set(pool)].filter(n=>state.dex?.[n]&&CHARACTERS[n]).sort((a,b)=>siangPower(state,b).power-siangPower(state,a).power)) {
+    const key=CHARACTERS[no].series+':'+(siangPower(state,no).bond===5);const list=buckets.get(key)||[];
+    if(list.length<3)list.push(no);buckets.set(key,list);
   }
-  return candidates.map((nos) => ({ nos, ...forecast(state, nos, enemyId) })).sort((a, b) => b.total - a.total)[0] || null;
+  const candidates=[...buckets.values()].flat(), teams=[];
+  const add=nos=>{if(nos.length&&nos.every(n=>pool.includes(n))){const f=forecast(state,nos,enemyId);if(f.bond&&f.bond.id!=='general'&&f.bond.id!=='heroes'&&!state.teamBonds?.unlocked?.[f.bond.id])return;teams.push({nos:[...nos],...f});}};
+  if(candidates.length<3)add(candidates);
+  for(let a=0;a<candidates.length;a++)for(let b=a+1;b<candidates.length;b++)for(let c=b+1;c<candidates.length;c++)add([candidates[a],candidates[b],candidates[c]]);
+  for(const bond of TEAM_BONDS)add(bond.nos);
+  const strength=teams.reduce((best,t)=>!best||t.total>best.total?t:best,null);
+  const safe=teams.filter(t=>t.chance===1);
+  const fastest=(safe.length?safe:teams).reduce((best,t)=>!best||t.minutes<best.minutes||(t.minutes===best.minutes&&t.total>best.total)?t:best,null);
+  const heroes=teams.find(t=>t.heroParty)||null;
+  return {strength,fastest,heroes};
 }
+export function bestTeam(state,enemyId,pool) { return compareTeams(state,enemyId,pool).strength; }
 
 // 戰敗原因：先看換隊能不能贏，再看哪一項成長最有效
 export function diagnose(state, nos, enemyId, pool) {
@@ -258,9 +267,11 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   const win = rand() < f.chance;
   const score = scoreOf(f.ratio, f.weakHit, win);
   const stars = starsOf(f.ratio, win);
-  const minutes = Math.round(enemy.minutes * (f.weakHit ? 0.75 : 1));
+  const minutes = f.minutes;
+  const discovered = discoverBond(state, nos, now);
   const log = [enemy.intro, ...nos.map(actionLine)];
   if (f.weakHit) log.push(`✦ 效果拔群${enemy.weakTag ? `｜${enemy.weakTag.replace(/[！!]+$/, '')}` : ''}！${enemy.weakHit}`);
+  if (f.bond) log.push(`♡ ${f.bond.name}｜${effectText(f.bond)}${discovered ? '｜三人合照閃卡已收藏！' : ''}`);
   if (f.heroParty) log.push(...PARTY_LINES.map((l) => `${l.speaker}：「${l.text}」`), `✦ ${PARTY_REPORT}`);
   log.push(win ? enemy.win : enemy.lose);
   // 隊伍裡有徽章限定小湘：由最稀有的那位說勝利／戰敗台詞
@@ -273,7 +284,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
     : win
       ? { badges: (enemy.boss ? 3 : 1) + (stars === 3 && prev.stars < 3 ? 1 : 0), energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
       : { badges: 0, energy: 5, fossils: 0 };
-  const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries };
+  const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries };
   if (enemy.story && !enemy.wild && !b.story[`${enemyId}:before`]) b.story[`${enemyId}:before`] = iso(now); // 看過 Boss 開場故事
   const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + minutes * 60e3)), report, ...(wildEntry ? { snapshot: wildEntry } : {}) };
   b.active.push(battle);

@@ -1,3 +1,4 @@
+import { ensureTeamBonds } from './team-bonds.js';
 import { todayKey, wishesFor, legacyWishesFor, wishById, swapWishId, actProgress, QUIZZES, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';
 import { ensureWishEgg, stampDay } from './wish-egg.js';
 import { ensureTravel } from './travel.js';
@@ -86,6 +87,7 @@ export function hydrateProgression(state) {
   ensureErrands(state);
   ensureWheel(state);
   ensureAffection(state);
+  ensureTeamBonds(state);
   ensureBattle(state);
   ensureDevteam(state);
   ensureGuide(state);

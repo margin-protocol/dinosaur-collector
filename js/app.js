@@ -1,3 +1,5 @@
+import { renderAtlas, renderTeamTools } from './team-ui.js';
+import { savePreset, ensureTeamBonds, effectText } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
 import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
@@ -2997,6 +2999,7 @@ function showErrandTab(tab) {
 $('tab-errand').addEventListener('click', () => showErrandTab('errand'));
 $('tab-battle').addEventListener('click', () => showErrandTab('battle'));
 function renderBattle() {
+  renderAtlas($('team-bond-atlas'),state);
   const b = state.battle; const now = Date.now();
   $('battle-badges').textContent = b.badges;
   $('battle-slots').textContent = `隊伍 ${b.active.length} / ${battle.teamSlots(state)}`;
@@ -3108,15 +3111,22 @@ function renderBattleStage() {
   const fc = battlePicked.length ? battle.forecast(state, battlePicked, id) : null;
   $('battle-forecast').innerHTML = '';
   if (fc) {
-    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', fc.heroParty && '勇者小隊 +50%'].filter(Boolean).join(' · ');
+    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契')].filter(Boolean).join(' · ');
     $('battle-forecast').innerHTML = `<b></b><span></span>`;
     $('battle-forecast').querySelector('b').textContent = `隊伍戰力 ${fc.total} vs ${e.power} · ${fc.label}`;
     $('battle-forecast').querySelector('span').textContent = bonus || '沒有加成（帶 ✦ 的小湘有剋制效果）';
     $('battle-forecast').dataset.level = fc.ratio >= 1.2 ? 'good' : fc.ratio >= 1 ? 'ok' : 'risk';
   }
+  const free = battle.available(state, now, busy);
+  const comparison = battle.compareTeams(state, id, free);
+  renderTeamTools($('team-tools'), {state,free,picked:[...battlePicked],comparison,
+    onChoose:nos=>{ const currentFree=battle.available(state,Date.now(),allBusy());if(nos.some(n=>!currentFree.includes(n))){toast('有人正在忙或休息，請重新選隊。');return;}battlePicked=[...nos];renderBattleStage(); },
+    onSave:async(slot,nos,name)=>{const t=await updateState(current=>savePreset(current,slot,nos,name));state=t.state;toast(t.result?'隊伍已儲存':'請選三位已收集的小湘');renderBattleStage();},
+    onDelete:async slot=>{state=(await updateState(current=>{ensureTeamBonds(current).presets[slot]=null;})).state;renderBattleStage();}
+  });
   const full = state.battle.active.length >= battle.teamSlots(state);
   $('battle-go').disabled = !battlePicked.length || full;
-  $('battle-go').textContent = full ? '隊伍都派出去了' : `出發討伐${fc ? `（約 ${Math.round(e.minutes * (fc.weakHit ? 0.75 : 1))} 分鐘）` : ''}`;
+  $('battle-go').textContent = full ? '隊伍都派出去了' : `出發討伐${fc ? `（約 ${fc.minutes} 分鐘）` : ''}`;
 }
 $('battle-back').addEventListener('click', () => { battleEnemy = null; renderBattle(); });
 // 野生小怪的戰報：那一天的名單可能已經換掉，用出發時存下的資料畫

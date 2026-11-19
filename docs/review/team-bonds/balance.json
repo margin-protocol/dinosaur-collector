@@ -1,0 +1,1491 @@
+[
+  {
+    "id": "dessert",
+    "name": "布丁保衛戰",
+    "nos": [
+      "001",
+      "002",
+      "005"
+    ],
+    "clue": "一位把日常裝進口袋，一位摘草莓，一位總帶著甜點。",
+    "power": 0.16,
+    "speed": 0,
+    "effect": "戰力 +16%",
+    "names": [
+      "原味小湘",
+      "草莓小湘",
+      "甜點小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 103,
+        "minutes": 23,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 12.875
+      },
+      {
+        "id": "sock",
+        "power": 79.2,
+        "minutes": 30,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 7.92
+      },
+      {
+        "id": "bento",
+        "power": 79.2,
+        "minutes": 45,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.6
+      },
+      {
+        "id": "caramel-king",
+        "power": 103,
+        "minutes": 68,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.575
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 79.2,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.76
+      },
+      {
+        "id": "lost-shadow",
+        "power": 79.2,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.44
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 79.2,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.2184615384615385
+      },
+      {
+        "id": "thunder-king",
+        "power": 79.2,
+        "minutes": 120,
+        "chance": 0.4456140350877195,
+        "stars": 0,
+        "ratio": 0.8336842105263158
+      },
+      {
+        "id": "toy-bunny",
+        "power": 103,
+        "minutes": 56,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.03
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 79.2,
+        "minutes": 75,
+        "chance": 0.06666666666666674,
+        "stars": 0,
+        "ratio": 0.72
+      },
+      {
+        "id": "melody-guard",
+        "power": 79.2,
+        "minutes": 90,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6336
+      },
+      {
+        "id": "director-giggle",
+        "power": 103,
+        "minutes": 90,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6242424242424243
+      },
+      {
+        "id": "gugu",
+        "power": 103,
+        "minutes": 45,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.1458333333333335
+      }
+    ]
+  },
+  {
+    "id": "rainbow",
+    "name": "雨後的捷徑",
+    "nos": [
+      "003",
+      "071",
+      "074"
+    ],
+    "clue": "撐傘的人、踩水坑的人，和雨停後才出現的那道光。",
+    "power": 0,
+    "speed": 0.2,
+    "effect": "戰力 +0% · 討伐時間 −20%",
+    "names": [
+      "雨傘小湘",
+      "下雨小湘",
+      "彩虹小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 89,
+        "minutes": 24,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 11.125
+      },
+      {
+        "id": "sock",
+        "power": 89,
+        "minutes": 24,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 8.9
+      },
+      {
+        "id": "bento",
+        "power": 89,
+        "minutes": 36,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 4.045454545454546
+      },
+      {
+        "id": "caramel-king",
+        "power": 89,
+        "minutes": 72,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.225
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 115.7,
+        "minutes": 36,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.571111111111111
+      },
+      {
+        "id": "lost-shadow",
+        "power": 115.7,
+        "minutes": 36,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.1036363636363635
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 89,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.3692307692307693
+      },
+      {
+        "id": "thunder-king",
+        "power": 115.7,
+        "minutes": 72,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.2178947368421054
+      },
+      {
+        "id": "toy-bunny",
+        "power": 89,
+        "minutes": 60,
+        "chance": 0.6333333333333335,
+        "stars": 0,
+        "ratio": 0.89
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 89,
+        "minutes": 60,
+        "chance": 0.36363636363636376,
+        "stars": 0,
+        "ratio": 0.8090909090909091
+      },
+      {
+        "id": "melody-guard",
+        "power": 89,
+        "minutes": 72,
+        "chance": 0.040000000000000036,
+        "stars": 0,
+        "ratio": 0.712
+      },
+      {
+        "id": "director-giggle",
+        "power": 89,
+        "minutes": 96,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5393939393939394
+      },
+      {
+        "id": "gugu",
+        "power": 89,
+        "minutes": 48,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.8541666666666667
+      }
+    ]
+  },
+  {
+    "id": "midnight",
+    "name": "熄燈後讀一頁",
+    "nos": [
+      "004",
+      "007",
+      "010"
+    ],
+    "clue": "夜貓捨不得睡，書頁捨不得翻完，星塵替她們留燈。",
+    "power": 0.12,
+    "speed": 0.1,
+    "effect": "戰力 +12% · 討伐時間 −10%",
+    "names": [
+      "夜貓小湘",
+      "書頁小湘",
+      "星塵小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 120.6,
+        "minutes": 20,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 15.075
+      },
+      {
+        "id": "sock",
+        "power": 92.7,
+        "minutes": 27,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 9.27
+      },
+      {
+        "id": "bento",
+        "power": 92.7,
+        "minutes": 41,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 4.213636363636364
+      },
+      {
+        "id": "caramel-king",
+        "power": 120.6,
+        "minutes": 61,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.0149999999999997
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 120.6,
+        "minutes": 41,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.6799999999999997
+      },
+      {
+        "id": "lost-shadow",
+        "power": 120.6,
+        "minutes": 41,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.1927272727272724
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 92.7,
+        "minutes": 68,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.426153846153846
+      },
+      {
+        "id": "thunder-king",
+        "power": 120.6,
+        "minutes": 81,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.2694736842105263
+      },
+      {
+        "id": "toy-bunny",
+        "power": 120.6,
+        "minutes": 51,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.206
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 92.7,
+        "minutes": 68,
+        "chance": 0.47575757575757605,
+        "stars": 0,
+        "ratio": 0.8427272727272728
+      },
+      {
+        "id": "melody-guard",
+        "power": 92.7,
+        "minutes": 81,
+        "chance": 0.13866666666666694,
+        "stars": 0,
+        "ratio": 0.7416
+      },
+      {
+        "id": "director-giggle",
+        "power": 120.6,
+        "minutes": 81,
+        "chance": 0.10303030303030296,
+        "stars": 0,
+        "ratio": 0.7309090909090908
+      },
+      {
+        "id": "gugu",
+        "power": 120.6,
+        "minutes": 41,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.5124999999999997
+      }
+    ]
+  },
+  {
+    "id": "garden",
+    "name": "花園慢慢醒",
+    "nos": [
+      "006",
+      "008",
+      "009"
+    ],
+    "clue": "園丁種下期待；一位收藏晴空，一位把花開的瞬間拍下來。",
+    "power": 0.14,
+    "speed": 0.05,
+    "effect": "戰力 +14% · 討伐時間 −5%",
+    "names": [
+      "園丁小湘",
+      "晴空小湘",
+      "膠卷小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 110.4,
+        "minutes": 21,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 13.8
+      },
+      {
+        "id": "sock",
+        "power": 85,
+        "minutes": 29,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 8.5
+      },
+      {
+        "id": "bento",
+        "power": 85,
+        "minutes": 43,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.8636363636363638
+      },
+      {
+        "id": "caramel-king",
+        "power": 110.4,
+        "minutes": 64,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.7600000000000002
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 85,
+        "minutes": 57,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.8888888888888888
+      },
+      {
+        "id": "lost-shadow",
+        "power": 85,
+        "minutes": 57,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.5454545454545454
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 85,
+        "minutes": 71,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.3076923076923077
+      },
+      {
+        "id": "thunder-king",
+        "power": 85,
+        "minutes": 114,
+        "chance": 0.6491228070175441,
+        "stars": 0,
+        "ratio": 0.8947368421052632
+      },
+      {
+        "id": "toy-bunny",
+        "power": 110.4,
+        "minutes": 53,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.104
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 85,
+        "minutes": 71,
+        "chance": 0.24242424242424251,
+        "stars": 0,
+        "ratio": 0.7727272727272727
+      },
+      {
+        "id": "melody-guard",
+        "power": 85,
+        "minutes": 86,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.68
+      },
+      {
+        "id": "director-giggle",
+        "power": 110.4,
+        "minutes": 86,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6690909090909092
+      },
+      {
+        "id": "gugu",
+        "power": 110.4,
+        "minutes": 43,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.3000000000000003
+      }
+    ]
+  },
+  {
+    "id": "gym",
+    "name": "練完再開飯",
+    "nos": [
+      "036",
+      "037",
+      "040"
+    ],
+    "clue": "有人先睡著了，十五年的老朋友練完要吃飯，還有人提醒喝水。",
+    "power": 0.18,
+    "speed": 0,
+    "effect": "戰力 +18%",
+    "names": [
+      "摯友小湘（把拔ver）",
+      "摯友小湘（ㄊㄧver）",
+      "摯友小湘（Achio ver）"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 124.6,
+        "minutes": 30,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 15.575
+      },
+      {
+        "id": "sock",
+        "power": 124.6,
+        "minutes": 30,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 12.459999999999999
+      },
+      {
+        "id": "bento",
+        "power": 161.9,
+        "minutes": 34,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 7.359090909090909
+      },
+      {
+        "id": "caramel-king",
+        "power": 124.6,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.1149999999999998
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 124.6,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.7688888888888887
+      },
+      {
+        "id": "lost-shadow",
+        "power": 124.6,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.265454545454545
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 124.6,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.9169230769230767
+      },
+      {
+        "id": "thunder-king",
+        "power": 124.6,
+        "minutes": 120,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.311578947368421
+      },
+      {
+        "id": "toy-bunny",
+        "power": 124.6,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.246
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 161.9,
+        "minutes": 56,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.471818181818182
+      },
+      {
+        "id": "melody-guard",
+        "power": 124.6,
+        "minutes": 90,
+        "chance": 0.9893333333333332,
+        "stars": 0,
+        "ratio": 0.9967999999999999
+      },
+      {
+        "id": "director-giggle",
+        "power": 124.6,
+        "minutes": 120,
+        "chance": 0.1838383838383839,
+        "stars": 0,
+        "ratio": 0.7551515151515151
+      },
+      {
+        "id": "gugu",
+        "power": 124.6,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.595833333333333
+      }
+    ]
+  },
+  {
+    "id": "paws",
+    "name": "腳印接力賽",
+    "nos": [
+      "044",
+      "048",
+      "055"
+    ],
+    "clue": "喵一聲、汪一聲，最後交棒給蹦蹦跳的公主。",
+    "power": 0.04,
+    "speed": 0.15,
+    "effect": "戰力 +4% · 討伐時間 −15%",
+    "names": [
+      "貓咪小湘",
+      "狗狗小湘",
+      "兔兔小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 79.7,
+        "minutes": 26,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 9.9625
+      },
+      {
+        "id": "sock",
+        "power": 103.5,
+        "minutes": 19,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 10.35
+      },
+      {
+        "id": "bento",
+        "power": 79.7,
+        "minutes": 38,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.622727272727273
+      },
+      {
+        "id": "caramel-king",
+        "power": 79.7,
+        "minutes": 77,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.9925000000000002
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 79.7,
+        "minutes": 51,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.771111111111111
+      },
+      {
+        "id": "lost-shadow",
+        "power": 79.7,
+        "minutes": 51,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.4490909090909092
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 103.5,
+        "minutes": 48,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.5923076923076922
+      },
+      {
+        "id": "thunder-king",
+        "power": 79.7,
+        "minutes": 102,
+        "chance": 0.4631578947368424,
+        "stars": 0,
+        "ratio": 0.8389473684210527
+      },
+      {
+        "id": "toy-bunny",
+        "power": 79.7,
+        "minutes": 64,
+        "chance": 0.32333333333333364,
+        "stars": 0,
+        "ratio": 0.797
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 79.7,
+        "minutes": 64,
+        "chance": 0.08181818181818216,
+        "stars": 0,
+        "ratio": 0.7245454545454546
+      },
+      {
+        "id": "melody-guard",
+        "power": 79.7,
+        "minutes": 77,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6376000000000001
+      },
+      {
+        "id": "director-giggle",
+        "power": 79.7,
+        "minutes": 102,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.48303030303030303
+      },
+      {
+        "id": "gugu",
+        "power": 79.7,
+        "minutes": 51,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.6604166666666667
+      }
+    ]
+  },
+  {
+    "id": "ocean",
+    "name": "不會游也要出航",
+    "nos": [
+      "045",
+      "046",
+      "054"
+    ],
+    "clue": "條紋魚領航，橫著走的當舵手，怕冷的朋友擠上甲板。",
+    "power": 0.15,
+    "speed": 0.05,
+    "effect": "戰力 +15% · 討伐時間 −5%",
+    "names": [
+      "小丑魚小湘",
+      "螃蟹小湘",
+      "企鵝小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 92.8,
+        "minutes": 29,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 11.6
+      },
+      {
+        "id": "sock",
+        "power": 120.7,
+        "minutes": 21,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 12.07
+      },
+      {
+        "id": "bento",
+        "power": 92.8,
+        "minutes": 43,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 4.218181818181818
+      },
+      {
+        "id": "caramel-king",
+        "power": 92.8,
+        "minutes": 86,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.32
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 92.8,
+        "minutes": 57,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.062222222222222
+      },
+      {
+        "id": "lost-shadow",
+        "power": 92.8,
+        "minutes": 57,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.6872727272727273
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 120.7,
+        "minutes": 53,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.856923076923077
+      },
+      {
+        "id": "thunder-king",
+        "power": 92.8,
+        "minutes": 114,
+        "chance": 0.9228070175438596,
+        "stars": 0,
+        "ratio": 0.9768421052631578
+      },
+      {
+        "id": "toy-bunny",
+        "power": 92.8,
+        "minutes": 71,
+        "chance": 0.76,
+        "stars": 0,
+        "ratio": 0.9279999999999999
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 92.8,
+        "minutes": 71,
+        "chance": 0.47878787878787893,
+        "stars": 0,
+        "ratio": 0.8436363636363636
+      },
+      {
+        "id": "melody-guard",
+        "power": 92.8,
+        "minutes": 86,
+        "chance": 0.1413333333333333,
+        "stars": 0,
+        "ratio": 0.7424
+      },
+      {
+        "id": "director-giggle",
+        "power": 92.8,
+        "minutes": 114,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5624242424242424
+      },
+      {
+        "id": "gugu",
+        "power": 92.8,
+        "minutes": 57,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.9333333333333333
+      }
+    ]
+  },
+  {
+    "id": "north",
+    "name": "北邊的回家路",
+    "nos": [
+      "016",
+      "017",
+      "018"
+    ],
+    "clue": "城市裡的研究、寫願望的天燈，最後到總有船回來的港口。",
+    "power": 0.08,
+    "speed": 0.12,
+    "effect": "戰力 +8% · 討伐時間 −12%",
+    "names": [
+      "臺北市小湘",
+      "新北市小湘",
+      "基隆市小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 87.2,
+        "minutes": 26,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 10.9
+      },
+      {
+        "id": "sock",
+        "power": 87.2,
+        "minutes": 26,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 8.72
+      },
+      {
+        "id": "bento",
+        "power": 87.2,
+        "minutes": 40,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.963636363636364
+      },
+      {
+        "id": "caramel-king",
+        "power": 87.2,
+        "minutes": 79,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.18
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 87.2,
+        "minutes": 53,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.9377777777777778
+      },
+      {
+        "id": "lost-shadow",
+        "power": 113.3,
+        "minutes": 40,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.06
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 87.2,
+        "minutes": 66,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.3415384615384616
+      },
+      {
+        "id": "thunder-king",
+        "power": 87.2,
+        "minutes": 106,
+        "chance": 0.7263157894736846,
+        "stars": 0,
+        "ratio": 0.9178947368421053
+      },
+      {
+        "id": "toy-bunny",
+        "power": 87.2,
+        "minutes": 66,
+        "chance": 0.5733333333333335,
+        "stars": 0,
+        "ratio": 0.872
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 87.2,
+        "minutes": 66,
+        "chance": 0.30909090909090925,
+        "stars": 0,
+        "ratio": 0.7927272727272727
+      },
+      {
+        "id": "melody-guard",
+        "power": 87.2,
+        "minutes": 79,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6976
+      },
+      {
+        "id": "director-giggle",
+        "power": 87.2,
+        "minutes": 106,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5284848484848486
+      },
+      {
+        "id": "gugu",
+        "power": 87.2,
+        "minutes": 53,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.8166666666666667
+      }
+    ]
+  },
+  {
+    "id": "east",
+    "name": "沿海等日出",
+    "nos": [
+      "032",
+      "033",
+      "034"
+    ],
+    "clue": "蔥油餅、七星潭的圓石頭，和一場說好要你載的兜風。",
+    "power": 0.05,
+    "speed": 0.15,
+    "effect": "戰力 +5% · 討伐時間 −15%",
+    "names": [
+      "宜蘭縣小湘",
+      "花蓮縣小湘",
+      "臺東縣小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 84.8,
+        "minutes": 26,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 10.6
+      },
+      {
+        "id": "sock",
+        "power": 84.8,
+        "minutes": 26,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 8.48
+      },
+      {
+        "id": "bento",
+        "power": 84.8,
+        "minutes": 38,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.8545454545454545
+      },
+      {
+        "id": "caramel-king",
+        "power": 84.8,
+        "minutes": 77,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.12
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 84.8,
+        "minutes": 51,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.8844444444444444
+      },
+      {
+        "id": "lost-shadow",
+        "power": 110.2,
+        "minutes": 38,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.003636363636364
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 84.8,
+        "minutes": 64,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.3046153846153845
+      },
+      {
+        "id": "thunder-king",
+        "power": 84.8,
+        "minutes": 102,
+        "chance": 0.642105263157895,
+        "stars": 0,
+        "ratio": 0.8926315789473684
+      },
+      {
+        "id": "toy-bunny",
+        "power": 84.8,
+        "minutes": 64,
+        "chance": 0.4933333333333334,
+        "stars": 0,
+        "ratio": 0.848
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 84.8,
+        "minutes": 64,
+        "chance": 0.23636363636363641,
+        "stars": 0,
+        "ratio": 0.7709090909090909
+      },
+      {
+        "id": "melody-guard",
+        "power": 84.8,
+        "minutes": 77,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6784
+      },
+      {
+        "id": "director-giggle",
+        "power": 84.8,
+        "minutes": 102,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5139393939393939
+      },
+      {
+        "id": "gugu",
+        "power": 84.8,
+        "minutes": 51,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.7666666666666666
+      }
+    ]
+  },
+  {
+    "id": "heroes",
+    "name": "慶功宴不能遲到",
+    "nos": [
+      "062",
+      "063",
+      "064"
+    ],
+    "clue": "盾牌拿反、咒語念成開飯，最後一個只在意甜點店幾點關門。",
+    "power": 0.6,
+    "speed": 0,
+    "legacyHero": true,
+    "effect": "勇者隊總戰力 +60%",
+    "names": [
+      "騎士小湘",
+      "魔法師小湘",
+      "勇者小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 185.5,
+        "minutes": 30,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 23.1875
+      },
+      {
+        "id": "sock",
+        "power": 185.5,
+        "minutes": 30,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 18.55
+      },
+      {
+        "id": "bento",
+        "power": 185.5,
+        "minutes": 45,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 8.431818181818182
+      },
+      {
+        "id": "caramel-king",
+        "power": 185.5,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 4.6375
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 185.5,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 4.122222222222222
+      },
+      {
+        "id": "lost-shadow",
+        "power": 185.5,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.3727272727272726
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 185.5,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.853846153846154
+      },
+      {
+        "id": "thunder-king",
+        "power": 185.5,
+        "minutes": 120,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.9526315789473685
+      },
+      {
+        "id": "toy-bunny",
+        "power": 185.5,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.855
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 185.5,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.6863636363636363
+      },
+      {
+        "id": "melody-guard",
+        "power": 185.5,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.484
+      },
+      {
+        "id": "director-giggle",
+        "power": 241.1,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.4612121212121212
+      },
+      {
+        "id": "gugu",
+        "power": 185.5,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.8645833333333335
+      }
+    ]
+  },
+  {
+    "id": "storm",
+    "name": "天空實驗小隊",
+    "nos": [
+      "065",
+      "067",
+      "070"
+    ],
+    "clue": "一個觀測天空，一個替雷聲調音量，一個把冰雹認作寶石。",
+    "power": 0.2,
+    "speed": 0,
+    "effect": "戰力 +20%",
+    "names": [
+      "天氣觀測師",
+      "打雷小湘",
+      "冰雹小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 163.9,
+        "minutes": 30,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 20.4875
+      },
+      {
+        "id": "sock",
+        "power": 163.9,
+        "minutes": 30,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 16.39
+      },
+      {
+        "id": "bento",
+        "power": 163.9,
+        "minutes": 45,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 7.45
+      },
+      {
+        "id": "caramel-king",
+        "power": 163.9,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 4.0975
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 213.1,
+        "minutes": 45,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 4.735555555555555
+      },
+      {
+        "id": "lost-shadow",
+        "power": 213.1,
+        "minutes": 45,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.8745454545454545
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 163.9,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.5215384615384617
+      },
+      {
+        "id": "thunder-king",
+        "power": 213.1,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.243157894736842
+      },
+      {
+        "id": "toy-bunny",
+        "power": 163.9,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.639
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 163.9,
+        "minutes": 75,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.49
+      },
+      {
+        "id": "melody-guard",
+        "power": 163.9,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.3112000000000001
+      },
+      {
+        "id": "director-giggle",
+        "power": 163.9,
+        "minutes": 120,
+        "chance": 0.9777777777777782,
+        "stars": 0,
+        "ratio": 0.9933333333333334
+      },
+      {
+        "id": "gugu",
+        "power": 163.9,
+        "minutes": 60,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.4145833333333333
+      }
+    ]
+  },
+  {
+    "id": "gallery",
+    "name": "留給明天的光",
+    "nos": [
+      "076",
+      "077",
+      "080"
+    ],
+    "clue": "星夜的書房、日落的底片，和月光下還沒關門的花園。",
+    "power": 0.12,
+    "speed": 0.08,
+    "effect": "戰力 +12% · 討伐時間 −8%",
+    "names": [
+      "星夜書房小湘",
+      "日落底片小湘",
+      "月光花園小湘"
+    ],
+    "stages": [
+      {
+        "id": "mochi",
+        "power": 168.8,
+        "minutes": 21,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 21.1
+      },
+      {
+        "id": "sock",
+        "power": 129.8,
+        "minutes": 28,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 12.98
+      },
+      {
+        "id": "bento",
+        "power": 129.8,
+        "minutes": 41,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 5.9
+      },
+      {
+        "id": "caramel-king",
+        "power": 129.8,
+        "minutes": 83,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 3.245
+      },
+      {
+        "id": "sneeze-cloud",
+        "power": 129.8,
+        "minutes": 55,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.8844444444444446
+      },
+      {
+        "id": "lost-shadow",
+        "power": 129.8,
+        "minutes": 55,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.3600000000000003
+      },
+      {
+        "id": "angry-mushroom",
+        "power": 129.8,
+        "minutes": 69,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 1.996923076923077
+      },
+      {
+        "id": "thunder-king",
+        "power": 129.8,
+        "minutes": 110,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.3663157894736844
+      },
+      {
+        "id": "toy-bunny",
+        "power": 129.8,
+        "minutes": 69,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.298
+      },
+      {
+        "id": "glitch-gummy",
+        "power": 129.8,
+        "minutes": 69,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.1800000000000002
+      },
+      {
+        "id": "melody-guard",
+        "power": 168.8,
+        "minutes": 62,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.3504
+      },
+      {
+        "id": "director-giggle",
+        "power": 129.8,
+        "minutes": 110,
+        "chance": 0.2888888888888893,
+        "stars": 0,
+        "ratio": 0.7866666666666667
+      },
+      {
+        "id": "gugu",
+        "power": 129.8,
+        "minutes": 55,
+        "chance": 1,
+        "stars": 3,
+        "ratio": 2.704166666666667
+      }
+    ]
+  }
+]
