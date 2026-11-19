@@ -742,7 +742,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .room-left .dino-task.is-mini .dino-task__icon { width:100%; height:100%; font-size:21px; }
 .room-snack { position:relative; display:flex; border:1px solid #c9a8ff66; background:#2a2236cc; color:var(--ivory); touch-action:none; }
 .room-snack .snack-icon { font-size:23px; filter:none; }
-.room-snack small { position:absolute; top:-5px; right:-5px; min-width:17px; height:17px; padding:0 4px; border-radius:999px; background:var(--t-accent, #b0405e); color:#fff; font:10px/17px var(--font-mono); text-align:center; }
+.room-snack small { position:absolute; top:-5px; right:-5px; min-width:17px; height:17px; padding:0 4px; border-radius:999px; background:var(--t-light, #ffd9a8); color:var(--t-ink, #2a2333); border:1px solid var(--t-accent, #b0405e); font:600 10px/15px var(--font-body); text-align:center; }
 .room-left .explore-pill.is-compact svg { width:21px; height:21px; }
 /* 布丁搬走後，右邊一排往上補 */
 .room-errand { top:114px; } .room-gift:not([hidden]) ~ .room-errand { top:160px; }
