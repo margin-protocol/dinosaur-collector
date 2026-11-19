@@ -1403,7 +1403,7 @@ $('county-call').addEventListener('close', syncRoomActivity);
 
 /* ---------- 外出合照 ---------- */
 const photoBooth = createPhotoBooth({ dialog: $('photo-dialog'), getState: () => state, onTaken: no => {
-  void updateState(current => gainBond(current, no, 'photo', todayKey())).then(t => {
+  void updateState(current => { current.player.stats.photos = (current.player.stats.photos || 0) + 1; return gainBond(current, no, 'photo', todayKey()); }).then(t => {
     state = t.state; const bond = t.result;
     if (bond.added) toast(`和${CHARACTERS[no].name}拍了合照！♡+${bond.added}`);
     if (bond.up.length) queueBondUps([{ no, up: bond.up }]);

@@ -47,13 +47,15 @@ export function todaysWishList(state) {
 
 // Old progress is preserved. Only verifiable current-day completions seed counters;
 // previously paid wishes receive neither energy nor retroactive XP on migration.
+// 合照次數上線前已經拍過的：每位拍過的小湘至少算一次（好感資料裡留著最後合照的日期）
+const photosBefore = (state) => Object.values(state.affection || {}).filter((a) => a && typeof a.photo === 'string').length;
 export function hydrateProgression(state) {
   const oldDone = state.wishes?.date === todayKey() ? unique(state.wishes.done).filter(id => WISH_POOL.some(w => w.id === id)) : [];
   const old = state.player;
   if (!old || old.version !== 1) {
-    state.player = { version: 1, xp: 0, claimed: [], energyClaimed: [], stats: { wishes: oldDone.length, fed: Math.max(count(state.egg?.warmth), state.hatched > 0 ? 10 : 0), colors: oldDone, days: oldDone.length ? [todayKey()] : [] } };
+    state.player = { version: 1, xp: 0, claimed: [], energyClaimed: [], stats: { wishes: oldDone.length, fed: Math.max(count(state.egg?.warmth), state.hatched > 0 ? 10 : 0), colors: oldDone, days: oldDone.length ? [todayKey()] : [], photos: 0 } };
   } else {
-    state.player = { ...old, xp: count(old.xp), claimed: unique(old.claimed), energyClaimed: unique(old.energyClaimed), stats: { wishes: count(old.stats?.wishes), fed: count(old.stats?.fed), colors: unique(old.stats?.colors).filter(id => WISH_POOL.some(w => w.id === id)), days: unique(old.stats?.days) } };
+    state.player = { ...old, xp: count(old.xp), claimed: unique(old.claimed), energyClaimed: unique(old.energyClaimed), stats: { wishes: count(old.stats?.wishes), fed: count(old.stats?.fed), colors: unique(old.stats?.colors).filter(id => WISH_POOL.some(w => w.id === id)), days: unique(old.stats?.days), photos: Number.isSafeInteger(old.stats?.photos) ? Math.max(0, old.stats.photos) : photosBefore(state) } };
   }
   ensureDaily(state);
   ensureWishEgg(state);

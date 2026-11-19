@@ -14,9 +14,11 @@ const r=await p.evaluate(async()=>{const B=await import('/js/battle.js'),A=await
  const f=B.forecast(atBoss,['062','063','064'],'director-giggle');
  const t0=new Date('2026-11-20T10:00:00');const st=B.startBattle(atBoss,'director-giggle',['062','063','064'],{now:t0,rand:()=>0.5});
  const res=typeof st==='string'?st:B.collectBattle(atBoss,st.id,new Date(t0.getTime()+3*3600e3),()=>0.5);
+ const wins=atBoss.battle.wins;const seeded=(()=>{const x={battle:{stages:{mochi:{clears:2},sock:{clears:1}},wildWins:3}};B.ensureBattle(x);return x.battle.wins;})();
  const arch=A.battleArchive(atBoss).chapters.find(c=>c.id===3);
  const wildNew=new Set();const fresh=mk({});for(let d=1;d<60;d++){fresh.battle.wild=null;B.ensureWild(fresh,`2027-02-${d}`).list.forEach(w=>wildNew.add(w.base));}
- return {stages:ch?.stages,art,lockedBefore,open31,lockedBoss,ratio:Math.round(f.ratio*100)/100,weakHit:f.weakHit,heroParty:f.heroParty,st:typeof st==='string'?st:'ok',win:res?.report?.win??res?.win,wish:atBoss.wishEgg.stock,arch:{name:arch?.name,boss:!!arch?.bossStory?.after,clues:arch?.clueTotal},wild:[...wildNew]};});
+ return {wins,seeded,stages:ch?.stages,art,lockedBefore,open31,lockedBoss,ratio:Math.round(f.ratio*100)/100,weakHit:f.weakHit,heroParty:f.heroParty,st:typeof st==='string'?st:'ok',win:res?.report?.win??res?.win,wish:atBoss.wishEgg.stock,arch:{name:arch?.name,boss:!!arch?.bossStory?.after,clues:arch?.clueTotal},wild:[...wildNew]};});
+assert.equal(r.wins,1,'打贏一場 +1');assert.equal(r.seeded,6,'舊存檔用通關次數＋野外勝場補');
 assert.deepEqual(r.stages,['toy-bunny','glitch-gummy','melody-guard','director-giggle']);
 assert(r.art.every(Boolean),'四張圖都在');assert.equal(r.lockedBefore,false);assert.equal(r.open31,true);assert.equal(r.lockedBoss,false);
 assert(r.weakHit&&r.heroParty,'勇者小隊同時吃到剋制與小隊加成');assert(r.ratio>=1,`勇者小隊（好感 3）打得贏 165：${r.ratio}`);

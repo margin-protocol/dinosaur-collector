@@ -119,6 +119,8 @@ export function ensureBattle(state) {
     rest: old.rest && typeof old.rest === 'object' ? old.rest : {},
     story: old.story && typeof old.story === 'object' ? old.story : {}, // 看過的 Boss 故事
     total: Number.isSafeInteger(old.total) ? old.total : 0,
+    // 打贏的次數（關卡＋野外）。這個欄位上線前的存檔，用各關通關次數加野外勝場補回來
+    wins: Number.isSafeInteger(old.wins) ? old.wins : Object.values(stages).reduce((n, s) => n + (s.clears || 0), 0) + (Number.isSafeInteger(old.wildWins) ? old.wildWins : 0),
     wild: old.wild && isStr(old.wild.date) && Array.isArray(old.wild.list) ? old.wild : null,
     week: isStr(old.week) ? old.week : '',
     weekBest: Number.isSafeInteger(old.weekBest) ? old.weekBest : 0,
@@ -305,7 +307,7 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   if (r.loot.firstBoss) state.wishEgg.stock += 1;
   const restUntil = iso(new Date(now.getTime() + REST_MINUTES * 60e3));
   for (const no of battle.nos) b.rest[no] = restUntil;
-  b.total += 1;
+  b.total += 1; if (r.win) b.wins += 1;
   const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1'].filter(Boolean);
   const firstClear = r.win && st.clears === 1;
   const story = enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
