@@ -2362,6 +2362,16 @@ $('cloud-backup-now').addEventListener('click', async () => {
   finally { $('cloud-backup-now').disabled = false; }
 });
 let pendingRestore = null;
+// 還原後重新整理，打開「雲端與備份」告訴玩家有沒有成功、現在有幾位小湘（11/19 湘：按了還原不知道有沒有成功）
+const RESTORED_KEY = 'siang-collector:restored:v1';
+function showRestoreResult() {
+  let info = null; try { info = JSON.parse(localStorage.getItem(RESTORED_KEY) || 'null'); localStorage.removeItem(RESTORED_KEY); } catch {}
+  if (!info) return;
+  const now = progressOf(localStorage.getItem('siang-collector:v1'));
+  const ok = now >= info.expect;
+  renderCloud(ok ? `✅ 還原成功！現在圖鑑有 ${Object.keys(state.dex || {}).length} 位小湘、孵化 ${state.hatched || 0} 次。（用的是 ${info.from} 的備份）` : '⚠️ 還原好像沒有成功，進度跟備份對不起來。請截圖給湘，先不要按「立即備份」。');
+  $('cloud-dialog').showModal(); syncRoomActivity();
+}
 $('cloud-restore').addEventListener('click', async () => {
   $('cloud-status').textContent = '讀取雲端備份…';
   try {
@@ -2376,6 +2386,7 @@ $('cloud-restore').addEventListener('click', async () => {
 $('cloud-restore-confirm').addEventListener('click', () => {
   if (!pendingRestore) return;
   for (const [k, v] of Object.entries(pendingRestore.keys)) if (BACKUP_KEYS.includes(k)) localStorage.setItem(k, v);
+  try { localStorage.setItem(RESTORED_KEY, JSON.stringify({ from: describeSave(pendingRestore), expect: progressOf(pendingRestore.keys['siang-collector:v1']) })); } catch {}
   location.reload();
 });
 $('cloud-disconnect').addEventListener('click', () => { saveCloudConfig(null); $('cloud-repo').value = ''; $('cloud-invite').value = ''; renderCloud('已中斷連線，這支手機不再保存通行碼。'); });
@@ -2441,6 +2452,7 @@ setupThemes({ onOpen: syncRoomActivity });
 for (const id of ['home-errand', 'open-errands']) $(id).querySelector('svg')?.replaceWith(featureIcon('errand'));
 renderAll();
 renderExplore();
+setTimeout(showRestoreResult, 900); // 等開場切換畫面（showView 會關掉所有彈窗）跑完再打開
 void autoBackup().catch(() => {}).then(() => syncFromCloud(true));
 setInterval(() => { if (!document.hidden) void syncFromCloud(); }, 10 * 60 * 1000);
 void handleDateHash();

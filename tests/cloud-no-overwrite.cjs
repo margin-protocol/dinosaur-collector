@@ -28,6 +28,7 @@ await fresh.locator('#cloud-restore').click();await fresh.waitForFunction(()=>/�
 assert.match(await status(fresh),/圖鑑 5 位/);
 await Promise.all([fresh.waitForEvent('load'),fresh.locator('#cloud-restore-confirm').click()]);await fresh.waitForTimeout(600);
 const dex=await fresh.evaluate(()=>Object.keys(JSON.parse(localStorage.getItem('siang-collector:v1')).dex).length);assert.equal(dex,5,'restored');
+await fresh.waitForTimeout(1500);assert(await fresh.locator('#cloud-dialog[open]').count(),'result dialog stays open');assert.match(await status(fresh),/還原成功！現在圖鑑有 5 位小湘、孵化 9 次/,'tells the player it worked');
 // 讀不懂的存檔：另存，不丟
 const bad=await (await mk()).newPage();await bad.goto('http://127.0.0.1:8000');await bad.evaluate(()=>localStorage.setItem('siang-collector:v1','{broken'));await bad.reload();await bad.waitForTimeout(500);
 assert.equal(await bad.evaluate(()=>localStorage.getItem('siang-collector:v1:unreadable')),'{broken');
