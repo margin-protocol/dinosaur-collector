@@ -259,6 +259,8 @@ export const CHARACTERS = {
   '092': { no: '092', name: '馬祖小湘', rarity: 'SR', line: "「我們家晚上的海會發光喔！……欸？！今天沒有？那、那是因為大海今天想早點睡覺啦！！」", image: 'siang-092-matsu', series: 'county', county: '連江縣', special: true },
   '093': { no: '093', name: '澎湖小湘', rarity: 'SR', line: "「澎湖的風才吹不倒我咧！！……哇啊啊啊啊！！你先抓住我啦！！！」", image: 'siang-093-penghu', series: 'county', county: '澎湖縣', special: true },
   '094': { no: '094', name: '金門小湘', rarity: 'SR', line: "「我是金門的守護小湘！！有我在，什麼都不用怕！……欸？你也會保護我喔？……那、那我就休息五分鐘好了♡」", image: 'siang-094-kinmen', series: 'county', county: '金門縣', special: true },
+  // Koda 小湘（湘 11/20）：湘和她的虎斑貓 Koda（老姐姐）。不進蛋池，湘用暗號發送。台詞：docs/SIANG_095_KODA.md
+  '095': { no: '095', name: 'Koda 小湘', rarity: 'SSR', line: "「Koda！！！！妳怎麼又尿我的床啦！！！！！……嗚嗚嗚可是老姐姐真的好可愛喔……」", image: 'siang-095-koda', series: 'memorial', special: true },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
