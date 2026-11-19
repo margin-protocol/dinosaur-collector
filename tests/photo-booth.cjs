@@ -37,7 +37,7 @@ await q.goto('http://127.0.0.1:8000');await q.click('#intro-ok');
 await q.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=1;s.dex={'001':{at:'x'}};localStorage.setItem(k,JSON.stringify(s));},key);await q.reload();await q.waitForTimeout(400);
 await q.locator('#open-center').click();await q.locator('#open-photo').click();await q.locator('.photo-pick-item').first().click();
 await q.locator('.photo-fallback:not([hidden])').waitFor();assert.match(await q.locator('.photo-status').textContent(),/權限/);
-await q.locator('.photo-file').setInputFiles('assets/characters/siang-001-original.webp');
+await q.locator('.photo-file').setInputFiles('assets/characters/siang-001-hd/idle-open.webp');
 await q.waitForFunction(()=>document.querySelector('.photo-still').naturalWidth>0);
 await q.locator('.photo-shutter').click();await q.locator('.photo-result:not([hidden])').waitFor();
 // 狂戳

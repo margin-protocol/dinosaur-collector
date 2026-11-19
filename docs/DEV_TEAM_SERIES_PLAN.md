@@ -8,7 +8,7 @@
 |---|---|---|---|
 | No.086 加班皮寶 | SSR | 圖鑑收集 20 位不同小湘，且外出合照累積 5 次 | 《再畫一隻就好！》 |
 | No.087 崩潰德寶 | SSR | 已擁有加班皮寶，今日願望累積完成 30 次，討伐累積打贏 10 次 | 《這個也要做嗎？！》 |
-| No.088 靈感暴走小湘 | UR | 加班皮寶＋崩潰德寶一起入住首頁，**累積** 3 天完成今日願望 | 《我又想到一個！》 |
+| No.088 靈感爆發小湘 | UR | 加班皮寶＋崩潰德寶一起入住首頁，**累積** 3 天完成今日願望 | 《我又想到一個！》 |
 
 - 三位一起入住首頁：有機會觸發「開發部茶水間」三寶對話，解鎖《今天也沒有下班》。
 - 狂戳崩潰德寶：「妳再戳，我就把這個功能排到下一個版本！！！！」
@@ -37,7 +37,14 @@
 
 ## 台詞與彩蛋資料
 
-- [No.086 加班皮寶](DEV_TEAM_SIANG_086_DIALOGUE.md)、[No.087 崩潰德寶](DEV_TEAM_SIANG_087_DIALOGUE.md)、[No.088 靈感暴走小湘](DEV_TEAM_SIANG_088_DIALOGUE.md)
+- [No.086 加班皮寶](DEV_TEAM_SIANG_086_DIALOGUE.md)、[No.087 崩潰德寶](DEV_TEAM_SIANG_087_DIALOGUE.md)、[No.088 靈感爆發小湘](DEV_TEAM_SIANG_088_DIALOGUE.md)
 - [《今天也沒有下班》完整長版同住彩蛋](DEV_TEAM_086-088_DIALOGUE_EVENT.md)
 - [三寶工程用 JSON](../data/characters/devteam-086-088-dialogue.json)
 - 本次僅確定企劃編號與文案，**不等於完成遊戲程式實裝**。
+
+## 實裝與整理紀錄（2026-11-19，德寶）
+
+- 已上線：`js/devteam.js`（條件與紀念蛋）、`js/devteam-lines.js`（台詞、戳戳、茶水間彩蛋）、`tests/devteam.cjs`。
+- 第三位正式名稱：**靈感爆發小湘**（文件與資料裡的「靈感暴走」已統一改掉）。
+- 立繪統一放 `assets/characters/`：`siang-086-overtime-pibao.webp`、`siang-087-crashing-debao.webp`、`siang-088-idea-overload-siang.webp`（088 用湘 11/19 指定的新圖，由德寶去背並對齊腳底 y≈940）。
+- 清掉遊戲沒在用的舊檔（需要時可從 git 歷史找回）：舊版 088 場景圖 `assets/scene/siang-inspiration-explosion-card.webp`、085 夕陽場景圖 `assets/scene/siang-085-sleepy-together-sunset.webp`、原味小湘舊版動畫表（已改用 `siang-001-hd/`）、`assets/incubator/cradle-front-original.webp`。

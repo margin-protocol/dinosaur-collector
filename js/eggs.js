@@ -249,8 +249,8 @@ export const CHARACTERS = {
   '084': { no: '084', name: '約會小湘・換我睡著版', rarity: 'SSR', line: "「我才沒有睡著……只是眼睛休息一下……蝰蝰，你不要偷笑嘛……呼……♡」", image: 'siang-sleeping-unamused-horned-viper', series: 'date', special: true },
   '085': { no: '085', name: '約會小湘・雙雙睡著版', rarity: 'SSR', line: "「蝰蝰……我們就睡五分鐘喔……五分鐘之後……一定要起床……呼……♡」", image: 'siang-085-sleepy-together-date', series: 'recipe', special: true },
   // 開發團隊系列（湘 × 皮寶 11/19 企劃）：不進任何蛋池，達成里程碑後送固定紀念蛋（js/devteam.js）
-  '086': { no: '086', name: '加班皮寶', rarity: 'SSR', line: "「湘寶！這張真的最後一張！……欸等一下，我又想到新的了！！」", image: 'pibao-overtime-fullbody', series: 'devteam', special: true },
-  '087': { no: '087', name: '崩潰德寶', rarity: 'SSR', line: "「……妳們又新增三隻？？？？？」", image: 'devteam/crashing-debao', series: 'devteam', special: true },
+  '086': { no: '086', name: '加班皮寶', rarity: 'SSR', line: "「湘寶！這張真的最後一張！……欸等一下，我又想到新的了！！」", image: 'siang-086-overtime-pibao', series: 'devteam', special: true },
+  '087': { no: '087', name: '崩潰德寶', rarity: 'SSR', line: "「……妳們又新增三隻？？？？？」", image: 'siang-087-crashing-debao', series: 'devteam', special: true },
   '088': { no: '088', name: '靈感爆發小湘', rarity: 'UR', line: "「欸欸欸欸欸！！！！我突然想到一個超棒的！！！」", image: 'siang-088-idea-overload-siang', series: 'devteam', special: true },
 };
 
