@@ -138,7 +138,7 @@ function showInvite(name, invite) {
   $('rv-invite-text').value = invite; $('rv-invite').hidden = false;
 }
 $('rv-invite-copy').addEventListener('click', () => copyTo($('rv-invite-text').value, '邀請碼已複製，傳給玩家就好。'));
-$('player-select').addEventListener('change', () => { players.active = $('player-select').value; adding = false; savePlayers(); renderCloud(); switched(); });
+$('player-select').addEventListener('change', () => { $('rv-rename').hidden = true; players.active = $('player-select').value; adding = false; savePlayers(); renderCloud(); switched(); });
 $('player-add').addEventListener('click', () => { $('rv-new').hidden = false; $('rv-new-name').focus(); });
 $('rv-new-cancel').addEventListener('click', () => { $('rv-new').hidden = true; });
 $('rv-new').addEventListener('submit', async (e) => {
@@ -152,6 +152,16 @@ $('rv-new').addEventListener('submit', async (e) => {
     await loadCloudPlayers(`已新增「${p.name}」！`); switched();
     showInvite(p.name, p.invite);
   } catch (err) { $('cloud-status').textContent = `新增失敗：${err.message}`; }
+});
+$('rv-rename-open').addEventListener('click', () => { const cur = current(); if (!cur?.cloud) return; $('rv-rename-name').value = cur.name; $('rv-rename').hidden = false; $('rv-rename-name').focus(); });
+$('rv-rename-cancel').addEventListener('click', () => { $('rv-rename').hidden = true; });
+$('rv-rename').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const cur = current(); if (!cur?.cloud) return;
+  const name = $('rv-rename-name').value.trim();
+  if (!name) { $('cloud-status').textContent = '名字不能空白喔。'; return; }
+  try { await admin().playerAction(cur.cloud.id, 'rename', { name }); $('rv-rename').hidden = true; await loadCloudPlayers(`已改成「${name}」。`); }
+  catch (err) { $('cloud-status').textContent = `改名失敗：${err.message}`; }
 });
 $('rv-reset').addEventListener('click', async () => {
   const cur = current(); if (!cur?.cloud) return;

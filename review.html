@@ -42,9 +42,14 @@
       <button class="btn" type="button" id="rv-invite-copy">複製邀請碼</button>
     </div>
     <div class="row" id="rv-player-actions" hidden>
+      <button class="btn btn--quiet" type="button" id="rv-rename-open">改名字</button>
       <button class="btn btn--quiet" type="button" id="rv-reset">重新產生邀請碼</button>
       <button class="btn btn--quiet" type="button" id="rv-revoke">停用這位玩家</button>
     </div>
+    <form id="rv-rename" class="form" hidden>
+      <label>新的名字<input id="rv-rename-name" maxlength="20" autocomplete="off"></label>
+      <div class="row"><button class="btn" type="submit">儲存</button><button class="btn btn--quiet" type="button" id="rv-rename-cancel">取消</button></div>
+    </form>
     <details id="rv-legacy">
       <summary>舊方式：GitHub 私人資料庫的玩家</summary>
       <button class="btn btn--quiet" type="button" id="gh-add">＋ 新增 GitHub 玩家</button>

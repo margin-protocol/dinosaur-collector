@@ -41,9 +41,14 @@ await r.waitForFunction(()=>/完成/.test(document.getElementById('code-status')
 await r.waitForFunction(()=>/全體玩家/.test(document.getElementById('code-list').textContent));
 const shared=await g.evaluate(async([a,inv])=>{const {sha256Hex,normalizeCode}=await import('/js/sign.js');const h=await sha256Hex(normalizeCode('研究所上榜'));return (await fetch(`${a}/f/codes/${h}.json`,{headers:{Authorization:'Bearer '+inv}})).status;},[API,invite2]);
 assert.equal(shared,200,'全體暗號每位玩家都讀得到');
-// 重新產生邀請碼 → 舊的失效；停用
+// 改名字
 await r.locator('#player-select').selectOption({label:'男友'});
-await r.locator('#rv-reset').click();await r.locator('#rv-reset').click();await r.waitForFunction(()=>/男友/.test(document.querySelector('#rv-invite-hint').textContent));
+await r.locator('#rv-rename-open').click();await r.locator('#rv-rename-name').fill('寶貝男友');await r.locator('#rv-rename button[type=submit]').click();
+await r.waitForFunction(()=>/已改成/.test(document.getElementById('cloud-status').textContent));
+assert.equal(await r.locator('#player-select option:checked').textContent(),'寶貝男友');
+assert.equal(await g.evaluate(async([a,n])=>(await (await fetch(a+'/me',{headers:{Authorization:'Bearer '+n}})).json()).name,[API,invite]),'寶貝男友','遊戲那邊也看到新名字');
+// 重新產生邀請碼 → 舊的失效；停用
+await r.locator('#rv-reset').click();await r.locator('#rv-reset').click();await r.waitForFunction(()=>/寶貝男友/.test(document.querySelector('#rv-invite-hint').textContent));
 const fresh=await r.locator('#rv-invite-text').inputValue();assert.notEqual(fresh,invite);
 const st=await g.evaluate(async([a,o,n])=>[(await fetch(a+'/me',{headers:{Authorization:'Bearer '+o}})).status,(await fetch(a+'/me',{headers:{Authorization:'Bearer '+n}})).status],[API,invite,fresh]);assert.deepEqual(st,[401,200]);
 await r.locator('#rv-revoke').click();await r.locator('#rv-revoke').click();await r.waitForFunction(()=>/已停用/.test(document.getElementById('cloud-status').textContent));
