@@ -1,0 +1,30 @@
+{
+  "id": "ch3-02",
+  "enemyId": "glitch-gummy",
+  "chapter": 3,
+  "stage": "3-2",
+  "name": "亂碼軟糖熊",
+  "type": "normal",
+  "image": "assets/enemies/chapter-03/ch3-02-glitch-gummy.webp",
+  "power": 110,
+  "minutes": 75,
+  "weaknesses": [
+    "friends"
+  ],
+  "weakTag": "友情連線成功！",
+  "personality": "半透明、軟綿綿的陪伴型軟糖小熊，身上常閃出彩色亂碼。因為會難過，被工廠刪除了部分情緒與擁抱記憶；想交朋友，卻連抱抱的方法都忘記了。",
+  "lines": {
+    "opening": "「嗶——歡迎使用快樂陪伴服務！請選擇：握手、微笑，或……咦？抱抱功能怎麼不見了？」",
+    "countered": "「朋、朋朋朋朋友？！你們是來找我玩的，不是要把我送回工廠嗎？」軟糖熊身上的亂碼突然變成一顆顆粉紅色的小愛心。「警告！偵測到未知情緒……可是、可是這個錯誤暖暖的耶！」",
+    "enemyVictory": "「嗶嗶！防衛成功！請不要難過……欸？你們會難過嗎？那、那我應該怎麼安慰你們呀？」",
+    "enemyDefeat": "「我輸了……可是你們沒有走掉耶。那、那我可以問一個問題嗎？朋友打完架……也可以抱抱嗎？」"
+  },
+  "bossStory": null,
+  "chapterClue": "軟糖熊高興地撲向小湘，卻突然僵在半空中。「錯誤……錯誤……未授權的親密接觸……」牠圓滾滾的肚子閃了兩下，一枚小小的記憶晶片滑了出來。晶片上寫著：「情緒管理規範第 07 條：如有悲傷情緒，立即送往八音盒維修中心。」軟糖熊低頭看著晶片，疑惑地問：「奇怪……原來難過是需要維修的東西嗎？」",
+  "metadata": {
+    "version": 1,
+    "status": "copy-approved-art-pending",
+    "artSize": "1024x1024 transparent WebP",
+    "note": "文案已核准，正式立繪尚未提交，js/battle.js 尚未接入；延伸對話、三星台詞與美術設計詳見 docs/COMBAT_CHAPTER03_GLITCH_GUMMY.md。"
+  }
+}
