@@ -4,11 +4,13 @@
 import { CHARACTERS } from './eggs.js';
 import { BOND_STORIES, BOND_LINES } from './bond-copy.js';
 
-export const LEVELS = [0, 10, 30, 60, 100]; // Lv.1～Lv.5 需要的累計點數
+export const LEVELS = [0, 15, 45, 90, 150]; // Lv.1～Lv.5 需要的累計點數（11/20 小湘廚房上線，從 0/10/30/60/100 放大 1.5 倍，舊存檔的點數同步 ×1.5）
+export const BOND_SCALE = 2; // 存檔裡記這個版本，舊點數只換算一次
 export const MAX_LEVEL = LEVELS.length;
 export const DAILY_CAP = 15; // 首頁互動（點、摸、布丁）每位每天最多加這麼多
-export const GAIN = { tap: 1, pet: 1, snack: 3, home: 2, errand: 4, story: 2, duplicate: 10, photo: 3, cook: 1 }; // photo：外出合照，每位每天一次；cook：小湘廚房餵食（times 傳評價點數 1/3/5/7）
-const CAPPED = new Set(['tap', 'pet', 'snack', 'cook']);
+export const COOK_CAP = 10; // 小湘廚房餵食另外算，每位每天最多加這麼多
+export const GAIN = { tap: 1, pet: 1, snack: 3, home: 3, errand: 6, story: 3, duplicate: 15, photo: 4, cook: 1 }; // photo：外出合照，每位每天一次；cook：小湘廚房餵食（times 傳評價點數 1/3/5/7）
+const CAPPED = new Set(['tap', 'pet', 'snack']);
 export const LEVEL_REWARDS = { 2: { energy: 10 }, 3: { fossils: 3 }, 4: { energy: 20 }, 5: { fossils: 10 } };
 
 // 系列預設台詞與後備故事；個別人物文案優先。{name} 會換成小湘的名字。
@@ -76,10 +78,12 @@ export function levelOf(pts) {
 
 export function ensureAffection(state) {
   const old = state.affection && typeof state.affection === 'object' ? state.affection : {};
+  const rescale = state.bondScale !== BOND_SCALE; // 舊級距的存檔：點數 ×1.5，等級不會掉
+  if (rescale) state.bondScale = BOND_SCALE;
   const clean = {};
   for (const [no, v] of Object.entries(old)) {
     if (!CHARACTERS[no] || !v || !Number.isFinite(v.pts)) continue;
-    clean[no] = { pts: Math.max(0, Math.floor(v.pts)), day: typeof v.day === 'string' ? v.day : '', today: Number.isFinite(v.today) ? v.today : 0, home: typeof v.home === 'string' ? v.home : '', ...(typeof v.photo === 'string' ? { photo: v.photo } : {}) };
+    clean[no] = { pts: Math.max(0, Math.floor(rescale ? Math.round(v.pts * 1.5) : v.pts)), day: typeof v.day === 'string' ? v.day : '', today: Number.isFinite(v.today) ? v.today : 0, home: typeof v.home === 'string' ? v.home : '', ...(typeof v.photo === 'string' ? { photo: v.photo } : {}), ...(typeof v.cookDay === 'string' && Number.isFinite(v.cookToday) ? { cookDay: v.cookDay, cookToday: v.cookToday } : {}) };
   }
   state.affection = clean;
   return clean;
@@ -88,6 +92,12 @@ export function ensureAffection(state) {
 function entry(state, no) {
   const a = state.affection || ensureAffection(state);
   return (a[no] ||= { pts: 0, day: '', today: 0, home: '' });
+}
+
+// 今天還能從廚房餵食拿到幾點
+export function cookLeft(state, no, today) {
+  const e = state.affection?.[no];
+  return !e || e.cookDay !== today ? COOK_CAP : Math.max(0, COOK_CAP - (e.cookToday || 0));
 }
 
 // 還能從首頁互動拿到幾點
@@ -103,6 +113,11 @@ export function gain(state, no, kind, today, times = 1) {
   const e = entry(state, no);
   let amount = (GAIN[kind] || 0) * times;
   if (kind === 'photo') { if (e.photo === today) amount = 0; else e.photo = today; }
+  if (kind === 'cook') {
+    if (e.cookDay !== today) { e.cookDay = today; e.cookToday = 0; }
+    amount = Math.min(amount, COOK_CAP - e.cookToday);
+    e.cookToday += Math.max(0, amount);
+  }
   if (CAPPED.has(kind)) {
     if (e.day !== today) { e.day = today; e.today = 0; }
     amount = Math.min(amount, DAILY_CAP - e.today);

@@ -49,7 +49,7 @@ import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
-import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, capLeft } from './affection.js';
+import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP } from './affection.js';
 const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
 import * as kitchen from './kitchen.js';
@@ -3034,12 +3034,12 @@ function renderKitchen() {
   $('kitchen-feed').hidden = !kitchenMeal;
   if (kitchenMeal) {
     const d = kitchen.dishById(kitchenMeal);
-    $('kitchen-feed-hint').textContent = `要把「${d.name}」給誰吃？（每位每天從點、摸、布丁、料理最多拿 ${DAILY_CAP} 點好感，滿了也還是可以餵）`;
+    $('kitchen-feed-hint').textContent = `要把「${d.name}」給誰吃？（料理的好感另外算，每位每天最多 ${COOK_CAP} 點；滿了也還是可以餵）`;
     const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
     $('kitchen-siangs').replaceChildren(...owned.map(no => {
       const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang'; btn.dataset.siang = no;
-      const r = k.tasted[no]?.[d.id]; const left = capLeft(state, no, todayKey());
-      btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: r !== undefined ? `${kitchen.RATINGS[r].icon} ${kitchen.RATINGS[r].label}` : left ? `今天還能 +${left}` : '今天好感已滿' }));
+      const r = k.tasted[no]?.[d.id]; const left = cookLeft(state, no, todayKey());
+      btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: r !== undefined ? `${kitchen.RATINGS[r].icon} ${kitchen.RATINGS[r].label}` : left ? `今天還能 +${left}` : '今天料理好感已滿' }));
       if (k.buffs[no]) btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '🍳' }));
       btn.addEventListener('click', () => void feedKitchen(no, d.id));
       return btn;
@@ -3054,7 +3054,7 @@ function renderKitchen() {
     box.querySelector('small').textContent = `${CHARACTERS[r.no].name} · ${r.dish.name}`;
     box.querySelector('b').textContent = `${rt.icon} ${rt.label}${r.secretFound ? '　💖 找到秘密最愛！' : ''}`;
     box.querySelector('p').textContent = `「${r.line}」`;
-    box.querySelector('span').textContent = [r.added ? `♡ +${r.added}` : '今天的好感已經滿了（明天再來）', r.buff && `下一次討伐：${kitchen.buffText(r.buff)}`].filter(Boolean).join(' · ');
+    box.querySelector('span').textContent = [r.added ? `♡ +${r.added}` : '今天的料理好感滿了（明天再來）', r.buff && `下一次討伐：${kitchen.buffText(r.buff)}`].filter(Boolean).join(' · ');
     res.append(box);
   }
   // 圖鑑

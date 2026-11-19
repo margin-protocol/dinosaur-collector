@@ -38,7 +38,7 @@ assert.equal(r.c1,'焦糖奶布丁');assert.equal(r.c2first,false);assert.ok(r.c
 assert.deepEqual(r.left,{caramel:2,milk:2,pudding:2,gear:1,glitch:1});
 assert.deepEqual(r.f1,[3,7,7,true,{kind:'power',value:0.05,dish:'caramel+milk+pudding'}]);
 assert.deepEqual(r.f2,[3,true]);assert.deepEqual(r.f3,[0,1,undefined]);assert.deepEqual(r.f4,[3,true]);
-assert.match(r.none,/吃完/);assert.equal(r.f5,7);assert.deepEqual(r.f6,[0,true]);
+assert.match(r.none,/吃完/);assert.equal(r.f5,2);assert.deepEqual(r.f6,[0,true]);
 assert.deepEqual(r.fed,['005','power']);assert.equal(r.after,undefined,'buff used');
 assert.ok(r.drops.length>=1&&r.drops.every(x=>['strawberry','milk','caramel','pudding'].includes(x)),'chapter 1 drops');
 assert.match(r.gains,/食材/);

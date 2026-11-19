@@ -21,9 +21,9 @@ await p.locator('.photo-shutter').click();await p.locator('.photo-result:not([hi
 const res=await p.locator('.photo-result-img').evaluate(i=>new Promise(r=>{const ok=()=>r({w:i.naturalWidth,h:i.naturalHeight});i.complete?ok():i.onload=ok;}));
 assert(res.w>0&&Math.abs(res.w/res.h-0.75)<0.01,JSON.stringify(res));
 assert.equal(await p.evaluate(()=>!!document.querySelector('.photo-video').srcObject),false,'拍完關掉相機');
-await p.waitForTimeout(300);let s=await save();assert.equal(s.affection['071'].pts,3);assert.equal(s.affection['071'].photo.length,10);
+await p.waitForTimeout(300);let s=await save();assert.equal(s.affection['071'].pts,4);assert.equal(s.affection['071'].photo.length,10);
 await p.locator('.photo-again').click();await p.waitForFunction(()=>document.querySelector('.photo-video').videoWidth>0);await p.locator('.photo-shutter').click();await p.locator('.photo-result:not([hidden])').waitFor();
-await p.waitForTimeout(300);s=await save();assert.equal(s.affection['071'].pts,3,'同一天同一位只加一次');assert.equal(s.player.stats.photos,2,'合照次數每張都算');
+await p.waitForTimeout(300);s=await save();assert.equal(s.affection['071'].pts,4,'同一天同一位只加一次');assert.equal(s.player.stats.photos,2,'合照次數每張都算');
 await p.locator('.photo-result .photo-close').click();assert.equal(await p.locator('#photo-dialog[open]').count(),0);
 // 從圖鑑直接合照
 await p.evaluate(()=>location.hash='dex');await p.waitForTimeout(300);

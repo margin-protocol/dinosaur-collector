@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const p=await b.newPage({viewport:{width:390,height:844},deviceScaleFactor:2});const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');
-await p.evaluate(()=>{const k='siang-collector:v1',s=JSON.parse(localStorage.getItem(k));s.hatched=2;s.dex={'001':{at:'x'},'005':{at:'x'}};s.affection={'005':{pts:120,day:'',today:0,home:''},'001':{pts:20,day:'',today:0,home:''}};localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:residents:v1',JSON.stringify(['001','005']));});
+await p.evaluate(()=>{const k='siang-collector:v1',s=JSON.parse(localStorage.getItem(k));s.hatched=2;s.dex={'001':{at:'x'},'005':{at:'x'}};s.affection={'005':{pts:180,day:'',today:0,home:''},'001':{pts:30,day:'',today:0,home:''}};localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:residents:v1',JSON.stringify(['001','005']));});
 await p.reload();await p.waitForTimeout(600);
 assert.equal(await p.locator('.resident-slot[data-character="005"].is-maxbond .maxbond-sparks i').count(),5,'Lv5 首頁閃光');
 assert.equal(await p.locator('.resident-slot[data-character="001"] .maxbond-sparks').count(),0);

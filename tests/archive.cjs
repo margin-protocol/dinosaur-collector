@@ -17,7 +17,7 @@ assert.deepEqual(kinds,['firstBoss','firstBoss','threeStar','firstWin','comeback
 // seed: mochi cleared now (with saved review), sock cleared before the update (no firstAt), boss cleared, 005 bond Lv.3, one travel story
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.dex={'001':{at:'x'},'005':{at:'x'}};s.hatched=2;s.tutorial=null;
 s.battle={stages:{mochi:{stars:3,best:2400,last:2400,clears:2,tries:2,firstAt:'2026-11-17T08:00:00Z',review:{kind:'threeStar',text:'測試書評：三顆星。',at:'2026-11-17T08:00:00Z'},lastWin:true},sock:{stars:2,best:1300,last:1300,clears:1,tries:1},bento:{stars:1,best:1100,last:1100,clears:1,tries:1,firstAt:'2026-11-17T09:00:00Z'},'caramel-king':{stars:1,best:1050,last:1050,clears:1,tries:1,firstAt:'2026-11-17T10:00:00Z'}},story:{'caramel-king:after':'2026-11-17T10:00:00Z'}};
-s.affection={'005':{pts:30}};s.errands={active:[],album:[{id:'a',place:'park',nos:['001','005'],at:'2026-11-17T07:00:00Z',story:{id:'origin',title:'原味帶路',text:'測試旅行故事'}}],stories:{origin:'2026-11-17T07:00:00Z'},cards:{}};
+s.affection={'005':{pts:45}};s.errands={active:[],album:[{id:'a',place:'park',nos:['001','005'],at:'2026-11-17T07:00:00Z',story:{id:'origin',title:'原味帶路',text:'測試旅行故事'}}],stories:{origin:'2026-11-17T07:00:00Z'},cards:{}};
 localStorage.setItem(k,JSON.stringify(s));},key);
 await p.reload();await p.waitForTimeout(500);
 const before=await p.evaluate(k=>localStorage.getItem(k),key);

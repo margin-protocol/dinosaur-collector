@@ -1,5 +1,6 @@
 // LV5 隱藏羈絆 v1：36 位不重複；power 是取代通用 +10% 的隊伍倍率。
 import { CHARACTERS } from './eggs.js';
+import { LEVELS } from './affection.js';
 export const TEAM_BONDS = [
   {id:'dessert',name:'布丁保衛戰',nos:['001','002','005'],clue:'一位把日常裝進口袋，一位摘草莓，一位總帶著甜點。',power:.16,speed:0},
   {id:'rainbow',name:'雨後的捷徑',nos:['003','071','074'],clue:'撐傘的人、踩水坑的人，和雨停後才出現的那道光。',power:0,speed:.20},
@@ -21,7 +22,7 @@ export function ensureTeamBonds(state) {
   return state.teamBonds;
 }
 export function teamBond(state,nos) {
-  if(nos.length!==3||new Set(nos).size!==3||!nos.every(n=>state.dex?.[n]&&(state.affection?.[n]?.pts||0)>=100))return null;
+  if(nos.length!==3||new Set(nos).size!==3||!nos.every(n=>state.dex?.[n]&&(state.affection?.[n]?.pts||0)>=LEVELS[LEVELS.length-1]))return null;
   return TEAM_BONDS.find(b=>b.nos.every(n=>nos.includes(n))) || {id:'general',name:'一起長大的默契',power:.10,speed:0};
 }
 export function discoverBond(state,nos,now=new Date()) {

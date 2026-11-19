@@ -7,7 +7,7 @@ const r=await p.evaluate(async()=>{const B=await import('/js/battle.js'),A=await
  const ids=['toy-bunny','glitch-gummy','melody-guard','director-giggle'];
  const ch=B.CHAPTERS.find(c=>c.id===3);
  const art=await Promise.all(ids.map(id=>fetch('/'+B.enemyArtPath(id)).then(x=>x.ok)));
- const mk=(stages)=>{const s={dex:{'062':{at:'x'},'063':{at:'x'},'064':{at:'x'}},affection:{'062':{pts:30},'063':{pts:30},'064':{pts:30}},wishEgg:{stock:0},energy:0,fossils:0,battle:{}};B.ensureBattle(s);Object.assign(s.battle.stages,stages);return s;};
+ const mk=(stages)=>{const s={dex:{'062':{at:'x'},'063':{at:'x'},'064':{at:'x'}},affection:{'062':{pts:45},'063':{pts:45},'064':{pts:45}},wishEgg:{stock:0},energy:0,fossils:0,battle:{}};B.ensureBattle(s);Object.assign(s.battle.stages,stages);return s;};
  const before=mk({'thunder-king':{clears:0}});const lockedBefore=B.unlocked(before,'toy-bunny');
  const after=mk({'thunder-king':{clears:1}});const open31=B.unlocked(after,'toy-bunny'),lockedBoss=B.unlocked(after,'director-giggle');
  const atBoss=mk({'thunder-king':{clears:1},'toy-bunny':{clears:1},'glitch-gummy':{clears:1},'melody-guard':{clears:1}});
