@@ -82,3 +82,14 @@
 - **GitHub 上傳及讀回驗證成功**：commit `1293d8c228e94810060a6392805c719e91fb53c2`，Git blob `3b52ae95d8a0edba4a673e4e00e9ac231245018d`。
 - **完整美術及工程交接**：[`SIANG_079_PREHISTORIC_EXPLORER_ART.md`](SIANG_079_PREHISTORIC_EXPLORER_ART.md)；角色劇情台詞保留在獨立檔案。
 - 目前完成**正式立繪入庫**，但角色尚不可透過配方在遊戲中取得；需待工程整合及測試。
+
+## No.080 月光花園小湘｜SSR 正式美術（2026-11-19）
+
+- **角色**：No.080 月光花園小湘／Moonlit Garden Siang，SSR；`series: 'recipe'`、`special: true`。
+- **配方**：No.006 園丁小湘＋No.004 夜貓小湘，共同入住 3 個夜晚；夜晚須按本地時間及夜晚日期去重。獎勵為固定孵出 No.080 的 `keepsake` 紀念蛋；**程式尚待實裝**。
+- **初見 Canon**：「白天不開的花，原來是在等你說晚安。」
+- **美術 Canon**：延續小湘深棕長捲髮、灰棕眼與 Q 版臉型；深藍紫月相園藝帽、銀色藤蔓與花瓣層疊裙、奶油白襯衫；手持月光花與銀色澆水壺，腳邊月光花、微型燈具及熟睡黑貓作為裝飾，不繪完整花園場景。
+- **正式角色素材**：`assets/characters/siang-080-moonlit-garden.webp`，1024 × 1024、透明 WebP、222,458 bytes，腳底 y≈940。
+- **GitHub 上傳與讀回驗證成功**：commit `7f4db2b6f7028f4d5020e3aa1777aa2e01be153e`，Git blob `026e7f5cfdc90513ea17ab45de2973c1f95b310b`。
+- **完整交接文件**：[`SIANG_080_MOONLIT_GARDEN_ART.md`](SIANG_080_MOONLIT_GARDEN_ART.md)，完整台詞與資料另見相關 JSON。
+- **狀態**：正式立繪已入庫；角色、夜晚配方、圖鑑與遊戲互動尚待工程接入及測試，不應提前發布玩家更新公告。
