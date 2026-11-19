@@ -744,6 +744,8 @@ function dexCard(c) {
   if (has) {
     const b = bondInfo(state, c.no, todayKey());
     if (b.level > 1) { const tag = document.createElement('span'); tag.className = 'dex__bond'; tag.textContent = `♥ ${b.level}`; li.append(tag); }
+    const stars = state.dex[c.no]?.dup || 0;
+    if (stars) { const tag = document.createElement('span'); tag.className = `dex__stars${stars >= battle.MAX_STARS ? ' is-full' : ''}`; tag.textContent = `★${stars}`; tag.title = `星級 ${stars}`; li.append(tag); }
     li.classList.toggle('is-shiny', b.max);
   }
   return li;
@@ -1099,6 +1101,8 @@ async function runAnalysis() {
   } finally { box.close(); }
 }
 
+// 星級：重複孵到同一位小湘 +1 星（最多 5 星），每星討伐戰力 +10%
+const starText = (n) => `${'★'.repeat(n)}${'☆'.repeat(Math.max(0, battle.MAX_STARS - n))}`;
 function showReveal(c, duplicate) {
   loadWithFallback($('reveal-img'), characterSources(c.image));
   $('reveal-img').alt = c.name;
@@ -1110,7 +1114,8 @@ function showReveal(c, duplicate) {
   const hatchLine = WEATHER_LINES[c.no]?.hatch || RECIPE_LINES[c.no]?.hatch || FRIEND_LINES[c.no]?.hatch || NAP_LINES[c.no]?.hatch || DEVTEAM_LINES[c.no]?.hatch || EXTRA_LINES[c.no]?.hatch;
   $('reveal-line').textContent = hatchLine ? `「${hatchLine}」` : c.line;
   $('reveal-bonus').hidden = !duplicate;
-  $('reveal-bonus').textContent = `再次相遇的禮物 · 化石碎片 +${DUPLICATE_FOSSILS}`;
+  const stars = state.dex[c.no]?.dup || 0;
+  $('reveal-bonus').textContent = `再次相遇的禮物 · 化石碎片 +${DUPLICATE_FOSSILS}${duplicate ? ` · ${stars >= battle.MAX_STARS ? `星級已滿 ${starText(stars)}` : `星級 +1 → ${starText(stars)}`}` : ''}`;
   $('reveal-ok').textContent = duplicate ? '收下化石' : '一起回家';
   $('reveal').dataset.next = 'home';
   $('reveal').showModal();
@@ -1541,7 +1546,7 @@ function showPressTip(btn) {
   const tip = document.createElement('div'); tip.className = 'press-tip'; tip.setAttribute('role', 'tooltip');
   const p = battle.siangPower(state, c.no);
   const b = bondInfo(state, c.no, todayKey());
-  tip.append(Object.assign(document.createElement('b'), { textContent: c.name }), Object.assign(document.createElement('span'), { textContent: `${c.rarity} · ${SERIES[c.series]?.name || ''} · 戰力 ${p.power} · ♥ Lv.${b.level}` }));
+  tip.append(Object.assign(document.createElement('b'), { textContent: c.name }), Object.assign(document.createElement('span'), { textContent: `${c.rarity} · ${SERIES[c.series]?.name || ''} · 戰力 ${p.power} · ♥ Lv.${b.level}${p.stars ? ` · ★${p.stars}` : ''}` }));
   const host = btn.closest('dialog') || document.body; host.append(tip);
   const r = btn.getBoundingClientRect(); const hr = host.getBoundingClientRect();
   const half = tip.offsetWidth / 2 + 8; // 不要超出畫面左右
@@ -1775,6 +1780,9 @@ function openDexDetail(no) {
   loadWithFallback(img, characterSources(c.image));
   $('dex-photo').hidden = !owned; $('dex-photo').dataset.no = no;
   $('dex-detail-no').textContent = `No.${c.no} · ${owned ? c.rarity : '?'} · ${SERIES[c.series]?.name || ''}`;
+  const stars = owned ? state.dex[no]?.dup || 0 : 0;
+  $('dex-detail-stars').hidden = !owned;
+  $('dex-detail-stars').replaceChildren(Object.assign(document.createElement('b'), { textContent: starText(stars) }), Object.assign(document.createElement('span'), { textContent: stars >= battle.MAX_STARS ? `星級 ${stars} / ${battle.MAX_STARS} · 已滿星！討伐戰力 +${stars * 10}%` : `星級 ${stars} / ${battle.MAX_STARS} · 再孵到她一次 +1 星${stars ? `（目前討伐戰力 +${stars * 10}%）` : '（每星討伐戰力 +10%）'}` }));
   $('dex-detail-name').textContent = owned ? c.name : '???';
   $('dex-detail-line').textContent = owned ? c.line : '';
   $('dex-detail-line').hidden = !owned;
