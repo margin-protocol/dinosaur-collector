@@ -1,21 +1,31 @@
-// 勇者小隊（No.062–064）：只能用徽章兌換、勇者要兩章 Boss、圖鑑剪影與取得方式、出戰台詞與三人連攜
+// 勇者小隊（No.062–064）：可從普通蛋／願望蛋孵出，也能用徽章兌換、勇者要兩章 Boss、圖鑑剪影與取得方式、出戰台詞與三人連攜
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 const key='siang-collector:v1';const save=()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
 await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');await p.waitForTimeout(400);
-// unit: never in any egg pool; BADGE_HEROES wired
+// Deterministically reach each hero through the real weighted hatch function; keep badge redemption.
 const unit=await p.evaluate(async()=>{const e=await import('/js/eggs.js');const bt=await import('/js/battle.js');
-  const inPool=Object.values(e.EGGS).some(egg=>['062','063','064'].some(no=>egg.pool?.[no]));
-  return {inPool,heroes:bt.BADGE_HEROES,series:['062','063','064'].map(no=>e.CHARACTERS[no].series)};});
-assert.equal(unit.inPool,false);assert.deepEqual(unit.heroes,{knight:'062',mage:'063',hero:'064'});assert.deepEqual(unit.series,['hero','hero','hero']);
+  const rolls=[];
+  const random=Math.random;
+  try { for(const id of ['ordinary','wish']) {
+    const pool=e.EGGS[id].pool, total=Object.values(pool).reduce((a,b)=>a+b,0);
+    for(const no of ['062','063','064']) {
+      let before=0;for(const [key,weight] of Object.entries(pool)){if(key===no)break;before+=weight;}
+      Math.random=()=>(before+pool[no]/2)/total;
+      rolls.push([id,no,e.rollFor({id})]);
+    }
+  }} finally { Math.random=random; }
+  const inOtherPool=Object.entries(e.EGGS).some(([id,egg])=>!['ordinary','wish'].includes(id)&&['062','063','064'].some(no=>egg.pool?.[no]));
+  return {rolls,inOtherPool,heroes:bt.BADGE_HEROES,series:['062','063','064'].map(no=>e.CHARACTERS[no].series)};});
+assert.equal(unit.inOtherPool,false);assert.equal(unit.rolls.length,6);for(const [id,no,rolled] of unit.rolls)assert.equal(rolled,no,`${id} can hatch ${no}`);assert.deepEqual(unit.heroes,{knight:'062',mage:'063',hero:'064'});assert.deepEqual(unit.series,['hero','hero','hero']);
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.dex={'001':{at:'2026-11-10T00:00:00Z'}};s.hatched=1;s.tutorial=null;s.battle={badges:25,stages:{}};localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:residents:v1',JSON.stringify(['001']));},key);
 await p.reload();await p.waitForTimeout(600);
-// 圖鑑：未取得是黑影，取得方式寫徽章
+// 圖鑑：未取得是黑影，取得方式同時列出孵化與徽章
 await p.evaluate(()=>location.hash='dex');await p.waitForTimeout(300);
 const card=p.locator('[data-dex-no="064"]');assert.match(await card.locator('img').getAttribute('class'),/is-locked/);
 await card.click();await p.locator('#dex-detail[open]').waitFor();
-assert.match(await p.textContent('#dex-detail-how'),/40 枚討伐徽章.*Boss/);await p.click('#close-dex-detail');
+assert.match(await p.textContent('#dex-detail-how'),/普通蛋、願望蛋可能孵出.*40 枚討伐徽章.*Boss/);await p.click('#close-dex-detail');
 await p.evaluate(()=>location.hash='');await p.waitForTimeout(300);
 // 兌換：騎士可換（25 ≥ 20），勇者鎖住
 await p.click('#home-errand');await p.click('#tab-battle');await p.click('#open-train');

@@ -629,3 +629,15 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .dex-detail__stars[hidden] { display:none; }
 .dex-detail__stars b { color:#ffd27a; font-size:18px; letter-spacing:.12em; font-weight:400; }
 .dex-detail__stars span { font:11px var(--font-display); color:var(--pearl); }
+
+/* Daily affection is visible for the whole collection without changing residents. */
+.residents-bond-summary { margin:4px 0 12px; color:var(--t-muted); font:11px/1.7 var(--font-display); }
+.resident-choice__bond { display:flex; align-items:center; justify-content:center; gap:3px; min-height:20px; max-width:100%; color:var(--t-muted); font:10px/1.4 var(--font-display); white-space:nowrap; }
+.resident-choice__bond .feature-icon { width:11px; height:11px; }
+.resident-choice__bond[data-status="partial"] { color:var(--t-accent); }
+.resident-choice__bond[data-status="full"] { padding:1px 4px; border-radius:5px; background:var(--t-selected); color:var(--t-text); }
+.resident-choice__bond[data-status="full"] .feature-icon { fill:currentColor; }
+/* Keep the action in view while the growing collection scrolls inside the selector. */
+#residents[open] { display:flex; flex-direction:column; }
+#residents > :not(#residents-list) { flex-shrink:0; }
+#residents #residents-list { min-height:0; flex:1 1 auto; }

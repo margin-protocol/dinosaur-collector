@@ -792,6 +792,9 @@ function renderResidents() {
   const selected = residentsFor(state.dex);
   const owned = Object.values(CHARACTERS).filter(character => state.dex[character.no]);
   const away = awayReasons();
+  const today = todayKey();
+  const interacted = owned.filter(c => bondInfo(state, c.no, today).left < DAILY_CAP).length;
+  $('residents-bond-summary').textContent = `今日已互動 ${interacted} / ${owned.length} 位 · 點她、摸頭、餵布丁每天共 ${DAILY_CAP} 點`;
   $('residents-summary').textContent = `已收集 ${owned.length} 位 · 已入住 ${selected.length} / ${ROOM_LIMIT}`;
   // 上方三個入住位置：點一下讓她休息
   $('residents-current').hidden = !owned.length;
@@ -815,11 +818,17 @@ function renderResidents() {
       const button = document.createElement('button'); button.type = 'button';
       button.className = `resident-choice${why ? ' is-away' : ''}`; button.dataset.no = character.no;
       button.setAttribute('aria-pressed', String(inRoom));
-      button.setAttribute('aria-label', `${character.name}${inRoom ? '，入住中' : ''}${why ? `，${why}` : ''}`);
+      const left = bondInfo(state, character.no, today).left;
+      const earned = DAILY_CAP - left;
+      const daily = document.createElement('span'); daily.className = 'resident-choice__bond';
+      daily.dataset.status = !earned ? 'new' : left ? 'partial' : 'full';
+      const label = !earned ? '未互動' : left ? `今日 ${earned}/${DAILY_CAP}` : '今日已滿';
+      daily.append(featureIcon('bond'), document.createTextNode(label));
+      button.setAttribute('aria-label', `${character.name}${inRoom ? '，入住中' : ''}${why ? `，${why}` : ''}，今日首頁互動 ${earned} / ${DAILY_CAP} 點，${label}`);
       if (why && !inRoom) button.disabled = true;
       const image = document.createElement('img'); image.alt = ''; loadWithFallback(image, characterSources(character.image));
       const name = document.createElement('span'); name.className = 'resident-choice__name'; name.textContent = character.name.replace(/小湘$/, '') || character.name;
-      button.append(image, name);
+      button.append(image, name, daily);
       if (inRoom) button.append(Object.assign(document.createElement('i'), { className: 'resident-choice__check', textContent: '✓' }));
       if (why) button.append(Object.assign(document.createElement('i'), { className: 'resident-choice__away', textContent: why }));
       return button;
@@ -1761,7 +1770,7 @@ function howToGet(c) {
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const st = lab.labStatus(state); const brewing = st?.recipe.id === recipe.id; return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
-  if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
+  if (c.badge) { const h = battle.heroStatus(state, c.no); return `普通蛋、願望蛋可能孵出；也能在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
   if (c.no === '090') return state.dex[c.no] ? '湘研究所沒考上時，用暗號送給大家的紀念（沒關係，先吃蛋糕）' : '湘有心事的時候，會用暗號送給大家……';
   if (c.no === '089') return state.dex[c.no] ? '湘考上研究所時，用暗號送給大家的紀念' : '湘有好消息的時候，會用暗號送給大家……';
   if (c.series === 'devteam') {
