@@ -7,7 +7,7 @@
   animation: holo 4.5s ease-in-out infinite;
 }
 @keyframes holo { 0% { background-position: 120% 0; } 100% { background-position: -120% 0; } }
-.sheet--reveal { position: relative; overflow: hidden; }
+.sheet--reveal { position: fixed; overflow: hidden; } /* 必須 fixed：relative 會讓彈窗跟著頁面捲動，捲到下面再破殼時卡片會跑到螢幕外 */
 
 .analysis {
   position: fixed; inset: 0; z-index: 50;
