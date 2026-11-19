@@ -36,6 +36,10 @@ export const ACHIEVEMENTS = [
   { id: 'night', group: '隱藏', title: '夜行性', hint: '？？？', reveal: '在深夜孵出一顆蛋', goal: 1, value: (s) => t(s, 'nightHatch'), reward: 30, secret: true },
   { id: 'letter', group: '隱藏', title: '收到一封信', hint: '？？？', reveal: '收到湘寄來的紙條', goal: 1, value: (s) => s.letters?.mail?.length || 0, reward: 30, secret: true },
   { id: 'code', group: '隱藏', title: '解開暗號', hint: '？？？', reveal: '兌換一個暗號', goal: 1, value: (s) => s.gifts?.redeemed?.length || 0, reward: 30, secret: true },
+  { id: 'dev-pibao', group: '隱藏', title: '再畫一隻就好！', hint: '？？？', reveal: '迎接加班皮寶', goal: 1, value: (s) => (s.dex?.['086'] ? 1 : 0), reward: 50, secret: true },
+  { id: 'dev-debao', group: '隱藏', title: '這個也要做嗎？！', hint: '？？？', reveal: '迎接崩潰德寶', goal: 1, value: (s) => (s.dex?.['087'] ? 1 : 0), reward: 50, secret: true },
+  { id: 'dev-idea', group: '隱藏', title: '我又想到一個！', hint: '？？？', reveal: '迎接靈感爆發小湘', goal: 1, value: (s) => (s.dex?.['088'] ? 1 : 0), reward: 80, secret: true },
+  { id: 'dev-overtime', group: '隱藏', title: '今天也沒有下班', hint: '？？？', reveal: '看見開發部茶水間的深夜會議', goal: 1, value: (s) => (s.devteam?.eventSeen ? 1 : 0), reward: 50, secret: true },
   { id: 'fossil', group: '隱藏', title: '化石獵人', hint: '？？？', reveal: '收集 30 個化石碎片', goal: 30, value: (s) => s.fossils || 0, reward: 30, secret: true },
 ];
 

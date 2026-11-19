@@ -62,3 +62,6 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.photo-hint,.photo-tip,.photo-status,.photo-result-note,.photo-size-row) { color:var(--t-muted); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .photo-pick-item { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .photo-shutter { border-color:var(--t-accent); background:radial-gradient(circle,var(--t-accent) 0 55%,transparent 57%); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .devteam-line { background:var(--t-raised); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .devteam-line b { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.devteam-line.is-system,.devteam-caption) { color:var(--t-muted); }

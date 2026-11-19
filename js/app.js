@@ -29,6 +29,8 @@ import { RECIPE_LINES } from './recipe-lines.js';
 import { FRIEND_LINES } from './friend-lines.js';
 import { NAP_LINES } from './nap-lines.js';
 import { createPhotoBooth } from './photo-booth.js';
+import { DEVTEAM_LINES, DUCK_DROP_LINE, DEVTEAM_EVENT } from './devteam-lines.js';
+import * as devteam from './devteam.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, weatherBoosts, KIND_NAMES, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
@@ -116,9 +118,24 @@ function tooManyPokes(no, now = Date.now()) {
   if (p.times.length >= POKE_LIMIT) { p.times = []; p.until = now + POKE_COOLDOWN; pokes.set(no, p); return 'angry'; }
   pokes.set(no, p); return '';
 }
+// 開發團隊三寶有自己的戳戳台詞：連續戳（每下間隔 1.5 秒內）第 1／3／5／10 下各說一句
+const streaks = new Map();
+function pokeStreak(no, now = Date.now()) {
+  const s = streaks.get(no) || { n: 0, at: 0 };
+  s.n = now - s.at < 1500 ? s.n + 1 : 1; s.at = now; streaks.set(no, s); return s.n;
+}
 const room = createRoom($('resident-lanes'), character => {
+  const streak = pokeStreak(character.no);
+  const dev = DEVTEAM_LINES[character.no];
   const poke = tooManyPokes(character.no);
-  if (poke) {
+  if (dev) {
+    // 崩潰德寶連戳到第 5 下：小鴨掉下來（湘定稿台詞），第 5 句一般台詞改到第 7 下
+    const line = character.no === '087' && streak === 5 ? DUCK_DROP_LINE : character.no === '087' && streak === 7 ? dev.poke[5] : (character.no === '087' && streak === 5) ? null : dev.poke[streak];
+    if (character.no === '087' && streak === 5) { room.duck(character.no); buzz([30, 40, 30]); }
+    if (line) room.bubble(character.no, line, 3200);
+    if (poke) { room.squish(character.no); return; }
+    if (line && streak > 1) return; // 連戳時只說戳戳台詞
+  } else if (poke) {
     room.squish(character.no);
     if (poke === 'angry') { room.bubble(character.no, '不要戳啦！！！小湘要扁掉了૮₍˃⤙˂₎ა\n愛要緩慢給予！', 3200); buzz([30, 40, 30]); }
     return;
@@ -745,7 +762,7 @@ function renderResidents() {
 
 function renderAll() {
   if (document.getElementById('missions-badge')) renderMissionsBadge();
-  if (document.getElementById('bingo-badge')) { renderBingoBadge(); checkRecipes(); }
+  if (document.getElementById('bingo-badge')) { renderBingoBadge(); checkRecipes(); checkDevteam(); }
   if (document.getElementById('achievement-badge')) renderAchievementBadge();
   if (document.getElementById('dex-detail')) grantKeepsakes();
   if (document.getElementById('dino-task')) renderDinoTask();
@@ -922,6 +939,7 @@ function storyText(c, entry) {
   const days = st.since && !Number.isNaN(Date.parse(st.since)) ? Math.max(0, Math.round((Date.parse(entry.at) - Date.parse(st.since)) / 864e5)) : null;
   const source = st.county ? `在${st.county}探索時收到的縣市蛋`
     : st.from?.startsWith('recipe:') ? '兩位小湘一起入住、偷偷準備的紀念蛋'
+    : st.from?.startsWith('devteam:') ? '開發團隊悄悄送來的紀念蛋'
     : st.from === 'taiwan' ? '走遍臺灣時收到的紀念蛋'
     : st.from === 'code' ? '湘藏在暗號裡的蛋'
     : st.from && HOLIDAYS.some(h => st.from.startsWith(h.id)) ? `${HOLIDAYS.find(h => st.from.startsWith(h.id)).name}收到的紀念蛋`
@@ -1001,7 +1019,7 @@ function showReveal(c, duplicate) {
   $('reveal-greeting').textContent = duplicate ? '是你呀，我們又見面了。' : '初次見面，請多指教。';
   $('reveal-no').textContent = `No.${c.no} ｜ ${c.rarity}`;
   $('reveal-name').textContent = c.name;
-  const hatchLine = WEATHER_LINES[c.no]?.hatch || RECIPE_LINES[c.no]?.hatch || FRIEND_LINES[c.no]?.hatch || NAP_LINES[c.no]?.hatch;
+  const hatchLine = WEATHER_LINES[c.no]?.hatch || RECIPE_LINES[c.no]?.hatch || FRIEND_LINES[c.no]?.hatch || NAP_LINES[c.no]?.hatch || DEVTEAM_LINES[c.no]?.hatch;
   $('reveal-line').textContent = hatchLine ? `「${hatchLine}」` : c.line;
   $('reveal-bonus').hidden = !duplicate;
   $('reveal-bonus').textContent = `再次相遇的禮物 · 化石碎片 +${DUPLICATE_FOSSILS}`;
@@ -1416,6 +1434,45 @@ $('dex-photo').addEventListener('click', () => { const no = $('dex-photo').datas
 document.addEventListener('pointerdown', () => { document.documentElement.dataset.input = 'pointer'; }, { capture: true, passive: true });
 document.addEventListener('keydown', (e) => { if (e.key === 'Tab') document.documentElement.dataset.input = 'keyboard'; }, { capture: true });
 
+/* ---------- 開發團隊系列 ---------- */
+let devteamBusy = false;
+const DEVTEAM_GIFT = {
+  '086': '有人抱著畫板敲門，留下一顆沾著顏料的蛋就跑了……「再畫一隻就好！」',
+  '087': '門口出現一顆頭頂著小鴨的蛋，旁邊貼著便利貼：「這個也要做嗎？！」',
+  '088': '一顆閃閃發光的蛋從天而降：「欸欸欸！我又想到一個！」',
+};
+function checkDevteam() {
+  if (devteamBusy || !state.seenIntro) return;
+  const ctx = { residents: residentsFor(state.dex), today: todayKey() };
+  const due = devteam.devteamDue(state, ctx), ev = devteam.eventDue(state, ctx) && !document.querySelector('dialog[open]');
+  if (!due && !ev) return;
+  devteamBusy = true;
+  void updateState(current => ({ tick: due ? devteam.tickDevteam(current, ctx) : { eggs: [], day: null }, show: ev ? devteam.rollEvent(current, ctx.today) : false })).then(t => {
+    state = t.state; devteamBusy = false; renderAll();
+    const { tick, show } = t.result;
+    if (tick.eggs.length) { toast(`${DEVTEAM_GIFT[tick.eggs[0]]}到「選擇蛋」看看吧。`); say('好像有什麼特別的東西送來了！', 'cheer', 3500); }
+    else if (tick.day) say(`加班皮寶和崩潰德寶好像在偷偷開會……（${tick.day} / ${devteam.NEED.days}）`, 'happy', 4500);
+    if (show) showDevteamEvent();
+  }, () => { devteamBusy = false; });
+}
+function showDevteamEvent() {
+  const list = $('devteam-event-lines'); list.replaceChildren(); let i = 0;
+  const next = () => {
+    if (i < DEVTEAM_EVENT.lines.length) {
+      const [who, text] = DEVTEAM_EVENT.lines[i++];
+      const p = document.createElement('p'); p.className = who === '系統' ? 'devteam-line is-system' : 'devteam-line';
+      if (who !== '系統') p.append(Object.assign(document.createElement('b'), { textContent: who }));
+      p.append(document.createTextNode(text)); list.append(p); p.scrollIntoView({ block: 'nearest' });
+      $('devteam-event-next').textContent = i < DEVTEAM_EVENT.lines.length ? '繼續 ›' : '……然後呢？';
+    } else if (i === DEVTEAM_EVENT.lines.length) {
+      i++; list.append(Object.assign(document.createElement('p'), { className: 'devteam-caption', textContent: DEVTEAM_EVENT.caption }));
+      $('devteam-event-next').textContent = '關掉，讓她們睡覺';
+    } else $('devteam-event').close();
+  };
+  $('devteam-event-next').onclick = next;
+  $('devteam-event').showModal(); next();
+}
+
 /* ---------- 隱藏配方 ---------- */
 let recipeBusy = false;
 function checkRecipes() {
@@ -1562,6 +1619,10 @@ function howToGet(c) {
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const rec = state.recipes[recipe.id]; return `隱藏配方：${state.dex[c.no] || rec.days.length ? recipe.text : '某兩位小湘一起入住首頁，就會發生什麼……'}${rec.done ? '' : rec.days.length ? `（已累積 ${rec.days.length} / ${recipe.days} ${recipe.night ? '個夜晚' : recipe.rain ? '個下雨天' : '天'}）` : ''}`; }
   if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
+  if (c.series === 'devteam') {
+    const p = devteam.progress(state, c.no).map(x => `${x.label} ${Math.min(x.now, x.need)} / ${x.need}${x.unit || ''}`).join('、');
+    return state.dex[c.no] ? '開發團隊限定：達成條件後收到紀念蛋' : `開發團隊限定：${p}`;
+  }
   if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
   const eggs = Object.values(EGGS).filter(e => e.pool?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';

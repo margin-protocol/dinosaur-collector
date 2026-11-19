@@ -123,6 +123,15 @@ export function createRoom(host, onGreet, onPet = () => {}) {
     host.append(b);
     clearTimeout(b.timer); setTimeout(() => b.remove(), ms);
   }
+  // 崩潰德寶被狂戳：頭頂的小鴨掉下來
+  function duck(no) {
+    const l = laneOf(no); if (!l) return;
+    const anchor = l.portrait.getBoundingClientRect(); const box = l.lane.getBoundingClientRect();
+    const d = document.createElement('span'); d.className = 'room-duck'; d.textContent = '🐤'; d.setAttribute('aria-hidden', 'true');
+    d.style.left = `${anchor.left - box.left + anchor.width * 0.5}px`; d.style.top = `${anchor.top - box.top + anchor.height * 0.02}px`;
+    d.style.setProperty('--fall', `${anchor.height * 0.82}px`);
+    l.lane.append(d); setTimeout(() => d.remove(), 2600);
+  }
   // 被狂戳：扁扁地壓下去再彈回來
   function squish(no) {
     const l = laneOf(no); if (!l) return;
@@ -189,6 +198,6 @@ export function createRoom(host, onGreet, onPet = () => {}) {
     cheer() { actors.forEach(actor => actor.cheer?.()); },
     residents: () => lanes.map(l => l.no),
     isActive: () => active,
-    hearts, bubble, happy, peek, squish,
+    hearts, bubble, happy, peek, squish, duck,
   };
 }

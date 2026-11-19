@@ -527,3 +527,15 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .photo-result-actions { display:grid; gap:8px; }
 .photo-result-actions .btn { margin:0; width:100%; }
 .dex-detail__photo { margin:8px auto 0; display:block; }
+
+/* ---------- 開發團隊：茶水間彩蛋 ---------- */
+.devteam-event { width:min(100vw - 24px, 440px); max-height:86vh; overflow:auto; text-align:center; }
+.devteam-event__lines { display:grid; gap:8px; margin:12px 0 14px; text-align:left; }
+.devteam-line { margin:0; padding:8px 12px; border-radius:12px; background:#ffffff10; font:13px/1.7 var(--font-display); animation:devteam-in .25s ease-out; }
+.devteam-line b { display:block; font-size:11px; color:#ffd9a8; font-weight:400; letter-spacing:.04em; }
+.devteam-line.is-system { background:none; text-align:center; color:var(--pearl); font-size:11px; letter-spacing:.08em; }
+.devteam-caption { margin:6px 0 0; font:italic 13px/1.8 var(--font-display); color:var(--pearl); text-align:center; }
+@keyframes devteam-in { from { opacity:0; translate:0 6px; } to { opacity:1; translate:0 0; } }
+@media (prefers-reduced-motion:reduce) { .devteam-line { animation:none; } }
+.room-duck { position:absolute; z-index:7; font-size:26px; pointer-events:none; animation:duck-drop 1.1s cubic-bezier(.5,0,.8,1) forwards; }
+@keyframes duck-drop { 0% { transform:translate(-50%,0) rotate(0); } 60% { transform:translate(-30%,var(--fall)) rotate(200deg); } 75% { transform:translate(-25%,calc(var(--fall) - 14px)) rotate(240deg); } 100% { transform:translate(-20%,var(--fall)) rotate(270deg); } }
