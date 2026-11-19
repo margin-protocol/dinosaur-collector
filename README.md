@@ -191,3 +191,5 @@ assets/mascot/      小恐龍
 - 自動化測試（navigator.webdriver）預設全部解鎖、不跳說明；`tests/guide.cjs` 用 `window.__testGuide = true` 打開。
 
 - LV5 隱藏羈絆：12 組、36 位不重複成員，通用 +10% 與特殊效果擇一；討伐可看線索圖鑑、收藏三人合照、儲存 5 組隊伍並比較關卡預估。規格與數值驗收見 [LV5_TEAM_BONDS.md](docs/LV5_TEAM_BONDS.md)。
+
+- 貓爬小湘 No.097（SSR／recipe）：Koda No.095＋爬爬 No.096 在研究室調配 72 小時，領取專屬紀念蛋後注入 100 能量孵化，不進隨機蛋池。正式立繪與文案見 [SIANG_CAT_GECKO_ART.md](docs/SIANG_CAT_GECKO_ART.md)。

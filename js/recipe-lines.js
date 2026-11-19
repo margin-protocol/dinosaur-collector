@@ -1,8 +1,10 @@
+import { CAT_GECKO } from './cat-gecko.js';
 // 隱藏配方第二彈小湘（No.076–081）的台詞
 // 台詞來源：data/characters/recipe-076～081-dialogue.json（皮寶 11/19 交付）。遊戲不直接讀 JSON，改台詞時兩邊一起改。
 // 用在：孵化初見（hatch）、討伐出戰／勝利／失敗。commission 與三人彩蛋先保留備用。
 
 export const RECIPE_LINES = {
+  '097': CAT_GECKO,
   '076': {
     hatch: "噓，這本書的最後一頁，寫著明天的星星。",
     dispatch: "星圖確認，書籤就位！讓我看看這一章的敵人是誰！",

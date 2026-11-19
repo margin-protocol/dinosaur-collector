@@ -1,3 +1,4 @@
+import { CAT_GECKO } from './cat-gecko.js';
 import { traitPool } from './egg-traits.js';
 // 恐龍蛋與小湘的資料表。新增蛋或角色只要在這裡加一筆，不用改其他程式。
 // 圖片路徑規則見 docs/ASSET_SPEC.md：檔案放對位置就會自動取代佔位圖。
@@ -263,6 +264,7 @@ export const CHARACTERS = {
   '095': { no: '095', name: 'Koda 小湘', rarity: 'SSR', line: "「Koda！！！！妳怎麼又尿我的床啦！！！！！……嗚嗚嗚可是老姐姐真的好可愛喔……」", image: 'siang-095-koda', series: 'animals' },
   // 爬爬小湘（湘 11/20）：湘和她的莉莉白睫角守宮爬爬。台詞：docs/SIANG_096_PAPA_GECKO.md
   '096': { no: '096', name: '爬爬小湘', rarity: 'SSR', line: "「爬爬！！！！你怎麼連舔自己的眼睛都那麼可愛啦！！！！！😭♡」", image: 'siang-096-papa-gecko', series: 'animals' },
+  '097': { no:'097', name:CAT_GECKO.name, rarity:'SSR', line:`「${CAT_GECKO.signature}」`, image:CAT_GECKO.image, series:'recipe', special:true },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）

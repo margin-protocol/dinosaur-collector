@@ -345,6 +345,7 @@ export const SERIES_REPORTS = {
 };
 
 export const CHARACTER_REPORTS = {
+  '097':{conv:['貓爬小湘帶回兩個不同的收納盒，說 Koda 和爬爬的用品要分開放，洗衣精也終於補貨了。'],park:['貓爬小湘拍下樹枝與葉片，準備帶回家當生態箱佈置靈感。手機另一半容量，仍然保留給 Koda 的睡姿。']} ,
   "001": {
     "conv": [
       "原味小湘幫你記住常買的牛奶，回來還得意地晃了晃袋子。"
