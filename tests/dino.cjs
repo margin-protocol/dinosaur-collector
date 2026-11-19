@@ -14,14 +14,14 @@ const line=await p.evaluate(async()=>{const {chatterLine}=await import('/js/dino
 // greet task
 const mk=async(task)=>{await p.evaluate(({k,task,today})=>{const s=JSON.parse(localStorage.getItem(k));s.dino={date:today,count:0,task};localStorage.setItem(k,JSON.stringify(s));},{k:key,task,today});await p.reload();await p.waitForTimeout(500);};
 await mk({type:'greet',target:'044',text:'去跟貓咪小湘打個招呼吧',goal:1});
-assert(await p.locator('#dino-task').isVisible());
+assert(await p.locator('#dino-task').isVisible());assert.match(await p.getAttribute('#dino-task','class'),/is-mini/,'舊存檔的委託＝已接下，縮成小圓鈕');
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.locator('.resident-slot .resident-static').first().click();await p.waitForTimeout(600);
 let s=await save();assert.equal(s.dino.task,null);assert.equal(s.dino.count,1);assert.equal(s.energy,5+25+2,'greet task + tap also pets (+2)');
 // color task: blue photo passes, red photo fails
 const blue=await p.evaluate(async()=>{const cv=document.createElement('canvas');cv.width=cv.height=40;const x=cv.getContext('2d');x.fillStyle='#2f6fe0';x.fillRect(0,0,40,40);return cv.toDataURL('image/png').split(',')[1];});
 const red=await p.evaluate(async()=>{const cv=document.createElement('canvas');cv.width=cv.height=40;const x=cv.getContext('2d');x.fillStyle='#d2203f';x.fillRect(0,0,40,40);return cv.toDataURL('image/png').split(',')[1];});
-await mk({type:'color',target:'blue',text:'幫我找一個藍色的東西',goal:1});assert(await p.locator('#dino-task-photo').isVisible());
+await mk({type:'color',target:'blue',text:'幫我找一個藍色的東西',goal:1});assert(!(await p.locator('#dino-task-photo').isVisible()));await p.click('#dino-task-toggle');assert(await p.locator('#dino-task-photo').isVisible());
 await p.setInputFiles('#dino-task-input',{name:'r.png',mimeType:'image/png',buffer:Buffer.from(red,'base64')});await p.waitForTimeout(500);s=await save();assert.ok(s.dino.task);
 await p.setInputFiles('#dino-task-input',{name:'b.png',mimeType:'image/png',buffer:Buffer.from(blue,'base64')});await p.waitForTimeout(600);s=await save();assert.equal(s.dino.task,null);assert.equal(s.dino.count,1);
 // feed task auto-completes on progress
@@ -34,7 +34,13 @@ const offered=await p.evaluate(async(k)=>{const {canOffer}=await import('/js/din
 // accept via dino tap on a fresh day, then skip
 await p.evaluate(({k,today})=>{const s=JSON.parse(localStorage.getItem(k));s.dino={date:today,count:0,task:null};localStorage.setItem(k,JSON.stringify(s));},{k:key,today});await p.reload();await p.evaluate(()=>location.hash='home');await p.waitForTimeout(400);
 await p.evaluate(()=>{document.querySelector('#guide').dataset.mode='task-offer';});await p.click('#bubble');await p.waitForTimeout(500);
-s=await save();assert.ok(s.dino.task);await p.click('#dino-task-skip');await p.waitForTimeout(300);s=await save();assert.equal(s.dino.task,null);
+s=await save();assert.equal(s.dino.task.accepted,false);assert(await p.locator('#dino-task-accept').isVisible());assert(!(await p.locator('#dino-task-skip').isVisible()));
+await p.click('#dino-task-decline');await p.waitForTimeout(300);s=await save();assert.equal(s.dino.task,null,'先不要＝不接');assert.equal(s.dino.count,0);
+await p.evaluate(()=>{document.querySelector('#guide').dataset.mode='task-offer';});await p.click('#bubble');await p.waitForTimeout(500);
+await p.click('#dino-task-accept');await p.waitForTimeout(300);s=await save();assert.equal(s.dino.task.accepted,true);assert.match(await p.getAttribute('#dino-task','class'),/is-mini/);
+const box=await p.locator('#dino-task').boundingBox();assert.ok(box.width<80,'縮小後不擋畫面 '+box.width);
+await p.click('#dino-task-toggle');assert(await p.locator('#dino-task-skip').isVisible());
+await p.click('#dino-task-skip');await p.waitForTimeout(300);s=await save();assert.equal(s.dino.task,null);
 // animals in dex
 const n=await p.evaluate(async()=>{const {CHARACTERS}=await import('/js/eggs.js');return Object.values(CHARACTERS).filter(c=>c.series==='animals').length;});assert.equal(n,14,'12 動物裝扮小湘＋Koda 小湘、爬爬小湘（11/20）');
 assert.equal(errs.length,0,errs.join('\n'));

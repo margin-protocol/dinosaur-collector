@@ -160,7 +160,7 @@ const room = createRoom($('resident-lanes'), character => {
     else bondCapNotice(character.no);
     if (bond.up.length) queueBondUps([{ no: character.no, up: bond.up }]);
     const task = state.dino.task;
-    if (task?.type === 'greet' && task.target === character.no) void finishTask();
+    if (task?.type === 'greet' && task.accepted !== false && task.target === character.no) void finishTask();
   });
 }, character => {
   room.bubble(character.no, PET_LINES[Math.floor(Math.random() * PET_LINES.length)]);
@@ -1833,9 +1833,9 @@ async function acceptTask() {
   taskBusy = true;
   try {
     const ctx = taskCtx();
-    const t = await updateState(current => { if (current.dino.task || !canOffer(current, ctx.today)) return null; current.dino.task = makeTask(current, ctx); return current.dino.task; });
+    const t = await updateState(current => { if (current.dino.task || !canOffer(current, ctx.today)) return null; current.dino.task = { ...makeTask(current, ctx), accepted: false }; return current.dino.task; });
     state = t.state; sayOverride = null; renderAll();
-    if (t.result) say(`${t.result.text}（完成給你 ${TASK_REWARD} 能量）`, 'happy', 5000, 'chat');
+    if (t.result) say(`要接下這個委託嗎？完成給你 ${TASK_REWARD} 能量！`, 'happy', 4000, 'chat');
   } finally { taskBusy = false; }
 }
 
@@ -1849,16 +1849,39 @@ async function finishTask() {
   } finally { taskBusy = false; }
 }
 
+// 委託卡（湘 11/20）：先問「接下／先不要」；接下之後縮成旁邊的小恐龍圓鈕，點一下才展開，不會一直擋住小湘
+let dinoTaskOpen = false; let dinoTaskTimer = 0;
+function setDinoTaskOpen(open) {
+  dinoTaskOpen = open; clearTimeout(dinoTaskTimer);
+  if (open) dinoTaskTimer = setTimeout(() => { dinoTaskOpen = false; renderDinoTask(); }, 6000);
+  renderDinoTask();
+}
 function renderDinoTask() {
   const task = state.dino?.task;
   $('dino-task').hidden = !task;
-  if (!task) return;
+  if (!task) { dinoTaskOpen = false; return; }
+  const pending = task.accepted === false; // 舊存檔沒有這個欄位＝已經接下
+  const mini = !pending && !dinoTaskOpen;
   const progress = taskProgress(state, task, { today: todayKey(), snapsToday: snapsToday(state, todayKey()) });
+  $('dino-task').classList.toggle('is-mini', mini); $('dino-task').classList.toggle('is-pending', pending);
+  $('dino-task-toggle').setAttribute('aria-expanded', String(!mini));
+  $('dino-task-toggle').setAttribute('aria-label', mini ? `小恐龍的委託：${task.text}（點一下展開）` : '收起小恐龍的委託');
+  $('dino-task-mini').textContent = task.goal > 1 ? `${Math.max(0, progress)}/${task.goal}` : '';
+  $('dino-task-choice').hidden = !pending; $('dino-task-skip').hidden = pending;
   $('dino-task-text').textContent = task.text;
   $('dino-task-progress').textContent = task.goal > 1 ? `${Math.max(0, progress)} / ${task.goal}` : '';
-  $('dino-task-photo').hidden = task.type !== 'color';
-  if (task.type !== 'color' && task.type !== 'greet' && progress >= task.goal) void finishTask();
+  $('dino-task-photo').hidden = task.type !== 'color' || pending;
+  if (!pending && task.type !== 'color' && task.type !== 'greet' && progress >= task.goal) void finishTask();
 }
+$('dino-task-toggle').addEventListener('click', () => { if (state.dino?.task?.accepted !== false) setDinoTaskOpen(!dinoTaskOpen); });
+$('dino-task-accept').addEventListener('click', async () => {
+  const t = await updateState(current => { if (current.dino.task) current.dino.task.accepted = true; });
+  state = t.state; dinoTaskOpen = false; renderAll(); say('謝謝你！我在旁邊等你喔～', 'happy', 2500);
+});
+$('dino-task-decline').addEventListener('click', async () => {
+  const t = await updateState(current => { current.dino.task = null; });
+  state = t.state; renderAll(); say('好～那下次再拜託你！', 'idle', 2500);
+});
 $('dino-task-skip').addEventListener('click', async () => {
   const t = await updateState(current => { current.dino.task = null; });
   state = t.state; renderAll(); say('沒關係，下次再拜託你！', 'idle', 2500);
