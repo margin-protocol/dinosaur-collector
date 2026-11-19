@@ -799,6 +799,19 @@ function renderResidents() {
   }
 }
 
+// 好感 Lv5 的小湘：首頁腳邊偶爾冒小閃光
+function renderMaxBondResidents() {
+  document.querySelectorAll('.resident-slot[data-character]').forEach(slot => {
+    const no = slot.dataset.character;
+    const max = Boolean(state.dex?.[no]) && bondInfo(state, no, todayKey()).max;
+    slot.classList.toggle('is-maxbond', max);
+    if (max && !slot.querySelector('.maxbond-sparks')) {
+      const s = document.createElement('div'); s.className = 'maxbond-sparks'; s.setAttribute('aria-hidden', 'true');
+      for (let i = 0; i < 5; i++) s.append(document.createElement('i'));
+      slot.append(s);
+    } else if (!max) slot.querySelector('.maxbond-sparks')?.remove();
+  });
+}
 function renderAll() {
   if (document.getElementById('missions-badge')) renderMissionsBadge();
   if (document.getElementById('bingo-badge')) { renderBingoBadge(); checkRecipes(); checkDevteam(); }
@@ -818,6 +831,7 @@ function renderAll() {
   research.update();
   if ($('residents').open) renderResidents();
   tutorial.render();
+  renderMaxBondResidents();
 }
 
 function showView(name, options = {}) {
