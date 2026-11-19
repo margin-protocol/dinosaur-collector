@@ -277,7 +277,7 @@
 <dialog class="residents-dialog sheet postcard-dialog" id="postcard-dialog" aria-labelledby="postcard-title"><div class="drawer-heading"><div><small>POSTCARD</small><h2 id="postcard-title">寄照片給湘</h2></div><button class="close-button" type="button" id="close-postcard" aria-label="關閉寄照片給湘">×</button></div><p class="residents-intro">想跟湘分享什麼都可以，拍照或從相簿選。寄出的照片會收進記憶檔案，湘回覆後也會出現在那裡。</p><form id="postcard-form" class="cloud-form"><label class="postcard-pick" id="postcard-pick"><img id="postcard-preview" alt="" hidden><span id="postcard-pick-text">選一張照片</span><input type="file" accept="image/*" id="postcard-input" hidden></label><textarea id="postcard-text" rows="3" maxlength="300" placeholder="想說的話（可不填）"></textarea><button class="btn" type="submit" id="postcard-send">寄出</button></form><p class="cloud-status" id="postcard-status" role="status"></p></dialog>
 <dialog class="residents-dialog sheet egg-offer" id="egg-offer" aria-labelledby="egg-offer-title"><small class="county-call__eyebrow">NEW EGG</small><h2 id="egg-offer-title">挑一顆蛋吧</h2><p class="residents-intro">小恐龍找到三顆蛋，摸摸看、聽聽看，選一顆帶回培養架。</p><div class="egg-offer__list" id="egg-offer-list"></div></dialog>
 <dialog class="residents-dialog sheet errand-dialog" id="errand-dialog" aria-labelledby="errand-title"><div class="drawer-heading"><div><small>ERRANDS</small><h2 id="errand-title">派小湘出門</h2></div><button class="close-button" type="button" id="close-errands" aria-label="關閉派小湘出門">×</button></div>
-<div class="errand-tabs" role="tablist"><button type="button" role="tab" id="tab-errand" aria-selected="true">出門</button><button type="button" role="tab" id="tab-battle" aria-selected="false">討伐<i class="letter-badge" id="battle-tab-badge" hidden></i></button></div>
+<div class="errand-tabs" role="tablist"><button type="button" role="tab" id="tab-errand" aria-selected="true">出門</button><button type="button" role="tab" id="tab-battle" aria-selected="false">討伐<i class="letter-badge" id="battle-tab-badge" hidden></i></button><button type="button" role="tab" id="tab-kitchen" aria-selected="false">廚房</button></div>
 <div id="errand-pane">
 <div id="errand-active" class="errand-active"></div>
 <h3 class="egg-choices__heading">去哪裡</h3><div id="errand-places" class="errand-places"></div>
@@ -285,6 +285,17 @@
 <div id="errand-pick" class="errand-pick" hidden><p class="residents-intro" id="errand-pick-hint"></p><div id="errand-siangs" class="errand-siangs"></div><button class="btn" type="button" id="errand-go">出發</button></div>
 <p class="cloud-status" id="errand-status" role="status" aria-live="polite"></p>
 <h3 class="egg-choices__heading">旅行相簿</h3><p class="residents-intro" id="errand-collection"></p><div id="errand-album" class="errand-album"></div></div>
+<div id="kitchen-pane" class="kitchen" hidden>
+<p class="residents-intro">討伐打贏會撿到食材。任選 2～3 種按「開煮！」，再餵給小湘：合她口味好感度加比較多，有些料理還能幫下一次討伐。每位小湘都藏著一道「秘密最愛」。</p>
+<h3 class="egg-choices__heading">食材</h3><div id="kitchen-ings" class="kitchen-ings"></div>
+<div class="kitchen-pot"><div><small>鍋子裡</small><b id="kitchen-preview">選 2～3 種食材</b></div><button class="btn" type="button" id="kitchen-cook" disabled>開煮！</button></div>
+<h3 class="egg-choices__heading">做好的料理</h3><div id="kitchen-meals" class="kitchen-meals"></div>
+<div id="kitchen-feed" class="kitchen-feed" hidden><p class="residents-intro" id="kitchen-feed-hint"></p><div id="kitchen-siangs" class="errand-siangs"></div></div>
+<div id="kitchen-result" class="kitchen-result" hidden aria-live="polite"></div>
+<p class="cloud-status" id="kitchen-status" role="status" aria-live="polite"></p>
+<h3 class="egg-choices__heading">料理圖鑑</h3><p class="residents-intro" id="kitchen-stats"></p><div id="kitchen-book" class="kitchen-book"></div>
+<h3 class="egg-choices__heading">秘密最愛</h3><div id="kitchen-secrets" class="kitchen-secrets"></div>
+</div>
 <div id="battle-pane" hidden>
 <div class="battle-head"><span>🛡️ 徽章 <b id="battle-badges">0</b></span><span id="battle-slots"></span><button class="text-action" type="button" id="open-train">特訓與兌換 ⟶</button></div>
 <button class="archive-entry" type="button" id="open-archive-battle"><span class="archive-entry__icon" aria-hidden="true">📖</span><span><b>咕咕的故事檔案館</b><small>重讀解鎖過的故事、看討伐紀錄</small></span><span aria-hidden="true">⟶</span></button>

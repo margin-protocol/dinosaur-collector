@@ -1,4 +1,5 @@
 import { TEAM_BONDS, teamBond, discoverBond, effectText } from './team-bonds.js';
+import { teamFood, useFood, dropsFor, addIngredients, ingredientText, buffText } from './kitchen.js';
 // 討伐：派 1～3 位小湘去打敵人（像皮克敏那樣派遣，回來看戰報）。
 // 設計原則（皮寶 11/17）：剋制只影響效率與評分、不是通關必要條件；只有原味小湘也能打完入門關；
 // 戰敗提示依實際原因；保留分數、歷史最高與進步；徽章可以拿來特訓，讓下一次打得更好。
@@ -99,6 +100,7 @@ export const SERIES_BONUS = 0.15; // 同系列 2 位以上
 export const WEAK_BONUS = 0.3; // 帶了剋制的系列
 export const TEAM_MAX = 3;
 export const REST_MINUTES = 60; // 打完要休息
+export const FOOD_SPEED_CAP = 0.25; // LV5 羈絆＋料理的減時合計上限
 // 徽章限定角色：騎士、魔法師、勇者三人同隊時發動勇者小隊連攜
 export const BADGE_HEROES = Object.fromEntries(HERO_SHOP.map((x) => [x.key, x.no]));
 export const HERO_PARTY_BONUS = 0.5;
@@ -176,8 +178,9 @@ export function teamPower(state, nos, enemyId) {
   const heroIds = Object.values(BADGE_HEROES);
   const heroParty = heroIds.every(Boolean) && heroIds.every((no) => nos.includes(no));
   const bond = teamBond(state, nos);
-  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty ? HERO_PARTY_BONUS : 0));
-  return { members, raw: Math.round(raw * 10) / 10, total: Math.round(raw * mult * 10) / 10, sameSeries, weakHit, heroParty, bond };
+  const food = teamFood(state, nos); // 小湘廚房：一隊最多用一份料理加成
+  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty ? HERO_PARTY_BONUS : 0)) * (1 + (food?.kind === 'power' ? food.value : 0));
+  return { members, raw: Math.round(raw * 10) / 10, total: Math.round(raw * mult * 10) / 10, sameSeries, weakHit, heroParty, bond, food };
 }
 
 // 預估：勝率與評語
@@ -186,7 +189,7 @@ export function forecast(state, nos, enemyId) {
   const ratio = team.total / enemyFor(state, enemyId).power;
   const chance = ratio >= 1 ? 1 : ratio < 0.7 ? 0 : (ratio - 0.7) / 0.3;
   const label = ratio >= 1.6 ? '輕鬆勝利' : ratio >= 1.2 ? '穩穩的' : ratio >= 1 ? '勢均力敵' : ratio >= 0.7 ? '有點危險' : '還打不贏';
-  return { ...team, ratio, chance, label, minutes: Math.max(1, Math.round(enemyFor(state, enemyId).minutes * (team.weakHit ? .75 : 1) * (1 - (team.bond?.speed || 0)))), stars: starsOf(ratio, chance === 1) };
+  return { ...team, ratio, chance, label, minutes: Math.max(1, Math.round(enemyFor(state, enemyId).minutes * (team.weakHit ? .75 : 1) * (1 - Math.min(FOOD_SPEED_CAP, (team.bond?.speed || 0) + (team.food?.kind === 'speed' ? team.food.value : 0))))), stars: starsOf(ratio, chance === 1) };
 }
 
 export const scoreOf = (ratio, weakHit, win) => (win ? Math.round(ratio * 1000) + (weakHit ? 150 : 0) : Math.round(ratio * 400));
@@ -272,6 +275,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   const log = [enemy.intro, ...nos.map(actionLine)];
   if (f.weakHit) log.push(`✦ 效果拔群${enemy.weakTag ? `｜${enemy.weakTag.replace(/[！!]+$/, '')}` : ''}！${enemy.weakHit}`);
   if (f.bond) log.push(`♡ ${f.bond.name}｜${effectText(f.bond)}${discovered ? '｜三人合照閃卡已收藏！' : ''}`);
+  if (f.food) { log.push(`🍳 ${CHARACTERS[f.food.no].name}吃過的料理發揮作用｜${buffText(f.food)}`); useFood(state, f.food); }
   if (f.heroParty) log.push(...PARTY_LINES.map((l) => `${l.speaker}：「${l.text}」`), `✦ ${PARTY_REPORT}`);
   log.push(win ? enemy.win : enemy.lose);
   // 隊伍裡有徽章限定小湘：由最稀有的那位說勝利／戰敗台詞
@@ -284,6 +288,8 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
     : win
       ? { badges: (enemy.boss ? 3 : 1) + (stars === 3 && prev.stars < 3 ? 1 : 0), energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
       : { badges: 0, energy: 5, fossils: 0 };
+  const chapterNo = enemy.wild ? Math.max(...CHAPTERS.filter((c) => unlocked(state, c.stages[0])).map((c) => c.id), 1) : (CHAPTERS.find((c) => c.stages.includes(enemyId))?.id || 1);
+  loot.ingredients = dropsFor(chapterNo, { win, boss: Boolean(enemy.boss), gather: f.food?.kind === 'gather' ? 1 : 0 }, rand);
   const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries };
   if (enemy.story && !enemy.wild && !b.story[`${enemyId}:before`]) b.story[`${enemyId}:before`] = iso(now); // 看過 Boss 開場故事
   const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + minutes * 60e3)), report, ...(wildEntry ? { snapshot: wildEntry } : {}) };
@@ -320,10 +326,11 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const best = enemy.wild ? b.weekBest : st.best;
   b.badges += r.loot.badges; state.energy += r.loot.energy; if (r.loot.fossils) state.fossils = (state.fossils || 0) + r.loot.fossils;
   if (r.loot.firstBoss) state.wishEgg.stock += 1;
+  if (r.loot.ingredients?.length) addIngredients(state, r.loot.ingredients);
   const restUntil = iso(new Date(now.getTime() + REST_MINUTES * 60e3));
   for (const no of battle.nos) b.rest[no] = restUntil;
   b.total += 1; if (r.win) b.wins += 1;
-  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1'].filter(Boolean);
+  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`].filter(Boolean);
   const firstClear = r.win && st.clears === 1;
   const story = enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
   const clue = firstClear && enemy.clue ? enemy.clue : null;

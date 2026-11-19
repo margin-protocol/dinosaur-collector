@@ -351,7 +351,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .dex__card.is-shiny { box-shadow:0 0 0 2px #ffd9a8, 0 0 14px #ffd9a866; }
 
 /* 討伐 */
-.errand-tabs { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin:0 0 12px; padding:4px; border-radius:14px; background:#00000026; }
+.errand-tabs { display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:6px; margin:0 0 12px; padding:4px; border-radius:14px; background:#00000026; }
 .errand-tabs button { position:relative; padding:8px 0; border:0; border-radius:10px; background:none; color:inherit; font:14px var(--font-display); opacity:.7; }
 .errand-tabs button[aria-selected="true"] { background:#ffd9a822; color:#ffd9a8; opacity:1; }
 .errand-tabs .letter-badge { position:static; display:inline-block; margin-left:6px; vertical-align:2px; }
@@ -671,3 +671,41 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 @media(prefers-reduced-motion:reduce) { .team-bond-photo::after { display:none; } }
 .team-presets input { box-sizing:border-box; width:100%; min-width:0; min-height:44px; padding:8px; background:var(--t-panel); color:var(--t-text); border:1px solid var(--t-line); border-radius:6px; font:13px var(--font-display); }
 :is(.team-preset,.team-compare-row) .btn { min-height:44px; width:100%; white-space:normal; }
+/* 小湘廚房（11/20） */
+.kitchen-ings { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-bottom:10px; }
+.kitchen-ing { display:grid; justify-items:center; gap:1px; padding:8px 2px; border-radius:12px; border:1px solid #ffffff22; background:#ffffff0a; color:inherit; font:12px var(--font-display); min-width:0; }
+.kitchen-ing__icon { font-size:22px; line-height:1.15; }
+.kitchen-ing b { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
+.kitchen-ing small { font:11px var(--font-body); opacity:.75; }
+.kitchen-ing[aria-pressed="true"] { border-color:#ffd9a8; background:#ffd9a826; }
+.kitchen-ing:disabled { opacity:.4; }
+.kitchen-pot { display:flex; align-items:center; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:16px; background:#00000026; margin-bottom:12px; }
+.kitchen-pot small { display:block; font:11px var(--font-body); opacity:.75; }
+.kitchen-pot b { font:15px var(--font-display); }
+.kitchen-pot > div { flex:1; min-width:0; }
+.kitchen-pot .btn { flex:none; width:auto; min-width:96px; margin:0; }
+.kitchen-meals { display:grid; gap:6px; margin-bottom:10px; }
+.kitchen-meal { display:grid; grid-template-columns:auto 1fr; column-gap:10px; align-items:center; text-align:left; padding:8px 12px; border-radius:12px; border:1px solid #ffffff22; background:#ffffff0a; color:inherit; font:14px var(--font-display); }
+.kitchen-meal span { grid-row:span 2; font-size:22px; }
+.kitchen-meal small { font:11px var(--font-body); opacity:.75; }
+.kitchen-meal[aria-pressed="true"] { border-color:#ffd9a8; background:#ffd9a826; }
+.kitchen-feed { padding:10px; border-radius:16px; background:#00000026; margin-bottom:10px; }
+.kitchen-result { display:grid; grid-template-columns:80px 1fr; gap:10px; align-items:center; padding:10px 12px; border-radius:16px; background:#ffd9a81f; border:1px solid #ffd9a866; margin-bottom:10px; }
+.kitchen-result img { width:80px; height:80px; object-fit:contain; }
+.kitchen-result small { display:block; font:11px var(--font-body); opacity:.8; }
+.kitchen-result b { font:15px var(--font-display); }
+.kitchen-result p { margin:4px 0; font-size:13px; line-height:1.5; }
+.kitchen-result span { font-size:12px; opacity:.85; }
+.kitchen-book { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; margin-bottom:10px; }
+.kitchen-recipe { padding:8px 10px; border-radius:12px; border:1px dashed #ffffff33; background:#ffffff06; min-width:0; }
+.kitchen-recipe.is-found { border-style:solid; background:#ffffff0d; }
+.kitchen-recipe.is-found.is-dark { border-color:#b58cff88; }
+.kitchen-recipe b { display:block; font:14px var(--font-display); }
+.kitchen-recipe small { display:block; font:11px var(--font-body); opacity:.8; }
+.kitchen-recipe p { margin:4px 0 0; font-size:12px; line-height:1.45; opacity:.85; }
+.kitchen-secrets { display:grid; gap:6px; }
+.kitchen-secret { display:flex; align-items:center; gap:8px; font-size:13px; }
+.kitchen-secret img { width:40px; height:40px; object-fit:contain; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.kitchen-ing,.kitchen-meal,.kitchen-recipe,.kitchen-pot,.kitchen-feed) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.kitchen-ing[aria-pressed="true"],.kitchen-meal[aria-pressed="true"],.kitchen-result) { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .kitchen-ing:disabled { opacity:.55; }

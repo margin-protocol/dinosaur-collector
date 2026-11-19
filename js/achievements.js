@@ -1,4 +1,6 @@
 import { MAIN_ISLAND } from './geo.js';
+import { dishById, recipesFound, secretsFound } from './kitchen.js';
+const darkDish = (id) => dishById(id)?.dark;
 // 成就：由進度直接推算是否達成；領取獎勵的紀錄存在 state.achievements.claimed
 const dexCount = (s) => Object.keys(s.dex || {}).length;
 const rarityOwned = (s, chars, r) => Object.keys(s.dex || {}).some((no) => chars[no]?.rarity === r);
@@ -9,7 +11,7 @@ const seriesDone = (s, chars) => {
 };
 const t = (s, k) => s.bonus?.total?.[k] || 0;
 
-export const ACHIEVEMENT_GROUPS = ['孵化', '收藏', '願望', '旅行', '陪伴', '隱藏'];
+export const ACHIEVEMENT_GROUPS = ['孵化', '收藏', '願望', '旅行', '陪伴', '廚房', '隱藏'];
 export const ACHIEVEMENTS = [
   { id: 'hatch-1', group: '孵化', title: '初次破殼', hint: '孵化 1 顆蛋', goal: 1, value: (s) => s.hatched || 0, reward: 20 },
   { id: 'hatch-10', group: '孵化', title: '熟練的飼養員', hint: '孵化 10 顆蛋', goal: 10, value: (s) => s.hatched || 0, reward: 40 },
@@ -35,6 +37,10 @@ export const ACHIEVEMENTS = [
   { id: 'snack-20', group: '陪伴', title: '布丁時間', hint: '餵小湘 20 次布丁', goal: 20, value: (s) => t(s, 'snacks'), reward: 30 },
   { id: 'greet-30', group: '陪伴', title: '打招呼', hint: '跟小湘打招呼 30 次', goal: 30, value: (s) => t(s, 'greets'), reward: 30 },
   { id: 'task-10', group: '陪伴', title: '小恐龍的好朋友', hint: '完成 10 個小恐龍的委託', goal: 10, value: (s) => t(s, 'tasks'), reward: 40 },
+  { id: 'cook-dark', group: '廚房', title: '勇氣可嘉', hint: '第一次煮出黑暗料理', goal: 1, value: (s) => Object.keys(s.kitchen?.known || {}).filter((id) => darkDish(id)).length, reward: 20 },
+  { id: 'cook-recipes', group: '廚房', title: '小湘的私房菜', hint: '做出全部 8 道特色料理', goal: 8, value: (s) => recipesFound(s), reward: 80 },
+  { id: 'cook-secrets', group: '廚房', title: '懂她的胃', hint: '找到 10 位小湘的秘密最愛', goal: 10, value: (s) => secretsFound(s), reward: 80 },
+  { id: 'cook-dark-30', group: '廚房', title: '黑暗料理界的傳說', hint: '餵小湘吃 30 次黑暗料理', goal: 30, value: (s) => s.kitchen?.darkFed || 0, reward: 50 },
   { id: 'night', group: '隱藏', title: '夜行性', hint: '？？？', reveal: '在深夜孵出一顆蛋', goal: 1, value: (s) => t(s, 'nightHatch'), reward: 30, secret: true },
   { id: 'letter', group: '隱藏', title: '收到一封信', hint: '？？？', reveal: '收到湘寄來的紙條', goal: 1, value: (s) => s.letters?.mail?.length || 0, reward: 30, secret: true },
   { id: 'code', group: '隱藏', title: '解開暗號', hint: '？？？', reveal: '兌換一個暗號', goal: 1, value: (s) => s.gifts?.redeemed?.length || 0, reward: 30, secret: true },

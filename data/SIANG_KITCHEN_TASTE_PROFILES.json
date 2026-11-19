@@ -1,0 +1,1118 @@
+{
+  "version": 1,
+  "status": "draft",
+  "ingredients": [
+    {
+      "id": "strawberry",
+      "name": "草莓",
+      "tag": "果香"
+    },
+    {
+      "id": "milk",
+      "name": "牛奶",
+      "tag": "奶香"
+    },
+    {
+      "id": "caramel",
+      "name": "焦糖",
+      "tag": "濃甜"
+    },
+    {
+      "id": "pudding",
+      "name": "布丁粉",
+      "tag": "滑順"
+    },
+    {
+      "id": "mushroom",
+      "name": "魔法蘑菇",
+      "tag": "菇香"
+    },
+    {
+      "id": "cloud",
+      "name": "雲朵棉花糖",
+      "tag": "綿軟"
+    },
+    {
+      "id": "lightning",
+      "name": "雷電糖",
+      "tag": "刺激"
+    },
+    {
+      "id": "moon",
+      "name": "月光露",
+      "tag": "清涼"
+    },
+    {
+      "id": "star",
+      "name": "星星糖",
+      "tag": "星光"
+    },
+    {
+      "id": "rainbow",
+      "name": "彩虹果凍",
+      "tag": "果凍"
+    },
+    {
+      "id": "gear",
+      "name": "齒輪餅乾",
+      "tag": "酥脆"
+    },
+    {
+      "id": "glitch",
+      "name": "故障糖漿",
+      "tag": "怪味"
+    }
+  ],
+  "featured_recipes": [
+    {
+      "id": "R01",
+      "name": "草莓牛奶",
+      "ingredients": [
+        "milk",
+        "strawberry"
+      ],
+      "type": "親密",
+      "effect": "好感度專用"
+    },
+    {
+      "id": "R02",
+      "name": "焦糖奶布丁",
+      "ingredients": [
+        "caramel",
+        "milk",
+        "pudding"
+      ],
+      "type": "戰力",
+      "effect": "下一次討伐戰力 +5%"
+    },
+    {
+      "id": "R03",
+      "name": "雲朵星星糖",
+      "ingredients": [
+        "cloud",
+        "star"
+      ],
+      "type": "速刷",
+      "effect": "下一次討伐時間 −5%"
+    },
+    {
+      "id": "R04",
+      "name": "月光蘑菇湯",
+      "ingredients": [
+        "moon",
+        "mushroom"
+      ],
+      "type": "採集",
+      "effect": "下一次討伐獲勝額外食材 +1"
+    },
+    {
+      "id": "R05",
+      "name": "彩虹雲朵凍",
+      "ingredients": [
+        "cloud",
+        "rainbow"
+      ],
+      "type": "親密",
+      "effect": "好感度專用"
+    },
+    {
+      "id": "R06",
+      "name": "雷電齒輪餅乾",
+      "ingredients": [
+        "gear",
+        "lightning"
+      ],
+      "type": "戰力",
+      "effect": "下一次討伐戰力 +5%"
+    },
+    {
+      "id": "R07",
+      "name": "草莓蘑菇湯",
+      "ingredients": [
+        "mushroom",
+        "strawberry"
+      ],
+      "type": "黑暗料理",
+      "effect": "首次發現解鎖黑暗料理圖鑑"
+    },
+    {
+      "id": "R08",
+      "name": "故障宇宙糖漿",
+      "ingredients": [
+        "glitch",
+        "lightning",
+        "star"
+      ],
+      "type": "黑暗料理",
+      "effect": "首次發現解鎖黑暗料理圖鑑"
+    }
+  ],
+  "profiles": [
+    {
+      "no": "001",
+      "name": "原味小湘",
+      "like": "怪味",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "mushroom",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "002",
+      "name": "草莓小湘",
+      "like": "果香",
+      "dislike": "菇香",
+      "secret_combo": [
+        "moon",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "003",
+      "name": "雨傘小湘",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "milk"
+      ]
+    },
+    {
+      "no": "004",
+      "name": "夜貓小湘",
+      "like": "濃甜",
+      "dislike": "清涼",
+      "secret_combo": [
+        "caramel",
+        "gear"
+      ]
+    },
+    {
+      "no": "005",
+      "name": "甜點小湘",
+      "like": "濃甜",
+      "dislike": "菇香",
+      "secret_combo": [
+        "caramel",
+        "milk",
+        "pudding"
+      ]
+    },
+    {
+      "no": "006",
+      "name": "園丁小湘",
+      "like": "菇香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "cloud",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "007",
+      "name": "書頁小湘",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "milk",
+        "star"
+      ]
+    },
+    {
+      "no": "008",
+      "name": "晴空小湘",
+      "like": "清涼",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "moon",
+        "rainbow"
+      ]
+    },
+    {
+      "no": "009",
+      "name": "膠卷小湘",
+      "like": "濃甜",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "moon"
+      ]
+    },
+    {
+      "no": "010",
+      "name": "星塵小湘",
+      "like": "星光",
+      "dislike": "菇香",
+      "secret_combo": [
+        "cloud",
+        "star"
+      ]
+    },
+    {
+      "no": "011",
+      "name": "草莓蛋糕小湘",
+      "like": "果香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "cloud",
+        "pudding",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "012",
+      "name": "雨中花園小湘",
+      "like": "菇香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "moon",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "013",
+      "name": "琥珀小湘",
+      "like": "濃甜",
+      "dislike": "刺激",
+      "secret_combo": [
+        "caramel",
+        "star"
+      ]
+    },
+    {
+      "no": "014",
+      "name": "約會小湘",
+      "like": "奶香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "milk",
+        "rainbow"
+      ]
+    },
+    {
+      "no": "015",
+      "name": "壽星小湘",
+      "like": "濃甜",
+      "dislike": "菇香",
+      "secret_combo": [
+        "caramel",
+        "cloud",
+        "star"
+      ]
+    },
+    {
+      "no": "016",
+      "name": "臺北市小湘",
+      "like": "奶香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "milk"
+      ]
+    },
+    {
+      "no": "017",
+      "name": "新北市小湘",
+      "like": "星光",
+      "dislike": "菇香",
+      "secret_combo": [
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "018",
+      "name": "基隆市小湘",
+      "like": "清涼",
+      "dislike": "酥脆",
+      "secret_combo": [
+        "moon",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "019",
+      "name": "桃園市小湘",
+      "like": "果香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "020",
+      "name": "新竹市小湘",
+      "like": "菇香",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "gear",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "021",
+      "name": "新竹縣小湘",
+      "like": "酥脆",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "gear"
+      ]
+    },
+    {
+      "no": "022",
+      "name": "苗栗縣小湘",
+      "like": "星光",
+      "dislike": "怪味",
+      "secret_combo": [
+        "pudding",
+        "star"
+      ]
+    },
+    {
+      "no": "023",
+      "name": "臺中市小湘",
+      "like": "酥脆",
+      "dislike": "菇香",
+      "secret_combo": [
+        "caramel",
+        "gear"
+      ]
+    },
+    {
+      "no": "024",
+      "name": "彰化縣小湘",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "gear",
+        "milk"
+      ]
+    },
+    {
+      "no": "025",
+      "name": "南投縣小湘",
+      "like": "清涼",
+      "dislike": "怪味",
+      "secret_combo": [
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "026",
+      "name": "雲林縣小湘",
+      "like": "菇香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "gear",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "027",
+      "name": "嘉義市小湘",
+      "like": "濃甜",
+      "dislike": "清涼",
+      "secret_combo": [
+        "caramel",
+        "pudding"
+      ]
+    },
+    {
+      "no": "028",
+      "name": "嘉義縣小湘",
+      "like": "星光",
+      "dislike": "怪味",
+      "secret_combo": [
+        "cloud",
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "029",
+      "name": "臺南市小湘",
+      "like": "濃甜",
+      "dislike": "菇香",
+      "secret_combo": [
+        "caramel",
+        "gear",
+        "milk"
+      ]
+    },
+    {
+      "no": "030",
+      "name": "高雄市小湘",
+      "like": "清涼",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "moon",
+        "rainbow",
+        "star"
+      ]
+    },
+    {
+      "no": "031",
+      "name": "屏東縣小湘",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "pudding"
+      ]
+    },
+    {
+      "no": "032",
+      "name": "宜蘭縣小湘",
+      "like": "酥脆",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "moon"
+      ]
+    },
+    {
+      "no": "033",
+      "name": "花蓮縣小湘",
+      "like": "清涼",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "cloud",
+        "moon"
+      ]
+    },
+    {
+      "no": "034",
+      "name": "臺東縣小湘",
+      "like": "果香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "rainbow",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "035",
+      "name": "綠島小湘",
+      "like": "清涼",
+      "dislike": "刺激",
+      "secret_combo": [
+        "glitch",
+        "moon"
+      ]
+    },
+    {
+      "no": "036",
+      "name": "摯友小湘（把拔ver）",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "milk",
+        "pudding"
+      ]
+    },
+    {
+      "no": "037",
+      "name": "摯友小湘（ㄊㄧver）",
+      "like": "酥脆",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "lightning"
+      ]
+    },
+    {
+      "no": "038",
+      "name": "摯友小湘（史蒂芬灰ver）",
+      "like": "星光",
+      "dislike": "菇香",
+      "secret_combo": [
+        "rainbow",
+        "star"
+      ]
+    },
+    {
+      "no": "039",
+      "name": "摯友小湘（Serry ver）",
+      "like": "清涼",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "gear",
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "040",
+      "name": "摯友小湘（Achio ver）",
+      "like": "果香",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "lightning",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "041",
+      "name": "摯友小湘（Bois ver）",
+      "like": "菇香",
+      "dislike": "奶香",
+      "secret_combo": [
+        "gear",
+        "moon",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "042",
+      "name": "蝰蝰♡",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "milk"
+      ]
+    },
+    {
+      "no": "043",
+      "name": "戀愛小湘（聞止水ver）",
+      "like": "濃甜",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "044",
+      "name": "貓咪小湘",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "milk",
+        "pudding"
+      ]
+    },
+    {
+      "no": "045",
+      "name": "小丑魚小湘",
+      "like": "清涼",
+      "dislike": "菇香",
+      "secret_combo": [
+        "moon",
+        "rainbow"
+      ]
+    },
+    {
+      "no": "046",
+      "name": "螃蟹小湘",
+      "like": "酥脆",
+      "dislike": "綿軟",
+      "secret_combo": [
+        "gear",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "047",
+      "name": "無尾熊小湘",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "milk",
+        "star"
+      ]
+    },
+    {
+      "no": "048",
+      "name": "狗狗小湘",
+      "like": "酥脆",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "pudding"
+      ]
+    },
+    {
+      "no": "049",
+      "name": "狐狸小湘",
+      "like": "果香",
+      "dislike": "菇香",
+      "secret_combo": [
+        "moon",
+        "star",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "050",
+      "name": "浣熊小湘",
+      "like": "清涼",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "moon"
+      ]
+    },
+    {
+      "no": "051",
+      "name": "恐龍小湘",
+      "like": "刺激",
+      "dislike": "清涼",
+      "secret_combo": [
+        "gear",
+        "glitch",
+        "lightning"
+      ]
+    },
+    {
+      "no": "052",
+      "name": "守宮小湘",
+      "like": "菇香",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "mushroom",
+        "star"
+      ]
+    },
+    {
+      "no": "053",
+      "name": "老鼠小湘",
+      "like": "酥脆",
+      "dislike": "清涼",
+      "secret_combo": [
+        "gear",
+        "milk"
+      ]
+    },
+    {
+      "no": "054",
+      "name": "企鵝小湘",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "moon",
+        "pudding"
+      ]
+    },
+    {
+      "no": "055",
+      "name": "兔兔小湘",
+      "like": "果香",
+      "dislike": "菇香",
+      "secret_combo": [
+        "cloud",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "056",
+      "name": "情人節小湘",
+      "like": "濃甜",
+      "dislike": "菇香",
+      "secret_combo": [
+        "caramel",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "057",
+      "name": "白色情人節小湘",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "milk",
+        "star"
+      ]
+    },
+    {
+      "no": "058",
+      "name": "聖誕小湘",
+      "like": "酥脆",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "cloud",
+        "gear"
+      ]
+    },
+    {
+      "no": "059",
+      "name": "七夕小湘",
+      "like": "星光",
+      "dislike": "菇香",
+      "secret_combo": [
+        "moon",
+        "rainbow",
+        "star"
+      ]
+    },
+    {
+      "no": "060",
+      "name": "萬聖節小湘",
+      "like": "怪味",
+      "dislike": "奶香",
+      "secret_combo": [
+        "glitch",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "061",
+      "name": "台灣小湘",
+      "like": "果香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "moon",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "062",
+      "name": "騎士小湘",
+      "like": "酥脆",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "gear"
+      ]
+    },
+    {
+      "no": "063",
+      "name": "魔法師小湘",
+      "like": "刺激",
+      "dislike": "綿軟",
+      "secret_combo": [
+        "glitch",
+        "lightning",
+        "star"
+      ]
+    },
+    {
+      "no": "064",
+      "name": "勇者小湘",
+      "like": "濃甜",
+      "dislike": "菇香",
+      "secret_combo": [
+        "caramel",
+        "pudding"
+      ]
+    },
+    {
+      "no": "065",
+      "name": "天氣觀測師",
+      "like": "清涼",
+      "dislike": "怪味",
+      "secret_combo": [
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "066",
+      "name": "陰天小湘",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "moon"
+      ]
+    },
+    {
+      "no": "067",
+      "name": "打雷小湘",
+      "like": "刺激",
+      "dislike": "奶香",
+      "secret_combo": [
+        "gear",
+        "lightning"
+      ]
+    },
+    {
+      "no": "068",
+      "name": "晴天小湘",
+      "like": "果香",
+      "dislike": "菇香",
+      "secret_combo": [
+        "star",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "069",
+      "name": "起霧小湘",
+      "like": "綿軟",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "cloud",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "070",
+      "name": "冰雹小湘",
+      "like": "清涼",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "lightning",
+        "moon"
+      ]
+    },
+    {
+      "no": "071",
+      "name": "下雨小湘",
+      "like": "清涼",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "moon"
+      ]
+    },
+    {
+      "no": "072",
+      "name": "下雪小湘",
+      "like": "奶香",
+      "dislike": "菇香",
+      "secret_combo": [
+        "cloud",
+        "milk",
+        "moon"
+      ]
+    },
+    {
+      "no": "073",
+      "name": "大風小湘",
+      "like": "酥脆",
+      "dislike": "奶香",
+      "secret_combo": [
+        "gear",
+        "star"
+      ]
+    },
+    {
+      "no": "074",
+      "name": "彩虹小湘",
+      "like": "果凍",
+      "dislike": "菇香",
+      "secret_combo": [
+        "rainbow",
+        "star"
+      ]
+    },
+    {
+      "no": "075",
+      "name": "夕陽小湘",
+      "like": "濃甜",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "moon"
+      ]
+    },
+    {
+      "no": "076",
+      "name": "星夜書房小湘",
+      "like": "星光",
+      "dislike": "刺激",
+      "secret_combo": [
+        "milk",
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "077",
+      "name": "日落底片小湘",
+      "like": "濃甜",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "078",
+      "name": "貓咪咖啡館小湘",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "gear",
+        "milk",
+        "pudding"
+      ]
+    },
+    {
+      "no": "079",
+      "name": "史前探險小湘",
+      "like": "菇香",
+      "dislike": "清涼",
+      "secret_combo": [
+        "gear",
+        "lightning",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "080",
+      "name": "月光花園小湘",
+      "like": "菇香",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "moon",
+        "mushroom",
+        "star"
+      ]
+    },
+    {
+      "no": "081",
+      "name": "彩虹畫家小湘",
+      "like": "果凍",
+      "dislike": "怪味",
+      "secret_combo": [
+        "cloud",
+        "rainbow",
+        "star"
+      ]
+    },
+    {
+      "no": "082",
+      "name": "摯友小湘（哥哥ver）",
+      "like": "酥脆",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "rainbow"
+      ]
+    },
+    {
+      "no": "083",
+      "name": "約會小湘・蝰蝰睡著版",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "milk",
+        "moon"
+      ]
+    },
+    {
+      "no": "084",
+      "name": "約會小湘・換我睡著版",
+      "like": "奶香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "milk",
+        "pudding",
+        "star"
+      ]
+    },
+    {
+      "no": "085",
+      "name": "約會小湘・雙雙睡著版",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "cloud",
+        "moon",
+        "pudding"
+      ]
+    },
+    {
+      "no": "086",
+      "name": "加班皮寶",
+      "like": "刺激",
+      "dislike": "菇香",
+      "secret_combo": [
+        "lightning",
+        "star"
+      ]
+    },
+    {
+      "no": "087",
+      "name": "崩潰德寶",
+      "like": "怪味",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "gear",
+        "glitch"
+      ]
+    },
+    {
+      "no": "088",
+      "name": "靈感爆發小湘",
+      "like": "刺激",
+      "dislike": "奶香",
+      "secret_combo": [
+        "lightning",
+        "rainbow",
+        "star"
+      ]
+    },
+    {
+      "no": "089",
+      "name": "研究所小湘",
+      "like": "奶香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "gear",
+        "milk",
+        "star"
+      ]
+    },
+    {
+      "no": "090",
+      "name": "再接再厲小湘",
+      "like": "濃甜",
+      "dislike": "菇香",
+      "secret_combo": [
+        "caramel",
+        "cloud",
+        "pudding"
+      ]
+    },
+    {
+      "no": "091",
+      "name": "未完待續小湘",
+      "like": "星光",
+      "dislike": "怪味",
+      "secret_combo": [
+        "cloud",
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "092",
+      "name": "馬祖小湘",
+      "like": "清涼",
+      "dislike": "濃甜",
+      "secret_combo": [
+        "gear",
+        "moon",
+        "star"
+      ]
+    },
+    {
+      "no": "093",
+      "name": "澎湖小湘",
+      "like": "清涼",
+      "dislike": "怪味",
+      "secret_combo": [
+        "cloud",
+        "moon",
+        "rainbow"
+      ]
+    }
+  ]
+}

@@ -7,8 +7,8 @@ import { BOND_STORIES, BOND_LINES } from './bond-copy.js';
 export const LEVELS = [0, 10, 30, 60, 100]; // Lv.1～Lv.5 需要的累計點數
 export const MAX_LEVEL = LEVELS.length;
 export const DAILY_CAP = 15; // 首頁互動（點、摸、布丁）每位每天最多加這麼多
-export const GAIN = { tap: 1, pet: 1, snack: 3, home: 2, errand: 4, story: 2, duplicate: 10, photo: 3 }; // photo：外出合照，每位每天一次
-const CAPPED = new Set(['tap', 'pet', 'snack']);
+export const GAIN = { tap: 1, pet: 1, snack: 3, home: 2, errand: 4, story: 2, duplicate: 10, photo: 3, cook: 1 }; // photo：外出合照，每位每天一次；cook：小湘廚房餵食（times 傳評價點數 1/3/5/7）
+const CAPPED = new Set(['tap', 'pet', 'snack', 'cook']);
 export const LEVEL_REWARDS = { 2: { energy: 10 }, 3: { fossils: 3 }, 4: { energy: 20 }, 5: { fossils: 10 } };
 
 // 系列預設台詞與後備故事；個別人物文案優先。{name} 會換成小湘的名字。

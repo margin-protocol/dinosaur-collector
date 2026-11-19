@@ -47,9 +47,10 @@ import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
-import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward } from './affection.js';
+import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, capLeft } from './affection.js';
 const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
+import * as kitchen from './kitchen.js';
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
@@ -2989,15 +2990,110 @@ const enemyArt = (id, cls = '') => {
 };
 const allBusy = () => new Set([...busyNos(state), ...battle.battleNos(state), ...lab.labNos(state)]); // 研究室調配中的也不能討伐
 function showErrandTab(tab) {
-  $('tab-errand').setAttribute('aria-selected', String(tab === 'errand'));
-  $('tab-battle').setAttribute('aria-selected', String(tab === 'battle'));
-  $('errand-pane').hidden = tab !== 'errand'; $('battle-pane').hidden = tab !== 'battle';
-  $('errand-title').textContent = tab === 'battle' ? '討伐' : '派小湘出門';
-  $('errand-title').previousElementSibling.textContent = tab === 'battle' ? 'BATTLE' : 'ERRANDS';
+  for (const t of ['errand', 'battle', 'kitchen']) { $(`tab-${t}`).setAttribute('aria-selected', String(tab === t)); $(`${t}-pane`).hidden = tab !== t; }
+  $('errand-title').textContent = { battle: '討伐', kitchen: '小湘廚房' }[tab] || '派小湘出門';
+  $('errand-title').previousElementSibling.textContent = { battle: 'BATTLE', kitchen: 'SIANG KITCHEN' }[tab] || 'ERRANDS';
   if (tab === 'battle') { renderBattle(); showTip('battle', $('battle-pane')); }
+  if (tab === 'kitchen') { kitchenResult = null; kitchenMeal = null; renderKitchen(); }
 }
 $('tab-errand').addEventListener('click', () => showErrandTab('errand'));
 $('tab-battle').addEventListener('click', () => showErrandTab('battle'));
+$('tab-kitchen').addEventListener('click', () => showErrandTab('kitchen'));
+
+/* ---------- 小湘廚房（皮寶企劃，11/20）：選食材開煮 → 餵小湘 ---------- */
+let kitchenPicked = []; let kitchenMeal = null; let kitchenResult = null; let kitchenBusy = false;
+function renderKitchen() {
+  const k = state.kitchen;
+  $('kitchen-ings').replaceChildren(...kitchen.INGREDIENTS.map(i => {
+    const n = k.ingredients[i.id] || 0;
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'kitchen-ing'; btn.dataset.ing = i.id;
+    btn.disabled = !n && !kitchenPicked.includes(i.id); btn.setAttribute('aria-pressed', String(kitchenPicked.includes(i.id)));
+    btn.innerHTML = '<span class="kitchen-ing__icon" aria-hidden="true"></span><b></b><small></small>';
+    btn.querySelector('span').textContent = i.icon; btn.querySelector('b').textContent = i.name;
+    btn.querySelector('small').textContent = n ? `× ${n}` : `第 ${i.chapter} 章`;
+    btn.addEventListener('click', () => { kitchenPicked = kitchenPicked.includes(i.id) ? kitchenPicked.filter(x => x !== i.id) : [...kitchenPicked, i.id].slice(-3); renderKitchen(); });
+    return btn;
+  }));
+  const dish = kitchenPicked.length >= 2 ? kitchen.dishOf(kitchenPicked) : null;
+  $('kitchen-preview').textContent = !kitchenPicked.length ? '選 2～3 種食材' : !dish ? `${kitchenPicked.map(id => kitchen.ING[id].name).join(' ＋ ')} ＋ …` : k.known[dish.id] ? dish.name : `${kitchenPicked.map(id => kitchen.ING[id].icon).join(' ＋ ')} → ？？？`;
+  $('kitchen-cook').disabled = !dish || kitchenBusy;
+  const meals = Object.entries(k.meals).map(([id, n]) => ({ dish: kitchen.dishById(id), n })).filter(m => m.dish);
+  if (kitchenMeal && !k.meals[kitchenMeal]) kitchenMeal = null;
+  $('kitchen-meals').replaceChildren(...(meals.length ? meals.map(({ dish: d, n }) => {
+    const btn = document.createElement('button'); btn.type = 'button'; btn.className = `kitchen-meal${d.dark ? ' is-dark' : ''}`; btn.setAttribute('aria-pressed', String(kitchenMeal === d.id));
+    btn.innerHTML = '<span aria-hidden="true"></span><b></b><small></small>';
+    btn.querySelector('span').textContent = d.dark ? '🫕' : d.recipe ? '🍽️' : '🥣';
+    btn.querySelector('b').textContent = `${d.name} × ${n}`;
+    btn.querySelector('small').textContent = d.effect ? `${d.type}｜吃了：${kitchen.buffText(d.effect)}` : d.type;
+    btn.addEventListener('click', () => { kitchenMeal = kitchenMeal === d.id ? null : d.id; kitchenResult = null; renderKitchen(); });
+    return btn;
+  }) : [Object.assign(document.createElement('p'), { className: 'residents-intro', textContent: '還沒有料理，先挑食材開煮吧。' })]));
+  // 選好料理 → 選小湘
+  $('kitchen-feed').hidden = !kitchenMeal;
+  if (kitchenMeal) {
+    const d = kitchen.dishById(kitchenMeal);
+    $('kitchen-feed-hint').textContent = `要把「${d.name}」給誰吃？（每位每天從點、摸、布丁、料理最多拿 ${DAILY_CAP} 點好感，滿了也還是可以餵）`;
+    const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
+    $('kitchen-siangs').replaceChildren(...owned.map(no => {
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang'; btn.dataset.siang = no;
+      const r = k.tasted[no]?.[d.id]; const left = capLeft(state, no, todayKey());
+      btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: r !== undefined ? `${kitchen.RATINGS[r].icon} ${kitchen.RATINGS[r].label}` : left ? `今天還能 +${left}` : '今天好感已滿' }));
+      if (k.buffs[no]) btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '🍳' }));
+      btn.addEventListener('click', () => void feedKitchen(no, d.id));
+      return btn;
+    }));
+  }
+  const res = $('kitchen-result'); res.hidden = !kitchenResult;
+  if (kitchenResult) {
+    const r = kitchenResult; const rt = kitchen.RATINGS[r.rating];
+    res.replaceChildren(siangImg(r.no, 'kitchen-result__img'));
+    const box = document.createElement('div');
+    box.innerHTML = '<small></small><b></b><p></p><span></span>';
+    box.querySelector('small').textContent = `${CHARACTERS[r.no].name} · ${r.dish.name}`;
+    box.querySelector('b').textContent = `${rt.icon} ${rt.label}${r.secretFound ? '　💖 找到秘密最愛！' : ''}`;
+    box.querySelector('p').textContent = `「${r.line}」`;
+    box.querySelector('span').textContent = [r.added ? `♡ +${r.added}` : '今天的好感已經滿了（明天再來）', r.buff && `下一次討伐：${kitchen.buffText(r.buff)}`].filter(Boolean).join(' · ');
+    res.append(box);
+  }
+  // 圖鑑
+  const known = Object.keys(k.known).length;
+  $('kitchen-stats').textContent = `做過 ${known} / 286 道 · 特色料理 ${kitchen.recipesFound(state)} / 8 · 黑暗料理 ${kitchen.darkFound(state)} 道 · 秘密最愛 ${kitchen.secretsFound(state)} 個`;
+  $('kitchen-book').replaceChildren(...kitchen.RECIPES.map(rc => {
+    const id = [...rc.ings].sort().join('+'); const got = Boolean(k.known[id]);
+    const card = document.createElement('div'); card.className = `kitchen-recipe${got ? ' is-found' : ''}${rc.dark ? ' is-dark' : ''}`;
+    card.innerHTML = '<b></b><small></small><p></p>';
+    card.querySelector('b').textContent = got ? rc.name : '？？？';
+    card.querySelector('small').textContent = got ? `${rc.ings.map(x => kitchen.ING[x].icon + kitchen.ING[x].name).join(' ＋ ')}` : rc.type;
+    card.querySelector('p').textContent = got ? (rc.effect ? `${rc.type}｜${kitchen.buffText(rc.effect)}（看小湘喜不喜歡）` : rc.dark ? '黑暗料理｜勇氣可嘉' : `${rc.type}｜好感度專用`) : rc.clue;
+    return card;
+  }));
+  const secrets = Object.entries(k.tasted).flatMap(([no, list]) => Object.entries(list).filter(([, r]) => r === 3).map(([id]) => ({ no, dish: kitchen.dishById(id) })));
+  $('kitchen-secrets').replaceChildren(...(secrets.length ? secrets.map(({ no, dish: d }) => {
+    const row = document.createElement('div'); row.className = 'kitchen-secret';
+    row.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: `💖 ${CHARACTERS[no].name}：${d.name}` }));
+    return row;
+  }) : [Object.assign(document.createElement('p'), { className: 'residents-intro', textContent: '還沒找到任何一位的秘密最愛。找到的時候，她會把那道料理畫成小愛心貼在這裡。' })]));
+}
+$('kitchen-cook').addEventListener('click', async () => {
+  if (kitchenBusy) return; kitchenBusy = true; $('kitchen-cook').disabled = true;
+  try {
+    const t = await updateState(current => kitchen.cook(current, kitchenPicked));
+    state = t.state;
+    if (typeof t.result === 'string') { $('kitchen-status').textContent = t.result; }
+    else { const d = t.result.dish; kitchenPicked = []; kitchenMeal = d.id; kitchenResult = null; $('kitchen-status').textContent = `${d.dark ? '🫕 ……煮出了黑暗料理：' : '🍳 煮好了：'}${d.name}${t.result.first ? '（第一次做出來！）' : ''}`; }
+  } finally { kitchenBusy = false; renderKitchen(); }
+});
+async function feedKitchen(no, dishId) {
+  if (kitchenBusy) return; kitchenBusy = true;
+  try {
+    const t = await updateState(current => kitchen.feed(current, no, dishId, todayKey()));
+    state = t.state;
+    if (typeof t.result === 'string') { $('kitchen-status').textContent = t.result; return; }
+    kitchenResult = t.result; $('kitchen-status').textContent = '';
+    if (t.result.up.length) queueBondUps([{ no, up: t.result.up }]);
+    renderAll();
+  } finally { kitchenBusy = false; renderKitchen(); }
+}
 function renderBattle() {
   renderAtlas($('team-bond-atlas'),state);
   const b = state.battle; const now = Date.now();
@@ -3111,7 +3207,7 @@ function renderBattleStage() {
   const fc = battlePicked.length ? battle.forecast(state, battlePicked, id) : null;
   $('battle-forecast').innerHTML = '';
   if (fc) {
-    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契')].filter(Boolean).join(' · ');
+    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}`].filter(Boolean).join(' · ');
     $('battle-forecast').innerHTML = `<b></b><span></span>`;
     $('battle-forecast').querySelector('b').textContent = `隊伍戰力 ${fc.total} vs ${e.power} · ${fc.label}`;
     $('battle-forecast').querySelector('span').textContent = bonus || '沒有加成（帶 ✦ 的小湘有剋制效果）';
