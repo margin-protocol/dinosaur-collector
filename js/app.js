@@ -28,6 +28,7 @@ import { WEATHER_LINES } from './weather-lines.js';
 import { RECIPE_LINES } from './recipe-lines.js';
 import { FRIEND_LINES } from './friend-lines.js';
 import { NAP_LINES } from './nap-lines.js';
+import { createPhotoBooth } from './photo-booth.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, weatherBoosts, KIND_NAMES, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
@@ -105,7 +106,23 @@ function homeAmbience() {
   return { rain: rainingToday(state, todayKey()), night: h >= 19 || h < 6, holiday: activeHolidays()[0]?.id || null };
 }
 const PET_LINES = ['好舒服～', '再摸一下嘛！', '嘿嘿，好害羞……', '最喜歡被你摸頭了！', '呼嚕呼嚕～'];
+// 狂戳小湘：3 秒內戳到第 5 下就會抗議，抗議期間的戳戳不算數（愛要緩慢給予）
+const POKE_WINDOW = 3000, POKE_LIMIT = 5, POKE_COOLDOWN = 2500;
+const pokes = new Map();
+function tooManyPokes(no, now = Date.now()) {
+  const p = pokes.get(no) || { times: [], until: 0 };
+  if (now < p.until) { pokes.set(no, p); return 'cooldown'; }
+  p.times = p.times.filter(t => now - t < POKE_WINDOW); p.times.push(now);
+  if (p.times.length >= POKE_LIMIT) { p.times = []; p.until = now + POKE_COOLDOWN; pokes.set(no, p); return 'angry'; }
+  pokes.set(no, p); return '';
+}
 const room = createRoom($('resident-lanes'), character => {
+  const poke = tooManyPokes(character.no);
+  if (poke) {
+    room.squish(character.no);
+    if (poke === 'angry') { room.bubble(character.no, '不要戳啦！！！小湘要扁掉了૮₍˃⤙˂₎ა\n愛要緩慢給予！', 3200); buzz([30, 40, 30]); }
+    return;
+  }
   say(character.line, 'happy', 4000);
   room.peek(character.no, no => openDexDetail(no));
   // 點一下 = 打招呼，也算摸摸頭一次（很多人是用點的，不是用滑的）
@@ -1384,6 +1401,17 @@ $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
 
+/* ---------- 外出合照 ---------- */
+const photoBooth = createPhotoBooth({ dialog: $('photo-dialog'), getState: () => state, onTaken: no => {
+  void updateState(current => gainBond(current, no, 'photo', todayKey())).then(t => {
+    state = t.state; const bond = t.result;
+    if (bond.added) toast(`和${CHARACTERS[no].name}拍了合照！♡+${bond.added}`);
+    if (bond.up.length) queueBondUps([{ no, up: bond.up }]);
+  });
+} });
+$('open-photo').addEventListener('click', () => { $('function-center').close(); photoBooth.open(); });
+$('dex-photo').addEventListener('click', () => { const no = $('dex-photo').dataset.no; $('dex-detail').close(); photoBooth.open(no); });
+
 /* ---------- 焦點框：手指點不畫、鍵盤才畫 ---------- */
 document.addEventListener('pointerdown', () => { document.documentElement.dataset.input = 'pointer'; }, { capture: true, passive: true });
 document.addEventListener('keydown', (e) => { if (e.key === 'Tab') document.documentElement.dataset.input = 'keyboard'; }, { capture: true });
@@ -1544,6 +1572,7 @@ function openDexDetail(no) {
   const img = $('dex-detail-img');
   img.className = `dex-detail__img${owned ? '' : ' is-locked'}`; img.alt = owned ? c.name : '尚未收集的小湘';
   loadWithFallback(img, characterSources(c.image));
+  $('dex-photo').hidden = !owned; $('dex-photo').dataset.no = no;
   $('dex-detail-no').textContent = `No.${c.no} · ${owned ? c.rarity : '?'} · ${SERIES[c.series]?.name || ''}`;
   $('dex-detail-name').textContent = owned ? c.name : '???';
   $('dex-detail-line').textContent = owned ? c.line : '';

@@ -7,7 +7,7 @@ import { BOND_STORIES, BOND_LINES } from './bond-copy.js';
 export const LEVELS = [0, 10, 30, 60, 100]; // Lv.1～Lv.5 需要的累計點數
 export const MAX_LEVEL = LEVELS.length;
 export const DAILY_CAP = 15; // 首頁互動（點、摸、布丁）每位每天最多加這麼多
-export const GAIN = { tap: 1, pet: 1, snack: 3, home: 2, errand: 4, story: 2, duplicate: 10 };
+export const GAIN = { tap: 1, pet: 1, snack: 3, home: 2, errand: 4, story: 2, duplicate: 10, photo: 3 }; // photo：外出合照，每位每天一次
 const CAPPED = new Set(['tap', 'pet', 'snack']);
 export const LEVEL_REWARDS = { 2: { energy: 10 }, 3: { fossils: 3 }, 4: { energy: 20 }, 5: { fossils: 10 } };
 
@@ -79,7 +79,7 @@ export function ensureAffection(state) {
   const clean = {};
   for (const [no, v] of Object.entries(old)) {
     if (!CHARACTERS[no] || !v || !Number.isFinite(v.pts)) continue;
-    clean[no] = { pts: Math.max(0, Math.floor(v.pts)), day: typeof v.day === 'string' ? v.day : '', today: Number.isFinite(v.today) ? v.today : 0, home: typeof v.home === 'string' ? v.home : '' };
+    clean[no] = { pts: Math.max(0, Math.floor(v.pts)), day: typeof v.day === 'string' ? v.day : '', today: Number.isFinite(v.today) ? v.today : 0, home: typeof v.home === 'string' ? v.home : '', ...(typeof v.photo === 'string' ? { photo: v.photo } : {}) };
   }
   state.affection = clean;
   return clean;
@@ -102,6 +102,7 @@ export function gain(state, no, kind, today, times = 1) {
   if (!CHARACTERS[no] || !state.dex?.[no]) return { added: 0, level: 1, up: [] };
   const e = entry(state, no);
   let amount = (GAIN[kind] || 0) * times;
+  if (kind === 'photo') { if (e.photo === today) amount = 0; else e.photo = today; }
   if (CAPPED.has(kind)) {
     if (e.day !== today) { e.day = today; e.today = 0; }
     amount = Math.min(amount, DAILY_CAP - e.today);

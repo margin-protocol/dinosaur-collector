@@ -123,6 +123,12 @@ export function createRoom(host, onGreet, onPet = () => {}) {
     host.append(b);
     clearTimeout(b.timer); setTimeout(() => b.remove(), ms);
   }
+  // 被狂戳：扁扁地壓下去再彈回來
+  function squish(no) {
+    const l = laneOf(no); if (!l) return;
+    l.portrait.classList.remove('is-squished', 'is-happy'); void l.portrait.offsetWidth; l.portrait.classList.add('is-squished');
+    setTimeout(() => l.portrait.classList.remove('is-squished'), 700);
+  }
   function happy(no) {
     const l = laneOf(no); if (!l) return;
     if (l.doll) { l.portrait.classList.remove('is-happy'); void l.portrait.offsetWidth; l.portrait.classList.add('is-happy'); }
@@ -183,6 +189,6 @@ export function createRoom(host, onGreet, onPet = () => {}) {
     cheer() { actors.forEach(actor => actor.cheer?.()); },
     residents: () => lanes.map(l => l.no),
     isActive: () => active,
-    hearts, bubble, happy, peek,
+    hearts, bubble, happy, peek, squish,
   };
 }

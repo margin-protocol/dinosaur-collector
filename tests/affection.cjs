@@ -9,13 +9,13 @@ await p.reload();await p.waitForTimeout(1800);
 let s=await save();assert.equal(s.affection['005'].pts,2,'home presence +2');
 // tap 8 times → 10 pts → Lv.2 popup with +10 energy
 const slot=p.locator('.resident-slot[data-character="005"] .resident-static');
-for(let i=0;i<8;i++){await slot.click();await p.waitForTimeout(160);}
+for(let i=0;i<8;i++){await slot.click();await p.waitForTimeout(800);} // 慢慢點：太快會被「不要戳啦」擋下
 await p.locator('#bond-up[open]').waitFor({timeout:5000});assert.match(await p.textContent('#bond-up-title'),/Lv\.2/);assert.match(await p.textContent('#bond-up-reward'),/10 能量/);
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.click('#bond-up-ok');
 s=await save();assert.equal(s.affection['005'].pts,10);assert.equal(s.affection['005'].today,8);
 // cap: 15 per day from home interaction
-for(let i=0;i<10;i++){await slot.click();await p.waitForTimeout(120);}
+for(let i=0;i<10;i++){await slot.click();await p.waitForTimeout(800);}
 s=await save();assert.equal(s.affection['005'].today,15);assert.equal(s.affection['005'].pts,17);
 // dex detail shows level and unlocked line
 await p.evaluate(()=>location.hash='dex');await p.waitForTimeout(300);await p.click('[data-dex-no="005"]');await p.locator('#dex-detail[open]').waitFor();
