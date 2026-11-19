@@ -1,3 +1,4 @@
+import { renderBattleLog } from './battle-log.js';
 import { createBattleTheater } from './battle-theater.js';
 import { renderAtlas, renderTeamTools } from './team-ui.js';
 import { savePreset, ensureTeamBonds, effectText } from './team-bonds.js';
@@ -3263,7 +3264,7 @@ async function collectBattle(id) {
     box.querySelector('small').textContent = label; box.querySelector('b').textContent = value; $('battle-result-score').append(box);
   }
   if (r.record && r.delta !== null) $('battle-result-score').lastChild.previousSibling.querySelector('small').textContent = '新紀錄！';
-  $('battle-result-log').replaceChildren(...rep.log.map(line => Object.assign(document.createElement('li'), { textContent: line, className: line.startsWith('✦') ? 'is-special' : '' })));
+  renderBattleLog($('battle-result-log'),rep.log);
   $('battle-result-log').append(Object.assign(document.createElement('li'), { className: 'is-power', textContent: `隊伍戰力 ${rep.power} vs ${rep.enemyPower}` }));
   $('battle-result-review').hidden = !r.review;
   if (r.review) { guguAvatar(document.querySelector('#battle-result-review .gugu-review__avatar')); $('battle-review-label').textContent = `咕咕書評 · ${REVIEW_LABEL[r.review.kind] || ''}`; $('battle-review-text').textContent = r.review.text; $('battle-review-note').textContent = r.review.note || ''; $('battle-review-note').hidden = !r.review.note; }
