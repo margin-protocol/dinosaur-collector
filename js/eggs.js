@@ -104,7 +104,7 @@ export const EGGS = {
     warmthNeeded: 100,
     hatches: null,
     stocked: true, // 見面時掃描湘的約會 QR Code 取得
-    pool: { '014': 55, '042': 45 }, // 約會小湘、蝰蝰♡
+    pool: { '014': 40, '042': 30, '083': 15, '084': 15 }, // 約會小湘、蝰蝰♡、蝰蝰睡著版、換我睡著版
     // 正式三層素材：assets/eggs/date/{shell,glow,cracks}.webp
   },
   county: {
@@ -244,6 +244,10 @@ export const CHARACTERS = {
   '081': { no: '081', name: '彩虹畫家小湘', rarity: 'SR', line: "「天空又沒有規定只能是藍色！今天我要畫一片草莓牛奶色的雲！」", image: 'siang-081-rainbow-painter', series: 'recipe', special: true },
   // 摯友小湘（哥哥ver）：湘 11/19 交付。歸入既有摯友系列，和 036–041 一樣從暗號蛋孵出
   '082': { no: '082', name: '摯友小湘（哥哥ver）', rarity: 'SR', line: "「嘿嘿，哥哥今天又帶好吃的來了！我是不是全世界最幸福的小湘呀？」", image: 'siang-082-bestie-brother', series: 'friends' },
+  // 約會午睡三部曲（湘 11/19 交付）：083、084 從約會蛋孵出；085 是隱藏配方（083＋084 一起住）
+  '083': { no: '083', name: '約會小湘・蝰蝰睡著版', rarity: 'SSR', line: "「蝰蝰又睡著了૮₍˃⤙˂₎ა ……算了，一起睡好了⋯⋯♡」", image: 'siang-hug-sleeping-horned-viper', series: 'date', special: true },
+  '084': { no: '084', name: '約會小湘・換我睡著版', rarity: 'SSR', line: "「我才沒有睡著……只是眼睛休息一下……蝰蝰，你不要偷笑嘛……呼……♡」", image: 'siang-sleeping-unamused-horned-viper', series: 'date', special: true },
+  '085': { no: '085', name: '約會小湘・雙雙睡著版', rarity: 'SSR', line: "「蝰蝰……我們就睡五分鐘喔……五分鐘之後……一定要起床……呼……♡」", image: 'siang-085-sleepy-together-date', series: 'recipe', special: true },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序

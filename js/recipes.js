@@ -18,6 +18,8 @@ export const RECIPES = [
     note: { title: '只在夜裡開的花', poem: '一位白天照顧花草，一位晚上還醒著。有些花，是不是在等人說晚安？', clues: ['尋找熱愛照顧植物的夥伴', '尋找深夜還醒著的夥伴'], found: ['有人懂得照料花草。', '有人還沒睡。'] } },
   { id: 'rainbow-painter', target: '081', members: ['074', '008'], days: 3, text: '彩虹小湘和晴空小湘一起住 3 天',
     note: { title: '天空的畫布', poem: '一位帶來七種顏色，一位守著乾淨的藍天。如果天空借你畫畫，你想畫什麼？', clues: ['尋找帶著顏色的夥伴', '尋找喜歡藍天的夥伴'], found: ['顏料準備好了。', '畫布攤開了。'] } },
+  { id: 'sleepy-together-date', target: '085', members: ['083', '084'], days: 3, text: '蝰蝰睡著版和換我睡著版一起住 3 天',
+    note: { title: '誰先睡著了', poem: '一位看著蝰蝰睡著，一位被蝰蝰看著睡著。如果兩個都睏了，誰來顧誰？', clues: ['尋找抱著熟睡蝰蝰的夥伴', '尋找被蝰蝰守著睡覺的夥伴'], found: ['有人輕輕拍著蝰蝰。', '有人睡得好香。'] } },
 ];
 export const NIGHT_FROM = 19, NIGHT_UNTIL = 5;
 const pad = (n) => String(n).padStart(2, '0');
