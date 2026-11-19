@@ -20,7 +20,7 @@ import { RECIPES, tickRecipes, recipeDue, nightKey } from './recipes.js';
 import { ensureBingo, bingoStatus, bingoReady, claimBingo, REWARDS as BINGO_REWARDS } from './bingo.js';
 import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet, pet, feedSnack, snacksLeft, PET, SNACK, photoSeen, rememberPhoto } from './energy.js';
 import { checkIn } from './travel.js';
-import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
+import { cloudConfig, saveCloudConfig, createCloud, isInvite } from './cloud.js';
 import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
 import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
 import { applyReward, validReward, describeReward } from './gifts.js';
@@ -2185,9 +2185,13 @@ const lastBackup = () => { try { return localStorage.getItem(LAST_BACKUP_KEY); }
 
 function renderCloud(message = '') {
   const config = cloudConfig();
+  const siang = config?.kind === 'siang';
+  $('cloud-invite').value = '';
+  $('cloud-invite').placeholder = siang ? '已儲存（要更換再貼上新的）' : 'SIANG-……';
   $('cloud-repo').value = config?.repo || $('cloud-repo').value;
   $('cloud-token').value = '';
-  $('cloud-token').placeholder = config ? '已儲存（要更換再貼上新的）' : 'github_pat_…';
+  $('cloud-token').placeholder = config && !siang ? '已儲存（要更換再貼上新的）' : 'github_pat_…';
+  if (config && !siang) $('cloud-legacy').open = true;
   $('cloud-save').textContent = config ? '更新連線' : '連線';
   $('cloud-backup').hidden = !config;
   $('cloud-restore-confirm').hidden = true;
@@ -2220,9 +2224,23 @@ $('close-cloud').addEventListener('click', () => $('cloud-dialog').close());
 $('cloud-dialog').addEventListener('close', syncRoomActivity);
 $('cloud-form').addEventListener('submit', async (event) => {
   event.preventDefault();
+  const invite = $('cloud-invite').value.trim();
+  if (invite || (cloudConfig()?.kind === 'siang' && !$('cloud-repo').value.trim())) {
+    const token = invite || cloudConfig().token;
+    if (!isInvite(token)) { $('cloud-status').textContent = '邀請碼看起來不太對，要是 SIANG- 開頭的那一串。'; return; }
+    $('cloud-save').disabled = true; $('cloud-status').textContent = '連線中…';
+    try {
+      const me = await createCloud({ kind: 'siang', token }).test();
+      saveCloudConfig({ kind: 'siang', token, name: me.name });
+      renderCloud(`連線成功！歡迎，${me.name}～`);
+      void autoBackup().then(() => renderCloud($('cloud-status').textContent));
+    } catch (err) { $('cloud-status').textContent = `連不上：${err.message}`; }
+    finally { $('cloud-save').disabled = false; }
+    return;
+  }
   const repo = $('cloud-repo').value.trim().replace(/^https:\/\/github\.com\//, '').replace(/\/$/, '');
   const token = $('cloud-token').value.trim() || cloudConfig()?.token || '';
-  if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !token) { $('cloud-status').textContent = '請填資料庫名稱（像 owner/repo）和通行碼。'; return; }
+  if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !token) { $('cloud-status').textContent = '請貼上湘給你的邀請碼（舊方式才需要資料庫名稱和通行碼）。'; return; }
   $('cloud-save').disabled = true; $('cloud-status').textContent = '連線中…';
   try {
     const info = await createCloud({ repo, token }).test();
@@ -2254,7 +2272,7 @@ $('cloud-restore-confirm').addEventListener('click', () => {
   for (const [k, v] of Object.entries(pendingRestore.keys)) if (BACKUP_KEYS.includes(k)) localStorage.setItem(k, v);
   location.reload();
 });
-$('cloud-disconnect').addEventListener('click', () => { saveCloudConfig(null); $('cloud-repo').value = ''; renderCloud('已中斷連線，這支手機不再保存通行碼。'); });
+$('cloud-disconnect').addEventListener('click', () => { saveCloudConfig(null); $('cloud-repo').value = ''; $('cloud-invite').value = ''; renderCloud('已中斷連線，這支手機不再保存通行碼。'); });
 
 // 暗號：正規化 → 雜湊 → 讀 codes/<雜湊>.json → 驗證湘的簽章 → 檢查期限與是否用過 → 發獎勵
 async function redeemCode(text) {

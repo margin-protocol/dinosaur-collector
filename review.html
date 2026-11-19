@@ -14,19 +14,48 @@
   <header><small>CHIEF RESEARCHER</small><h1>首席研究員審核室</h1><p>只有湘的手機需要打開這一頁。印章（私鑰）只存在這支手機裡。</p></header>
 
   <section class="card" id="sec-cloud">
-    <h2>1. 玩家與資料庫</h2>
-    <p class="hint">每位玩家各有一個私人資料庫。這裡用「審核員專用」的 token；印章所有玩家共用。下面的暗號和紙條，都是給目前選擇的玩家。</p>
+    <h2>1. 玩家與雲端</h2>
+    <p class="hint">所有玩家都放在「小湘雲端」：新玩家只要一組邀請碼，不用 GitHub。下面的暗號、紙條、委託，都是給目前選擇的玩家。印章所有玩家共用。</p>
+    <div id="rv-setup" class="form">
+      <p class="hint" id="rv-setup-hint">第一次使用：按下面的按鈕，這支手機會產生一組「審核員通行碼」。之後換手機時要用它登入，請存進密碼管理器。</p>
+      <button class="btn" type="button" id="rv-claim">產生審核員通行碼</button>
+      <label>已經有審核員通行碼<input id="rv-token" type="password" autocomplete="off" spellcheck="false" placeholder="REVIEW-……"></label>
+      <button class="btn btn--quiet" type="button" id="rv-login">用通行碼登入</button>
+    </div>
+    <div id="rv-backup" class="form" hidden>
+      <p class="hint">⚠ 這是妳的審核員通行碼，只會顯示這一次。請複製後存進密碼管理器（不要傳給任何人）。</p>
+      <textarea id="rv-backup-text" rows="2" readonly></textarea>
+      <button class="btn" type="button" id="rv-backup-copy">複製通行碼</button>
+      <button class="btn btn--quiet" type="button" id="rv-backup-done">我存好了</button>
+    </div>
     <div class="row" id="player-row" hidden>
       <select id="player-select" aria-label="目前的玩家"></select>
       <button class="btn btn--quiet" type="button" id="player-add">＋ 新增玩家</button>
     </div>
-    <form id="cloud-form" class="form">
-      <label>玩家名字<input id="player-name" maxlength="20" autocomplete="off" placeholder="例如：男友、朋朋 A"></label>
-      <label>資料庫（owner/repo）<input id="cloud-repo" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="margin-protocol/xxxx"></label>
-      <label>通行碼（token）<input id="cloud-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
-      <button class="btn" type="submit" id="cloud-save">連線</button>
-      <div class="row"><button class="btn btn--quiet" type="button" id="player-cancel" hidden>取消</button><button class="btn btn--quiet" type="button" id="player-remove" hidden>移除這位玩家</button></div>
+    <form id="rv-new" class="form" hidden>
+      <label>新玩家的名字<input id="rv-new-name" maxlength="20" autocomplete="off" placeholder="例如：男友、朋朋 A"></label>
+      <div class="row"><button class="btn" type="submit">產生邀請碼</button><button class="btn btn--quiet" type="button" id="rv-new-cancel">取消</button></div>
     </form>
+    <div id="rv-invite" class="form" hidden>
+      <p class="hint" id="rv-invite-hint"></p>
+      <textarea id="rv-invite-text" rows="2" readonly></textarea>
+      <button class="btn" type="button" id="rv-invite-copy">複製邀請碼</button>
+    </div>
+    <div class="row" id="rv-player-actions" hidden>
+      <button class="btn btn--quiet" type="button" id="rv-reset">重新產生邀請碼</button>
+      <button class="btn btn--quiet" type="button" id="rv-revoke">停用這位玩家</button>
+    </div>
+    <details id="rv-legacy">
+      <summary>舊方式：GitHub 私人資料庫的玩家</summary>
+      <button class="btn btn--quiet" type="button" id="gh-add">＋ 新增 GitHub 玩家</button>
+      <form id="cloud-form" class="form">
+        <label>玩家名字<input id="player-name" maxlength="20" autocomplete="off" placeholder="例如：男友、朋朋 A"></label>
+        <label>資料庫（owner/repo）<input id="cloud-repo" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="margin-protocol/xxxx"></label>
+        <label>通行碼（token）<input id="cloud-token" type="password" autocomplete="off" spellcheck="false" placeholder="github_pat_…"></label>
+        <button class="btn" type="submit" id="cloud-save">連線</button>
+        <div class="row"><button class="btn btn--quiet" type="button" id="player-cancel" hidden>取消</button><button class="btn btn--quiet" type="button" id="player-remove" hidden>移除這位玩家</button></div>
+      </form>
+    </details>
     <p class="status" id="cloud-status" role="status"></p>
   </section>
 
@@ -66,6 +95,7 @@
       <label id="code-character-row" hidden>指定小湘<select id="code-character"></select></label>
       <label>有效期限（可不填）<input id="code-expires" type="date"></label>
       <label class="check"><input id="code-reusable" type="checkbox"> 可以重複兌換（每天一次；預設整個暗號只能用一次）</label>
+      <label class="check" id="code-everyone-row" hidden><input id="code-everyone" type="checkbox"> 送給所有玩家（小湘雲端的每位玩家都能用；每人各算一次）</label>
       <label>備註（只有妳看得到，可不填）<input id="code-note" maxlength="60" placeholder="例如：生日卡片裡"></label>
       <button class="btn" type="submit" id="code-create">蓋章並送出</button>
     </form>

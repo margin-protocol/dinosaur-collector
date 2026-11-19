@@ -1,5 +1,5 @@
 // 照片委託（出題、上傳、退回、再拍、通過、獎勵、記憶檔案）與約會 QR／約會碼（掃描網址、手動輸入、過期、只能用一次、約會蛋）
-const {chromium}=require('playwright'),assert=require('node:assert/strict'),fake=require('./fake-github.cjs')();
+require('./_legacy-cloud.cjs');const {chromium}=require('playwright'),assert=require('node:assert/strict'),fake=require('./fake-github.cjs')();
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const errs=[];const opts={viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'};
 const rc=await b.newContext(opts);await rc.route('https://api.github.com/**',fake.handler);const r=await rc.newPage();r.on('pageerror',e=>errs.push('review: '+e.message));

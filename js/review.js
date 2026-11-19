@@ -1,5 +1,5 @@
 // 首席研究員審核室：只在湘的手機使用。印章（私鑰）存在這支手機的 IndexedDB。
-import { cloudConfig, saveCloudConfig, createCloud } from './cloud.js';
+import { cloudConfig, saveCloudConfig, createCloud, claimReviewer, reviewerClaimed } from './cloud.js';
 import { generateKeys, exportJwk, importPrivate, publicFromPrivate, signPayload, normalizeCode, sha256Hex } from './sign.js';
 import { CHARACTERS, EGGS } from './eggs.js';
 import { describeReward } from './gifts.js';
@@ -53,61 +53,145 @@ function renderKey(message = '') {
 }
 
 /* ---------- 連線 ---------- */
-// 多位玩家：每位玩家一個私人資料庫＋一把 token，審核室可以切換。印章（私鑰）全部共用同一把
+// 小湘雲端：審核員通行碼存在這支手機；玩家名單從雲端讀。舊的 GitHub 玩家（每人一個私人 repo）也還能選。
 const PLAYERS_KEY = 'siang-collector:review-players:v1';
+const REVIEWER_KEY = 'siang-collector:reviewer-token:v1';
 function loadPlayers() {
   try {
     const p = JSON.parse(localStorage.getItem(PLAYERS_KEY) || 'null');
-    if (p && Array.isArray(p.list)) return { list: p.list.filter(x => x && /^[\w.-]+\/[\w.-]+$/.test(x.repo) && x.token), active: p.active || 0 };
+    if (p && Array.isArray(p.list)) return { list: p.list.filter(x => x && /^[\w.-]+\/[\w.-]+$/.test(x.repo) && x.token), active: p.active ?? null };
   } catch {}
   const old = cloudConfig(REVIEW_CLOUD_KEY); // 舊版只有一位玩家，搬進名單
-  return { list: old ? [{ name: '玩家 1', ...old }] : [], active: 0 };
+  return { list: old ? [{ name: '玩家 1', ...old }] : [], active: null };
 }
-let players = loadPlayers();
+let players = loadPlayers(); // 舊 GitHub 玩家
+let cloudPlayers = []; // 小湘雲端玩家
+let reviewerToken = (() => { try { return localStorage.getItem(REVIEWER_KEY) || ''; } catch { return ''; } })();
 const savePlayers = () => localStorage.setItem(PLAYERS_KEY, JSON.stringify(players));
-const config = () => players.list[players.active] || null;
-const cloud = () => { const c = config(); if (!c) throw new Error('請先在第 1 步連線資料庫'); return createCloud(c); };
+// active：'cf:<玩家 id>' 或 'gh:<序號>'；舊存的數字當成 gh
+const activeKey = () => (players.active == null ? null : typeof players.active === 'number' ? `gh:${players.active}` : players.active);
+function entries() {
+  return [
+    ...cloudPlayers.map(p => ({ key: `cf:${p.id}`, label: `${p.name}${p.revoked ? '（已停用）' : ''}`, config: { kind: 'siang', token: reviewerToken, player: p.id }, name: p.name, cloud: p })),
+    ...players.list.map((p, i) => ({ key: `gh:${i}`, label: `${p.name}（GitHub 舊）`, config: p, name: p.name })),
+  ];
+}
+const current = () => entries().find(e => e.key === activeKey()) || entries()[0] || null;
+const config = () => current()?.config || null;
+const cloud = () => { const c = config(); if (!c) throw new Error('請先在第 1 步選一位玩家'); return createCloud(c); };
+const admin = () => createCloud({ kind: 'siang', token: reviewerToken });
 let adding = false;
+
 function renderCloud(message = '') {
-  const c = config();
+  const cur = current();
   const sel = $('player-select');
-  sel.replaceChildren(...players.list.map((p, i) => Object.assign(document.createElement('option'), { value: String(i), textContent: `${p.name}（${p.repo}）` })));
-  sel.value = String(players.active);
-  $('player-row').hidden = !players.list.length;
-  const editing = adding || !c;
-  $('player-name').value = editing ? '' : c.name;
-  $('cloud-repo').value = editing ? '' : c.repo;
+  sel.replaceChildren(...entries().map(e => Object.assign(document.createElement('option'), { value: e.key, textContent: e.label })));
+  if (cur) sel.value = cur.key;
+  $('rv-setup').hidden = Boolean(reviewerToken);
+  $('player-row').hidden = !reviewerToken && !players.list.length;
+  $('player-add').hidden = !reviewerToken;
+  $('rv-player-actions').hidden = !cur?.cloud;
+  $('rv-revoke').textContent = cur?.cloud?.revoked ? '恢復這位玩家' : '停用這位玩家';
+  // 舊 GitHub 表單
+  const gh = cur && !cur.cloud ? cur.config : null;
+  const editing = adding || !gh;
+  $('player-name').value = editing ? '' : gh.name;
+  $('cloud-repo').value = editing ? '' : gh.repo;
   $('cloud-token').value = '';
   $('cloud-token').placeholder = editing ? 'github_pat_…' : '已儲存（要更換再貼上新的）';
   $('cloud-save').textContent = editing ? '新增並連線' : '更新這位玩家';
-  $('player-cancel').hidden = !(adding && c);
-  $('player-remove').hidden = editing || players.list.length < 1;
-  $('cloud-status').textContent = message || (c && !adding ? `目前：${c.name}` : '');
-  document.querySelectorAll('[data-player-name]').forEach(el => { el.textContent = c ? c.name : '玩家'; });
+  $('player-cancel').hidden = !(adding && gh);
+  $('player-remove').hidden = !gh;
+  $('cloud-status').textContent = message || (cur ? `目前：${cur.name}` : reviewerToken ? '還沒有玩家，按「＋ 新增玩家」產生第一組邀請碼。' : '');
+  document.querySelectorAll('[data-player-name]').forEach(el => { el.textContent = cur ? cur.name : '玩家'; });
 }
-function switched() { void refreshCodes(); void refreshLetters(); void refreshMissions(); void refreshPostcards(); $('date-qr').hidden = true; }
-$('player-select').addEventListener('change', () => { players.active = Number($('player-select').value); adding = false; savePlayers(); renderCloud(); switched(); });
-$('player-add').addEventListener('click', () => { adding = true; renderCloud('輸入新玩家的名字、他的私人資料庫，以及妳那把審核員 token。'); });
+function switched() { void refreshCodes(); void refreshLetters(); void refreshMissions(); void refreshPostcards(); $('date-qr').hidden = true; $('rv-invite').hidden = true; }
+async function loadCloudPlayers(message) {
+  if (!reviewerToken) { cloudPlayers = []; renderCloud(message); return; }
+  try { cloudPlayers = await admin().players(); renderCloud(message); }
+  catch (err) { cloudPlayers = []; renderCloud(err.status === 401 ? '審核員通行碼不對，請重新登入。' : `讀不到玩家名單：${err.message}`); if (err.status === 401) { reviewerToken = ''; localStorage.removeItem(REVIEWER_KEY); renderCloud('審核員通行碼不對，請重新登入。'); } }
+}
+function useReviewer(token) { reviewerToken = token; try { localStorage.setItem(REVIEWER_KEY, token); } catch {} }
+
+$('rv-claim').addEventListener('click', async () => {
+  $('rv-claim').disabled = true; $('cloud-status').textContent = '設定中…';
+  try {
+    const token = await claimReviewer();
+    useReviewer(token);
+    $('rv-backup-text').value = token; $('rv-backup').hidden = false;
+    await loadCloudPlayers('設定完成！請先把通行碼存起來。');
+  } catch (err) { $('cloud-status').textContent = `設定失敗：${err.message}`; }
+  finally { $('rv-claim').disabled = false; }
+});
+$('rv-login').addEventListener('click', async () => {
+  const token = $('rv-token').value.trim();
+  if (!token) { $('cloud-status').textContent = '請貼上審核員通行碼。'; return; }
+  $('cloud-status').textContent = '登入中…';
+  try { const me = await createCloud({ kind: 'siang', token }).test(); if (me.role !== 'admin') throw new Error('這是玩家的邀請碼，不是審核員通行碼'); useReviewer(token); $('rv-token').value = ''; await loadCloudPlayers('登入成功！'); switched(); }
+  catch (err) { $('cloud-status').textContent = `登入失敗：${err.message}`; }
+});
+$('rv-backup-copy').addEventListener('click', () => copyTo($('rv-backup-text').value, '通行碼已複製，記得存進密碼管理器。'));
+$('rv-backup-done').addEventListener('click', () => { $('rv-backup').hidden = true; $('rv-backup-text').value = ''; renderCloud(); });
+const copyTo = async (text, done) => { try { await navigator.clipboard.writeText(text); $('cloud-status').textContent = done; } catch { $('cloud-status').textContent = '無法自動複製，請長按文字框手動複製。'; } };
+function showInvite(name, invite) {
+  $('rv-invite-hint').textContent = `「${name}」的邀請碼（只會顯示這一次）：傳給他，請他在遊戲的「雲端與備份」貼上。`;
+  $('rv-invite-text').value = invite; $('rv-invite').hidden = false;
+}
+$('rv-invite-copy').addEventListener('click', () => copyTo($('rv-invite-text').value, '邀請碼已複製，傳給玩家就好。'));
+$('player-select').addEventListener('change', () => { players.active = $('player-select').value; adding = false; savePlayers(); renderCloud(); switched(); });
+$('player-add').addEventListener('click', () => { $('rv-new').hidden = false; $('rv-new-name').focus(); });
+$('rv-new-cancel').addEventListener('click', () => { $('rv-new').hidden = true; });
+$('rv-new').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const name = $('rv-new-name').value.trim() || `玩家 ${cloudPlayers.length + 1}`;
+  $('cloud-status').textContent = '產生中…';
+  try {
+    const p = await admin().addPlayer(name);
+    $('rv-new').hidden = true; $('rv-new-name').value = '';
+    players.active = `cf:${p.id}`; savePlayers();
+    await loadCloudPlayers(`已新增「${p.name}」！`); switched();
+    showInvite(p.name, p.invite);
+  } catch (err) { $('cloud-status').textContent = `新增失敗：${err.message}`; }
+});
+$('rv-reset').addEventListener('click', async () => {
+  const cur = current(); if (!cur?.cloud) return;
+  if (!$('rv-reset').dataset.confirm) { $('rv-reset').dataset.confirm = '1'; $('cloud-status').textContent = `重新產生後，「${cur.name}」舊的邀請碼會立刻失效（進度不會不見）。再按一次確認。`; return; }
+  delete $('rv-reset').dataset.confirm;
+  try { const r = await admin().playerAction(cur.cloud.id, 'reset'); await loadCloudPlayers('已重新產生。'); showInvite(cur.name, r.invite); }
+  catch (err) { $('cloud-status').textContent = `失敗：${err.message}`; }
+});
+$('rv-revoke').addEventListener('click', async () => {
+  const cur = current(); if (!cur?.cloud) return;
+  const restore = cur.cloud.revoked;
+  if (!restore && !$('rv-revoke').dataset.confirm) { $('rv-revoke').dataset.confirm = '1'; $('cloud-status').textContent = `停用後「${cur.name}」就連不上雲端（資料會保留，之後可以恢復）。再按一次確認。`; return; }
+  delete $('rv-revoke').dataset.confirm;
+  try { await admin().playerAction(cur.cloud.id, restore ? 'restore' : 'revoke'); await loadCloudPlayers(restore ? '已恢復。' : '已停用。'); }
+  catch (err) { $('cloud-status').textContent = `失敗：${err.message}`; }
+});
+
+// 舊方式：GitHub 私人資料庫
+$('gh-add').addEventListener('click', () => { adding = true; renderCloud('輸入新玩家的名字、他的私人資料庫，以及妳那把審核員 token。'); });
 $('player-cancel').addEventListener('click', () => { adding = false; renderCloud(); });
 $('player-remove').addEventListener('click', () => {
-  const c = config(); if (!c) return;
-  if (!$('player-remove').dataset.confirm) { $('player-remove').dataset.confirm = '1'; $('cloud-status').textContent = `確定要從審核室移除「${c.name}」嗎？（資料庫裡的東西不會被刪）再按一次確認。`; return; }
+  const cur = current(); if (!cur || cur.cloud) return;
+  if (!$('player-remove').dataset.confirm) { $('player-remove').dataset.confirm = '1'; $('cloud-status').textContent = `確定要從審核室移除「${cur.name}」嗎？（資料庫裡的東西不會被刪）再按一次確認。`; return; }
   delete $('player-remove').dataset.confirm;
-  players.list.splice(players.active, 1); players.active = 0; savePlayers(); renderCloud('已移除。'); switched();
+  players.list.splice(Number(cur.key.slice(3)), 1); players.active = null; savePlayers(); renderCloud('已移除。'); switched();
 });
 $('cloud-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  const editing = adding || !config();
-  const name = $('player-name').value.trim() || (editing ? `玩家 ${players.list.length + 1}` : config().name);
+  const cur = current(); const gh = cur && !cur.cloud ? cur : null;
+  const editing = adding || !gh;
+  const name = $('player-name').value.trim() || (editing ? `玩家 ${players.list.length + 1}` : gh.name);
   const repo = $('cloud-repo').value.trim().replace(/^https:\/\/github\.com\//, '').replace(/\/$/, '');
-  const token = $('cloud-token').value.trim() || (editing ? '' : config().token);
+  const token = $('cloud-token').value.trim() || (editing ? '' : gh.config.token);
   if (!/^[\w.-]+\/[\w.-]+$/.test(repo) || !token) { $('cloud-status').textContent = '請填資料庫名稱（owner/repo）和通行碼。'; return; }
   if (editing && players.list.some(p => p.repo === repo)) { $('cloud-status').textContent = '這個資料庫已經在名單裡了。每位玩家要用自己的資料庫。'; return; }
   $('cloud-status').textContent = '連線中…';
   try {
     const info = await createCloud({ repo, token }).test();
-    if (editing) { players.list.push({ name, repo, token }); players.active = players.list.length - 1; }
-    else players.list[players.active] = { name, repo, token };
+    if (editing) { players.list.push({ name, repo, token }); players.active = `gh:${players.list.length - 1}`; }
+    else players.list[Number(gh.key.slice(3))] = { name, repo, token };
     adding = false; savePlayers();
     renderCloud(info.private ? `連線成功！目前：${name}` : '連線成功，但這個資料庫是公開的，建議改成私人。');
     switched();
@@ -164,12 +248,14 @@ $('code-form').addEventListener('submit', async (e) => {
   if (!privateKey) { $('code-status').textContent = '請先在第 2 步準備好印章。'; return; }
   $('code-create').disabled = true; $('code-status').textContent = '蓋章中…';
   try {
-    const c = cloud();
+    const everyone = Boolean(reviewerToken) && $('code-everyone').checked;
+    const c = everyone ? admin() : cloud();
+    const dir = everyone ? 'shared/codes' : 'codes';
     const hash = await sha256Hex(phrase);
-    if (await c.exists(`codes/${hash}.json`)) { $('code-status').textContent = '這句暗號已經設定過了，換一句吧。'; return; }
+    if (await c.exists(`${dir}/${hash}.json`)) { $('code-status').textContent = '這句暗號已經設定過了，換一句吧。'; return; }
     const expires = $('code-expires').value ? new Date(`${$('code-expires').value}T23:59:59+08:00`).toISOString() : null;
     const payload = { v: 1, type: 'code', hash, reward: rewardFromForm(), once: !$('code-reusable').checked, expires, createdAt: new Date().toISOString() };
-    await c.putJSON(`codes/${hash}.json`, await signPayload(privateKey, payload), 'add code');
+    await c.putJSON(`${dir}/${hash}.json`, await signPayload(privateKey, payload), 'add code');
     saveNote(hash, { phrase: $('code-phrase').value.trim(), note: $('code-note').value.trim() });
     $('code-status').textContent = `完成！暗號「${$('code-phrase').value.trim()}」可以兌換${describeReward(payload.reward, CHARACTERS, EGGS)}。`;
     $('code-phrase').value = ''; $('code-note').value = '';
@@ -179,24 +265,28 @@ $('code-form').addEventListener('submit', async (e) => {
 });
 
 async function refreshCodes() {
+  $('code-everyone-row').hidden = !reviewerToken;
   if (!config()) return;
   try {
     const c = cloud();
     const [codes, redeemed] = await Promise.all([c.list('codes'), c.list('redeemed')]);
     const used = new Set(redeemed.map((f) => f.name));
     const n = notes();
-    const items = await Promise.all(codes.filter((f) => f.name.endsWith('.json')).map(async (f) => ({ hash: f.name.slice(0, -5), file: await c.getJSON(f.path) })));
+    const own = await Promise.all(codes.filter((f) => f.name.endsWith('.json')).map(async (f) => ({ hash: f.name.slice(0, -5), file: await c.getJSON(f.path), store: c, dir: 'codes' })));
+    let shared = [];
+    if (reviewerToken) { const a = admin(); shared = await Promise.all((await a.list('shared/codes')).filter((f) => f.name.endsWith('.json')).map(async (f) => ({ hash: f.name.slice(0, -5), file: await a.getJSON(f.path), store: a, dir: 'shared/codes', everyone: true }))); }
+    const items = [...own, ...shared];
     items.sort((a, b) => String(b.file?.data?.payload?.createdAt).localeCompare(String(a.file?.data?.payload?.createdAt)));
-    $('code-list').replaceChildren(...items.map(({ hash, file }) => {
+    $('code-list').replaceChildren(...items.map(({ hash, file, store, dir, everyone }) => {
       const p = file?.data?.payload || {};
       const li = document.createElement('li');
       const name = document.createElement('b'); name.textContent = n[hash]?.phrase || '（在別支手機設定的暗號）';
       const info = document.createElement('small');
       const status = used.has(`${hash}.json`) ? '已兌換' : p.expires && Date.now() > Date.parse(p.expires) ? '已過期' : '等待兌換';
-      info.textContent = `${describeReward(p.reward || {}, CHARACTERS, EGGS)} · ${p.once === false ? '可重複' : '一次'} · ${status}${n[hash]?.note ? ` · ${n[hash].note}` : ''}`;
+      info.textContent = `${everyone ? '全體玩家 · ' : ''}${describeReward(p.reward || {}, CHARACTERS, EGGS)} · ${p.once === false ? '可重複' : '一次'} · ${everyone ? (p.expires && Date.now() > Date.parse(p.expires) ? '已過期' : '開放中') : status}${n[hash]?.note ? ` · ${n[hash].note}` : ''}`;
       const row = document.createElement('div'); row.className = 'row';
       const del = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '刪除' });
-      del.addEventListener('click', async () => { del.disabled = true; await c.remove(`codes/${hash}.json`, 'remove code'); void refreshCodes(); });
+      del.addEventListener('click', async () => { del.disabled = true; await store.remove(`${dir}/${hash}.json`, 'remove code'); void refreshCodes(); });
       row.append(del); li.append(name, info, row); return li;
     }));
     if (!items.length) $('code-list').replaceChildren(Object.assign(document.createElement('li'), { textContent: '還沒有暗號。' }));
@@ -385,6 +475,8 @@ $('postcard-refresh').addEventListener('click', refreshPostcards);
 
 /* ---------- 啟動 ---------- */
 renderCloud();
+await loadCloudPlayers();
+if (!reviewerToken) reviewerClaimed().then(c => { if (c) { $('rv-claim').hidden = true; $('rv-setup-hint').textContent = '審核員通行碼已經設定過了：請貼上妳存起來的那組登入。'; } }).catch(() => {});
 await setKey((await loadJwk()) || null);
 renderKey();
 void refreshCodes();

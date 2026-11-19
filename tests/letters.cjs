@@ -1,5 +1,5 @@
 // 紙條：里程碑解鎖、未讀標記、湘從審核室寄紙條（驗證印章，偽造的不收）
-const {chromium}=require('playwright'),assert=require('node:assert/strict'),fake=require('./fake-github.cjs')();
+require('./_legacy-cloud.cjs');const {chromium}=require('playwright'),assert=require('node:assert/strict'),fake=require('./fake-github.cjs')();
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const errs=[];const opts={viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'};
 const rc=await b.newContext(opts);await rc.route('https://api.github.com/**',fake.handler);const r=await rc.newPage();r.on('pageerror',e=>errs.push('review: '+e.message));

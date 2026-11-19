@@ -1,17 +1,24 @@
-// 私人 repo 連線（GitHub REST API）。玩家與審核員各自貼上自己的 fine-grained token，
-// token 只存在這支手機的瀏覽器，不寫進程式碼、不放進遊戲存檔。
+// 雲端連線，兩種模式，對外介面完全一樣（test／exists／getJSON／getBytes／list／putBytes／putJSON／remove）：
+// 1. 小湘雲端（Cloudflare 後台，server/worker.js）：玩家貼湘給的邀請碼 SIANG-…；審核員用自己的通行碼，帶 player 選玩家。
+// 2. 舊版 GitHub 私人 repo：owner/repo ＋ fine-grained token（還沒換邀請碼的玩家繼續能用）。
+// 邀請碼與 token 只存在這支手機的瀏覽器，不寫進程式碼、不放進遊戲存檔。
 export const CLOUD_KEY = 'siang-collector:cloud:v1';
 const API = 'https://api.github.com';
+export const SIANG_API = 'https://siang-collector-api.a2007014.workers.dev';
+const apiBase = () => globalThis.SIANG_API_OVERRIDE || SIANG_API; // 測試時換成本機後台
+export const isInvite = (text) => /^SIANG-[\w-]{16,}$/.test(String(text || '').trim());
 
 export function cloudConfig(key = CLOUD_KEY) {
   try {
     const c = JSON.parse(localStorage.getItem(key) || 'null');
+    if (c && c.kind === 'siang' && typeof c.token === 'string' && c.token) return c;
     if (c && /^[\w.-]+\/[\w.-]+$/.test(c.repo) && typeof c.token === 'string' && c.token) return c;
   } catch {}
   return null;
 }
 export function saveCloudConfig(config, key = CLOUD_KEY) {
   if (!config) { localStorage.removeItem(key); return; }
+  if (config.kind === 'siang') { localStorage.setItem(key, JSON.stringify({ kind: 'siang', token: config.token.trim(), ...(config.player ? { player: config.player } : {}), ...(config.name ? { name: config.name } : {}) })); return; }
   localStorage.setItem(key, JSON.stringify({ repo: config.repo.trim(), token: config.token.trim() }));
 }
 
@@ -23,7 +30,60 @@ export class CloudError extends Error {
   constructor(message, status) { super(message); this.status = status; }
 }
 
+// 小湘雲端（Cloudflare Worker）
+function createSiangCloud(config) {
+  const base = apiBase();
+  const headers = { Authorization: `Bearer ${config.token}`, ...(config.player ? { 'X-Player': config.player } : {}) };
+  const enc = (path) => path.split('/').map(encodeURIComponent).join('/');
+  async function call(method, route, { body, type, ok404 = false } = {}) {
+    let res;
+    try { res = await fetch(`${base}${route}`, { method, headers: body !== undefined ? { ...headers, 'Content-Type': type || 'application/json' } : headers, body, cache: 'no-store' }); }
+    catch { throw new CloudError('連不上小湘雲端，請確認網路', 0); }
+    if (res.status === 404 && ok404) return null;
+    if (!res.ok) {
+      const msg = await res.json().then((j) => j.error).catch(() => '');
+      throw new CloudError(res.status === 401 ? '邀請碼不對、過期，或已經被停用' : msg || `小湘雲端回應 ${res.status}`, res.status);
+    }
+    return res;
+  }
+  const typeOf = (path) => (path.endsWith('.json') ? 'application/json' : path.endsWith('.jpg') ? 'image/jpeg' : 'application/octet-stream');
+  return {
+    repo: '小湘雲端', kind: 'siang',
+    async test() { const me = await (await call('GET', '/me')).json(); return { private: true, ...me }; },
+    async exists(path) { return Boolean(await call('GET', `/f/${enc(path)}`, { ok404: true })); },
+    async getBytes(path) { const r = await call('GET', `/f/${enc(path)}`, { ok404: true }); return r ? new Uint8Array(await r.arrayBuffer()) : null; },
+    async getJSON(path) { const r = await call('GET', `/f/${enc(path)}`, { ok404: true }); return r ? { sha: null, data: await r.json() } : null; },
+    async list(dir) { const r = await call('GET', `/ls/${enc(dir.replace(/\/+$/, ''))}`, { ok404: true }); return r ? (await r.json()).map((d) => ({ ...d, sha: null })) : []; },
+    async putBytes(path, bytes, _message, { overwrite = false } = {}) {
+      await call('PUT', `/f/${enc(path)}${overwrite ? '?overwrite=1' : ''}`, { body: bytes, type: typeOf(path) });
+      return {};
+    },
+    async putJSON(path, data, message, options) { return this.putBytes(path, new TextEncoder().encode(JSON.stringify(data, null, 2)), message, options); },
+    async remove(path) { await call('DELETE', `/f/${enc(path)}`); },
+    // 審核員專用
+    async players() { return (await call('GET', '/admin/players')).json(); },
+    async addPlayer(name) { return (await call('POST', '/admin/players', { body: JSON.stringify({ name }) })).json(); },
+    async playerAction(id, action, body = {}) { return (await call('POST', `/admin/players/${id}/${action}`, { body: JSON.stringify(body) })).json(); },
+  };
+}
+
+// 審核員第一次設定：在這支手機產生通行碼，只把雜湊交給後台
+export async function claimReviewer() {
+  const bytes = crypto.getRandomValues(new Uint8Array(24));
+  const token = `REVIEW-${btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
+  const d = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(token));
+  const hash = [...new Uint8Array(d)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  const res = await fetch(`${apiBase()}/admin/claim`, { method: 'POST', body: JSON.stringify({ hash }), headers: { 'Content-Type': 'application/json' } });
+  if (!res.ok) throw new CloudError(res.status === 409 ? '審核員通行碼已經設定過了，請貼上妳存起來的那組' : `小湘雲端回應 ${res.status}`, res.status);
+  return token;
+}
+export async function reviewerClaimed() {
+  const res = await fetch(`${apiBase()}/admin/status`, { cache: 'no-store' });
+  return res.ok ? (await res.json()).claimed : null;
+}
+
 export function createCloud(config) {
+  if (config?.kind === 'siang') return createSiangCloud(config);
   const headers = { Authorization: `Bearer ${config.token}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' };
   const url = (path) => `${API}/repos/${config.repo}/contents/${encodePath(path)}`;
 
