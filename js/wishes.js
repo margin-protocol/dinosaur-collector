@@ -191,7 +191,7 @@ export async function photoStats(file, previewCanvas) {
   return { colors, bright: bright / n, dark: dark / n, glow: glow / n };
 }
 
-const inWindow = ([from, to], hour) => (from <= to ? hour >= from && hour < to : hour >= from || hour < to);
+export const inWindow = ([from, to], hour) => (from <= to ? hour >= from && hour < to : hour >= from || hour < to);
 // 判定照片：回傳 { pass, pct, need, title, text }
 export function judge(wish, stats, now = new Date()) {
   const pct = (x) => Math.round(x * 100);

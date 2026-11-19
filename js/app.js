@@ -29,7 +29,7 @@ import { RECIPE_LINES } from './recipe-lines.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, weatherBoosts, KIND_NAMES, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
-import { WISH_REWARD, PASS_RATIO, WISH_POOL, todayKey, analyzePhoto, photoStats, judge, actProgress, quizReply, isPhotoWish } from './wishes.js';
+import { WISH_REWARD, PASS_RATIO, WISH_POOL, todayKey, analyzePhoto, photoStats, judge, actProgress, quizReply, isPhotoWish, inWindow } from './wishes.js';
 import { createMissions } from './missions.js';
 import { createResearch } from './research.js';
 import { studyPair } from './research-notes.js';
@@ -268,7 +268,11 @@ function renderHome() {
     text = '有能量了，有空再去培育室餵餵蛋吧。';
     mode = 'energy'; // 安靜的提示：不掛驚嘆號
   } else if (open.length) {
-    text = `${state.dex['001'] ? '小湘' : '蛋'}想看${open[0].color}的東西。`;
+    // 先提現在做得到的願望；顏色願望用「想看○○的東西」，委託、主題、陪伴、小問題等新願望直接說它自己的台詞
+    const hour = new Date().getHours(), who = state.dex['001'] ? '小湘' : '蛋';
+    const w = open.find(x => !x.window || inWindow(x.window, hour));
+    text = !w ? (open[0].kind === 'night' ? '剩下的願望要等晚上 7 點以後喔，晚點再來找我！' : '剩下的是早上的願望，今天的時間過了……明天早點來找我！')
+      : w.color ? `${who}想看${w.color}的東西。` : w.line || `${who}還有一個願望，去「今日願望」看看！`;
     mode = 'wish';
   } else {
     text = '今天的願望都完成了，明天見！';
