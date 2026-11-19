@@ -2781,6 +2781,7 @@ async function showWhatsNew(tries = 0) {
   $('whats-new-ok').onclick = () => { markSeen(list); $('updates-new').hidden = true; $('whats-new').close(); };
   $('whats-new').addEventListener('cancel', () => { markSeen(list); $('updates-new').hidden = true; }, { once: true });
 }
+$('close-whats-new').addEventListener('click', () => $('whats-new-ok').click());
 // 研究者手記「更新紀錄」：隨時翻看全部更新，還沒看過的標 NEW
 $('open-updates').addEventListener('click', async () => {
   $('function-center').close();

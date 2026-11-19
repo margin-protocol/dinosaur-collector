@@ -12,7 +12,8 @@ assert.equal(await p.locator('.whats-new__entry').count(),total,'全部更新都
 assert(await p.locator('.whats-new__entry.is-new').count()>=1,'比上次看過還新的標 NEW');
 assert.equal(await p.locator('.whats-new__entry').nth(total-1).locator('.is-new').count(),0);
 if(process.env.SHOT)await p.screenshot({path:process.env.SHOT});
-await p.locator('#whats-new-ok').click();
+for(const width of [360,390,430]){await p.setViewportSize({width,height:844});await p.locator('#whats-new').evaluate(e=>e.scrollTop=e.scrollHeight);assert(await p.locator('#close-whats-new').evaluate(e=>{const r=e.getBoundingClientRect(),d=e.closest('dialog').getBoundingClientRect();return r.top>=d.top&&r.bottom<=d.bottom;}),'top close stays visible while scrolling');assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));}
+await p.locator('#close-whats-new').click();assert(await p.locator('#whats-new').isHidden());
 const seen=await p.evaluate(()=>localStorage.getItem('siang-collector:seen-version'));
 const latest=(await (await p.request.get('http://127.0.0.1:8000/changelog.json')).json())[0].version;assert.equal(seen,latest);
 await p.locator('#open-center').click();await p.locator('#open-updates').click();await p.locator('#whats-new[open]').waitFor();

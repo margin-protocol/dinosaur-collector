@@ -641,3 +641,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 #residents[open] { display:flex; flex-direction:column; }
 #residents > :not(#residents-list) { flex-shrink:0; }
 #residents #residents-list { min-height:0; flex:1 1 auto; }
+
+.whats-new__heading { position:sticky; top:-24px; z-index:2; padding:12px 0; background:var(--t-panel); text-align:left; }
+.whats-new__heading .close-button { flex:none; min-width:44px; min-height:44px; }
