@@ -1483,7 +1483,7 @@ function showCountyCall({ county, result, error, weather }) {
   let title; let text; let note = '';
   if (error === 'denied') { title = '小湘感應不到你在哪裡'; text = '需要允許定位，才能知道你在哪個縣市。請到瀏覽器或手機設定，允許這個網站使用位置。'; }
   else if (error) { title = '訊號有點微弱'; text = '這次沒有成功定位，到空曠一點的地方再試一次。'; }
-  else if (!county) { title = '這裡還沒有小湘的訊號'; text = '目前有臺灣本島 19 個縣市、綠島、澎湖和馬祖的小湘。'; }
+  else if (!county) { title = '這裡還沒有小湘的訊號'; text = '臺灣 22 個縣市和綠島都有小湘，到別的地方再試試看吧。'; }
   else if (!c) { title = `${county}的訊號`; text = `${county}的小湘還在路上，之後再來找她吧！`; }
   else if (result?.egg) { title = `${c.name}想出現！`; text = c.line; note = `獲得一顆「縣市蛋 · ${county}」，到培育室的「選擇蛋」把它拿出來吧。`; }
   else if (result?.daily === 'county') { title = owned ? `${c.name}：又見面了！` : `${c.name}的蛋又出現了`; text = owned ? `「你又來${county}啦，這顆蛋送你，說不定會孵出新朋友喔。」` : '「快點把我孵出來嘛……」'; note = `今天的探索禮物：一顆「縣市蛋 · ${county}」，到「選擇蛋」把它拿出來吧。${owned ? '（已經有她了的話，孵出來會變成化石）' : ''}`; }

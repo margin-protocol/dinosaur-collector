@@ -12,6 +12,7 @@ export const TEAM_BONDS = [
   {id:'east',name:'沿海等日出',nos:['032','033','034'],clue:'蔥油餅、七星潭的圓石頭，和一場說好要你載的兜風。',power:.05,speed:.15},
   {id:'heroes',name:'慶功宴不能遲到',nos:['062','063','064'],clue:'盾牌拿反、咒語念成開飯，最後一個只在意甜點店幾點關門。',power:.60,speed:0,legacyHero:true},
   {id:'storm',name:'天空實驗小隊',nos:['065','067','070'],clue:'一個觀測天空，一個替雷聲調音量，一個把冰雹認作寶石。',power:.20,speed:0},
+  {id:'islands',name:'離島守護聯盟',nos:['092','093','094'],clue:'一位等海發光，一位查好潮汐，一位抱著風獅爺說這裡我來守護。',power:.05,speed:.15},
   {id:'gallery',name:'留給明天的光',nos:['076','077','080'],clue:'星夜的書房、日落的底片，和月光下還沒關門的花園。',power:.12,speed:.08},
 ];
 export function ensureTeamBonds(state) {

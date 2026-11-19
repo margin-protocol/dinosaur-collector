@@ -45,7 +45,7 @@ export const MAIN_ISLAND = new Set(['基隆市','臺北市','新北市','桃園�
 export const OFFSHORE = [
   { name: '澎湖縣', south: 23.15, north: 23.82, west: 119.28, east: 119.78 },
   { name: '連江縣', south: 25.90, north: 26.42, west: 119.85, east: 120.55 }, // 馬祖：南竿、北竿、莒光、東引
-  { name: '金門縣', south: 24.35, north: 24.55, west: 118.13, east: 118.50 }, // 金門小湘還沒有：先能被感應到
+  { name: '金門縣', south: 24.35, north: 24.55, west: 118.13, east: 118.50 }, // 金門：烈嶼、大金門
 ];
 export function offshoreAt(lon, lat) {
   const o = OFFSHORE.find((b) => lat >= b.south && lat <= b.north && lon >= b.west && lon <= b.east);

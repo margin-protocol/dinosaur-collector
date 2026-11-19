@@ -30,7 +30,7 @@ export const ACHIEVEMENTS = [
   { id: 'travel-19', group: '旅行', title: '環島', hint: '探索本島 19 個縣市', goal: 19, value: (s) => Object.keys(s.travel?.visits || {}).filter((k) => MAIN_ISLAND.has(k)).length, reward: 150 },
   { id: 'rain', group: '旅行', title: '雨中漫步', hint: '在下雨天撿到天氣蛋', goal: 1, value: (s) => (s.weather?.rained && s.weather.granted === s.weather.rained ? 1 : 0), reward: 30 },
   { id: 'island', group: '旅行', title: '出海', hint: '去一趟綠島', goal: 1, value: (s) => (s.travel?.visits?.['綠島'] ? 1 : 0), reward: 50 },
-  { id: 'island-hop', group: '旅行', title: '跳島', hint: '去過澎湖和馬祖', goal: 2, value: (s) => ['澎湖縣', '連江縣'].filter((k) => s.travel?.visits?.[k]).length, reward: 100 },
+  { id: 'island-hop', group: '旅行', title: '跳島', hint: '澎湖、金門、馬祖都去過', goal: 3, value: (s) => ['澎湖縣', '金門縣', '連江縣'].filter((k) => s.travel?.visits?.[k]).length, reward: 100 },
   { id: 'pet-30', group: '陪伴', title: '摸頭大師', hint: '摸摸頭 30 次', goal: 30, value: (s) => t(s, 'pets'), reward: 30 },
   { id: 'snack-20', group: '陪伴', title: '布丁時間', hint: '餵小湘 20 次布丁', goal: 20, value: (s) => t(s, 'snacks'), reward: 30 },
   { id: 'greet-30', group: '陪伴', title: '打招呼', hint: '跟小湘打招呼 30 次', goal: 30, value: (s) => t(s, 'greets'), reward: 30 },
