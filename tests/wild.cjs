@@ -24,7 +24,7 @@ await p.click('.errand-siang:has(img[alt="原味小湘"])');await p.click('#batt
 // next day: list rolls over, but yesterday's battle still reports with its snapshot
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));for(const a of s.battle.active)a.until=new Date(Date.now()-1000).toISOString();s.battle.wild.date='2000-01-01';localStorage.setItem(k,JSON.stringify(s));},key);
 await p.reload();await p.waitForTimeout(500);
-await p.click('#home-errand');await p.click('#tab-battle');await p.click('#battle-active .btn');await p.locator('#battle-result[open]').waitFor();
+await p.click('#home-errand');await p.click('#tab-battle');await p.click('#battle-active .btn');await p.locator('#battle-result[open]').waitFor();await p.locator('.battle-theater__skip').click();
 assert.match(await p.textContent('#battle-result-title'),/成功/);assert.match(await p.textContent('#battle-result-score'),/本週最高/);
 if(process.env.SHOT2){await p.waitForTimeout(200);await p.screenshot({path:process.env.SHOT2});}
 await p.click('#battle-result-ok');

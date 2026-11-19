@@ -193,3 +193,5 @@ assets/mascot/      小恐龍
 - LV5 隱藏羈絆：12 組、36 位不重複成員，通用 +10% 與特殊效果擇一；討伐可看線索圖鑑、收藏三人合照、儲存 5 組隊伍並比較關卡預估。規格與數值驗收見 [LV5_TEAM_BONDS.md](docs/LV5_TEAM_BONDS.md)。
 
 - 貓爬小湘 No.097（SSR／recipe）：Koda No.095＋爬爬 No.096 在研究室調配 72 小時，領取專屬紀念蛋後注入 100 能量孵化，不進隨機蛋池。正式立繪與文案見 [SIANG_CAT_GECKO_ART.md](docs/SIANG_CAT_GECKO_ART.md)。
+
+- 討伐戰報小劇場：按真實 report 快照播放，支援跳過／重播／暫停，無重複領獎；可操作示範見 [battle-theater](docs/review/battle-theater/index.html)，規格見 [BATTLE_THEATER.md](docs/BATTLE_THEATER.md)。

@@ -1,3 +1,4 @@
+import { createBattleTheater } from './battle-theater.js';
 import { renderAtlas, renderTeamTools } from './team-ui.js';
 import { savePreset, ensureTeamBonds, effectText } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
@@ -3245,6 +3246,7 @@ $('battle-go').addEventListener('click', async () => {
   renderAll(); renderBattle();
   toast(`出發討伐${battle.enemyFor(state, id).name}！${battle.fmtMinutes(Date.parse(t.result.battle.until) - Date.now())}後回來。`);
 });
+const battleTheater = createBattleTheater({root:$('battle-theater'),details:$('battle-result-details'),dialog:$('battle-result'),replay:$('battle-replay'),onActivity:syncRoomActivity});
 async function collectBattle(id) {
   const t = await updateState(current => battle.collectBattle(current, id));
   state = t.state; renderAll(); renderBattle();
@@ -3269,7 +3271,9 @@ async function collectBattle(id) {
   const storyText = [r.clue && `🔍 線索：${r.clue}`, r.story && `📖 ${r.story}`].filter(Boolean).join('\n\n');
   $('battle-result-story').hidden = !storyText; $('battle-result-story').textContent = storyText;
   $('battle-result-gains').replaceChildren(...r.gains.map(g => Object.assign(document.createElement('li'), { textContent: g })));
-  $('battle-result').showModal(); $('battle-result').scrollTop = 0; $('battle-result-ok').blur(); buzz(rep.win ? [20, 40, 30] : 15); // 長戰報從最上面（分數）開始看
+  $('battle-result').showModal();
+  battleTheater.play({report:r.report,nos:r.nos,enemy:e,scene:chapterScene(r.enemy),bondUnlocked:Boolean(r.report.bond && state.teamBonds?.unlocked?.[r.report.bond])});
+  $('battle-result').scrollTop = 0; $('battle-result-ok').blur(); buzz(rep.win ? [20, 40, 30] : 15); // 長戰報從最上面（分數）開始看
   restart($('chip-energy'), 'is-bump');
 }
 $('battle-result-ok').addEventListener('click', () => $('battle-result').close());

@@ -21,7 +21,7 @@ let s=await save();assert.equal(s.battle.active.length,1);
 await p.click('#close-errands');assert.equal(await p.locator('.resident-slot').count(),0,'away while fighting');
 await fastForward();await p.reload();await p.waitForTimeout(500);
 assert.equal(await p.textContent('#errand-badge'),'1');
-await p.click('#home-errand');await p.click('#tab-battle');await p.click('#battle-active .btn');await p.locator('#battle-result[open]').waitFor();
+await p.click('#home-errand');await p.click('#tab-battle');await p.click('#battle-active .btn');await p.locator('#battle-result[open]').waitFor();await p.locator('.battle-theater__skip').click();
 assert.match(await p.textContent('#battle-result-title'),/成功/);assert.match(await p.textContent('#battle-result-score'),/第一次挑戰/);
 s=await save();const first=s.battle.stages.mochi;assert.equal(first.clears,1);assert(first.best>0);assert.equal(s.battle.badges,2,'1 + first 3-star bonus');
 await p.click('#battle-result-ok');
@@ -29,7 +29,7 @@ await p.click('#battle-result-ok');
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.affection={'001':{pts:30,day:'',today:0,home:''}};s.battle.rest={};localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.waitForTimeout(400);
 await p.click('#home-errand');await p.click('#tab-battle');await p.locator('.battle-chapter:not(.battle-wild) .battle-stage-card').first().click();await p.click('.errand-siang:has(img[alt="原味小湘"])');await p.click('#battle-go');await p.waitForTimeout(300);
 await fastForward();await p.reload();await p.waitForTimeout(400);
-await p.click('#home-errand');await p.click('#tab-battle');await p.click('#battle-active .btn');await p.locator('#battle-result[open]').waitFor();
+await p.click('#home-errand');await p.click('#tab-battle');await p.click('#battle-active .btn');await p.locator('#battle-result[open]').waitFor();await p.locator('.battle-theater__skip').click();
 const scoreText=await p.textContent('#battle-result-score');assert.match(scoreText,/比上次 \+\d+/);assert.match(scoreText,/新紀錄/);
 if(process.env.SHOT2){await p.waitForTimeout(200);await p.screenshot({path:process.env.SHOT2});}
 await p.click('#battle-result-ok');

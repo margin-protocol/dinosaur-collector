@@ -1,0 +1,43 @@
+/* Existing character and enemy art, presented over the chapter scene. */
+.battle-theater[hidden],#battle-result-details[hidden] { display:none; }
+.battle-result[data-theater] { width:min(94vw,480px); padding:18px; }
+.battle-theater { display:grid; gap:12px; text-align:left; color:var(--t-text); }
+.battle-theater__head { display:flex; gap:8px; align-items:center; justify-content:space-between; position:sticky; top:-18px; z-index:3; background:var(--t-panel); padding:8px 0; }
+.battle-theater__head small { font:9px var(--font-display); letter-spacing:.16em; color:var(--t-muted); }
+.battle-theater__head h2 { margin:4px 0 0; font:20px/1.4 var(--font-display); }
+.battle-theater__skip,.battle-replay { border:1px solid var(--t-line); border-radius:9px; background:var(--t-raised); color:var(--t-text); padding:8px 10px; min-height:44px; font:12px/1.5 var(--font-display); }
+.battle-theater__skip { flex:none; }
+.battle-replay { display:block; width:100%; margin:0 0 12px; }
+.battle-theater__progress { display:flex; gap:5px; }
+.battle-theater__progress i { flex:1; height:3px; border-radius:3px; background:var(--t-line); opacity:.5; }
+.battle-theater__progress .is-done { background:var(--t-accent); opacity:1; }
+.battle-theater__stage { position:relative; aspect-ratio:4/3; isolation:isolate; overflow:hidden; border-radius:14px; background-color:var(--t-raised); background-size:cover; background-position:center; }
+.battle-theater__enemy { position:absolute; right:3%; top:5%; width:46%; height:70%; display:grid; place-items:center; transition:opacity .4s,transform .4s; }
+.battle-theater__enemy img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 8px 8px #0003); }
+.battle-theater__enemy-fallback { font-size:64px; }
+.battle-theater__allies { display:flex; align-items:flex-end; position:absolute; left:10%; bottom:2%; width:75%; height:72%; }
+.battle-theater__actor { position:relative; flex:1; min-width:0; height:87%; transform-origin:50% 90%; transition:opacity .3s; }
+.battle-theater__actor img { display:block; width:180%; margin-left:-40%; height:100%; object-fit:contain; filter:drop-shadow(0 5px 5px #0003); }
+.battle-theater[data-scene="attack"] .battle-theater__actor:not(.is-active) { opacity:.65; }
+.battle-theater[data-scene="attack"] .is-animating .is-active { z-index:1; animation:battle-ally-step .9s ease-in-out both; }
+.battle-theater[data-scene="attack"] .is-animating .battle-theater__enemy { animation:battle-enemy-hit .7s .3s ease-out both; }
+.battle-theater__impact { position:absolute; right:22%; top:33%; width:32px; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,#fff5,transparent 65%); opacity:0; pointer-events:none; }
+.battle-theater[data-scene="attack"] .is-animating .battle-theater__impact { animation:battle-impact .65s .25s ease-out; }
+.battle-theater[data-scene="intro"] .is-animating .battle-theater__enemy { animation:battle-enemy-arrive .7s ease-out both; }
+.battle-theater[data-scene="win"] .battle-theater__enemy { opacity:.25; transform:translateY(15%); }
+.battle-theater[data-scene="lose"] .battle-theater__allies { opacity:.65; transform:translateX(-6%); }
+.battle-theater__bond { position:absolute; inset:0; pointer-events:none; }
+.battle-theater__bond img { width:100%; height:100%; object-fit:contain; background:var(--t-panel); }
+.battle-theater[data-scene="bond"] .is-animating .battle-theater__bond img { animation:battle-photo-in .6s ease-out both; }
+.battle-theater__dialogue { padding:12px 14px; border:1px solid var(--t-line); border-radius:12px; background:var(--t-raised); min-width:0; }
+.battle-theater__dialogue small { display:block; margin-bottom:7px; font:10px/1.5 var(--font-display); color:var(--t-muted); }
+.battle-theater__dialogue b { font:15px/1.7 var(--font-display); color:var(--t-accent); }
+.battle-theater__dialogue p { margin:6px 0 0; font:14px/1.8 var(--font-display); white-space:pre-line; overflow-wrap:anywhere; }
+.battle-theater__controls { display:grid; grid-template-columns:1fr 1.4fr; gap:8px; background:var(--t-panel); }
+.battle-theater__controls .btn { min-height:44px; padding:9px; font:13px var(--font-display); }
+@keyframes battle-ally-step { 0%,100% { transform:translate(0,0) scale(1); } 40% { transform:translate(14%,-9%) rotate(5deg) scale(1.08); } }
+@keyframes battle-enemy-hit { 40% { transform:translateX(8%) rotate(5deg); } }
+@keyframes battle-enemy-arrive { from { opacity:0; transform:translateX(25%); } to { opacity:1; transform:none; } }
+@keyframes battle-impact { 40% { opacity:.8; transform:scale(2); } 100% { opacity:0; transform:scale(2.5); } }
+@keyframes battle-photo-in { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:none; } }
+@media(prefers-reduced-motion:reduce) { .battle-theater *, .battle-theater *::after { animation:none!important; transition:none!important; } }
