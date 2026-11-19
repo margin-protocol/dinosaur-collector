@@ -36,3 +36,27 @@ textarea { font: 12px/1.5 var(--font-mono); resize: vertical; }
 .date-code { margin: 8px 0 0; font: 28px var(--font-mono); letter-spacing: .3em; color: #fff; }
 .review-photo { display: block; width: 100%; max-height: 360px; object-fit: contain; border-radius: 10px; background: #000; margin: 6px 0; }
 .list li textarea { margin-top: 6px; }
+
+/* ---------- 櫻花粉（湘 11/19 指定，和遊戲的「櫻花」主題同一組顏色） ---------- */
+:root {
+  --bg-deep: #fff0f3; --bg-panel: #fff8fa; --line: #e3bfcc;
+  --ivory: #4e3040; --pearl: #795465; --silver: #7d5a6a;
+  --sakura-raised: #f9e4eb; --sakura-accent: #914e6a; --sakura-button: #f1cbd9; --sakura-button-end: #eab9cd;
+  color-scheme: light;
+}
+body { background: linear-gradient(180deg, #fff3f6, #fde6ee 60%, #fff0f3); background-attachment: fixed; }
+header h1 { color: var(--sakura-accent); }
+.card { border-color: var(--line); box-shadow: 0 6px 20px #b9809414; }
+.card h2 { color: var(--sakura-accent); }
+input, select, textarea { border-color: #d6a9ba; background: #fffdfd; color: var(--ivory); }
+input::placeholder, textarea::placeholder { color: #a98393; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, .btn:focus-visible { outline: 2px solid var(--sakura-accent); outline-offset: 2px; }
+.btn { background: linear-gradient(180deg, var(--sakura-button), var(--sakura-button-end)); color: #4e3040; }
+.btn--quiet { background: none; border: 1px solid #d6a9ba; color: var(--sakura-accent); }
+.status, .warn { color: #a0456a; }
+.list li { background: var(--sakura-raised); border-color: var(--line); }
+.list li b { color: var(--ivory); }
+.date-code { color: var(--sakura-accent); }
+.review-photo { background: #f4dbe4; }
+#date-qr-svg svg { box-shadow: 0 0 0 1px var(--line); }
+details > summary { margin-top: 8px; font: 13px var(--font-body); color: var(--pearl); cursor: pointer; }
