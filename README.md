@@ -5,6 +5,7 @@
 ## 文件
 
 - 企劃：[docs/PLAN.md](docs/PLAN.md)
+- 全 91 位每日願望主持人專屬語氣：[每日願望語氣表與玩法說明](docs/WISH_CHARACTER_VOICES_91.md)
 - 全部 91 位小湘的專屬討伐台詞：[No.001–061 補全台詞表](docs/BATTLE_PERSONAL_DIALOGUE_61.md)（61 位新增角色 × 出征／勝利／戰敗）
 - 開發團隊三寶隱藏配方企劃：[總企劃](docs/DEV_TEAM_COLLECTION_PLAN.md)（No.086–088；待實裝）／[皮寶台詞](docs/DEV_TEAM_SIANG_086_DIALOGUE.md)／[德寶台詞](docs/DEV_TEAM_SIANG_087_DIALOGUE.md)／[靈感小湘台詞](docs/DEV_TEAM_SIANG_088_DIALOGUE.md)／[同住彩蛋](docs/DEV_TEAM_086-088_DIALOGUE_EVENT.md)
 - 美術方向：[docs/ART_DIRECTION_V0.7.md](docs/ART_DIRECTION_V0.7.md)
