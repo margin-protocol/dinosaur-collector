@@ -1,6 +1,6 @@
 # 第三章《故障的玩具星球｜Toy Planet.exe》接入計畫
 
-狀態：**湘 2026-11-19 拍板數值與規則；等正式立繪核准後才接入程式。**
+狀態：**已接入（2026-11-19）。** 文案來自 data/enemies/ch3-*.json，圖檔 assets/enemies/chapter-03/（3-1 實際檔名為 ch3-01-tick-tock-bunny.webp）；測試 tests/chapter3.cjs。
 
 ## 湘的決定（11/19）
 
