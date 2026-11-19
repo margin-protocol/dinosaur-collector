@@ -40,7 +40,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     const st = labStatus(getState());
     panel.hidden = !st; if (!st) { panel.replaceChildren(); return; }
     const names = st.members.map(no => CHARACTERS[no]?.name || '小湘').join(' × ');
-    panel.innerHTML = `<div class="research-lab__art"></div><div class="research-lab__body"><small>IN THE LAB · 調配中</small><h2></h2><p class="research-lab__who"></p><div class="research-lab__bar"><span></span></div><p class="research-lab__left"></p><button type="button" class="research-lab__cancel" data-cancel-brew>提早帶她們回家</button></div>`;
+    panel.innerHTML = `<div class="research-lab__art"></div><div class="research-lab__body"><small>IN THE LAB · 調配中</small><h2></h2><p class="research-lab__who"></p><div class="research-lab__bar"><span></span></div><p class="research-lab__left"></p><button type="button" class="research-lab__cancel" data-cancel-brew>中止調配</button></div>`;
     const art = panel.querySelector('.research-lab__art');
     for (const no of st.members) { const img = new Image(); portrait(img, CHARACTERS[no]); art.append(img); }
     panel.querySelector('h2').textContent = `《${st.recipe.note.title}》`;
@@ -171,7 +171,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
       result.close(); update(); find('.research-lab')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); return;
     }
     if (button.matches('[data-cancel-brew]') && onCancelBrew) {
-      if (button.dataset.confirm !== '1') { button.dataset.confirm = '1'; button.textContent = '確定嗎？調配會中斷，要重新開始（再按一次）'; return; }
+      if (button.dataset.confirm !== '1') { button.dataset.confirm = '1'; button.textContent = '確定要中止嗎？已經調配的天數不會保留（再按一次）'; return; }
       await onCancelBrew(); update(); return;
     }
     if (button.matches('[data-trial]')) { const trial = (getState().research?.trials || [])[Number(button.dataset.trial)]; if (trial?.members?.length === 2) showTrial(trial); return; }
