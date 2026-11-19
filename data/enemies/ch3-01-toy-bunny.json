@@ -1,0 +1,30 @@
+{
+  "id": "ch3-01",
+  "enemyId": "toy-bunny",
+  "chapter": 3,
+  "stage": "3-1",
+  "name": "發條兔",
+  "type": "normal",
+  "image": "assets/enemies/chapter-03/ch3-01-toy-bunny.webp",
+  "power": 100,
+  "minutes": 75,
+  "weaknesses": [
+    "daily"
+  ],
+  "weakTag": "休息也可以！",
+  "personality": "背著大發條、永遠不停跳躍的小兔子。深信有用才值得被喜歡；明明累得快散架，卻總害怕停下來會被工廠回收。",
+  "lines": {
+    "opening": "「滴答、滴答！歡迎來到玩具星球！請保持微笑、保持活力，還有……不、不可以停下來！」",
+    "countered": "「什、什麼？！你們居然可以停下來吃點心？！那我是不是……也可以休息五分鐘？」",
+    "enemyVictory": "「對、對不起！我不是故意跳那麼快的！可是總監說，慢吞吞的玩具會被送去回收……」",
+    "enemyDefeat": "「咦？我的發條停了……可是我還能說話耶？原來停下來不會壞掉嗎？」"
+  },
+  "bossStory": null,
+  "chapterClue": "發條兔慌忙撿起散落的齒輪，一張皺巴巴的工廠通行證卻從背後掉了出來。牠急忙喊：「啊！那、那個不能看！」通行證上印著紅字：「歡笑指數不得低於 100%。」牠小聲補充：「我昨天只有百分之九十九……所以今天要多跳一千下才行。」",
+  "metadata": {
+    "version": 1,
+    "status": "copy-approved-art-pending",
+    "artSize": "1024x1024 transparent WebP",
+    "note": "文案已確認並上傳，正式立繪尚未提交，js/battle.js 尚未接入。其他延伸台詞與美術概念詳見 docs/COMBAT_CHAPTER03_TOY_BUNNY.md。"
+  }
+}
