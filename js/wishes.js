@@ -145,6 +145,34 @@ export function wishById(id) {
   return null;
 }
 
+// 換一個願望（每天一次）：換成同一類的另一個，避開今天已經有的、和現在時段做不到的（早晨、夜晚）
+const PHOTO_KINDS = ['color', 'duo', 'rainbow', 'bright', 'dark', 'morning', 'night'];
+export function swapWishId(dateKey, ids, index, { hour = new Date().getHours(), hasSiang = true } = {}) {
+  const old = wishById(ids[index]); if (!old) return null;
+  const rand = seeded(`swap:${dateKey}:${index}:${ids[index]}`);
+  const pick = (list) => list[Math.floor(rand() * list.length) % list.length];
+  const make = () => {
+    if (PHOTO_KINDS.includes(old.kind)) {
+      const r = rand();
+      if (r < 0.55) return pick(WISH_POOL).id;
+      if (r < 0.8) return `duo:${pick(DUOS).join(':')}`;
+      return pick(['rainbow', 'bright', 'dark', 'morning', 'night']);
+    }
+    if (old.kind === 'act' || old.kind === 'quiz') {
+      const acts = Object.keys(ACTS).filter((a) => hasSiang || !['pet', 'greet', 'errand'].includes(a));
+      return rand() < 0.4 ? `quiz:${Math.floor(rand() * QUIZZES.length)}` : `act:${pick(acts)}`;
+    }
+    return `theme:${Math.floor(rand() * THEMES.length)}`;
+  };
+  for (let i = 0; i < 40; i++) {
+    const id = make(); const w = wishById(id);
+    if (!w || ids.includes(id)) continue;
+    if (w.window && !inWindow(w.window, hour)) continue;
+    return id;
+  }
+  return null;
+}
+
 export function wishesFor(dateKey) {
   if (globalThis.SIANG_CLASSIC_WISHES) return legacyWishesFor(dateKey); // 舊測試用：只抽單色
   const rand = seeded(`v2:${dateKey}`);

@@ -35,11 +35,11 @@ import { EXTRA_LINES } from './extra-lines.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, weatherBoosts, KIND_NAMES, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
 import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
-import { WISH_REWARD, PASS_RATIO, WISH_POOL, todayKey, analyzePhoto, photoStats, judge, actProgress, quizReply, isPhotoWish, inWindow } from './wishes.js';
+import { WISH_REWARD, PASS_RATIO, WISH_POOL, todayKey, analyzePhoto, photoStats, judge, actProgress, quizReply, isPhotoWish, inWindow, wishById } from './wishes.js';
 import { createMissions } from './missions.js';
 import { createResearch } from './research.js';
 import { studyPair } from './research-notes.js';
-import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward, todaysWishList } from './progression.js';
+import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward, todaysWishList, swapTodayWish } from './progression.js';
 import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
@@ -95,7 +95,7 @@ eggButton.type = 'button';
 eggButton.className = 'egg-hit';
 incubator.el.append(eggButton);
 
-const wishBook = createMissions({ book: $('book'), steps: $('book-gems'), onShoot: (wish, file) => onPhoto(wish, file), onClaim: (wish, choice) => onClaimWish(wish, choice), onSelect: renderWishCompanion });
+const wishBook = createMissions({ book: $('book'), steps: $('book-gems'), onShoot: (wish, file) => onPhoto(wish, file), onClaim: (wish, choice) => onClaimWish(wish, choice), onSelect: renderWishCompanion, onSwap: (wish, i) => void onSwapWish(wish, i) });
 let viewedChapter = null;
 let wishTab = 'daily';
 let claimBusy = false;
@@ -408,6 +408,17 @@ function renderWishCompanion(wish) {
   $('open-presenter').textContent = id ? '切換小湘 ⌄' : '等待初次相遇 ⌄';
 }
 
+let swapBusy = false;
+async function onSwapWish(wish, index) {
+  if (swapBusy || photoBusy) return;
+  swapBusy = true;
+  try {
+    const t = await updateState(current => swapTodayWish(current, index));
+    state = t.state;
+    if (t.result.ok) { const next = wishById(t.result.to); toast(`換好了！新的願望：${next?.name || next?.label || '去看看吧'}`); }
+    else toast(t.result.reason);
+  } finally { swapBusy = false; renderAll(); }
+}
 function renderWishes(effects = {}) {
   const wishes = todaysWishes();
   const done = wishes.filter(w => w.done).length;
@@ -415,7 +426,7 @@ function renderWishes(effects = {}) {
   $('book-day').textContent = `${pad(now.getMonth() + 1)}.${pad(now.getDate())}`;
   $('book-progress').textContent = `今日 ${done} / 3`;
   const feedback = photoBusy ? { scanning: activePhotoId, ...effects } : effects;
-  wishBook.update(wishes, WISH_REWARD, feedback, { date: state.wishes.date });
+  wishBook.update(wishes, WISH_REWARD, feedback, { date: state.wishes.date, canSwap: !state.wishes.swapped });
   $('book-log-text').textContent = done === 3 ? `今天的願望都實現了，謝謝你陪我。願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}${state.wishEgg?.stock ? ` · 持有願望蛋 ${state.wishEgg.stock} 顆` : ''}` : done ? `已實現 ${done} 個願望，今天獲得 ${done * WISH_REWARD} 能量。` : '';
   renderPlayer();
   renderGrowth();

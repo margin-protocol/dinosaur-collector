@@ -1,4 +1,4 @@
-import { todayKey, wishesFor, legacyWishesFor, wishById, actProgress, QUIZZES, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';
+import { todayKey, wishesFor, legacyWishesFor, wishById, swapWishId, actProgress, QUIZZES, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';
 import { ensureWishEgg, stampDay } from './wish-egg.js';
 import { ensureTravel } from './travel.js';
 import { ensureWeather } from './weather.js';
@@ -40,6 +40,18 @@ export function ensureDaily(state, date = todayKey()) {
   if (!state.wishes.base || typeof state.wishes.base !== 'object') state.wishes.base = dayBase(state);
   const valid = state.wishes.ids;
   state.wishes.done = unique(state.wishes.done).filter(id => valid.includes(id));
+}
+// 換一個今日願望：每天只能換一次，已經完成的不能換
+export function swapTodayWish(state, index, now = new Date()) {
+  ensureDaily(state, todayKey(now));
+  const w = state.wishes;
+  if (w.swapped) return { ok: false, reason: '今天已經換過一次了，明天再換吧。' };
+  const id = w.ids[index];
+  if (!id || w.done.includes(id)) return { ok: false, reason: '這個願望已經完成了。' };
+  const next = swapWishId(w.date, w.ids, index, { hour: now.getHours(), hasSiang: Object.keys(state.dex || {}).length > 0 });
+  if (!next) return { ok: false, reason: '暫時找不到可以換的願望。' };
+  w.ids = w.ids.map((x, i) => (i === index ? next : x)); w.swapped = true;
+  return { ok: true, from: id, to: next };
 }
 export function todaysWishList(state) {
   ensureDaily(state);

@@ -1,7 +1,7 @@
 import { DAILY_XP } from './progression.js';
 const node = (tag, cls, text) => { const el = document.createElement(tag); el.className = cls; if (text) el.textContent = text; return el; };
-export function createMissions({ book, steps, onShoot, onClaim = () => {}, onSelect }) {
-  let wishes = [], index = 0, reward = 35, fx = {}, day = '';
+export function createMissions({ book, steps, onShoot, onClaim = () => {}, onSelect, onSwap = null }) {
+  let wishes = [], index = 0, reward = 35, fx = {}, day = '', canSwap = false;
   function render() {
     if (!wishes.length) return;
     steps.replaceChildren(...wishes.map((wish, i) => {
@@ -52,13 +52,20 @@ export function createMissions({ book, steps, onShoot, onClaim = () => {}, onSel
         input.addEventListener('change', () => { const file = input.files?.[0]; input.value = ''; if (file) { index = i; onShoot(wish, file); } });
         label.append(input); card.append(label);
       }
+      // 換一個願望：每天一次（例如早上起不來，早晨天空拍不到）
+      if (!wish.done && onSwap) {
+        const swap = node('button', 'mission-swap', canSwap ? '↻ 換一個願望（今天還能換 1 次）' : '今天已經換過願望了');
+        swap.type = 'button'; swap.disabled = !canSwap || Boolean(fx.scanning);
+        swap.addEventListener('click', () => { index = i; onSwap(wish, i); });
+        card.append(swap);
+      }
       return card;
     }));
     onSelect(wishes[index]);
   }
   return {
     update(nextWishes, rewardValue, effects = {}, context = {}) {
-      wishes = nextWishes; reward = rewardValue; fx = effects;
+      wishes = nextWishes; reward = rewardValue; fx = effects; canSwap = Boolean(context.canSwap);
       if (day !== context.date) { day = context.date; index = Math.max(0, wishes.findIndex(w => !w.done)); }
       if (effects.scanning) index = Math.max(0, wishes.findIndex(w => w.id === effects.scanning));
       if (index >= wishes.length) index = 0;
