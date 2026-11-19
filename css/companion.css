@@ -290,6 +290,10 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .whats-new__entry h3 { margin:2px 0 6px; font:16px var(--font-display); color:#ffd9a8; }
 .whats-new__entry ul { margin:0; padding-left:1.2em; line-height:1.7; font-size:13px; }
 .whats-new { text-align:center; max-height:86vh; overflow:auto; }
+.whats-new__entry + .whats-new__entry { padding-top:12px; border-top:1px solid #f6ede61f; }
+.whats-new__entry.is-new small { color:#ffd9a8; }
+.nav__item { position:relative; }
+.nav__new { position:absolute; top:8px; right:8px; padding:1px 6px; border-radius:999px; background:#c2455f; color:#fff; font:600 9px/1.5 var(--font-latin, sans-serif); letter-spacing:.08em; }
 @media (prefers-reduced-motion:reduce) { .update-pill { animation:none; } }
 
 /* 小恐龍轉盤 */

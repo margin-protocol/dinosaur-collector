@@ -2440,23 +2440,42 @@ $('update-pill').addEventListener('click', () => location.reload());
 window.__checkUpdates = updateWatcher.check; // 給測試用
 const isReturning = () => state.hatched > 0 || Object.keys(state.dex || {}).length > 0;
 noteNewPlayer(isReturning());
+function fillWhatsNew(entries, freshVersions = new Set()) {
+  $('whats-new-list').replaceChildren(...entries.map(entry => {
+    const box = document.createElement('section'); box.className = `whats-new__entry${freshVersions.has(entry.version) ? ' is-new' : ''}`;
+    const h = document.createElement('h3'); h.textContent = entry.title ? `${entry.title}` : entry.version;
+    const date = document.createElement('small'); date.textContent = `${entry.date || entry.version}${freshVersions.has(entry.version) ? ' · NEW' : ''}`;
+    const ul = document.createElement('ul'); ul.append(...entry.items.map(t => Object.assign(document.createElement('li'), { textContent: t })));
+    box.append(date, h, ul); return box;
+  }));
+}
 async function showWhatsNew(tries = 0) {
   if (navigator.webdriver && !window.__testWhatsNew) return; // 自動化測試不跳更新內容
   const list = await loadChangelog();
   const fresh = unseen(list, { returning: isReturning() });
+  $('updates-new').hidden = !fresh.length;
   if (!fresh.length) return;
   if (!state.seenIntro || document.querySelector('dialog[open]')) { if (tries < 30) setTimeout(() => void showWhatsNew(tries + 1), 4000); return; }
-  $('whats-new-list').replaceChildren(...fresh.map(entry => {
-    const box = document.createElement('section'); box.className = 'whats-new__entry';
-    const h = document.createElement('h3'); h.textContent = entry.title ? `${entry.title}` : entry.version;
-    const date = document.createElement('small'); date.textContent = entry.date || entry.version;
-    const ul = document.createElement('ul'); ul.append(...entry.items.map(t => Object.assign(document.createElement('li'), { textContent: t })));
-    box.append(date, h, ul); return box;
-  }));
+  $('whats-new-title').textContent = '更新了什麼';
+  fillWhatsNew(fresh);
   $('whats-new').showModal();
-  $('whats-new-ok').onclick = () => { markSeen(list); $('whats-new').close(); };
-  $('whats-new').addEventListener('cancel', () => markSeen(list), { once: true });
+  $('whats-new-ok').onclick = () => { markSeen(list); $('updates-new').hidden = true; $('whats-new').close(); };
+  $('whats-new').addEventListener('cancel', () => { markSeen(list); $('updates-new').hidden = true; }, { once: true });
 }
+// 研究者手記「更新紀錄」：隨時翻看全部更新，還沒看過的標 NEW
+$('open-updates').addEventListener('click', async () => {
+  $('function-center').close();
+  let list = [];
+  try { list = await loadChangelog(); } catch {}
+  const fresh = new Set(unseen(list, { returning: isReturning() }).map(e => e.version));
+  $('whats-new-title').textContent = '更新紀錄';
+  if (list.length) fillWhatsNew(list, fresh);
+  else $('whats-new-list').replaceChildren(Object.assign(document.createElement('p'), { textContent: '更新紀錄暫時讀不到，等一下再試試看。' }));
+  $('whats-new').showModal(); $('whats-new').scrollTop = 0;
+  const done = () => { if (list.length) markSeen(list); $('updates-new').hidden = true; };
+  $('whats-new-ok').onclick = () => { done(); $('whats-new').close(); };
+  $('whats-new').addEventListener('cancel', done, { once: true });
+});
 setTimeout(() => void showWhatsNew(), 1500);
 
 // ── 不用拍照的願望（陪伴、小恐龍的問題）

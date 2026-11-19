@@ -57,3 +57,5 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-history-list strong { color:var(--t-text); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.research-history-list small,.research-history-count,.research-history-intro,.research-clues) { color:var(--t-muted); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-clues .is-found { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .whats-new__entry.is-new small { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .whats-new__entry + .whats-new__entry { border-top-color:var(--t-line); }
