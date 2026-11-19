@@ -4,6 +4,7 @@
 import { CHARACTERS } from './eggs.js';
 import { TASTES } from './taste-profiles.js';
 import { gain } from './affection.js';
+import { KITCHEN_LINES } from './kitchen-lines.js';
 
 export const INGREDIENTS = [
   { id: 'strawberry', name: '草莓', short: '草莓', tag: '果香', icon: '🍓', chapter: 1 },
@@ -169,16 +170,7 @@ export const secretsFound = (state) => Object.values(state.kitchen?.tasted || {}
 export const recipesFound = (state) => RECIPES.filter((r) => state.kitchen?.known?.[key(r.ings)]).length;
 export const darkFound = (state) => Object.keys(state.kitchen?.known || {}).filter((id) => dishById(id)?.dark).length;
 
-// 反應台詞：先看專屬，再看評價
-const SPECIAL = {
-  '087': { dark: '這個味道……跟我的程式碼一樣，有點不對勁。……可是好好吃？！為什麼？！', 3: '齒輪餅乾配故障糖漿……這就是我每天的心情啊！！！超喜歡！！' },
-  '086': { 3: '雷電糖加星星糖，熬夜畫圖專用能量！再畫一隻就好！' },
-  '005': { 3: '焦糖、牛奶、布丁粉……這就是甜點的完美方程式！你懂我！！' },
-  '001': { 3: '草莓配蘑菇？……欸，其實我偷偷覺得很好吃耶！不要跟別人說喔！' },
-  '094': { 3: '這個……跟貢糖的味道好像喔。……你、你特地做給我的嗎？那我今天就休息五分鐘好了♡' },
-  '092': { 3: '月光、星星還有餅乾……就像在海邊等藍眼淚的晚上一樣！' },
-  '093': { 3: '雲朵加彩虹加月光！吃起來就像澎湖退潮的那條路！' },
-};
+// 反應台詞：先看每位小湘的專屬台詞（js/kitchen-lines.js），再看評價
 const LINES = {
   0: ['嗚……這個……我可以喝水嗎？', '（努力吞下去）……謝謝你的心意！真的！', '我、我今天其實不太餓啦……'],
   1: ['嗯，還不錯吃喔！', '謝謝你煮給我吃～', '原來這兩樣放在一起是這個味道！'],
@@ -187,9 +179,10 @@ const LINES = {
 };
 const DARK = ['這、這是什麼……它剛剛是不是動了一下？', '顏色有點……勇敢。我吃吃看喔……', '吃完覺得自己變強了，大概是因為活下來了。'];
 export function reaction(no, dish, r) {
-  const sp = SPECIAL[no];
-  if (sp?.[r] && r === 3) return sp[r];
+  const sp = KITCHEN_LINES[no];
+  if (r === 3 && sp?.[3]) return sp[3];
   if (dish.dark && sp?.dark) return sp.dark;
+  if (r === 0 && sp?.[0]) return sp[0];
   const list = dish.dark && r < 2 ? DARK : LINES[r];
   return list[hash(no + dish.id) % list.length];
 }

@@ -29,8 +29,8 @@ const r=await p.evaluate(async()=>{
   const after=s.kitchen.buffs['005'];const drops=trip.report.loot.ingredients;
   const back=bt.collectBattle(s,trip.id,new Date(Date.now()+3*3600e3),()=>0);
   ac.ensureAchievements(s);const ach=ac.achievementStatus(s,eg.CHARACTERS).filter(a=>a.group==='廚房').map(a=>[a.id,a.value]);
-  const profiles=Object.keys(eg.CHARACTERS).filter(n=>!tp.TASTES[n]);
-  return {combos:combos.length,stable,names,bad,starter,c1:c1.dish.name,c2first:c2.first,c3:c3.dish.dark,c4:c4.dish.name,no,left,f1:[f1.rating,f1.points,f1.added,f1.secretFound,f1.buff],f2:[f2.rating,f2.dish.dark],f3:[f3.rating,f3.added,f3.buff?.value],f4:[f4.rating,f4.secretFound],none,f5:f5.added,f6:[f6.added,f6.capped],plain,fed:[fed.food?.no,fed.food?.kind],after,drops,gains:back.gains.join('|'),ings:s.kitchen.ingredients,ach,profiles,dark:s.kitchen.darkFed};
+  const profiles=Object.keys(eg.CHARACTERS).filter(n=>!tp.TASTES[n]);const kl=await import('/js/kitchen-lines.js');const noLines=Object.keys(eg.CHARACTERS).filter(n=>!kl.KITCHEN_LINES[n]?.[3]||!kl.KITCHEN_LINES[n]?.[0]);const hateLine=f3.line;
+  return {combos:combos.length,stable,names,bad,starter,c1:c1.dish.name,c2first:c2.first,c3:c3.dish.dark,c4:c4.dish.name,no,left,f1:[f1.rating,f1.points,f1.added,f1.secretFound,f1.buff],f2:[f2.rating,f2.dish.dark],f3:[f3.rating,f3.added,f3.buff?.value],f4:[f4.rating,f4.secretFound],none,f5:f5.added,f6:[f6.added,f6.capped],plain,fed:[fed.food?.no,fed.food?.kind],after,drops,gains:back.gains.join('|'),ings:s.kitchen.ingredients,ach,profiles,noLines,hateLine,dark:s.kitchen.darkFed};
 });
 assert.equal(r.combos,286);assert.ok(r.stable);assert.equal(r.names,286);assert.deepEqual(r.bad,[null,null,null]);
 assert.deepEqual(r.starter,{strawberry:2,milk:2,caramel:2,pudding:2});
@@ -42,7 +42,7 @@ assert.match(r.none,/吃完/);assert.equal(r.f5,7);assert.deepEqual(r.f6,[0,true
 assert.deepEqual(r.fed,['005','power']);assert.equal(r.after,undefined,'buff used');
 assert.ok(r.drops.length>=1&&r.drops.every(x=>['strawberry','milk','caramel','pudding'].includes(x)),'chapter 1 drops');
 assert.match(r.gains,/食材/);
-assert.deepEqual(r.profiles,[],'every Siang has a taste profile');
+assert.deepEqual(r.profiles,[],'every Siang has a taste profile');assert.deepEqual(r.noLines,[],'every Siang has love+hate lines');assert.match(r.hateLine,/甜/);
 assert.ok(r.ach.find(a=>a[0]==='cook-dark')[1]>=1);assert.equal(r.ach.find(a=>a[0]==='cook-secrets')[1],3);
 // UI
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=5;for(const n of ['001','002','003','005','087'])s.dex[n]={at:'x'};s.guide={seen:['battle','errand'],unlocked:['errand','wheel','battle','archive']};delete s.kitchen;localStorage.setItem(k,JSON.stringify(s));},key);
