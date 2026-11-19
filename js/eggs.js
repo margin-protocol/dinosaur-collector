@@ -254,6 +254,8 @@ export const CHARACTERS = {
   '088': { no: '088', name: '靈感爆發小湘', rarity: 'UR', line: "「欸欸欸欸欸！！！！我突然想到一個超棒的！！！」", image: 'siang-088-idea-overload-siang', series: 'devteam', special: true },
   // 研究所小湘（湘 11/19）：湘正取研究所那天用暗號送給所有玩家；之後再放進普通蛋池。台詞與圖鑑介紹：data/characters/academic-086-dialogue.json（皮寶暫編 086，實際為 089）
   '089': { no: '089', name: '研究所小湘', rarity: 'SSR', line: "「性別不是選擇題啦！……可是論文口試好像是生存題。救命喔！！」", image: 'siang-089-grad-school', series: 'memorial', special: true },
+  // 落榜小湘（湘 11/19）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
+  '090': { no: '090', name: '落榜小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序

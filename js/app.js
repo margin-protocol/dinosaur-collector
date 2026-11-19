@@ -1620,6 +1620,7 @@ function howToGet(c) {
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const rec = state.recipes[recipe.id]; return `隱藏配方：${state.dex[c.no] || rec.days.length ? recipe.text : '某兩位小湘一起入住首頁，就會發生什麼……'}${rec.done ? '' : rec.days.length ? `（已累積 ${rec.days.length} / ${recipe.days} ${recipe.night ? '個夜晚' : recipe.rain ? '個下雨天' : '天'}）` : ''}`; }
   if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
+  if (c.no === '090') return state.dex[c.no] ? '湘研究所沒考上時，用暗號送給大家的紀念（沒關係，先吃蛋糕）' : '湘有心事的時候，會用暗號送給大家……';
   if (c.no === '089') return state.dex[c.no] ? '湘考上研究所時，用暗號送給大家的紀念' : '湘有好消息的時候，會用暗號送給大家……';
   if (c.series === 'devteam') {
     const p = devteam.progress(state, c.no).map(x => `${x.label} ${Math.min(x.now, x.need)} / ${x.need}${x.unit || ''}`).join('、');

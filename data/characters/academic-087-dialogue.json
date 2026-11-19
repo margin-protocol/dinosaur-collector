@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "status": "draft-copy-ready-not-implemented",
+  "status": "implemented-as-090",
   "date": "2026-11-19",
   "series": "academic",
   "seriesStatus": "proposed",
@@ -14,10 +14,10 @@
       "rarityStatus": "proposed",
       "series": "academic",
       "special": true,
-      "obtainMethod": null,
+      "obtainMethod": "湘研究所沒上時，用暗號送給所有玩家",
       "obtainMethodCandidate": "學術主題活動或特殊成就，待湘寶確認",
-      "image": "siang-087-rejected",
-      "imageStatus": "not-yet-uploaded",
+      "image": "siang-090-rejected",
+      "imageStatus": "uploaded",
       "plannedImagePath": "assets/characters/siang-087-rejected.webp",
       "personality": "嘴上說著「沒關係啦」，實際上已經把落榜通知看了三十七遍，會偷偷難過、偷偷比較，但最後還是會重新站起來的小湘。",
       "lines": {
@@ -107,13 +107,15 @@
         "今天先吃蛋糕",
         "另一條路",
         "備取的希望"
-      ]
+      ],
+      "gameId": "090"
     }
   ],
   "notes": [
     "No.087 暫編；SR、academic 系列及取得方式均為提案。",
     "本次僅文字與 JSON 交件，正式 WebP 未上傳，未改 js/eggs.js、遊戲功能、存檔或玩家公告。",
     "Lv.3 沿用既有羈絆故事；不要求玩家輸入真實考試結果。",
-    "備取通知與 No.086 互動皆為候選彩蛋，非已實裝功能。"
+    "備取通知與 No.086 互動皆為候選彩蛋，非已實裝功能。",
+    "2026-11-19 德寶：遊戲實際編號 090、series memorial、SR；js/eggs.js、js/intros.js、js/bond-copy.js、js/extra-lines.js 已接入。委託、觀察日誌、彩蛋尚未接。"
   ]
 }
