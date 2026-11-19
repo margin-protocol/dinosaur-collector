@@ -34,11 +34,13 @@ body[data-view="home"] .app { height:auto; min-height:max(760px,100svh); overflo
 .resident-slot { position:absolute; left:18%; width:82%; height:100%; bottom:0; --actor:clamp(240px,77vw,310px); }
 .resident-slot .actor { bottom:0; pointer-events:auto !important; cursor:pointer; border-radius:40%; }
 .resident-slot .actor:focus-visible { outline:1px solid var(--bio-cyan); outline-offset:-20px; }
+/* 用手指點的時候不要畫焦點框（iOS Safari 會在可點的小湘外面畫一個方框）；用鍵盤 Tab 才顯示 */
+.resident-slot .actor:focus:not(:focus-visible),:root[data-input="pointer"] .resident-slot .actor:focus,:root[data-input="pointer"] .resident-dex:focus { outline:none; }
 .resident-name { position:absolute; bottom:calc(var(--actor) * 0.035 - 6px); left:50%; transform:translateX(-50%); font:10px var(--font-display); white-space:nowrap; color:var(--pearl); text-shadow:0 1px 6px #14131d; }
 .resident-lanes[data-count="2"] .resident-slot,.resident-lanes[data-count="3"] .resident-slot { width:60%; --actor:clamp(185px,58vw,245px); }
 .resident-lanes[data-count="2"] .resident-slot--0,.resident-lanes[data-count="3"] .resident-slot--0 { left:36%; z-index:3; }
 .resident-lanes[data-count="2"] .resident-slot--1,.resident-lanes[data-count="3"] .resident-slot--1 { left:-5%; bottom:58px; z-index:2; }
-.resident-lanes[data-count="3"] .resident-slot--2 { left:42%; bottom:140px; z-index:1; --actor:clamp(160px,49vw,210px); }
+.resident-lanes[data-count="3"] .resident-slot--2 { left:24%; bottom:140px; z-index:1; --actor:clamp(160px,49vw,210px); }
 .resident-static { position:absolute; bottom:calc(var(--actor) * -0.075); left:50%; transform:translateX(-50%); width:var(--actor); aspect-ratio:1; border:0; padding:0; background:none; pointer-events:auto; cursor:pointer; transition-property:left; transition-timing-function:linear; -webkit-user-select:none; user-select:none; }
 .resident-static img { width:100%; height:100%; object-fit:contain; }
 .resident-static .doll { position:absolute; inset:0; display:block; transform:scaleX(var(--face,1)); transition:transform .25s ease; }

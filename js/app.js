@@ -1382,6 +1382,10 @@ $('county-ok').addEventListener('click', () => $('county-call').close());
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
 
+/* ---------- 焦點框：手指點不畫、鍵盤才畫 ---------- */
+document.addEventListener('pointerdown', () => { document.documentElement.dataset.input = 'pointer'; }, { capture: true, passive: true });
+document.addEventListener('keydown', (e) => { if (e.key === 'Tab') document.documentElement.dataset.input = 'keyboard'; }, { capture: true });
+
 /* ---------- 隱藏配方 ---------- */
 let recipeBusy = false;
 function checkRecipes() {

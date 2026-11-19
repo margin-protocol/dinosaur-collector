@@ -116,8 +116,9 @@ export function createRoom(host, onGreet, onPet = () => {}) {
     const b = document.createElement('button'); b.type = 'button'; b.className = 'resident-dex'; b.dataset.character = no;
     b.textContent = '看圖鑑 ›'; b.setAttribute('aria-label', `打開${CHARACTERS[no].name}的圖鑑`);
     const anchor = l.portrait.getBoundingClientRect(); const box = host.getBoundingClientRect();
-    b.style.left = `${Math.min(box.width - 44, anchor.left - box.left + anchor.width * 0.78)}px`;
-    b.style.top = `${anchor.top - box.top + anchor.height * 0.42}px`;
+    // 放在小湘腳邊、置中；避開右邊那排選單
+    b.style.left = `${Math.max(48, Math.min(box.width * 0.6, anchor.left - box.left + anchor.width / 2))}px`;
+    b.style.top = `${anchor.top - box.top + anchor.height * 0.72}px`;
     b.addEventListener('click', (e) => { e.stopPropagation(); b.remove(); onOpen(no); });
     host.append(b);
     clearTimeout(b.timer); setTimeout(() => b.remove(), ms);
