@@ -13,7 +13,7 @@ import { HERO_SHOP } from './badge-heroes.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
-import { offersFor, pickable, exchange } from './fossils.js';
+import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS } from './fossils.js';
 import { FLAVORS, makeOffer, eggLabel, naughtyRequest, NAUGHTY_BONUS } from './egg-traits.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
 import { RECIPES, tickRecipes } from './recipes.js';
@@ -1950,9 +1950,9 @@ function openFossils() {
   $('fossil-have').textContent = `你有 ${state.fossils} 個化石碎片。抽到重複的小湘，每次會得到 ${DUPLICATE_FOSSILS} 個。`;
   $('fossil-offers').replaceChildren(...offersFor(state).map(o => {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fossil-offer'; btn.dataset.offer = o.id;
-    btn.disabled = state.fossils < o.cost || (o.id === 'pick' && !pickable(state, EGGS, CHARACTERS).length);
+    btn.disabled = o.id === 'pick' ? state.fossils < cheapestPick(state, EGGS, CHARACTERS) : state.fossils < o.cost;
     const text = document.createElement('div'); const b = document.createElement('b'); b.textContent = o.name; const sm = document.createElement('small'); sm.textContent = o.desc; text.append(b, sm);
-    const cost = document.createElement('span'); cost.textContent = `${o.cost} 化石`;
+    const cost = document.createElement('span'); cost.textContent = o.from ? `${o.cost} 化石起` : `${o.cost} 化石`;
     btn.append(text, cost); return btn;
   }));
   $('fossil-pick').hidden = true;
@@ -1963,7 +1963,7 @@ async function doExchange(offerId, no) {
   state = t.state; renderAll();
   if (!t.result) { $('fossil-status').textContent = '化石不夠喔。'; return; }
   restart($('chip-fossil'), 'is-bump');
-  $('fossil-status').textContent = offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！暫放架最前面的蛋也會一起保溫。` : offerId === 'energy' ? '換到 30 能量了！' : offerId === 'pick' ? `換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
+  $('fossil-status').textContent = offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！暫放架最前面的蛋也會一起保溫。` : offerId === 'energy' ? '換到 30 能量了！' : offerId === 'pick' ? `用 ${t.result.cost} 化石換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
   openFossils();
 }
 $('chip-fossil').addEventListener('click', openFossils);
@@ -1972,15 +1972,21 @@ $('fossil-dialog').addEventListener('close', syncRoomActivity);
 $('fossil-offers').addEventListener('click', event => {
   const btn = event.target.closest('[data-offer]'); if (!btn || btn.disabled) return;
   if (btn.dataset.offer !== 'pick') { void doExchange(btn.dataset.offer); return; }
-  $('fossil-pick-list').replaceChildren(...pickable(state, EGGS, CHARACTERS).map(no => {
-    const c = CHARACTERS[no]; const b = document.createElement('button'); b.type = 'button'; b.className = 'fossil-pick'; b.dataset.pick = no;
-    const img = document.createElement('img'); img.alt = ''; loadWithFallback(img, characterSources(c.image));
-    b.append(img, `No.${c.no} · ${c.rarity}`); return b;
+  const list = pickable(state, EGGS, CHARACTERS);
+  $('fossil-pick-list').replaceChildren(...['N', 'R', 'SR', 'SSR'].flatMap(r => {
+    const nos = list.filter(no => CHARACTERS[no].rarity === r); if (!nos.length) return [];
+    const head = document.createElement('p'); head.className = 'fossil-pick-tier'; head.textContent = `${r} · 每位 ${PICK_COSTS[r]} 化石${state.fossils < PICK_COSTS[r] ? `（還差 ${PICK_COSTS[r] - state.fossils}）` : ''}`;
+    return [head, ...nos.map(no => {
+      const c = CHARACTERS[no]; const b = document.createElement('button'); b.type = 'button'; b.className = 'fossil-pick'; b.dataset.pick = no;
+      b.disabled = state.fossils < pickCost(CHARACTERS, no);
+      const img = document.createElement('img'); img.alt = ''; loadWithFallback(img, characterSources(c.image));
+      b.append(img, `No.${c.no} · ${pickCost(CHARACTERS, no)}`); return b;
+    })];
   }));
   $('fossil-pick').hidden = false;
   $('fossil-pick').scrollIntoView({ block: 'nearest' });
 });
-$('fossil-pick-list').addEventListener('click', event => { const b = event.target.closest('[data-pick]'); if (b) void doExchange('pick', b.dataset.pick); });
+$('fossil-pick-list').addEventListener('click', event => { const b = event.target.closest('[data-pick]'); if (b && !b.disabled) void doExchange('pick', b.dataset.pick); });
 
 /* ---------- 額外能量：見面禮、隨手收藏、自動保溫 ---------- */
 async function collectGift() {
