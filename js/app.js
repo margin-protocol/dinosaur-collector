@@ -158,7 +158,7 @@ function syncRoomActivity() {
 function todaysWishes() {
   ensureDaily(state);
   const id = selectedPresenter(state);
-  return todaysWishList(state).map(w => ({ ...w, date: state.wishes.date, done: state.wishes.done.includes(w.id), progress: actProgress(w, state), copy: presenterCopy(w, state.wishes.date, state.wishes.stage, id) }));
+  return todaysWishList(state).map(w => ({ ...w, date: state.wishes.date, done: state.wishes.done.includes(w.id), progress: actProgress(w, state), copy: presenterCopy(w, state.wishes.date, state.wishes.stage, id, state.dex) }));
 }
 
 /* ---------- 畫面 ---------- */
@@ -1493,7 +1493,7 @@ function howToGet(c) {
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const rec = state.recipes[recipe.id]; return `隱藏配方：${state.dex[c.no] || rec.days.length ? recipe.text : '某兩位小湘一起入住首頁，就會發生什麼……'}${rec.done ? '' : rec.days.length ? `（已累積 ${rec.days.length} / ${recipe.days} 天）` : ''}`; }
   if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
-  if (c.series === 'date') return '約會時掃描 QR Code 取得約會蛋（開發中）';
+  if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
   const eggs = Object.values(EGGS).filter(e => e.pool?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
 }

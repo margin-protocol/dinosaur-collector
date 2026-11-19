@@ -65,6 +65,23 @@ export const THEMES = [
   '拍一個有愛心形狀的東西', '拍一個堆起來的東西', '拍一個有雲的地方', '拍一個在轉的或會動的東西', '拍一個讓你覺得放鬆的地方',
 ];
 
+// 天氣小湘的委託（皮寶 docs/WEATHER_SIANG_DIALOGUE_065-075.md 的「今日願望候選」）
+// 從 2026-11-20 起每 4 天有一天，第三個願望換成其中一則委託；遇見過她，就由她本人來說
+export const COMMISSIONS = [
+  { no: '065', task: '拍一張你覺得最像心情的天空', line: '今天的委託：拍一張你覺得最像心情的天空，讓我幫它取名字！' },
+  { no: '066', task: '找一個舒服的小角落，拍下你最想待著的地方', line: '今天的委託：找一個舒服的小角落，拍下你最想待著的地方。' },
+  { no: '067', task: '畫一個最帥的閃電符號，拍下來', line: '今天的委託：畫一個最帥的閃電符號給我看！不可以冒險追雷雨喔。' },
+  { no: '068', task: '拍一樣讓你覺得「今天真不錯」的小東西', line: '今天的委託：拍一樣讓你覺得『今天真不錯』的小東西！' },
+  { no: '069', task: '找到一個平常沒注意過的小細節，拍下來', line: '今天的委託：找到一個平常沒注意過的小細節，拍照當線索！' },
+  { no: '070', task: '找一樣有冰晶或透明質感的小物，拍下來', line: '今天的委託：找一樣有冰晶或透明質感的小物，拍給我研究！' },
+  { no: '071', task: '等雨停、路面安全時，拍一個小水坑的倒影', line: '今天的委託：等雨停、路面安全時，拍一個小水坑的倒影給我！' },
+  { no: '072', task: '用紙或照片做一片小雪花，拍下來', line: '今天的委託：用紙或照片做一片小雪花，不用真的下雪也可以喔！' },
+  { no: '073', task: '在安全的地方找一樣被微風吹動的小東西，拍下來', line: '今天的委託：在安全的地方找一樣被微風吹動的小東西，拍給我看！' },
+  { no: '074', task: '在身邊找出三種不同顏色，拍成一張迷你彩虹', line: '今天的委託：在身邊找出三種不同顏色，拍成一張迷你彩虹！' },
+  { no: '075', task: '拍下一個讓你想到「溫暖」的顏色或光影', line: '今天的委託：拍下一個讓你想到『溫暖』的顏色或光影。' },
+];
+const COMMISSION_START = '2026-11-20';
+
 export const QUIZZES = [
   ['布丁還是蛋糕？', '布丁', '蛋糕', '布丁！我也是布丁派！', '蛋糕也好好吃，下次分我一口。'],
   ['下雨天要待在家還是出門踩水？', '待在家', '出門踩水', '那我們一起窩著，我幫你顧蛋。', '踩水！我要穿雨鞋！'],
@@ -107,6 +124,10 @@ export function wishById(id) {
   const [kind, a, b] = id.split(':');
   if (kind === 'duo' && byId(a) && byId(b)) return { id, kind, colors: [a, b], ...KIND_INFO.duo(byId(a), byId(b)) };
   if (['rainbow', 'bright', 'dark', 'morning', 'night'].includes(kind) && !a) return { id, kind, ...KIND_INFO[kind]() };
+  if (kind === 'theme' && /^c\d+$/.test(a || '') && COMMISSIONS[Number(a.slice(1))]) {
+    const c = COMMISSIONS[Number(a.slice(1))];
+    return { id, kind, owner: c.no, ownerLine: c.line, swatch: '#a9c6e8', label: '委託', name: c.task.replace(/^拍/, ''), line: `今天的題目：${c.task}！`, hint: c.task, condition: '拍了就算 · 照片會存進每日相簿' };
+  }
   if (kind === 'theme' && THEMES[Number(a)]) {
     const text = THEMES[Number(a)];
     return { id, kind, swatch: '#c9a7e8', label: '主題', name: text.replace(/^拍/, ''), line: `今天的題目：${text}！`, hint: text, condition: '拍了就算 · 照片會存進每日相簿' };
@@ -133,7 +154,7 @@ export function wishesFor(dateKey) {
   // 主題按日期輪替，40 天內不重複
   const [y, m, d] = dateKey.split('-').map(Number);
   const day = Math.floor(Date.UTC(y, m - 1, d) / 86400000);
-  const third = `theme:${(day * 17) % THEMES.length}`;
+  const third = dateKey >= COMMISSION_START && day % 4 === 0 ? `theme:c${Math.floor(day / 4) % COMMISSIONS.length}` : `theme:${(day * 17) % THEMES.length}`;
   return [first, second, third].map(wishById);
 }
 
