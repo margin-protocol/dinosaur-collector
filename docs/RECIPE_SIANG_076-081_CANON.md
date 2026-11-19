@@ -71,3 +71,14 @@
 - **正式角色立繪**：`assets/characters/siang-078-cat-cafe.webp`；1024 × 1024、透明 WebP、182,696 bytes，主要非透明區約 y=74–940。
 - **已上傳 GitHub `main` 並讀回驗證**：commit `440bdfdf3ac611969d3b7c9597ae45f588527bb2`；blob SHA `45d12e7997507a055f40d8504a27d6b9808093fd`。
 - **遊戲尚未開放配方取得**：必須完成 `js/eggs.js` 角色登錄、`js/recipes.js` 配方、研究室筆記與必要的角色文案後，再對玩家公告。
+
+## No.079 史前探險小湘｜SSR 加強版正式美術（2026-11-19）
+
+- **角色**：No.079 史前探險小湘／Prehistoric Explorer Siang，SSR；`series: 'recipe'`、`special: true`。
+- **配方**：No.051 恐龍小湘＋No.065 天氣觀測師小湘，共同入住累積四個不同本地日期；獲得固定孵出 No.079 的紀念蛋。工程尚未實裝。
+- **初見台詞**：「我找到恐龍腳印了！……咦，這不是我昨天踩的嗎？」
+- **視覺定稿**：小湘深棕長捲髮與灰棕眼，森林綠探險帽及琥珀恐龍徽章；層疊探險服、地質工具帶、精緻古銅金配件與氣象儀；放大鏡、三趾足跡化石、小型綠恐龍夥伴。採用湘確認的**第二版 SSR 加強立繪**，不是初稿。
+- **正式角色素材**：`assets/characters/siang-079-prehistoric-explorer.webp`，1024×1024、透明 WebP、221,932 bytes，腳底 y≈940。
+- **GitHub 上傳及讀回驗證成功**：commit `1293d8c228e94810060a6392805c719e91fb53c2`，Git blob `3b52ae95d8a0edba4a673e4e00e9ac231245018d`。
+- **完整美術及工程交接**：[`SIANG_079_PREHISTORIC_EXPLORER_ART.md`](SIANG_079_PREHISTORIC_EXPLORER_ART.md)；角色劇情台詞保留在獨立檔案。
+- 目前完成**正式立繪入庫**，但角色尚不可透過配方在遊戲中取得；需待工程整合及測試。
