@@ -283,7 +283,7 @@ function renderHome() {
     $(id).textContent = open.length;
   }
 
-  const away = new Set([...awayNos(state), ...(state.battle?.active || []).filter(a => !battle.isBack(a)).flatMap(a => a.nos)]);
+  const away = new Set([...awayNos(state), ...(state.battle?.active || []).filter(a => !battle.isBack(a)).flatMap(a => a.nos), ...lab.labNos(state)]); // 研究室調配中的不在首頁
   const ids = room.update(away.size ? Object.fromEntries(Object.entries(state.dex).filter(([no]) => !away.has(no))) : state.dex);
   ambience(homeAmbience());
   $('snack').hidden = !ids.length;
@@ -2651,7 +2651,7 @@ function renderErrands() {
     $('errand-pick-hint').textContent = place
       ? `${info.emoji} ${info.name}（${info.hours} 小時）：選 1～2 位。★ 是${fav}系列，特別喜歡這裡，帶回的東西更多。${place === 'faraway' ? '縣市小湘遠行會帶回家鄉明信片，偶爾撿到沒去過的縣市蛋。' : ''}${errandPicked.length === 2 ? (story ? (state.errands.stories[story.id] ? `（這組會發生「${story.title}」）` : '（這組好像會發生什麼事…）') : '' ) : ''}`
       : `${info.emoji} ${info.name}（${info.hours} 小時）：${info.desc}。選一位。`;
-    const busy = new Set([...busyNos(state), ...battle.battleNos(state)]);
+    const busy = new Set([...busyNos(state), ...battle.battleNos(state), ...lab.labNos(state)]); // 研究室調配中的也不能出門
     const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
     owned.sort((a, b) => (place ? Number(hasAffinity(place, b)) - Number(hasAffinity(place, a)) : 0));
     $('errand-siangs').replaceChildren(...owned.map(no => {
@@ -2965,7 +2965,7 @@ const enemyArt = (id, cls = '') => {
   if (e?.trait) box.append(Object.assign(document.createElement('i'), { className: 'enemy-art__trait', textContent: e.trait.icon }));
   return box;
 };
-const allBusy = () => new Set([...busyNos(state), ...battle.battleNos(state)]);
+const allBusy = () => new Set([...busyNos(state), ...battle.battleNos(state), ...lab.labNos(state)]); // 研究室調配中的也不能討伐
 function showErrandTab(tab) {
   $('tab-errand').setAttribute('aria-selected', String(tab === 'errand'));
   $('tab-battle').setAttribute('aria-selected', String(tab === 'battle'));
@@ -3112,7 +3112,7 @@ function wildArtFrom(snapshot) {
 $('battle-go').addEventListener('click', async () => {
   if (!battleEnemy || !battlePicked.length) return;
   const id = battleEnemy; const nos = [...battlePicked];
-  const t = await updateState(current => { const r = battle.startBattle(current, id, nos, { busy: new Set([...busyNos(current), ...battle.battleNos(current)]) }); return typeof r === 'string' ? { error: r } : { battle: r }; });
+  const t = await updateState(current => { const r = battle.startBattle(current, id, nos, { busy: new Set([...busyNos(current), ...battle.battleNos(current), ...lab.labNos(current)]) }); return typeof r === 'string' ? { error: r } : { battle: r }; });
   state = t.state;
   if (t.result.error) { $('battle-status').textContent = t.result.error; return; }
   battleEnemy = null; battlePicked = [];
