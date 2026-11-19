@@ -1,0 +1,103 @@
+{
+  "schemaVersion": 1,
+  "status": "draft-copy-ready-not-implemented",
+  "date": "2026-11-19",
+  "series": "recipe",
+  "characters": [
+    {
+      "id": "088",
+      "idStatus": "tentative",
+      "name": "未完待續小湘",
+      "englishName": "To Be Continued Siang",
+      "rarity": "SSR",
+      "series": "recipe",
+      "special": true,
+      "personality": "曾經害怕失敗，也曾經害怕成功後讓人失望。現在依然會焦慮、會哭、會迷路，但開始相信人生不是一場只能交出標準答案的考試。",
+      "plannedImagePath": "assets/characters/siang-088-to-be-continued.webp",
+      "imageStatus": "not-created-or-uploaded",
+      "recipe": {
+        "id": "to-be-continued",
+        "members": [
+          "086",
+          "087"
+        ],
+        "membersStatus": "proposed-pair",
+        "days": null,
+        "daysCandidate": 3,
+        "daysStatus": "awaiting-confirmation",
+        "target": "088",
+        "egg": "keepsake",
+        "implementationStatus": "not-implemented"
+      },
+      "lines": {
+        "signature": "考上了也好，沒考上也好……嘿嘿，我的故事又還沒寫完！",
+        "hatch": "你好呀！我是未完待續小湘！……欸？你問我現在在做什麼？嗯……我也還在找答案耶！",
+        "idle": "今天沒有完成計畫也沒關係啦……不過明天還是要努力一下！一點點就好！",
+        "bond": "我以前很怕別人問我以後要做什麼。現在還是有點怕啦……可是如果是你，我想慢慢跟你說。",
+        "dispatch": null,
+        "victory": "耶！！我們成功了！……那、那下一步要幹嘛？等等，我怎麼又開始焦慮了啦！！",
+        "defeat": "嗚……又失敗了。……可是這次我知道怎麼辦了！先哭一下，再想辦法！",
+        "commission": null
+      },
+      "bondLevels": {
+        "2": null,
+        "4": null,
+        "5": "我以前一直想知道，自己最後會變成什麼樣的人。後來才發現，原來我每天都還在變呀。……所以，你願不願意陪我一起看看，明天的我會是什麼樣子？"
+      },
+      "archive": null,
+      "mystery": null,
+      "observationLog": [],
+      "researchNoteCandidate": {
+        "title": "還沒寫完的那一頁",
+        "poem": "有人走進了門，有人停在門外。可是路還很長，誰說故事只能有一種開頭？",
+        "clues": [
+          "尋找正在讀性別研究的夥伴",
+          "尋找曾在榜單前難過的夥伴"
+        ]
+      },
+      "trioEasterEggCandidate": {
+        "name": "蛋糕不必等成功",
+        "requiredMembers": [
+          "086",
+          "087",
+          "088"
+        ],
+        "lines": [
+          {
+            "speaker": "086",
+            "text": "我今天又被教授退稿了……"
+          },
+          {
+            "speaker": "087",
+            "text": "我今天又看到別人的錄取通知了……"
+          },
+          {
+            "speaker": "088",
+            "text": "……那我們今天一起吃蛋糕好不好？"
+          },
+          {
+            "speaker": "086",
+            "text": "可是我論文還沒寫完耶。"
+          },
+          {
+            "speaker": "087",
+            "text": "可是我還沒想好下一步耶。"
+          },
+          {
+            "speaker": "088",
+            "text": "蛋糕又不需要等我們成功才能吃！"
+          }
+        ],
+        "narration": "三隻沉默了三秒，然後一起出門買蛋糕。",
+        "implementationStatus": "not-implemented"
+      }
+    }
+  ],
+  "notes": [
+    "No.088 隱藏配方 SSR 企劃已同意上傳；正式編號及配方天數尚待確認。",
+    "共同入住 3 天是候選，recipe.days 刻意為 null，不可視為已實裝條件。",
+    "No.086 和 087 目前只有交接文件，需先確認可取得及入住。",
+    "出戰、委託、Lv.2／4、完整圖鑑、神秘線索與六階段日誌尚未撰寫，不以虛構內容填充。",
+    "本次不改 js/recipes.js、js/eggs.js、素材、存檔或玩家公告。"
+  ]
+}
