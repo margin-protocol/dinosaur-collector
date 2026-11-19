@@ -3,6 +3,7 @@
 // 戰敗提示依實際原因；保留分數、歷史最高與進步；徽章可以拿來特訓，讓下一次打得更好。
 import { CHARACTERS, SERIES } from './eggs.js';
 import { levelOf } from './affection.js';
+import { ensureGifts } from './gifts.js';
 import { todayKey } from './wishes.js';
 import { GUGU_REVIEWS, REVIEW_ORDER } from './gugu-reviews.js';
 import { HERO_SHOP, HERO_LINES, PARTY_LINES, PARTY_REPORT, heroOffer } from './badge-heroes.js';
@@ -325,24 +326,27 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   return { ...battle, report: r, record, best, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild) };
 }
 
-// 徽章兌換：勇者小隊只能用徽章換，不進任何蛋池
+// 徽章兌換專屬蛋：孵化後才加入隊伍，不進隨機蛋池
 export function heroStatus(state, no) {
   const offer = heroOffer(no); if (!offer) return null;
   const owned = Boolean(state.dex?.[no]);
+  const pending = [state.egg, ...(state.shelf || []), ...(state.gifts?.eggs || [])].some(e => e?.character === no);
   const missing = (offer.requires || []).filter((id) => !state.battle?.stages?.[id]?.clears);
   const badges = state.battle?.badges || 0;
-  return { ...offer, owned, missing, locked: missing.length > 0, short: Math.max(0, offer.cost - badges), ready: !owned && !missing.length && badges >= offer.cost };
+  return { ...offer, owned, pending, missing, locked: missing.length > 0, short: Math.max(0, offer.cost - badges), ready: !owned && !pending && !missing.length && badges >= offer.cost };
 }
 export function redeemHero(state, no, now = new Date()) {
   const b = ensureBattle(state);
   const st = heroStatus(state, no);
   if (!st) return '這位小湘不能用徽章兌換。';
   if (st.owned) return `${CHARACTERS[no].name}已經在隊伍裡了。`;
+  if (st.pending) return `${CHARACTERS[no].name}的專屬蛋已兌換，正在等你孵化。`;
   if (st.locked) return `還不能兌換：${st.requireText}。`;
   if (b.badges < st.cost) return `徽章不夠，還差 ${st.cost - b.badges} 個。`;
   b.badges -= st.cost;
-  state.dex[no] = { at: now.toISOString(), story: { from: 'badge', cost: st.cost } };
-  return { no, cost: st.cost, line: HERO_LINES[no].redeem };
+  const egg = { egg: 'keepsake', character: no, from: `badge:${no}`, at: now.toISOString() };
+  ensureGifts(state).eggs.push(egg);
+  return { no, cost: st.cost, egg, line: HERO_LINES[no].redeem };
 }
 
 // 特訓：花徽章讓一位小湘永久變強

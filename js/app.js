@@ -235,7 +235,7 @@ function renderHome() {
   incubator.setProgress(pct / 100);
   incubator.el.classList.toggle('is-ready', ready);
 
-  $('egg-name').textContent = state.egg.county ? `${egg.name} · ${state.egg.county}` : eggLabel(state.egg, egg.name);
+  $('egg-name').textContent = CHARACTERS[state.egg.character]?.badge ? `${CHARACTERS[state.egg.character].name}專屬蛋` : state.egg.county ? `${egg.name} · ${state.egg.county}` : eggLabel(state.egg, egg.name);
   const stage = document.querySelector('.stage');
   stage.classList.toggle('is-shiny', Boolean(state.egg.shiny));
   stage.classList.toggle('is-naughty', Boolean(state.egg.naughty) && !naughtyDone());
@@ -576,7 +576,7 @@ function shelfCard(saved, index) {
   const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice egg-choice--shelf'; card.dataset.shelf = String(index); card.disabled = busy || shelfFull(state);
   const pct = Math.min(100, Math.round(100 * saved.warmth / egg.warmthNeeded));
   const content = document.createElement('div');
-  const title = document.createElement('h3'); title.textContent = saved.county ? `${egg.name} · ${saved.county}` : eggLabel(saved, egg.name);
+  const title = document.createElement('h3'); title.textContent = CHARACTERS[saved.character]?.badge ? `${CHARACTERS[saved.character].name}專屬蛋` : saved.county ? `${egg.name} · ${saved.county}` : eggLabel(saved, egg.name);
   const detail = document.createElement('p'); detail.textContent = `${index < (state.cradle?.slots || 1) - 1 ? '副架保溫中' : '暫放中'} · 孵化進度 ${pct}%（${saved.warmth} / ${egg.warmthNeeded}）`;
   const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = shelfFull(state) ? '暫放架滿了，先孵完一顆' : '繼續培育這顆';
   content.append(title, detail, label); card.append(eggArt(egg, pct), content); return card;
@@ -595,7 +595,7 @@ function keepsakeCard(gift) {
   const egg = EGGS.keepsake;
   const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = 'keepsake'; card.dataset.character = gift.character; card.disabled = busy || shelfFull(state);
   const content = document.createElement('div');
-  const title = document.createElement('h3'); title.textContent = egg.name;
+  const title = document.createElement('h3'); title.textContent = CHARACTERS[gift.character]?.badge ? `${CHARACTERS[gift.character].name}專屬蛋` : egg.name;
   const detail = document.createElement('p'); detail.textContent = `裡面是${CHARACTERS[gift.character]?.name || '特別的小湘'}`;
   const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
   const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = swapLabel();
@@ -640,7 +640,7 @@ function renderEggChoices() {
   else if (eggCategory === 'keepsake') fresh = [...(state.egg.id === 'keepsake' ? [eggCard(egg)] : []), ...state.gifts.eggs.filter(g => g.egg === 'keepsake').map(keepsakeCard)];
   else fresh = [eggCard(egg)];
   if (!fresh.length) fresh = [eggCard(egg)];
-  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣時收到，固定孵出紀念的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
+  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣或徽章兌換時收到，固定孵出蛋裡指定的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
   $('egg-picker-note').textContent = detailText;
   $('egg-choices').replaceChildren(back, ...(shelved.length ? [heading('暫放中'), ...shelved, heading('可以培育')] : []), ...fresh);
 }
@@ -653,7 +653,7 @@ function eggCard(egg) {
     const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true');
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
-    const title = document.createElement('h3'); title.textContent = current && state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
+    const title = document.createElement('h3'); title.textContent = current && CHARACTERS[state.egg.character]?.badge ? `${CHARACTERS[state.egg.character].name}專屬蛋` : current && state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
     const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'weather' ? `天氣的蛋，今天的天氣決定誰比較容易出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
@@ -1037,6 +1037,7 @@ function storyText(c, entry) {
   if (st.from === 'badge') return `${date}，你用 ${st.cost} 枚討伐徽章，把她迎進了隊伍。`;
   const days = st.since && !Number.isNaN(Date.parse(st.since)) ? Math.max(0, Math.round((Date.parse(entry.at) - Date.parse(st.since)) / 864e5)) : null;
   const source = st.county ? `在${st.county}探索時收到的縣市蛋`
+    : st.from?.startsWith('badge:') ? '用討伐徽章換來的勇者小隊專屬蛋'
     : st.from?.startsWith('recipe:') ? '兩位小湘在研究室一起調配出來的紀念蛋'
     : st.from?.startsWith('devteam:') ? '開發團隊悄悄送來的紀念蛋'
     : st.from === 'taiwan' ? '走遍臺灣時收到的紀念蛋'
@@ -1771,7 +1772,7 @@ function howToGet(c) {
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const st = lab.labStatus(state); const brewing = st?.recipe.id === recipe.id; return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
-  if (c.badge) { const h = battle.heroStatus(state, c.no); return `普通蛋、願望蛋可能孵出；也能在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換${h.requireText ? `（${h.requireText}）` : ''}`; }
+  if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換專屬蛋，培育後固定孵出${h.requireText ? `（${h.requireText}）` : ''}`; }
   if (c.no === '090') return state.dex[c.no] ? '湘研究所沒考上時，用暗號送給大家的紀念（沒關係，先吃蛋糕）' : '湘有心事的時候，會用暗號送給大家……';
   if (c.no === '089') return state.dex[c.no] ? '湘考上研究所時，用暗號送給大家的紀念' : '湘有好消息的時候，會用暗號送給大家……';
   if (c.series === 'devteam') {
@@ -3192,9 +3193,9 @@ function renderHeroShop() {
     const img = siangImg(no); if (!h.owned) { img.classList.add('is-locked'); img.alt = '尚未兌換的小湘'; }
     const info = document.createElement('div'); info.innerHTML = '<b></b><small></small>';
     info.querySelector('b').textContent = `${c.name} · ${c.rarity}`;
-    info.querySelector('small').textContent = h.owned ? '已經加入隊伍 ✓' : h.locked ? `🔒 ${h.requireText}` : h.short ? `還差 ${h.short} 枚徽章` : '可以兌換了！';
+    info.querySelector('small').textContent = h.owned ? '已經加入隊伍 ✓' : h.pending ? '專屬蛋已領取，到培育室孵化' : h.locked ? `🔒 ${h.requireText}` : h.short ? `還差 ${h.short} 枚徽章` : '兌換專屬蛋，培育後加入隊伍';
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn btn--quiet';
-    btn.textContent = h.owned ? '已兌換' : `🛡️ ${h.cost}`; btn.disabled = !h.ready;
+    btn.textContent = h.owned ? '已加入' : h.pending ? '待孵化' : `換蛋 ${h.cost}`; btn.disabled = !h.ready;
     btn.addEventListener('click', () => void redeemHeroFor(no));
     row.append(img, info, btn); return row;
   }));
@@ -3203,11 +3204,10 @@ async function redeemHeroFor(no) {
   const t = await updateState(current => battle.redeemHero(current, no));
   state = t.state;
   if (typeof t.result === 'string') { $('hero-status').textContent = t.result; return; }
-  welcomeResident(no, state.dex);
-  $('hero-status').textContent = `${CHARACTERS[no].name}：「${t.result.line}」`;
+  $('hero-status').textContent = `獲得${CHARACTERS[no].name}專屬蛋！到「培育 → 選擇蛋 → 紀念蛋」注入能量，孵化後她就會加入隊伍。`;
   $('battle-badges').textContent = state.battle.badges;
   renderAll(); renderHeroShop(); renderTrain(); buzz([20, 40, 30]);
-  toast(`${CHARACTERS[no].name}加入了！「${t.result.line}」`);
+  toast(`獲得${CHARACTERS[no].name}專屬蛋，到培育室迎接她吧！`);
 }
 $('open-train').addEventListener('click', () => { battleEnemy = null; $('battle-train').hidden = false; $('train-status').textContent = ''; $('hero-status').textContent = ''; renderBattle(); renderHeroShop(); renderTrain(); });
 $('train-back').addEventListener('click', () => { $('battle-train').hidden = true; renderBattle(); });

@@ -2,8 +2,8 @@
 
 入住格子顯示未互動、今日 X/15、今日已滿，並提供總互動人數與可讀的按鈕標籤。沿用 affection 的每日首頁互動額度；入住／出門／重複孵化的加分不會被當作已點過。滿級角色仍顯示真實今日互動，跨日自動重新判讀。只讀狀態不寫入存檔。
 
-普通蛋新增騎士與魔法師各 2、勇者 0.6 權重；願望蛋分別 5、5、2。機率按整個蛋池權重正規化，徽章兌換價格、條件、連攜與養成規則不變。
+勇者孵化方案已依玩家澄清更正，請見 ../hero-eggs/README.md；三位不進隨機蛋池。
 
 Chromium 手機模擬：360／390／430px、612／844px 高度，櫻花／奶油／晴空／深藍配色。測試涵蓋未互動、部分、達上限、昨日紀錄、滿級、出門中、真實首頁點擊後再開啟、存檔未更動、無水平溢出和完成按鈕可見。截圖為櫻花與深藍各三個寬度，清單可獨立捲動。
 
-指令：tests/residents-daily-bond.cjs、tests/residents-grid.cjs、tests/badge-heroes.cjs、tests/affection.cjs。勇者測試以真實 rollFor 權重區間逐一驗證六種角色／蛋組合，並檢查圖鑑取得文字、既有兌換條件與三人連攜。未宣稱實機 Safari 測試。
+指令：tests/residents-daily-bond.cjs、tests/residents-grid.cjs、tests/badge-heroes.cjs、tests/affection.cjs。勇者測試已更新為徽章換蛋後實際注入能量與孵化，並檢查取得文字、兌換條件與三人連攜。未宣稱實機 Safari 測試。

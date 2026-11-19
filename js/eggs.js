@@ -30,7 +30,6 @@ export const EGGS = {
       '045': 5, '046': 5, '047': 5, '050': 5, '054': 5, // R 動物
       '049': 2, '052': 2, '055': 2, // SR 動物
       '051': 0.6, // SSR 恐龍小湘
-      '062': 2, '063': 2, '064': 0.6, // 勇者小隊：SR 騎士／魔法師、SSR 勇者
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -50,7 +49,6 @@ export const EGGS = {
       '045': 6, '046': 6, '047': 6, '050': 6, '054': 6, // R 動物
       '049': 5, '052': 5, '055': 5, // SR 動物
       '051': 2, // SSR 恐龍小湘
-      '062': 5, '063': 5, '064': 2, // 勇者小隊：願望蛋較容易遇見
     },
     // 正式三層素材：assets/eggs/wish/{shell,glow,cracks}.webp
   },
@@ -221,7 +219,7 @@ export const CHARACTERS = {
   '060': { no: '060', name: '萬聖節小湘', rarity: 'SSR', line: '「不給糖就搗蛋！……給了糖也要搗蛋。」', image: 'siang-060-halloween', series: 'holiday', special: true },
   // 集滿 19 位縣市小湘時送出
   '061': { no: '061', name: '台灣小湘', rarity: 'UR', line: '「我們把整座島都走過一遍了，謝謝你帶我回家。」', image: 'siang-061-taiwan', series: 'county', special: true },
-  // 勇者小隊：普通蛋／願望蛋可孵出，也能在討伐徽章兌換
+  // 勇者小隊：徽章兌換專屬紀念蛋，再固定孵出；不進隨機蛋池
   '062': { no: '062', name: '騎士小湘', rarity: 'SR', line: '「別怕，我會保護你的！……等一下，盾牌是不是拿反了？」', image: 'siang-062-knight', series: 'hero', special: true, badge: true },
   '063': { no: '063', name: '魔法師小湘', rarity: 'SR', line: '「站好不要動喔！這次的魔法……應該不會爆炸吧？」', image: 'siang-063-mage', series: 'hero', special: true, badge: true },
   '064': { no: '064', name: '勇者小湘', rarity: 'SSR', line: '「魔王打完了嗎？那我可以回家吃點心了吧？」', image: 'siang-064-hero', series: 'hero', special: true, badge: true },
