@@ -564,6 +564,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 @keyframes shiny-sweep { 0%,55% { transform:translateX(-70%); } 85%,100% { transform:translateX(70%); } }
 /* 2. 圖鑑詳細頁：立繪旁邊飄著閃爍的小星星 */
 .dex-detail__art { position:relative; }
+.dex-detail__close { z-index:5; }
 .shiny-stars { display:none; position:absolute; inset:0; pointer-events:none; }
 .dex-detail.is-shiny .shiny-stars { display:block; }
 .shiny-stars i { position:absolute; width:14px; height:14px; background:#fff3c4; clip-path:polygon(50% 0,61% 39%,100% 50%,61% 61%,50% 100%,39% 61%,0 50%,39% 39%); filter:drop-shadow(0 0 4px #ffd27a); opacity:0; animation:shiny-twinkle 2.6s ease-in-out infinite; }
