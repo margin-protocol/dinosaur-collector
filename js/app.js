@@ -31,6 +31,7 @@ import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROO
 import { WISH_REWARD, PASS_RATIO, WISH_POOL, todayKey, analyzePhoto, photoStats, judge, actProgress, quizReply, isPhotoWish } from './wishes.js';
 import { createMissions } from './missions.js';
 import { createResearch } from './research.js';
+import { studyPair } from './research-notes.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward, todaysWishList } from './progression.js';
 import * as install from './install.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
@@ -128,7 +129,16 @@ const room = createRoom($('resident-lanes'), character => {
     if (bond.up.length) queueBondUps([{ no: character.no, up: bond.up }]);
   });
 });
-const research = createResearch({ root: $('research-root'), getState: loadState, onCollect: () => showView('incubate') });
+const research = createResearch({
+  root: $('research-root'), getState: loadState,
+  onCollect: () => showView('incubate'),
+  onStudy: async ([a, b]) => {
+    const transaction = await updateState(current => studyPair(current, a, b));
+    state = transaction.state;
+    renderAll();
+    return { state: transaction.state, result: transaction.result };
+  },
+});
 
 const tutorial = createTutorial({
   getState: () => state,

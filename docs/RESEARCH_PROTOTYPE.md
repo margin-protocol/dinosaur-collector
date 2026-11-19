@@ -31,3 +31,13 @@
 - docs/review/research-{locked,empty,picker,ready,result,short}-*.png：實際手機尺寸截圖；結果彈窗採視窗截圖。
 
 使用 Chromium 手機模擬，Safari／Android Chrome 真機仍待驗收。
+
+## 研究室 1.0｜正式遊戲筆記功能（2026-11-19）
+
+- 在正式遊戲選兩位**已收藏且不同**的小湘，按「開始組合研究」；透過 `updateState` 的全域存檔鎖重新驗證收藏後，寫入 `state.research.trials`，紀錄排序後的組合編號、首次研究日期和線索類別。
+- **同一組搭檔僅記錄一次**，換順序不會重複；頁面顯示最新十二組實驗和總紀錄數。重開、重新整理仍保留。
+- 初期提供兩則配方筆記：`strawberry-cake`（002、005）與 `rain-garden`（006、003）；其他組合只記錄「接近」或「暫無線索」，不用能量、蛋或徽章。
+- 正確搭檔會得到「入住日數／是否需下雨」提示，**不提前揭露尚未完成的隱藏角色名稱或完整美術**。
+- 孵化、入住宿日、送紀念蛋和實際角色取得繼續由現存 `js/recipes.js` 與 `js/app.js` 負責；研究按鈕**不發獎**、不變更好感、能量、化石或戰力。
+- 原有 `review/research/` 保留單獨假存檔的介面示範，不讀寫正式遊戲；新的 `onStudy` 注入式接口只在正式遊戲提供。
+- 測試：`tests/research.cjs`（正式寫入、重複組合、重整保留、未收藏阻擋、獨立示範），以及 `tests/research-notes.cjs`（純規則）。未測實機 Safari/Android。

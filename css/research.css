@@ -36,3 +36,17 @@
 .research-result-copy { font:13px/1.9 var(--font-display); color:var(--pearl); }.research-result-safe { font:10px/1.8 var(--font-display); color:var(--silver); margin:14px 0 20px; }
 body[data-view="research"] .game-footer { min-height:70px; padding-top:8px; padding-bottom:calc(var(--safe-bottom) + 18px); }
 @media(max-width:374px) { .research-heading{font-size:25px}.research-slot-art{width:185px;height:185px}.research-specimen{width:106px}.research-specimen img{width:285px;height:285px}.research-partner{padding:8px;grid-template-columns:45px minmax(0,1fr) auto}.research-partner img{width:45px} }
+
+/* 研究室 1.0：兩則可切換的配方筆記與持久研究紀錄 */
+.research-note-tabs {display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 14px}
+.research-note-tabs button {min-height:44px;border:1px solid #aa90b155;border-radius:10px;padding:8px 6px;background:#272431;color:var(--silver);font:11px/1.5 var(--font-display)}
+.research-note-tabs button[aria-pressed="true"] {border-color:#d4b2cc;background:#493849;color:var(--ivory)}
+.research-history {padding:18px 0 12px;border-top:1px solid #b79bc24d}
+.research-history h2 {font:400 19px var(--font-display);margin:0 0 8px}
+.research-history-count {font:11px var(--font-body);color:var(--silver)}
+.research-history-intro {font:11px/1.8 var(--font-display);color:var(--silver)}
+.research-history-list {display:grid;gap:8px;margin:12px 0 0;padding:0;list-style:none}
+.research-history-list li {display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:11px 12px;border:1px solid #ad90b443;border-radius:10px;background:#282431}
+.research-history-list strong {font:12px/1.6 var(--font-display);color:var(--ivory);min-width:0}
+.research-history-list small {font:10px/1.6 var(--font-display);color:var(--silver);text-align:right;max-width:45%}
+@media(max-width:374px) {.research-note-tabs button{font-size:10px}.research-history-list li{flex-direction:column;gap:2px}.research-history-list small{max-width:100%;text-align:left}}
