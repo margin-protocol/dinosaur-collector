@@ -11,7 +11,7 @@ export const SLOT_COSTS = [20, 40]; // 第 2 格、第 3 格
 export function slotOffer(state) {
   const slots = state.cradle?.slots || 1;
   if (slots >= 3) return null;
-  return { id: 'slot', name: `擴充蛋架（第 ${slots + 1} 格）`, cost: SLOT_COSTS[slots - 1], desc: '暫放架最前面的蛋也會跟著自動保溫' };
+  return { id: 'slot', name: `擴充蛋架（第 ${slots + 1} 格）`, cost: SLOT_COSTS[slots - 1], desc: '培育室多一個副架：換蛋時，正在孵的蛋放上去也會自動保溫' };
 }
 
 // 指定小湘依稀有度分層收費（湘 11/19：25 化石誰都能換太便宜）

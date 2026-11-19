@@ -248,8 +248,7 @@ function renderHome() {
   if (FLAVORS[state.egg.flavor]) omens.push(`${FLAVORS[state.egg.flavor].hint}……${FLAVORS[state.egg.flavor].tip}`);
   if (state.egg.shiny) omens.push('✨ 閃亮的蛋：稀有的小湘更容易出現');
   if (state.egg.warmth < egg.warmthNeeded) omens.push(`培養架自動保溫中：每小時 +${PASSIVE.perHour}（離開最多累積 ${PASSIVE.maxHours} 小時）`);
-  const side = state.shelf.slice(0, Math.max(0, (state.cradle?.slots || 1) - 1));
-  if (side.length) omens.push(`副架保溫中：${side.map(e => `${e.county ? `${EGGS[e.id].name}·${e.county}` : eggLabel(e, EGGS[e.id].name)} ${Math.round(100 * e.warmth / EGGS[e.id].warmthNeeded)}%`).join('、')}`);
+  renderSideCradles();
   $('incubation-omen').textContent = omens.join('\n');
   $('incubation-omen').hidden = !omens.length;
   $('vitals').setAttribute('aria-valuenow', String(Math.round(pct)));
@@ -503,7 +502,7 @@ function hatchBoosts(s, now = new Date()) {
 // 換掉目前的蛋：有進度的放上暫放架，蛋庫拿出來還沒餵的放回蛋庫，全新的普通蛋直接收起來
 function stowCurrent(current) {
   const prev = current.egg;
-  if (prev.warmth > 0) current.shelf.push(prev);
+  if (prev.warmth > 0) current.shelf.unshift(prev); // 剛換下來的蛋放最前面：有副架的話，它會在副架上繼續保溫
   else if (EGGS[prev.id]?.stocked) returnEgg(current, prev);
 }
 const shelfFull = (current) => current.egg.warmth > 0 && current.shelf.length >= SHELF_MAX;
@@ -523,6 +522,34 @@ let eggCategory = null;
 const eggArt = (egg, pct = 0) => { const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true'); const v = createEggView(egg); v.setProgress(pct); art.append(v.el); return art; };
 const swapLabel = () => shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
 
+// 副架：用化石擴充後，培養架旁邊多出來的保溫位置（放暫放架最前面的蛋）
+function renderSideCradles() {
+  const host = $('side-cradles'); if (!host) return;
+  const extra = Math.max(0, (state.cradle?.slots || 1) - 1);
+  host.hidden = !extra;
+  if (!extra) { host.replaceChildren(); return; }
+  const head = document.createElement('p'); head.className = 'side-cradles__head'; head.textContent = `副架 · ${extra} 格（放在這裡的蛋也會自動保溫）`;
+  const row = document.createElement('div'); row.className = 'side-cradles__row';
+  for (let i = 0; i < extra; i++) {
+    const saved = state.shelf[i];
+    const b = document.createElement('button'); b.type = 'button'; b.className = `side-cradle${saved ? '' : ' is-empty'}`;
+    if (saved) {
+      const egg = EGGS[saved.id]; const pct = Math.min(100, Math.round(100 * saved.warmth / egg.warmthNeeded));
+      b.dataset.sideShelf = String(i); b.disabled = busy;
+      const t = document.createElement('span'); t.className = 'side-cradle__name'; t.textContent = saved.county ? `${egg.name}·${saved.county}` : eggLabel(saved, egg.name);
+      const s = document.createElement('span'); s.className = 'side-cradle__pct'; s.textContent = `保溫中 ${pct}%`;
+      b.setAttribute('aria-label', `副架上的${t.textContent}，孵化進度 ${pct}%，點一下換到主架`);
+      b.append(eggArt(egg, pct), t, s);
+    } else {
+      b.dataset.sideEmpty = '1';
+      const t = document.createElement('span'); t.className = 'side-cradle__name'; t.textContent = '空的副架';
+      const s = document.createElement('span'); s.className = 'side-cradle__pct'; s.textContent = '換一顆蛋時，現在這顆會放上來繼續保溫';
+      b.append(t, s);
+    }
+    row.append(b);
+  }
+  host.replaceChildren(head, row);
+}
 function shelfCard(saved, index) {
   const egg = EGGS[saved.id];
   const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice egg-choice--shelf'; card.dataset.shelf = String(index); card.disabled = busy || shelfFull(state);
@@ -1251,6 +1278,25 @@ $('egg-choices').addEventListener('click', async event => {
   } finally { busy = false; state = loadState(); renderAll(); }
 });
 $('cultivate').addEventListener('click', onEggTap);
+$('side-cradles')?.addEventListener('click', async event => {
+  const b = event.target.closest('[data-side-shelf], [data-side-empty]'); if (!b || busy) return;
+  if (b.dataset.sideEmpty) { $('open-eggs').click(); return; }
+  // 點副架上的蛋：和主架交換
+  busy = true;
+  try {
+    const saved = state.shelf[Number(b.dataset.sideShelf)];
+    const { state: latest, result } = await updateState(current => {
+      const index = current.shelf.findIndex(e => e.id === saved?.id && e.since === saved?.since);
+      if (index < 0) return false;
+      const [next] = current.shelf.splice(index, 1);
+      if (current.egg.warmth > 0) current.shelf.splice(index, 0, current.egg); else if (EGGS[current.egg.id]?.stocked) returnEgg(current, current.egg);
+      current.egg = next;
+      return true;
+    });
+    state = latest;
+    if (result) toast('換好了！剛才的蛋換到副架上，一樣會保溫。');
+  } finally { busy = false; state = loadState(); renderAll(); }
+});
 $('feed-all').addEventListener('click', () => void onFeedAll());
 $('home-wishes').addEventListener('click', () => showView('wish'));
 $('incubate-wishes').addEventListener('click', () => showView('wish'));
@@ -2107,7 +2153,7 @@ async function doExchange(offerId, no) {
   state = t.state; renderAll();
   if (!t.result) { $('fossil-status').textContent = '化石不夠喔。'; return; }
   restart($('chip-fossil'), 'is-bump');
-  $('fossil-status').textContent = offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！暫放架最前面的蛋也會一起保溫。` : offerId === 'energy' ? '換到 30 能量了！' : offerId === 'pick' ? `用 ${t.result.cost} 化石換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
+  $('fossil-status').textContent = offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！到培育室就能看到副架：換蛋時，正在孵的那顆會放上去繼續保溫。` : offerId === 'energy' ? '換到 30 能量了！' : offerId === 'pick' ? `用 ${t.result.cost} 化石換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
   openFossils();
 }
 $('chip-fossil').addEventListener('click', openFossils);

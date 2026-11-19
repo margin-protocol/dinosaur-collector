@@ -40,6 +40,11 @@ await p.reload();await p.waitForTimeout(500);s=await save();assert.equal(s.shelf
 await p.click('#chip-fossil');await p.click('[data-offer="slot"]');await p.waitForTimeout(300);s=await save();assert.equal(s.cradle.slots,2);assert.equal(s.fossils,0);
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.bonus.passiveAt=new Date(Date.now()-3*3600e3-60e3).toISOString();localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.waitForTimeout(500);
 s=await save();assert.equal(s.shelf[0].warmth,25);
-await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);assert.match(await p.textContent('#incubation-omen'),/副架保溫中/);
+await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
+assert(await p.locator('#side-cradles').isVisible(),'培育室看得到副架');assert.match(await p.textContent('#side-cradles'),/副架 · 1 格/);assert.match(await p.textContent('#side-cradles'),/保溫中 \d+%/);
+if(process.env.SHOT)await p.locator('#side-cradles').scrollIntoViewIfNeeded().then(()=>p.screenshot({path:process.env.SHOT}));
+// 點副架上的蛋：和主架交換，原本的蛋換到副架
+const mainBefore=(await save()).egg;await p.locator('[data-side-shelf="0"]').click();await p.waitForTimeout(400);s=await save();
+assert.equal(s.egg.id,'wish');if(mainBefore.warmth>0)assert.equal(s.shelf[0].since,mainBefore.since);
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('egg traits: offer after hatch, pick naughty, pet+colour requests, shiny boost, cradle slot warms shelf PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
