@@ -39,8 +39,16 @@ await c.setGeolocation({latitude:23.57,longitude:119.58});
 await p.evaluate(()=>new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(()=>resolve(),reject,{maximumAge:0})));
 await p.locator('#reveal-ok').click();
 await p.evaluate(()=>location.hash='home');await p.waitForTimeout(300);
+await p.waitForTimeout(800);if(!(await p.locator('#county-call[open]').count()))await p.locator('#explore').click(); // 第一次來澎湖會自動跳出
+await p.locator('#county-call[open]').waitFor();
+assert.match(await p.locator('#county-title').textContent(),/澎湖小湘想出現/);await p.locator('#county-ok').click();
+s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.ok(s.travel.eggs.includes('澎湖縣'),'penghu county egg');
+// Kinmen → detected, but no Siang yet → no egg
+await c.setGeolocation({latitude:24.43,longitude:118.32});
+await p.evaluate(()=>new Promise((resolve,reject)=>navigator.geolocation.getCurrentPosition(()=>resolve(),reject,{maximumAge:0})));
 await p.locator('#explore').click();await p.locator('#county-call[open]').waitFor();
-assert.match(await p.locator('#county-title').textContent(),/還沒有小湘的訊號/);await p.locator('#county-ok').click();
+assert.match(await p.locator('#county-title').textContent(),/金門縣的訊號/);await p.locator('#county-ok').click();
+s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.ok(!s.travel.eggs.includes('金門縣'));assert.ok(!s.travel.visits['金門縣']);
 // Green Island is its own spot inside Taitung
 await c.setGeolocation({latitude:22.66,longitude:121.49});await p.reload();await p.waitForTimeout(2500);await p.locator('#county-call[open]').waitFor({timeout:1}).catch(()=>{});if(!(await p.locator('#county-call[open]').count()))await p.locator('#explore').click();await p.locator('#county-call[open]').waitFor();
 assert.match(await p.locator('#county-title').textContent(),/綠島小湘想出現/);await p.locator('#county-ok').click();

@@ -34,7 +34,7 @@ import { DEVTEAM_LINES, DUCK_DROP_LINE, DEVTEAM_EVENT } from './devteam-lines.js
 import * as devteam from './devteam.js';
 import { EXTRA_LINES } from './extra-lines.js';
 import { fetchWeather, recordWeather, isNight, rainingToday, weatherBoosts, KIND_NAMES, RAIN_BOOST, NIGHT_BOOST } from './weather.js';
-import { loadCounties, countyAt, spotAt, currentPosition, geoPermission } from './geo.js';
+import { loadCounties, countyAt, spotAt, offshoreAt, MAIN_ISLAND, currentPosition, geoPermission } from './geo.js';
 import { createRoom, residentsFor, saveResidents, welcomeResident, ROOM_KEY, ROOM_LIMIT } from './room.js';
 import { WISH_REWARD, PASS_RATIO, WISH_POOL, todayKey, analyzePhoto, photoStats, judge, actProgress, quizReply, isPhotoWish, inWindow, wishById } from './wishes.js';
 import { createMissions } from './missions.js';
@@ -1480,7 +1480,8 @@ function showCountyCall({ county, result, error, weather }) {
   let title; let text; let note = '';
   if (error === 'denied') { title = '小湘感應不到你在哪裡'; text = '需要允許定位，才能知道你在哪個縣市。請到瀏覽器或手機設定，允許這個網站使用位置。'; }
   else if (error) { title = '訊號有點微弱'; text = '這次沒有成功定位，到空曠一點的地方再試一次。'; }
-  else if (!county) { title = '這裡還沒有小湘的訊號'; text = '目前只有臺灣本島 19 個縣市的小湘。澎湖、金門、馬祖之後再開放。'; }
+  else if (!county) { title = '這裡還沒有小湘的訊號'; text = '目前有臺灣本島 19 個縣市、綠島、澎湖和馬祖的小湘。'; }
+  else if (!c) { title = `${county}的訊號`; text = `${county}的小湘還在路上，之後再來找她吧！`; }
   else if (result?.egg) { title = `${c.name}想出現！`; text = c.line; note = `獲得一顆「縣市蛋 · ${county}」，到培育室的「選擇蛋」把它拿出來吧。`; }
   else if (result?.daily === 'county') { title = owned ? `${c.name}：又見面了！` : `${c.name}的蛋又出現了`; text = owned ? `「你又來${county}啦，這顆蛋送你，說不定會孵出新朋友喔。」` : '「快點把我孵出來嘛……」'; note = `今天的探索禮物：一顆「縣市蛋 · ${county}」，到「選擇蛋」把它拿出來吧。${owned ? '（已經有她了的話，孵出來會變成化石）' : ''}`; }
   else if (result?.daily === 'wish' || result?.daily === 'weather') { title = owned ? `${c.name}：又見面了！` : `${county}的訊號`; text = owned ? `「你又來${county}啦，我在路上撿到一顆蛋，給你！」` : '這附近好像有什麼東西在閃閃發光……'; note = `今天的探索禮物：一顆「${result.daily === 'wish' ? '願望蛋' : '天氣蛋'}」，到「選擇蛋」把它拿出來吧。`; }
@@ -1519,10 +1520,10 @@ async function explore({ silent = false } = {}) {
     catch (err) { if (!silent) showCountyCall({ error: err?.code === 1 ? 'denied' : 'failed' }); return; }
     let counties;
     try { counties = await loadCounties(); } catch { if (!silent) showCountyCall({ error: 'failed' }); return; }
-    const county = spotAt(pos.lon, pos.lat) || countyAt(counties, pos.lon, pos.lat);
+    const county = spotAt(pos.lon, pos.lat) || offshoreAt(pos.lon, pos.lat) || countyAt(counties, pos.lon, pos.lat);
     state = (await updateState(current => { if (current.bonus.explored !== todayKey()) current.bonus.total.explores += 1; current.bonus.explored = todayKey(); })).state;
     const weather = await checkWeather(pos);
-    if (!county) { if (!silent) showCountyCall({ county: null, weather }); else announceWeather(weather); return; }
+    if (!county || !COUNTY_CHARACTER[county]) { if (!silent) showCountyCall({ county: county || null, weather }); else announceWeather(weather); return; } // 還沒有小湘的地方（例如金門）先不送蛋
     const transaction = await updateState(current => checkIn(current, county, todayKey()));
     state = transaction.state; renderAll();
     if (!silent || transaction.result.egg || transaction.result.daily) showCountyCall({ county, result: transaction.result, weather });
@@ -1744,7 +1745,7 @@ let keepsakeBusy = false;
 function pendingKeepsakes(current) {
   const got = current.gifts?.keepsakes || [];
   const list = activeHolidays().filter(h => !got.includes(h.key)).map(h => ({ key: h.key, no: h.no, message: h.id === 'birthday' ? '今天是小湘的生日！收到一顆紀念蛋，只有今天才有喔。' : `${h.name}快樂！收到一顆${h.name}的紀念蛋。` }));
-  const counties = Object.values(CHARACTERS).filter(c => c.county && c.county !== '綠島');
+  const counties = Object.values(CHARACTERS).filter(c => c.county && MAIN_ISLAND.has(c.county));
   if (!got.includes('taiwan') && !current.dex[TAIWAN_NO] && counties.every(c => current.dex[c.no])) list.push({ key: 'taiwan', no: TAIWAN_NO, message: '你走遍了整個臺灣！收到一顆紀念蛋，裡面是台灣小湘。' });
   return list;
 }

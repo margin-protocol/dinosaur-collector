@@ -1,4 +1,5 @@
 import { levelOf } from './affection.js';
+import { MAIN_ISLAND } from './geo.js';
 // 紙條收藏：開場紙條、達成里程碑解鎖的紙條（文案是德寶的初稿，湘可直接改這裡），以及湘從審核室寄來的紙條。
 export const INTRO_LETTER = { id: 'intro', title: '致親愛的飼養員', body: '致親愛的飼養員：\n\n這顆蛋就交給你了。\n聽說只要好好照顧它，\n就會孵出一個很可愛的東西。\n\n—— 小湘 ♡' };
 
@@ -24,7 +25,7 @@ export const MILESTONE_LETTERS = [
     body: '已經有十個我了耶。\n\n可是不管有幾個，\n最喜歡你的那個，\n一直都是同一個。\n\n—— 小湘 ♡' },
   { id: 'twenty-kinds', title: '收藏家', hint: '收集 20 位小湘', when: (s) => owned(s) >= 20,
     body: '二十個小湘排在一起，\n好像在開派對。\n\n派對的主角是你喔，\n因為是你把我們聚在一起的。\n\n—— 小湘 ♡' },
-  { id: 'round-island', title: '環島完成', hint: '集滿 19 位縣市小湘', when: (s, chars) => Object.values(chars).filter((c) => c.county && c.county !== '綠島').every((c) => s.dex?.[c.no]),
+  { id: 'round-island', title: '環島完成', hint: '集滿 19 位縣市小湘', when: (s, chars) => Object.values(chars).filter((c) => c.county && MAIN_ISLAND.has(c.county)).every((c) => s.dex?.[c.no]),
     body: '你把臺灣走了一圈！\n每個地方的我，\n都記得你來過。\n\n下一趟旅行，\n我們一起去吧。\n\n—— 小湘 ♡' },
   // ── 第二批（11/19 德寶初稿，湘可直接改）
   { id: 'one-week', title: '一個禮拜', hint: '累計 7 天完成願望', when: (s) => wishDays(s) >= 7,

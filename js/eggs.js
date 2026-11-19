@@ -257,6 +257,9 @@ export const CHARACTERS = {
   // 【湘 11/19 拍板】放榜當天：考上→用暗號送 089，沒上→送 090；結果確定之後，089 和 090 兩位都放進普通蛋池（這樣大家都湊得到 091 未完待續小湘的配方）
   // 研究所小湘（湘 11/19）：湘正取研究所那天用暗號送給所有玩家；之後再放進普通蛋池。台詞與圖鑑介紹：data/characters/academic-086-dialogue.json（皮寶暫編 086，實際為 089）
   '089': { no: '089', name: '研究所小湘', rarity: 'SSR', line: "「性別不是選擇題啦！……可是論文口試好像是生存題。救命喔！！」", image: 'siang-089-grad-school', series: 'memorial', special: true },
+  // 離島縣市小湘（湘 11/19 交付；台詞：data/characters/county-matsu-dialogue.json、county-penghu-dialogue.json，皮寶）：在澎湖、馬祖用「探索附近」就能拿到縣市蛋（js/geo.js 的 OFFSHORE）
+  '092': { no: '092', name: '馬祖小湘', rarity: 'SR', line: "「我們家晚上的海會發光喔！……欸？！今天沒有？那、那是因為大海今天想早點睡覺啦！！」", image: 'siang-092-matsu', series: 'county', county: '連江縣', special: true },
+  '093': { no: '093', name: '澎湖小湘', rarity: 'SR', line: "「澎湖的風才吹不倒我咧！！……哇啊啊啊啊！！你先抓住我啦！！！」", image: 'siang-093-penghu', series: 'county', county: '澎湖縣', special: true },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）

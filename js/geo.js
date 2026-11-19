@@ -39,6 +39,19 @@ export function countyAt(counties, lon, lat) {
   return best;
 }
 
+// 離島縣市：本島邊界資料沒有，用範圍框判斷（座標一樣不保存）
+// 本島 19 縣市（環島成就、全臺紀念蛋只算這些；綠島與澎湖、金門、馬祖是離島）
+export const MAIN_ISLAND = new Set(['基隆市','臺北市','新北市','桃園市','新竹市','新竹縣','苗栗縣','臺中市','彰化縣','南投縣','雲林縣','嘉義市','嘉義縣','臺南市','高雄市','屏東縣','宜蘭縣','花蓮縣','臺東縣']);
+export const OFFSHORE = [
+  { name: '澎湖縣', south: 23.15, north: 23.82, west: 119.28, east: 119.78 },
+  { name: '連江縣', south: 25.90, north: 26.42, west: 119.85, east: 120.55 }, // 馬祖：南竿、北竿、莒光、東引
+  { name: '金門縣', south: 24.35, north: 24.55, west: 118.13, east: 118.50 }, // 金門小湘還沒有：先能被感應到
+];
+export function offshoreAt(lon, lat) {
+  const o = OFFSHORE.find((b) => lat >= b.south && lat <= b.north && lon >= b.west && lon <= b.east);
+  return o ? o.name : null;
+}
+
 // 特別地點：在範圍內時優先於縣市（例如綠島屬於臺東縣，但有自己的小湘）
 export const SPOTS = [
   { name: '綠島', lat: 22.66, lon: 121.49, radiusKm: 7 },
