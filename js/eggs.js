@@ -252,6 +252,7 @@ export const CHARACTERS = {
   '086': { no: '086', name: '加班皮寶', rarity: 'SSR', line: "「湘寶！這張真的最後一張！……欸等一下，我又想到新的了！！」", image: 'siang-086-overtime-pibao', series: 'devteam', special: true },
   '087': { no: '087', name: '崩潰德寶', rarity: 'SSR', line: "「……妳們又新增三隻？？？？？」", image: 'siang-087-crashing-debao', series: 'devteam', special: true },
   '088': { no: '088', name: '靈感爆發小湘', rarity: 'UR', line: "「欸欸欸欸欸！！！！我突然想到一個超棒的！！！」", image: 'siang-088-idea-overload-siang', series: 'devteam', special: true },
+  // 【湘 11/19 拍板】放榜當天：考上→用暗號送 089，沒上→送 090；結果確定之後，089 和 090 兩位都放進普通蛋池（這樣大家都湊得到 091 未完待續小湘的配方）
   // 研究所小湘（湘 11/19）：湘正取研究所那天用暗號送給所有玩家；之後再放進普通蛋池。台詞與圖鑑介紹：data/characters/academic-086-dialogue.json（皮寶暫編 086，實際為 089）
   '089': { no: '089', name: '研究所小湘', rarity: 'SSR', line: "「性別不是選擇題啦！……可是論文口試好像是生存題。救命喔！！」", image: 'siang-089-grad-school', series: 'memorial', special: true },
   // 落榜小湘（湘 11/19）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
