@@ -157,18 +157,21 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
           }
           if (!result.open) result.showModal();
         } catch (error) {
+          studying = false; update();
           find('.research-pair-status').textContent = error.message || '研究未儲存，請稍後再試。';
+          return;
         } finally { studying = false; update(); }
         return;
       }
-      const matched = ['002','005'].every(id => slots.includes(id));
+      const demoRecipe = RECIPES[noteIndex];
+      const matched = demoRecipe.members.every(id => slots.includes(id));
       result.dataset.match = String(matched);
       const image = find('.research-result-image');
-      if (matched) portrait(image, CHARACTERS['011']);
+      if (matched) portrait(image, CHARACTERS[demoRecipe.target]);
       else { image.src = asset('assets/eggs/ordinary/shell.webp'); image.alt = '尚未發現新配方的蛋'; }
-      find('.research-result-eyebrow').textContent = matched ? 'A SWEET POSSIBILITY' : 'A LITTLE MORE INSPIRATION';
-      find('#research-result-title').textContent = matched ? '草莓蛋糕小湘' : '還差一點靈感';
-      find('.research-result-copy').textContent = matched ? '草莓的甜，遇上點心的香。這組搭檔，似乎找到了新的可能。' : '這組搭檔暫時沒有對上這則線索，換位夥伴再一起看看。';
+      find('.research-result-eyebrow').textContent = matched ? 'A POSSIBLE RECIPE' : 'A LITTLE MORE INSPIRATION';
+      find('#research-result-title').textContent = matched ? CHARACTERS[demoRecipe.target].name : '還差一點靈感';
+      find('.research-result-copy').textContent = matched ? (noteIndex === 0 ? '草莓的甜，遇上點心的香。這組搭檔似乎找到了新的可能。' : '花草遇見雨滴，會留下新的故事。這組搭檔似乎找到了新的可能。') : '這組搭檔暫時沒有對上這則線索，換位夥伴再一起看看。';
       result.showModal();
     }
     if (button.matches('[data-close-result]')) { result.close(); find('[data-preview]').focus({preventScroll:true}); }
