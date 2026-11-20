@@ -285,8 +285,8 @@ export const CHARACTERS = {
   '103': { no: '103', name: '究級非酋小湘', rarity: 'UR', line: "「又重複了呀。呵呵，真是令人安心的結果。」", image: 'siang-103-unluckiest', series: 'unlucky', special: true, dupNeed: 100 },
   // No.104–106 歐皇三部曲（皮寶 docs/SIANG_LUCKY_TRIO.md，湘 11/20）：一般蛋累計孵到新面孔 10／50／100 次自動加入收藏，不進任何蛋池
   '104': { no: '104', name: '普通歐皇小湘', rarity: 'SR', line: "「欸？！又是新的耶！！嘿嘿，我是不是很幸運呀♡」", image: 'siang-104-lucky', series: 'lucky', special: true, newNeed: 10 },
-  '105': { no: '105', name: '中級歐皇小湘', rarity: 'SSR', line: "「不是吧？！又是新的？！哈哈哈哈哈哈我是不是被抽卡之神選中了！！！」", image: 'siang-105-luckier', series: 'lucky', special: true, newNeed: 50 },
-  '106': { no: '106', name: '究級歐皇小湘', rarity: 'UR', line: "「欸？抽到重複不是很正常的事情嗎？……嗯？你說我抽到新的才比較正常？」", image: 'siang-106-luckiest', series: 'lucky', special: true, newNeed: 100 },
+  '105': { no: '105', name: '中級歐皇小湘', rarity: 'SSR', line: "「不是吧？！又是新的？！哈哈哈哈哈哈我是不是被抽卡之神選中了！！！」", image: 'siang-105-luckier', series: 'lucky', special: true, newNeed: 30 },
+  '106': { no: '106', name: '究級歐皇小湘', rarity: 'UR', line: "「欸？抽到重複不是很正常的事情嗎？……嗯？你說我抽到新的才比較正常？」", image: 'siang-106-luckiest', series: 'lucky', special: true, newNeed: 50 },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）

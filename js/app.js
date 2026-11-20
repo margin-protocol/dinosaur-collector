@@ -53,6 +53,7 @@ import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLO
 const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
 import * as kitchen from './kitchen.js';
+import { talkFor } from './luck-talk.js';
 import { SCENES as UNLUCKY_SCENES, unluckyDue, grantUnlucky } from './unlucky.js';
 import { CHECKIN_REWARDS, ensureCheckin, checkIn as monthlyCheckIn, checkedToday, daysInMonth } from './checkin.js';
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
@@ -127,6 +128,13 @@ function tooManyPokes(no, now = Date.now()) {
   if (p.times.length >= POKE_LIMIT) { p.times = []; p.until = now + POKE_COOLDOWN; pokes.set(no, p); return 'angry'; }
   pokes.set(no, p); return '';
 }
+// 歐非彩蛋：兩位輪流冒對話框
+const luckTalkAt = new Map(); let luckTalkTimers = [];
+function playLuckTalk(talk) {
+  luckTalkAt.set(talk.pair.join(), Date.now());
+  luckTalkTimers.forEach(clearTimeout); luckTalkTimers = [];
+  talk.lines.forEach(([no, text], i) => luckTalkTimers.push(setTimeout(() => room.bubble(no, text, 2500), i * 2300)));
+}
 // 開發團隊三寶有自己的戳戳台詞：連續戳（每下間隔 1.5 秒內）第 1／3／5／10 下各說一句
 const streaks = new Map();
 function pokeStreak(no, now = Date.now()) {
@@ -149,7 +157,9 @@ const room = createRoom($('resident-lanes'), character => {
     if (poke === 'angry') { room.bubble(character.no, '不要戳啦！！！小湘要扁掉了૮₍˃⤙˂₎ა\n愛要緩慢給予！', 3200); buzz([30, 40, 30]); }
     return;
   }
-  say(character.line, 'happy', 4000);
+  const talk = talkFor(character.no, room.residents());
+  if (talk && Date.now() - (luckTalkAt.get(talk.pair.join()) || 0) > 10 * 60 * 1000) playLuckTalk(talk); // 歐非彩蛋：同一對 10 分鐘演一次
+  else say(character.line, 'happy', 4000);
   room.peek(character.no, no => openDexDetail(no));
   // 點一下 = 打招呼，也算摸摸頭一次（很多人是用點的，不是用滑的）
   void updateState(current => ({ greet: greet(current, character.no, todayKey()), pet: pet(current, todayKey()), bond: gainBond(current, character.no, 'tap', todayKey()) })).then(t => {
