@@ -2813,13 +2813,16 @@ $('close-whats-new').addEventListener('click', () => $('whats-new-ok').click());
 // 研究者手記「更新紀錄」：隨時翻看全部更新，還沒看過的標 NEW
 $('open-updates').addEventListener('click', async () => {
   $('function-center').close();
+  // 先打開視窗再讀紀錄：網路慢的時候不會在別的視窗打開後才突然跳出來
+  $('whats-new-title').textContent = '更新紀錄';
+  $('whats-new-list').replaceChildren(Object.assign(document.createElement('p'), { textContent: '讀取中……' }));
+  $('whats-new').showModal(); $('whats-new').scrollTop = 0;
   let list = [];
   try { list = await loadChangelog(); } catch {}
+  if (!$('whats-new').open) return;
   const fresh = new Set(unseen(list, { returning: isReturning() }).map(e => e.version));
-  $('whats-new-title').textContent = '更新紀錄';
   if (list.length) fillWhatsNew(list, fresh);
   else $('whats-new-list').replaceChildren(Object.assign(document.createElement('p'), { textContent: '更新紀錄暫時讀不到，等一下再試試看。' }));
-  $('whats-new').showModal(); $('whats-new').scrollTop = 0;
   const done = () => { if (list.length) markSeen(list); $('updates-new').hidden = true; };
   $('whats-new-ok').onclick = () => { done(); $('whats-new').close(); };
   $('whats-new').addEventListener('cancel', done, { once: true });
