@@ -2,7 +2,7 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const key='siang-collector:v1';const errs=[];
-const page=async(time,init='')=>{const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce',timezoneId:'Asia/Taipei'});const p=await c.newPage();p.on('pageerror',e=>errs.push(e.message));if(init)await p.addInitScript(init);await p.clock.install({time:new Date(time)});await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');return {c,p,save:()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key)};};
+const page=async(time,init='')=>{const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce',timezoneId:'Asia/Taipei'});const p=await c.newPage();p.on('pageerror',e=>errs.push(e.message));if(init)await p.addInitScript(init);await p.clock.install({time:new Date(time)});await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');await p.waitForFunction(k=>JSON.parse(localStorage.getItem(k)||'{}').seenIntro,key);return {c,p,save:()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key)};};
 const returning=async(p)=>{await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=1;s.dex={'001':{at:'x'}};localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();};
 // 資料
 let {c,p,save}=await page('2026-11-21T10:00:00+08:00');
@@ -30,5 +30,15 @@ if(process.env.SHOT)await p.screenshot({path:process.env.SHOT});
 await p.click('#vote-day-ok');await p.waitForTimeout(300);s=await save();assert.ok(s.notices.includes('vote-2026'));assert.ok(!s.gifts.eggs.some(e=>e.character==='099'),'投票日已經不能領');
 await p.reload();await p.clock.runFor(5000);await p.waitForTimeout(300);assert.equal(await p.locator('#vote-day[open]').count(),0,'只跳一次');
 await c.close();
+// 化石指定：11/28 才能選公民小湘
+({c,p,save}=await page('2026-11-21T10:00:00+08:00'));
+const pick=await p.evaluate(async()=>{const F=await import('/js/fossils.js'),E=await import('/js/eggs.js');const s={dex:{}};return ['2026-11-27T23:59:00','2026-11-28T00:01:00'].map(d=>F.pickable(s,E.EGGS,E.CHARACTERS,new Date(d)).includes('099'));});
+assert.deepEqual(pick,[false,true],'化石指定和蛋池同一天開放');await c.close();
+// 11/27 晚上開著遊戲過午夜：投票日提醒還是會跳
+({c,p,save}=await page('2026-11-27T23:58:00+08:00','window.__testVoteDay=true'));await returning(p);
+await p.clock.runFor(5000);assert.equal(await p.locator('#vote-day[open]').count(),0,'11/27 不跳');
+await p.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+await p.clock.runFor(130000);await p.locator('#vote-day[open]').waitFor({timeout:8000});
+await c.close();
 assert.equal(errs.length,0,errs.join('\n'));
-console.log('No.099 civic Siang: SSR, 11/20–27 login keepsake once, ordinary pool from 11/28, vote-day reminder once PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
+console.log('No.099 civic Siang: SSR, 11/20–27 login keepsake once, ordinary pool from 11/28, vote-day reminder once (also after midnight), fossil pick from 11/28 PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

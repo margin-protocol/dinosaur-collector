@@ -718,7 +718,7 @@ function eggCard(egg) {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = current && CHARACTERS[state.egg.character]?.badge ? `${CHARACTERS[state.egg.character].name}專屬蛋` : current && state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'star' ? `月簽到的獎勵，一定是 SR 以上（${Object.keys(activePool(egg)).length} 種）` : egg.id === 'weather' ? `天氣的蛋，今天的天氣決定誰比較容易出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'star' ? `月簽到的獎勵，一定是 SR 以上（${Object.keys(activePool(egg)).length} 種）` : egg.id === 'weather' ? `天氣的蛋，今天的天氣決定誰比較容易出現（${Object.keys(activePool(egg)).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(activePool(egg)).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
     const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
@@ -1772,7 +1772,8 @@ function renderCheckin() {
   $('checkin-grid').replaceChildren(...cells);
   $('checkin-rewards').replaceChildren(...CHECKIN_REWARDS.map(r => {
     const got = state.checkin?.claimed?.includes(r.days); const box = mkEl('div', `checkin-reward${got ? ' is-got' : ''}${r.egg ? ' is-egg' : ''}`);
-    box.append(mkEl('b', '', `${r.days} 天`), mkEl('span', '', r.label), mkEl('small', '', got ? '✓ 已領取' : `${Math.min(count, r.days)} / ${r.days}`));
+    const [main, note] = r.label.replace('）', '').split('（'); // 「星光蛋（SR 以上）」在 360px 會擠成四行，括號裡的拆成小字
+    box.append(mkEl('b', '', `${r.days} 天`), mkEl('span', '', main), ...(note ? [mkEl('small', 'checkin-reward__note', note)] : []), mkEl('small', '', got ? '✓ 已領取' : `${Math.min(count, r.days)} / ${r.days}`));
     return box;
   }));
   const done = checkedToday(state, now);
@@ -1897,10 +1898,10 @@ function voteDayDue(s, now = new Date()) {
   const d = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
   return VOTE_DAYS.find(v => v.date === d && !(s.notices || []).includes(v.key)) || null;
 }
-function showVoteDay(tries = 0) {
+function showVoteDay() {
   if (navigator.webdriver && !window.__testVoteDay) return; // 自動化測試不跳
-  const v = voteDayDue(state); if (!v) return;
-  if (!state.seenIntro || document.querySelector('dialog[open]')) { if (tries < 40) setTimeout(() => showVoteDay(tries + 1), 4000); return; }
+  const v = voteDayDue(state); if (!v || $('vote-day').open) return;
+  if (!state.seenIntro || document.querySelector('dialog[open]')) return; // 有別的視窗開著，等下一輪再看
   loadWithFallback($('vote-day-img'), characterSources(CHARACTERS[v.no].image));
   $('vote-day-text').textContent = '你去投票了嗎？還沒的話記得要去喔♡ 投票到下午 4 點，記得帶身分證、印章和投票通知單！';
   $('vote-day-note').textContent = '有投票資格的人才需要喔。投票所在哪裡，可以到中選會網站查詢。要投給誰，由你自己決定。';
@@ -1916,6 +1917,7 @@ async function markVoteDay() {
 $('vote-day-ok').addEventListener('click', () => $('vote-day').close());
 $('vote-day').addEventListener('close', () => void markVoteDay());
 setTimeout(() => showVoteDay(), 2500);
+setInterval(() => showVoteDay(), 4000); // 別的視窗開很久、或過了午夜才到投票日，也還是會跳
 
 /* ---------- 圖鑑：小湘介紹 ---------- */
 function howToGet(c) {
