@@ -28,5 +28,12 @@ await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));const m=['001',
 await p.reload();await p.evaluate(()=>{location.hash='incubate';document.querySelectorAll('dialog[open]').forEach(d=>d.close());});await p.waitForTimeout(500);
 await p.click('#cultivate');await p.locator('#reveal').waitFor();await p.waitForTimeout(300);
 const s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.ok(Number.isInteger(s.dupStreak)&&Number.isInteger(s.srStreak),'記下連續重複與沒出 SR 次數');
+// 機率表
+await p.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());location.hash='incubate';});await p.waitForTimeout(300);
+await p.click('#open-eggs');await p.click('[data-cat="ordinary"]');await p.click('[data-odds="ordinary"]');await p.locator('#egg-odds[open]').waitFor();
+const odds=await p.textContent('#egg-odds-body');assert.match(odds,/SSR/);assert.match(odds,/原味小湘/);assert.match(odds,/？？？（No\.\d+）/);assert.match(odds,/沒出 SR 以上/);
+const sum=await p.evaluate(()=>[...document.querySelectorAll('.egg-odds__rarity span')].map(s=>parseFloat(s.textContent.match(/基本 ([\d.]+)%/)[1])).reduce((a,b)=>a+b));assert.ok(Math.abs(sum-100)<1.5,'稀有度加總約 100% '+sum);
+if(process.env.SHOT)await p.screenshot({path:process.env.SHOT});
+await p.click('#close-egg-odds');await p.locator('#egg-picker[open]').waitFor();assert.equal(await p.textContent('#egg-picker-title'),'普通蛋','關掉機率表回到原本的分類');
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('new-face: ×2 for unmet Siangs, pity after 3 dupes, fixed eggs untouched, streak saved PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

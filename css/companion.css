@@ -750,3 +750,18 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 /* 多句的字一行一行排（setParas）：故事段落之間留一點空，短評／提示每句一行（11/20） */
 .para { display:block; }
 :is(.battle-story,.errand-story p) .para + .para { margin-top:.55em; }
+/* 機率表（11/20） */
+.egg-odds-link { display:block; width:100%; margin:6px 0 10px; padding:10px 12px; border-radius:12px; border:1px dashed #e3b6a055; background:#ffffff08; color:inherit; font:13px var(--font-display); text-align:left; }
+.egg-odds__luck { display:grid; gap:4px; margin:0 0 12px; padding:10px 12px; border-radius:12px; background:#00000026; font-size:12px; }
+.egg-odds__group { margin-bottom:12px; }
+.egg-odds__rarity { display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin:0 0 6px; padding-bottom:4px; border-bottom:1px solid #e3b6a033; font:15px var(--font-display); }
+.egg-odds__rarity span { font:12px var(--font-body); opacity:.8; }
+.egg-odds__list { list-style:none; margin:0; padding:0; display:grid; gap:2px; }
+.egg-odds__list li { display:flex; justify-content:space-between; gap:10px; padding:4px 2px; font-size:13px; }
+.egg-odds__list li small { flex:none; font:12px var(--font-mono); opacity:.85; }
+.egg-odds__list li.is-new span { opacity:.7; }
+.egg-odds__list li.is-new small { color:#ffd9a8; opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds-link { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__luck { background:var(--t-raised); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__rarity { border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__list li.is-new small { color:var(--t-accent); }

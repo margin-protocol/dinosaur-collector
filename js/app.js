@@ -5,7 +5,7 @@ import { savePreset, ensureTeamBonds, effectText } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
 import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
-import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRandomEgg, isHigh, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
+import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRandomEgg, isHigh, NEW_FACE_TIMES, DUP_PITY, SR_PITY, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
@@ -655,8 +655,47 @@ function renderEggChoices() {
   if (!fresh.length) fresh = [eggCard(egg)];
   const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣或徽章兌換時收到，固定孵出蛋裡指定的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
   $('egg-picker-note').textContent = detailText;
-  $('egg-choices').replaceChildren(back, ...(shelved.length ? [heading('暫放中'), ...shelved, heading('可以培育')] : []), ...fresh);
+  const odds = egg.pool ? Object.assign(document.createElement('button'), { type: 'button', className: 'egg-odds-link', textContent: '📊 看這種蛋的機率表' }) : null;
+  if (odds) odds.dataset.odds = egg.id;
+  $('egg-choices').replaceChildren(back, ...(odds ? [odds] : []), ...(shelved.length ? [heading('暫放中'), ...shelved, heading('可以培育')] : []), ...fresh);
 }
+
+// 機率表（玩家想看，11/20）：基本機率＋「你現在」的機率（含沒遇過 ×2），沒遇過的名字先藏起來
+const RARITY_ORDER = ['UR', 'SSR', 'SR', 'R', 'N'];
+function openEggOdds(id) {
+  const egg = EGGS[id]; if (!egg?.pool) return;
+  const pool = egg.pool; const total = Object.values(pool).reduce((a, b) => a + b, 0);
+  const mine = Object.fromEntries(Object.entries(pool).map(([no, w]) => [no, state.dex[no] ? w : w * NEW_FACE_TIMES]));
+  const mineTotal = Object.values(mine).reduce((a, b) => a + b, 0);
+  const pct = (v) => { const x = v * 100; return x >= 10 ? `${x.toFixed(0)}%` : x >= 1 ? `${x.toFixed(1)}%` : `${x.toFixed(2)}%`; };
+  const body = $('egg-odds-body');
+  const intro = el('p', 'residents-intro', `${egg.name}裡共有 ${Object.keys(pool).length} 位小湘。「你現在」已經算進沒遇過的小湘 ×${NEW_FACE_TIMES}；蛋的個性、天氣和時間的加成另外算。`);
+  const luck = el('div', 'egg-odds__luck');
+  luck.append(el('span', '', `連續重複 ${Math.min(state.dupStreak || 0, DUP_PITY)} / ${DUP_PITY}（到了下一顆必定是新面孔）`), el('span', '', `沒出 SR 以上 ${Math.min(state.srStreak || 0, SR_PITY - 1)} / ${SR_PITY - 1}（到了下一顆必定 SR 以上）`));
+  const sections = RARITY_ORDER.map(r => {
+    const list = Object.keys(pool).filter(no => CHARACTERS[no]?.rarity === r);
+    if (!list.length) return null;
+    const sec = el('section', 'egg-odds__group');
+    const sum = list.reduce((a, no) => a + pool[no], 0) / total; const sumMine = list.reduce((a, no) => a + mine[no], 0) / mineTotal;
+    const h = el('h3', 'egg-odds__rarity'); h.append(el('b', '', r), el('span', '', `基本 ${pct(sum)} · 你現在 ${pct(sumMine)}`));
+    const ul = el('ul', 'egg-odds__list');
+    for (const no of list.sort((a, b) => pool[b] - pool[a] || a.localeCompare(b))) {
+      const met = Boolean(state.dex[no]);
+      const li = el('li', met ? '' : 'is-new');
+      li.append(el('span', '', met ? CHARACTERS[no].name : `？？？（No.${no}）`), el('small', '', met ? pct(pool[no] / total) : `${pct(pool[no] / total)} → ${pct(mine[no] / mineTotal)}`));
+      ul.append(li);
+    }
+    sec.append(h, ul); return sec;
+  }).filter(Boolean);
+  body.replaceChildren(intro, luck, ...sections);
+  $('egg-odds-title').textContent = `${egg.name}的機率表`;
+  const back = $('egg-picker').open; if (back) $('egg-picker').close(); // 不疊在選蛋視窗上（半透明會透出底下的字），關掉再回去
+  $('egg-odds').dataset.back = back ? '1' : '';
+  $('egg-odds').showModal(); $('egg-odds').scrollTop = 0;
+}
+$('close-egg-odds').addEventListener('click', () => $('egg-odds').close());
+$('egg-odds').addEventListener('close', () => { if ($('egg-odds').dataset.back) { $('egg-odds').dataset.back = ''; renderEggChoices(); $('egg-picker').showModal(); } });
+$('egg-choices').addEventListener('click', (e) => { const b = e.target.closest('[data-odds]'); if (b) { e.stopPropagation(); openEggOdds(b.dataset.odds); } }, true);
 
 function eggCard(egg) {
   const firstHatched = state.hatched > 0 || Boolean(state.dex['001']);
