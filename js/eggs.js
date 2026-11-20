@@ -202,7 +202,7 @@ export const CHARACTERS = {
   '036': { no: '036', name: '摯友小湘（把拔ver）', rarity: 'SR', line: '「把拔又累到睡著了，我們小聲一點喔。」', image: 'siang-036-friend-baba', series: 'friends' },
   '037': { no: '037', name: '摯友小湘（ㄊㄧver）', rarity: 'SR', line: '「ㄊㄧ說練完再吃！十五年了，這句話我最熟。」', image: 'siang-037-friend-ti', series: 'friends' },
   '038': { no: '038', name: '摯友小湘（史蒂芬灰ver）', rarity: 'SR', line: '「史蒂芬灰在聽歌，我們一起跟著哼吧～」', image: 'siang-038-friend-steven-gray', series: 'friends' },
-  '039': { no: '039', name: '摯友小湘（Serry ver）', rarity: 'SR', line: '「Serry 說今天的光線很好，來拍一張！」', image: 'siang-039-friend-serry', series: 'friends' },
+  '039': { no: '039', name: '摯友小湘（Sherry ver）', rarity: 'SR', line: '「Sherry 說今天的光線很好，來拍一張！」', image: 'siang-039-friend-serry', series: 'friends' },
   '040': { no: '040', name: '摯友小湘（Achio ver）', rarity: 'SR', line: '「Achio 說運動完要補充水分，你今天喝水了嗎？」', image: 'siang-040-friend-achio', series: 'friends' },
   '041': { no: '041', name: '摯友小湘（Bois ver）', rarity: 'SR', line: '「Bois 撿到一根超大的漂流木，說要送給你。」', image: 'siang-041-friend-bois', series: 'friends' },
   // 約會：約會蛋（約會 QR Code）取得

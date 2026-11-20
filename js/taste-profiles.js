@@ -39,7 +39,7 @@ export const TASTES = {
   '036': { like: '奶香', dislike: '刺激', secret: ["milk", "pudding"] }, // 摯友小湘（把拔ver）
   '037': { like: '酥脆', dislike: '怪味', secret: ["gear", "lightning"] }, // 摯友小湘（ㄊㄧver）
   '038': { like: '星光', dislike: '菇香', secret: ["rainbow", "star"] }, // 摯友小湘（史蒂芬灰ver）
-  '039': { like: '清涼', dislike: '濃甜', secret: ["gear", "moon", "star"] }, // 摯友小湘（Serry ver）
+  '039': { like: '清涼', dislike: '濃甜', secret: ["gear", "moon", "star"] }, // 摯友小湘（Sherry ver）
   '040': { like: '果香', dislike: '濃甜', secret: ["lightning", "strawberry"] }, // 摯友小湘（Achio ver）
   '041': { like: '菇香', dislike: '奶香', secret: ["gear", "moon", "mushroom"] }, // 摯友小湘（Bois ver）
   '042': { like: '綿軟', dislike: '刺激', secret: ["cloud", "milk"] }, // 蝰蝰♡
