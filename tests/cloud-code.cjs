@@ -43,7 +43,7 @@ await g.click('#close-cloud');
 const redeem=async(text)=>{await openCenter('#open-code');await g.fill('#code-input',text);await g.click('#code-submit');await g.waitForFunction(()=>!/確認中/.test(document.querySelector('#code-status').textContent)&&document.querySelector('#code-status').textContent);const t=await g.textContent('#code-status');await g.click('#close-code');return t;};
 assert.match(await redeem('想不到的暗號'),/不對/);
 assert.match(await redeem(' 恐龍 偷吃，草莓！'),/兌換成功.*草莓蛋糕小湘/s);
-let s=await save();assert.deepEqual(s.gifts.eggs.map(e=>[e.egg,e.character]),[['cipher','011']]);
+let s=await save();assert.deepEqual(s.gifts.eggs.filter(e=>e.from!=='civic-2026').map(e=>[e.egg,e.character]),[['cipher','011']]);
 assert.match(await redeem('恐龍偷吃草莓'),/已經兌換/);
 assert.match(await redeem('早就過期'),/過期/);
 assert.match(await redeem('天天都愛你'),/兌換成功/);s=await save();assert.equal(s.energy,57);

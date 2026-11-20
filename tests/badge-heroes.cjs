@@ -39,7 +39,7 @@ await p.locator('#feed-all').click();await p.waitForTimeout(1000);await p.locato
 // 單元：勇者條件、連攜戰報、出戰台詞
 const r=await p.evaluate(async k=>{const bt=await import('/js/battle.js');const s=JSON.parse(localStorage.getItem(k));
   s.battle.badges=100;const locked=bt.redeemHero(s,'064');
-  s.battle.stages={'caramel-king':{clears:1},'thunder-king':{clears:1}};const ok=bt.redeemHero(s,'064');const again=bt.redeemHero(s,'064');bt.redeemHero(s,'063');const beforeHatch=Boolean(s.dex['064']);const {rollFor}=await import('/js/eggs.js');const fixed=s.gifts.eggs.map(g=>[g.character,rollFor({id:g.egg,character:g.character})]);for(const [no,hatched] of fixed){s.dex[hatched]={at:'test'};}const ownedAgain=bt.redeemHero(s,'064');
+  s.battle.stages={'caramel-king':{clears:1},'thunder-king':{clears:1}};const ok=bt.redeemHero(s,'064');const again=bt.redeemHero(s,'064');bt.redeemHero(s,'063');const beforeHatch=Boolean(s.dex['064']);const {rollFor}=await import('/js/eggs.js');const fixed=s.gifts.eggs.filter(g=>g.from!=='civic-2026').map(g=>[g.character,rollFor({id:g.egg,character:g.character})]);for(const [no,hatched] of fixed){s.dex[hatched]={at:'test'};}const ownedAgain=bt.redeemHero(s,'064');
   s.battle.stages.mochi={clears:1};s.battle.active=[];s.battle.rest={};
   const btl=bt.startBattle(s,'mochi',['062','063','064'],{rand:()=>0});
   return {fixed,beforeHatch,ownedAgain,locked,ok:ok&&ok.cost,again,badges:s.battle.badges,party:btl.report.heroParty,log:btl.report.log};},key);

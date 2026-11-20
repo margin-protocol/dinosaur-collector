@@ -41,6 +41,13 @@ await r.waitForFunction(()=>/完成/.test(document.getElementById('code-status')
 await r.waitForFunction(()=>/全體玩家/.test(document.getElementById('code-list').textContent));
 const shared=await g.evaluate(async([a,inv])=>{const {sha256Hex,normalizeCode}=await import('/js/sign.js');const h=await sha256Hex(normalizeCode('研究所上榜'));return (await fetch(`${a}/f/codes/${h}.json`,{headers:{Authorization:'Bearer '+inv}})).status;},[API,invite2]);
 assert.equal(shared,200,'全體暗號每位玩家都讀得到');
+// 全體紙條、全體照片委託：每位玩家的資料夾都有一份
+await r.locator('#letter-everyone').check();await r.locator('#letter-title').fill('給大家');await r.locator('#letter-body').fill('謝謝大家陪小湘♡');await r.locator('#letter-send').click();
+await r.waitForFunction(()=>/寄給 2 位玩家/.test(document.getElementById('letter-status').textContent));
+await r.locator('#mission-everyone').check();await r.locator('#mission-title').fill('拍一朵花');await r.locator('#mission-create').click();
+await r.waitForFunction(()=>/出題給 2 位玩家/.test(document.getElementById('mission-status').textContent));
+const fan=await g.evaluate(async([a,i1,i2])=>{const ls=async(t,d)=>(await (await fetch(`${a}/ls/${d}`,{headers:{Authorization:'Bearer '+t}})).json()).length;return [await ls(i1,'letters'),await ls(i2,'letters'),await ls(i1,'missions'),await ls(i2,'missions')];},[API,invite,invite2]);
+assert.deepEqual(fan,[1,1,1,1],'兩位玩家都收到紙條和委託');
 // 改名字
 await r.locator('#player-select').selectOption({label:'男友'});
 await r.locator('#rv-rename-open').click();await r.locator('#rv-rename-name').fill('寶貝男友');await r.locator('#rv-rename button[type=submit]').click();

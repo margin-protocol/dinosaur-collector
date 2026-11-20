@@ -8,14 +8,14 @@ await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=3;s.d
 await p.click('#chip-fossil');await p.locator('#fossil-dialog[open]').waitFor();
 await p.click('[data-offer="energy"]');await p.waitForTimeout(300);let s=await save();assert.equal(s.fossils,55);assert.equal(s.energy,30);
 await p.click('[data-offer="wish"]');await p.waitForTimeout(300);s=await save();assert.equal(s.fossils,45);assert.equal(s.wishEgg.stock,1);
-await p.click('[data-offer="cipher"]');await p.waitForTimeout(300);s=await save();assert.equal(s.fossils,30);assert.equal(s.gifts.eggs.length,1);
+await p.click('[data-offer="cipher"]');await p.waitForTimeout(300);s=await save();assert.equal(s.fossils,30);assert.equal(s.gifts.eggs.filter(e=>e.from!=='civic-2026').length,1);
 await p.click('[data-offer="pick"]');await p.locator('#fossil-pick').waitFor();
 const opts=await p.locator('[data-pick]').evaluateAll(n=>n.map(e=>e.dataset.pick));assert(!opts.includes('001')&&!opts.includes('002')&&!opts.includes('023')&&!opts.includes('042')&&opts.includes('051'));
 assert(await p.locator('[data-pick="051"]').isDisabled(),'SSR 150 化石，30 個換不起');
 const n=await p.evaluate(async()=>{const {EGGS,CHARACTERS}=await import('/js/eggs.js');return [...document.querySelectorAll('[data-pick]:not(:disabled)')].map(e=>CHARACTERS[e.dataset.pick].rarity)});assert(n.length&&n.every(r=>r==='N'),n.join());
 assert.match(await p.locator('#fossil-pick-list').textContent(),/SSR · 每位 150 化石（還差 120）/);
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
-const nNo=await p.locator('[data-pick]:not(:disabled)').first().getAttribute('data-pick');await p.click(`[data-pick="${nNo}"]`);await p.waitForTimeout(300);s=await save();assert.equal(s.fossils,0);assert.equal(s.gifts.eggs[1].character,nNo);
+const nNo=await p.locator('[data-pick]:not(:disabled)').first().getAttribute('data-pick');await p.click(`[data-pick="${nNo}"]`);await p.waitForTimeout(300);s=await save();assert.equal(s.fossils,0);assert.equal(s.gifts.eggs.filter(e=>e.from!=='civic-2026')[1].character,nNo);
 assert(await p.locator('[data-offer="energy"]').isDisabled());
 const bad=await p.evaluate(async(k)=>{const {exchange}=await import('/js/fossils.js');const {EGGS,CHARACTERS}=await import('/js/eggs.js');const s=JSON.parse(localStorage.getItem(k));s.fossils=149;const tooPoor=exchange(s,'pick',{eggs:EGGS,chars:CHARACTERS,no:'051'});return [tooPoor,exchange(s,'pick',{eggs:EGGS,chars:CHARACTERS,no:'042'}),exchange(s,'pick',{eggs:EGGS,chars:CHARACTERS,no:'001'})];},key);assert.deepEqual(bad,[null,null,null]);
 assert.equal(errs.length,0,errs.join('\n'));

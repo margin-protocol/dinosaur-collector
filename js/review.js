@@ -80,6 +80,16 @@ const current = () => entries().find(e => e.key === activeKey()) || entries()[0]
 const config = () => current()?.config || null;
 const cloud = () => { const c = config(); if (!c) throw new Error('請先在第 1 步選一位玩家'); return createCloud(c); };
 const admin = () => createCloud({ kind: 'siang', token: reviewerToken });
+// 寄給所有玩家（湘 11/20）：同一份蓋章的檔案寫進每一位小湘雲端玩家的資料夾（停用的不寄）
+const everyoneStores = () => cloudPlayers.filter(p => !p.revoked).map(p => ({ name: p.name, store: createCloud({ kind: 'siang', token: reviewerToken, player: p.id }) }));
+async function putForEveryone(path, signed, message) {
+  const targets = everyoneStores();
+  if (!targets.length) throw new Error('小湘雲端還沒有玩家');
+  const results = await Promise.allSettled(targets.map(t => t.store.putJSON(path, signed, message)));
+  const failed = targets.filter((t, i) => results[i].status === 'rejected').map(t => t.name);
+  return { sent: targets.length - failed.length, failed };
+}
+const everyoneText = (r, what) => `${what}給 ${r.sent} 位玩家了！${r.failed.length ? `（${r.failed.join('、')} 沒有成功，等一下再試）` : ''}`;
 let adding = false;
 
 function renderCloud(message = '') {
@@ -276,6 +286,7 @@ $('code-form').addEventListener('submit', async (e) => {
 
 async function refreshCodes() {
   $('code-everyone-row').hidden = !reviewerToken;
+  $('letter-everyone-row').hidden = $('mission-everyone-row').hidden = !reviewerToken;
   if (!config()) return;
   try {
     const c = cloud();
@@ -314,8 +325,9 @@ $('letter-form').addEventListener('submit', async (e) => {
   try {
     const id = `${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`;
     const payload = { v: 1, type: 'letter', id, title: $('letter-title').value.trim(), body, createdAt: new Date().toISOString() };
-    await cloud().putJSON(`letters/${id}.json`, await signPayload(privateKey, payload), 'send letter');
-    $('letter-status').textContent = '寄出了！他下次打開遊戲就會收到。';
+    const signed = await signPayload(privateKey, payload);
+    if (reviewerToken && $('letter-everyone').checked) $('letter-status').textContent = everyoneText(await putForEveryone(`letters/${id}.json`, signed, 'send letter'), '寄');
+    else { await cloud().putJSON(`letters/${id}.json`, signed, 'send letter'); $('letter-status').textContent = '寄出了！他下次打開遊戲就會收到。'; }
     $('letter-title').value = ''; $('letter-body').value = '';
     void refreshLetters();
   } catch (err) { $('letter-status').textContent = `寄送失敗：${err.message}`; }
@@ -360,8 +372,9 @@ $('mission-form').addEventListener('submit', async (e) => {
     const id = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).slice(2, 7)}`;
     const expires = $('mission-expires').value ? new Date(`${$('mission-expires').value}T23:59:59+08:00`).toISOString() : null;
     const payload = { v: 1, type: 'mission', id, title, body: $('mission-body').value.trim(), reward: missionReward(), expires, createdAt: new Date().toISOString() };
-    await cloud().putJSON(`missions/${id}.json`, await signPayload(privateKey, payload), 'add mission');
-    $('mission-status').textContent = `出題了！他下次打開遊戲就會看到「${title}」。`;
+    const signed = await signPayload(privateKey, payload);
+    if (reviewerToken && $('mission-everyone').checked) $('mission-status').textContent = everyoneText(await putForEveryone(`missions/${id}.json`, signed, 'add mission'), `「${title}」出題`);
+    else { await cloud().putJSON(`missions/${id}.json`, signed, 'add mission'); $('mission-status').textContent = `出題了！他下次打開遊戲就會看到「${title}」。`; }
     $('mission-title').value = ''; $('mission-body').value = '';
     void refreshMissions();
   } catch (err) { $('mission-status').textContent = `出題失敗：${err.message}`; }
@@ -411,6 +424,19 @@ async function refreshMissions() {
       row.append(del); li.append(row); lis.push(li);
     }
     $('mission-list').replaceChildren(...(lis.length ? lis : [Object.assign(document.createElement('li'), { textContent: '還沒有委託。' })]));
+    // 出給所有玩家之後，照片散在每位玩家那邊：列出其他玩家還有幾張待審核
+    if (reviewerToken) {
+      const current = config()?.player;
+      const others = await Promise.all(cloudPlayers.filter(pl => !pl.revoked && pl.id !== current).map(async pl => {
+        const s = createCloud({ kind: 'siang', token: reviewerToken, player: pl.id });
+        const [ms, rs] = await Promise.all([s.list('missions'), s.list('reviews')]);
+        const done = new Set(rs.map(f => f.name)); let n = 0;
+        for (const m of ms.filter(f => f.name.endsWith('.json'))) { const id = m.name.slice(0, -5); n += (await s.list(`submissions/${id}`)).filter(f => f.name.endsWith('.jpg') && !done.has(`${id}__${f.name.slice(0, -4)}.json`)).length; }
+        return { name: pl.name, n };
+      })).catch(() => []);
+      const waiting = others.filter(o => o.n);
+      if (waiting.length) $('mission-list').prepend(Object.assign(document.createElement('li'), { className: 'mission-others', textContent: `其他玩家還有照片等你審核：${waiting.map(o => `${o.name} ${o.n} 張`).join('、')}（到第 1 步切換玩家）` }));
+    }
   } catch (err) { $('mission-status').textContent = `讀取委託失敗：${err.message}`; }
 }
 $('mission-refresh').addEventListener('click', refreshMissions);

@@ -115,6 +115,7 @@
     <form id="letter-form" class="form">
       <label>標題（可不填）<input id="letter-title" maxlength="40" placeholder="例如：今天好想你"></label>
       <label>內容<textarea id="letter-body" class="letter-text" rows="7" maxlength="3000" placeholder="致親愛的飼養員：&#10;&#10;……&#10;&#10;—— 小湘 ♡"></textarea></label>
+      <label class="check everyone-row" id="letter-everyone-row" hidden><input id="letter-everyone" type="checkbox"> 寄給所有玩家（小湘雲端的每位玩家都會收到一封）</label>
       <button class="btn" type="submit" id="letter-send">蓋章並寄出</button>
     </form>
     <p class="status" id="letter-status" role="status"></p>
@@ -136,6 +137,7 @@
       </select></label>
       <label id="mission-character-row" hidden>指定小湘<select id="mission-character"></select></label>
       <label>期限（可不填）<input id="mission-expires" type="date"></label>
+      <label class="check everyone-row" id="mission-everyone-row" hidden><input id="mission-everyone" type="checkbox"> 出給所有玩家（每位玩家各自拍、各自領獎；照片要切換到那位玩家審核）</label>
       <button class="btn" type="submit" id="mission-create">蓋章並出題</button>
     </form>
     <p class="status" id="mission-status" role="status"></p>
