@@ -747,3 +747,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 /* 布丁搬走後，右邊一排往上補 */
 .room-errand { top:114px; } .room-gift:not([hidden]) ~ .room-errand { top:160px; }
 .room-wheel { top:160px; } .room-gift:not([hidden]) ~ .room-wheel { top:206px; }
+/* 多句的字一行一行排（setParas）：故事段落之間留一點空，短評／提示每句一行（11/20） */
+.para { display:block; }
+:is(.battle-story,.errand-story p) .para + .para { margin-top:.55em; }

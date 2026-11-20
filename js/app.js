@@ -2740,7 +2740,7 @@ function showErrandResult(r, replay = false) {
   $('errand-result-title').textContent = r.place ? `${r.names}從${PLACES[r.place].name}回來了` : `${r.names}的${HOME_TASKS[r.task].name}完成了`;
   $('errand-result-line').textContent = r.line ? `「${r.line}」${r.place && r.boost ? '她好像特別喜歡那裡。' : ''}` : '';
   $('errand-result-story').hidden = !r.story;
-  if (r.story) { $('errand-story-title').textContent = `📖 ${r.story.title}${r.storyFirst ? '（新故事！）' : ''}`; $('errand-story-text').textContent = r.story.text; }
+  if (r.story) { $('errand-story-title').textContent = `📖 ${r.story.title}${r.storyFirst ? '（新故事！）' : ''}`; setParas($('errand-story-text'), r.story.text); }
   $('errand-result-gains').replaceChildren(...(r.gains || []).map(g => Object.assign(document.createElement('li'), { textContent: g })));
   $('errand-result-ok').textContent = replay ? '關閉' : '收下';
   $('errand-result').showModal(); $('errand-result').scrollTop = 0;
@@ -3212,7 +3212,7 @@ function renderBattleStage() {
   $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}`;
   $('battle-enemy-name').textContent = e.name;
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;
-  $('battle-story').hidden = !e.story; if (e.story) $('battle-story').textContent = e.story.before;
+  $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.story.before);
   $('battle-enemy-intro').textContent = e.intro;
   const busy = allBusy(); const now = Date.now();
   const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
@@ -3290,10 +3290,10 @@ async function collectBattle(id) {
   renderBattleLog($('battle-result-log'),rep.log);
   $('battle-result-log').append(Object.assign(document.createElement('li'), { className: 'is-power', textContent: `隊伍戰力 ${rep.power} vs ${rep.enemyPower}` }));
   $('battle-result-review').hidden = !r.review;
-  if (r.review) { guguAvatar(document.querySelector('#battle-result-review .gugu-review__avatar')); $('battle-review-label').textContent = `咕咕書評 · ${REVIEW_LABEL[r.review.kind] || ''}`; $('battle-review-text').textContent = r.review.text; $('battle-review-note').textContent = r.review.note || ''; $('battle-review-note').hidden = !r.review.note; }
-  $('battle-result-advice').hidden = !rep.advice; if (rep.advice) $('battle-result-advice').textContent = `💡 ${rep.advice.text}`;
-  const storyText = [r.clue && `🔍 線索：${r.clue}`, r.story && `📖 ${r.story}`].filter(Boolean).join('\n\n');
-  $('battle-result-story').hidden = !storyText; $('battle-result-story').textContent = storyText;
+  if (r.review) { guguAvatar(document.querySelector('#battle-result-review .gugu-review__avatar')); $('battle-review-label').textContent = `咕咕書評 · ${REVIEW_LABEL[r.review.kind] || ''}`; setParas($('battle-review-text'), r.review.text, 0); setParas($('battle-review-note'), r.review.note || '', 0); $('battle-review-note').hidden = !r.review.note; }
+  $('battle-result-advice').hidden = !rep.advice; if (rep.advice) setParas($('battle-result-advice'), `💡 ${rep.advice.text}`, 0);
+  const storyLines = [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), ...(r.story ? storyParas(`📖 ${r.story}`) : [])];
+  $('battle-result-story').hidden = !storyLines.length; $('battle-result-story').replaceChildren(...storyLines.map(t => el('span', 'para', t)));
   $('battle-result-gains').replaceChildren(...r.gains.map(g => Object.assign(document.createElement('li'), { textContent: g })));
   $('battle-result').showModal();
   battleTheater.play({report:r.report,nos:r.nos,enemy:e,scene:chapterScene(r.enemy),bondUnlocked:Boolean(r.report.bond && state.teamBonds?.unlocked?.[r.report.bond])});
@@ -3361,7 +3361,8 @@ function guguAvatar(box) {
   box.append(img);
 }
 // 長文自動分段（湘 11/20：沒分行太密）：已有換行就照換行；不然每兩句一段，引號裡的句子不拆開
-function storyParas(text) {
+// maxLen：同一段最多幾個字才換段；0 = 每句一行（短評、小提示用）
+function storyParas(text, maxLen = 70) {
   const raw = String(text || '');
   if (raw.includes('\n')) return raw.split(/\n+/).map(s => s.trim()).filter(Boolean);
   const sentences = []; let buf = ''; let depth = 0;
@@ -3372,10 +3373,12 @@ function storyParas(text) {
   }
   if (buf.trim()) sentences.push(buf.trim());
   const out = []; let cur = '';
-  for (const s of sentences) { if (cur && (cur.length + s.length > 70 || /^[「『]/.test(s))) { out.push(cur); cur = s; } else cur += s; }
+  for (const s of sentences) { if (cur && (cur.length + s.length > maxLen || /^[「『]/.test(s))) { out.push(cur); cur = s; } else cur += s; }
   if (cur) out.push(cur);
   return out;
 }
+// 把多句的字分成一行一行塞進原本的 <p>（每行一個 block span），不會再擠成一大塊（11/20）
+function setParas(node, text, maxLen = 70) { node.replaceChildren(...storyParas(text, maxLen).map(t => el('span', 'para', t))); }
 const storyBox = (text) => { const box = el('div', 'archive-text'); box.append(...storyParas(text).map(t => el('p', '', t))); return box; };
 let archiveSeries = 'all';
 function lockedCard(text) { const c = el('div', 'archive-card is-locked'); c.append(el('b', '', '🔒 ？？？'), el('small', '', text)); return c; }
@@ -3468,7 +3471,7 @@ function stageCard(f) {
   for (const [k, v] of [['首次通關', f.cleared ? (f.firstAt ? fmtDate(f.firstAt) : f.firstLabel) : '尚未通關'], ['最高分', f.best || '—'], ['討伐', `${f.clears} 勝 / ${f.tries} 戰`]]) { facts.append(el('dt', '', k), el('dd', '', String(v))); }
   c.append(facts);
   if (f.bio) c.append(el('p', 'archive-bio', f.bio));
-  if (f.review) { const r = el('div', 'gugu-review is-small'); const av = el('span', 'gugu-review__avatar'); guguAvatar(av); const t = el('div'); t.append(el('small', '', `咕咕書評 · ${f.review.label}`), el('p', '', f.review.text)); if (f.review.note) t.append(el('p', 'gugu-review__note', f.review.note)); r.append(av, t); c.append(r); }
+  if (f.review) { const r = el('div', 'gugu-review is-small'); const av = el('span', 'gugu-review__avatar'); guguAvatar(av); const t = el('div'); const rt = el('p'); setParas(rt, f.review.text, 0); t.append(el('small', '', `咕咕書評 · ${f.review.label}`), rt); if (f.review.note) { const rn = el('p', 'gugu-review__note'); setParas(rn, f.review.note, 0); t.append(rn); } r.append(av, t); c.append(r); }
   return c;
 }
 function openArchive(tab = archiveTab) {
