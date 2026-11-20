@@ -294,14 +294,30 @@ export const COUNTY_CHARACTER = Object.fromEntries(Object.values(CHARACTERS).fil
 
 // 依培育中的蛋決定孵出誰：縣市蛋固定孵出該縣市的小湘，其他蛋照蛋池抽
 // boosts：[{ no, times }]，例如深夜時夜貓小湘權重 ×4（只影響蛋池裡本來就有的角色）
-export function rollFor(eggState, boosts = []) {
+// 少一點重複（湘 11/20 選 A＋C）：還沒遇過的小湘權重 ×2；連續重複 3 次，下一顆一定是新面孔
+export const NEW_FACE_TIMES = 2;
+export const DUP_PITY = 3;
+export const SR_PITY = 10; // 隨機蛋連續 9 顆沒有 SR 以上，第 10 顆一定是 SR 以上（湘 11/20）
+const HIGH = new Set(['SR', 'SSR', 'UR']);
+export const isHigh = (no) => HIGH.has(CHARACTERS[no]?.rarity);
+export const isRandomEgg = (eggState) => Boolean(EGGS[eggState.id]?.pool && !(eggState.character && CHARACTERS[eggState.character]) && !EGGS[eggState.id].byCounty);
+export function rollFor(eggState, boosts = [], { dex = null, dupStreak = 0, srStreak = 0 } = {}) {
   const egg = EGGS[eggState.id];
   if (eggState.character && CHARACTERS[eggState.character]) return eggState.character;
   if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
   const base = traitPool(egg.pool || {}, eggState, CHARACTERS);
-  if (!egg.pool || (!boosts.length && base === egg.pool)) return rollHatch(egg);
-  const pool = { ...base };
+  if (!egg.pool || (!boosts.length && !dex && base === egg.pool)) return rollHatch(egg);
+  let pool = { ...base };
   for (const b of boosts) if (pool[b.no]) pool[b.no] *= b.times;
+  if (srStreak >= SR_PITY - 1) {
+    const high = Object.keys(pool).filter((no) => HIGH.has(CHARACTERS[no]?.rarity));
+    if (high.length) pool = Object.fromEntries(high.map((no) => [no, pool[no]])); // 先保 SR，再在 SR 裡照新面孔規則挑
+  }
+  if (dex) {
+    const fresh = Object.keys(pool).filter((no) => !dex[no]);
+    if (fresh.length && dupStreak >= DUP_PITY) pool = Object.fromEntries(fresh.map((no) => [no, pool[no]]));
+    else for (const no of fresh) pool[no] *= NEW_FACE_TIMES;
+  }
   return rollHatch({ ...egg, pool });
 }
 

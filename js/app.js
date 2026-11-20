@@ -5,7 +5,7 @@ import { savePreset, ensureTeamBonds, effectText } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
 import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
-import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
+import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRandomEgg, isHigh, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
@@ -1066,8 +1066,10 @@ async function hatch(expected) {
   await runAnalysis();
   const transaction = await updateState(current => {
     if (current.egg.id !== expected.id || current.egg.since !== expected.since || current.egg.warmth < EGGS[current.egg.id].warmthNeeded) return null;
-    const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current))];
+    const random = isRandomEgg(current.egg);
+    const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current), random ? { dex: current.dex, dupStreak: current.dupStreak || 0, srStreak: current.srStreak || 0 } : {})];
     const duplicate = Boolean(current.dex[character.no]);
+    if (random) { current.dupStreak = duplicate ? (current.dupStreak || 0) + 1 : 0; current.srStreak = isHigh(character.no) ? 0 : (current.srStreak || 0) + 1; }
     let bondUp = [];
     if (duplicate) { current.fossils += DUPLICATE_FOSSILS; current.dex[character.no].dup = Math.min(battle.MAX_STARS, (current.dex[character.no].dup || 0) + 1); bondUp = gainBond(current, character.no, 'duplicate', todayKey()).up; }
     else current.dex[character.no] = { at: new Date().toISOString(), story: meetingStory(current) };
