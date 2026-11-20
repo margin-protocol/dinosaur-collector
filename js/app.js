@@ -508,7 +508,7 @@ function takeEgg(s, egg, county, character) {
   }
   if (egg.id === 'weather') s.weather.stock -= 1;
   if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date') {
-    let i = character ? s.gifts.eggs.findIndex(e => e.egg === egg.id && e.character === character) : -1;
+    let i = character ? s.gifts.eggs.findIndex(e => giftMatch(e, egg.id, character)) : -1;
     if (i < 0) i = s.gifts.eggs.findIndex(e => e.egg === egg.id);
     const [gift] = s.gifts.eggs.splice(i, 1);
     if (gift?.character) egg.character = gift.character;
@@ -596,13 +596,21 @@ function countyCard(county) {
   const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = swapLabel();
   content.append(title, detail, cost, label); card.append(eggArt(egg), content); return card;
 }
-function keepsakeCard(gift) {
-  const egg = EGGS.keepsake;
-  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = 'keepsake'; card.dataset.character = gift.character; card.disabled = busy || shelfFull(state);
+// 禮物蛋（紀念、約會；暗號蛋是驚喜不列）一顆一顆列出來，同一位的疊成一張，可以自己選先孵哪顆（湘 11/20）
+const giftKey = (gift) => gift.character || 'random';
+const giftMatch = (gift, id, key) => gift.egg === id && giftKey(gift) === key;
+function giftCards(id) {
+  const groups = new Map();
+  for (const g of state.gifts.eggs.filter(g => g.egg === id)) groups.set(giftKey(g), (groups.get(giftKey(g)) || 0) + 1);
+  return [...groups].map(([key, n]) => giftCard(id, key, n));
+}
+function giftCard(id, key, n = 1) {
+  const egg = EGGS[id]; const c = CHARACTERS[key];
+  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = id; card.dataset.character = key; card.disabled = busy || shelfFull(state);
   const content = document.createElement('div');
-  const title = document.createElement('h3'); title.textContent = CHARACTERS[gift.character]?.badge ? `${CHARACTERS[gift.character].name}專屬蛋` : egg.name;
-  const detail = document.createElement('p'); detail.textContent = `裡面是${CHARACTERS[gift.character]?.name || '特別的小湘'}`;
-  const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
+  const title = document.createElement('h3'); title.textContent = c?.badge ? `${c.name}專屬蛋` : egg.name;
+  const detail = document.createElement('p'); detail.textContent = c ? `裡面是${c.name}` : '隨機遇見一位約會小湘';
+  const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量${n > 1 ? ` · 持有 ${n} 顆` : ''}`;
   const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = swapLabel();
   content.append(title, detail, cost, label); card.append(eggArt(egg), content); return card;
 }
@@ -642,7 +650,7 @@ function renderEggChoices() {
   const shelved = state.shelf.map((saved, index) => [saved, index]).filter(([saved]) => saved.id === eggCategory).map(([saved, index]) => shelfCard(saved, index));
   let fresh;
   if (eggCategory === 'county') fresh = [...(state.egg.id === 'county' ? [eggCard(egg)] : []), ...(state.travel?.eggs || []).map(countyCard)];
-  else if (eggCategory === 'keepsake') fresh = [...(state.egg.id === 'keepsake' ? [eggCard(egg)] : []), ...state.gifts.eggs.filter(g => g.egg === 'keepsake').map(keepsakeCard)];
+  else if (['keepsake', 'date'].includes(eggCategory) && state.gifts.eggs.some(g => g.egg === eggCategory)) fresh = [...(state.egg.id === eggCategory ? [eggCard(egg)] : []), ...giftCards(eggCategory)];
   else fresh = [eggCard(egg)];
   if (!fresh.length) fresh = [eggCard(egg)];
   const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣或徽章兌換時收到，固定孵出蛋裡指定的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
@@ -1343,8 +1351,8 @@ $('egg-choices').addEventListener('click', async event => {
       }
       if (!EGGS[id] || !canChooseEgg(current, id)) return false;
       const character = choice.dataset.character;
-      if (current.egg.id !== id || (character && current.egg.character !== character)) {
-        if (character && !current.gifts.eggs.some(g => g.egg === id && g.character === character)) return false;
+      if (current.egg.id !== id || (character && (current.egg.character || 'random') !== character)) {
+        if (character && !current.gifts.eggs.some(g => giftMatch(g, id, character))) return false;
         stowCurrent(current);
         const next = newEgg(id);
         if (EGGS[id].stocked) takeEgg(current, next, null, character);

@@ -48,8 +48,9 @@ assert.match(await redeem(code2),/約會快樂.*會孵出約會小湘・蝰蝰�
 const file=JSON.parse(fake.read(`dates/${code2}.json`));file.payload.expires='2020-01-01T00:00:00Z';fake.write('dates/ZZZZZZ.json',JSON.stringify({...file,payload:{...file.payload,code:'ZZZZZZ'}}));
 assert.match(await redeem('ZZZZZZ'),/不對|印章|暗號/,'tampered/expired copy rejected');
 // date egg hatches 014 or 042
-await g.evaluate(()=>location.hash='incubate');await g.waitForTimeout(300);await g.click('#open-eggs');await g.click('[data-cat="date"]');await g.click('[data-egg="date"]');await g.waitForTimeout(300);
+await g.evaluate(()=>location.hash='incubate');await g.waitForTimeout(300);await g.click('#open-eggs');await g.click('[data-cat="date"]');assert.equal(await g.locator('[data-egg="date"][data-character]').count(),2,'隨機和指定的約會蛋分開列');await g.click('[data-egg="date"][data-character="083"]');await g.waitForTimeout(300);
+s=await save();assert.equal(s.egg.character,'083','可以先孵指定的那顆');assert.deepEqual(s.gifts.eggs.filter(e=>e.egg==='date').map(e=>e.character||null),[null]);
 await g.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.egg.warmth=100;localStorage.setItem(k,JSON.stringify(s));},key);await g.reload();await g.evaluate(()=>location.hash='incubate');await g.waitForTimeout(400);
-await g.click('#cultivate');await g.locator('#reveal').waitFor();await g.waitForTimeout(300);assert.match(await g.textContent('#reveal-name'),/約會小湘|蝰蝰/);
+await g.click('#cultivate');await g.locator('#reveal').waitFor();await g.waitForTimeout(300);assert.match(await g.textContent('#reveal-name'),/蝰蝰睡著版/);
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('commissions: mission sign/sync, upload, reject+note, resubmit, approve+reward once, memory archive with full photo; date QR url, typed code, single use, tampered rejected, date egg PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
