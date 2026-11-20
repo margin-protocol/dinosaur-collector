@@ -286,5 +286,29 @@
     "width": 1448,
     "height": 1086,
     "bytes": 473502
+  },
+  {
+    "id": "islands",
+    "title": "離島守護聯盟",
+    "characters": [
+      "092",
+      "093",
+      "094"
+    ],
+    "names": [
+      "馬祖小湘",
+      "澎湖小湘",
+      "金門小湘"
+    ],
+    "references": [
+      "assets/characters/siang-092-matsu.webp",
+      "assets/characters/siang-093-penghu.webp",
+      "assets/characters/siang-094-kinmen.webp"
+    ],
+    "original": "art/team-bonds/originals/islands.png",
+    "web": "assets/bonds/islands.webp",
+    "width": 1448,
+    "height": 1086,
+    "bytes": 443482
   }
 ]

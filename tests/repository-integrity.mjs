@@ -43,7 +43,6 @@ for (const bond of TEAM_BONDS) {
   assert.equal(bond.nos.length, 3, `bond size: ${bond.id}`);
   for (const no of bond.nos) { assert(CHARACTERS[no] && !members.has(no), `unique bond member: ${no}`); members.add(no); }
   // Explicit outstanding commission, documented in REPOSITORY_AUDIT.md. Runtime uses portraits.
-  if (bond.id === 'islands' && !BOND_ART[bond.id]) continue;
   assert(BOND_ART[bond.id] && image(`assets/bonds/${bond.id}`), `bond illustration: ${bond.id}`);
 }
 const targets = new Set();
@@ -67,4 +66,3 @@ for (const file of fs.readdirSync(path.join(root, 'data/enemies'))) {
   for (const field of ['power', 'minutes']) if (data[field] !== undefined) assert.equal(data[field], enemy[field], `${file}: ${field}`);
 }
 console.log(`repository integrity: ${ids.length} characters, ${Object.keys(EGGS).length} layered eggs, ${Object.keys(ENEMIES).length} enemies, ${RECIPES.length} recipes, ${TEAM_BONDS.length} bonds; art/copy/handoffs/legacy saves PASS`);
-if (!BOND_ART.islands) console.log('Outstanding art: islands trio illustration (portrait fallback active).');

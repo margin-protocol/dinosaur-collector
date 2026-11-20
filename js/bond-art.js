@@ -12,6 +12,7 @@ export const BOND_ART = {
  east:{alt:'宜蘭小湘分享蔥油餅，花蓮小湘排石頭，臺東小湘靠著朋友睡著，三人一起等海邊日出。',caption:'日出可以慢慢等，第一口蔥油餅要先留給你。'},
  heroes:{alt:'騎士小湘努力擺帥，魔法師的書偷偷冒煙，勇者小湘已經吃起慶功宴的布丁。',caption:'世界拯救完了。現在，輪到拯救快融化的布丁。'},
  storm:{alt:'天氣觀測師記錄天空，打雷小湘照顧迷你雷雲，冰雹小湘收集閃亮的天空寶石。',caption:'雷聲小一點，寶石多一點，今天的觀測很成功。'},
+ islands:{alt:'馬祖小湘捧著發光的藍眼淚瓶，澎湖小湘舀一匙仙人掌冰餵朋友，金門小湘抱著風獅爺，三人坐在海邊石牆上看夕陽。',caption:'海會發光、潮汐查好了、風獅爺也在。這座島，我們一起守著。'},
  gallery:{alt:'日落底片小湘舉起相機，星夜書房和月光花園小湘抬頭對她微笑。',caption:'把今天的光留好，明天還有新的故事。'},
 };
 function fallback(bond){const row=document.createElement('span');row.className='bond-art-fallback';row.setAttribute('role','img');row.setAttribute('aria-label',`${bond.name}的三位小湘`);for(const no of bond.nos){const img=document.createElement('img');img.alt=CHARACTERS[no].name;loadWithFallback(img,characterSources(CHARACTERS[no].image));row.append(img);}return row;}
