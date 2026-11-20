@@ -1814,7 +1814,7 @@ function grantKeepsakes() {
     return list;
   }).then(t => {
     state = t.state; keepsakeBusy = false; renderAll();
-    if (t.result.length) { toast(`${t.result[0].message}到「選擇蛋」把它拿出來吧。`); say('有特別的禮物送到了！', 'cheer', 3000); }
+    if (t.result.length) { toast(`${t.result[0].message}${state.hatched > 0 || state.dex['001'] ? '到「選擇蛋」把它拿出來吧。' : '先孵出第一位小湘，之後就能到「選擇蛋」把它拿出來。'}`); say('有特別的禮物送到了！', 'cheer', 3000); }
   });
 }
 
