@@ -279,6 +279,14 @@ export const CHARACTERS = {
   '098': { no: '098', name: '摯友小湘（派派ver）', rarity: 'SR', line: "「派派！！！！怎麼又找我打麻將啦！！！……等一下，我換個衣服，十分鐘後到！！」", image: 'siang-098-friend-paipai', series: 'friends' },
   // 115 年九合一大選紀念（皮寶 docs/SIANG_CIVIC_ELECTION_2026.md，湘 11/20 定 SSR）：11/20–11/27 打開遊戲領紀念蛋；11/28 起放進普通蛋池
   '099': { no: '099', name: '公民小湘・115 年九合一大選版', rarity: 'SSR', line: "「不管你支持誰，都要記得了解政見、珍惜自己的選擇喔！嘿嘿，民主就是讓大家都有表達想法的機會呀♡」", image: 'siang-099-civic', series: 'holiday', special: true, poolFrom: '2026-11-28' },
+  // 非酋三部曲（皮寶 docs/SIANG_UNLUCKY_TRIO.md，湘 11/20）：終身累計孵到重複 10／50／100 次自動加入收藏，不進任何蛋池；No.100 先空著留給特殊小湘
+  '101': { no: '101', name: '普通非酋小湘', rarity: 'SR', line: "「沒有關係！新的小湘一定就在下一顆蛋裡！！……大概吧！」", image: 'siang-101-unlucky', series: 'unlucky', special: true, dupNeed: 10 },
+  '102': { no: '102', name: '中級非酋小湘', rarity: 'SSR', line: "「為什麼又是妳啦啊啊啊！！！！我明明已經有了！！！！😭」", image: 'siang-102-unluckier', series: 'unlucky', special: true, dupNeed: 50 },
+  '103': { no: '103', name: '究級非酋小湘', rarity: 'UR', line: "「又重複了呀。呵呵，真是令人安心的結果。」", image: 'siang-103-unluckiest', series: 'unlucky', special: true, dupNeed: 100 },
+  // No.104–106 歐皇三部曲（皮寶 docs/SIANG_LUCKY_TRIO.md，湘 11/20）：一般蛋累計孵到新面孔 10／50／100 次自動加入收藏，不進任何蛋池
+  '104': { no: '104', name: '普通歐皇小湘', rarity: 'SR', line: "「欸？！又是新的耶！！嘿嘿，我是不是很幸運呀♡」", image: 'siang-104-lucky', series: 'lucky', special: true, newNeed: 10 },
+  '105': { no: '105', name: '中級歐皇小湘', rarity: 'SSR', line: "「不是吧？！又是新的？！哈哈哈哈哈哈我是不是被抽卡之神選中了！！！」", image: 'siang-105-luckier', series: 'lucky', special: true, newNeed: 50 },
+  '106': { no: '106', name: '究級歐皇小湘', rarity: 'UR', line: "「欸？抽到重複不是很正常的事情嗎？……嗯？你說我抽到新的才比較正常？」", image: 'siang-106-luckiest', series: 'lucky', special: true, newNeed: 100 },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -305,6 +313,8 @@ export const SERIES = {
   hero: { name: '勇者小隊', short: '勇者' },
   special: { name: '特別收藏', short: '特別' },
   devteam: { name: '開發團隊', short: '開發' },
+  unlucky: { name: '非酋三部曲', short: '非酋' },
+  lucky: { name: '歐皇三部曲', short: '歐皇' },
 };
 
 // 縣市 → 縣市小湘編號

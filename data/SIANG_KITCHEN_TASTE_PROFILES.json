@@ -1179,6 +1179,72 @@
         "star",
         "strawberry"
       ]
+    },
+    {
+      "no": "101",
+      "name": "普通非酋小湘",
+      "like": "綿軟",
+      "dislike": "刺激",
+      "secret_combo": [
+        "caramel",
+        "pudding",
+        "star"
+      ]
+    },
+    {
+      "no": "102",
+      "name": "中級非酋小湘",
+      "like": "濃甜",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "cloud",
+        "milk"
+      ]
+    },
+    {
+      "no": "103",
+      "name": "究級非酋小湘",
+      "like": "清涼",
+      "dislike": "刺激",
+      "secret_combo": [
+        "gear",
+        "moon",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "104",
+      "name": "普通歐皇小湘",
+      "like": "果香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "milk",
+        "moon",
+        "pudding"
+      ]
+    },
+    {
+      "no": "105",
+      "name": "中級歐皇小湘",
+      "like": "星光",
+      "dislike": "菇香",
+      "secret_combo": [
+        "caramel",
+        "rainbow",
+        "star"
+      ]
+    },
+    {
+      "no": "106",
+      "name": "究級歐皇小湘",
+      "like": "果凍",
+      "dislike": "怪味",
+      "secret_combo": [
+        "cloud",
+        "pudding",
+        "star"
+      ]
     }
   ]
 }

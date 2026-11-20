@@ -53,6 +53,7 @@ import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLO
 const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
 import * as kitchen from './kitchen.js';
+import { SCENES as UNLUCKY_SCENES, unluckyDue, grantUnlucky } from './unlucky.js';
 import { CHECKIN_REWARDS, ensureCheckin, checkIn as monthlyCheckIn, checkedToday, daysInMonth } from './checkin.js';
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
@@ -915,7 +916,7 @@ function renderMaxBondResidents() {
 function renderAll() {
   if ($('checkin-badge')) $('checkin-badge').hidden = !state.seenIntro || checkedToday(state);
   if (document.getElementById('missions-badge')) renderMissionsBadge();
-  if (document.getElementById('bingo-badge')) { renderBingoBadge(); checkRecipes(); checkDevteam(); }
+  if (document.getElementById('bingo-badge')) { renderBingoBadge(); checkRecipes(); checkDevteam(); checkUnlucky(); }
   if (document.getElementById('achievement-badge')) renderAchievementBadge();
   if (document.getElementById('dex-detail')) grantKeepsakes();
   if (document.getElementById('dino-task')) renderDinoTask();
@@ -1113,6 +1114,8 @@ async function hatch(expected) {
     const duplicate = Boolean(current.dex[character.no]);
     if (random) { current.dupStreak = duplicate ? (current.dupStreak || 0) + 1 : 0; current.srStreak = isHigh(character.no) ? 0 : (current.srStreak || 0) + 1; }
     let bondUp = [];
+    if (random && duplicate) current.dupTotal = (current.dupTotal || 0) + 1; // 非酋三部曲：一般（隨機）蛋孵到重複才算
+    if (random && !duplicate) current.newTotal = (current.newTotal || 0) + 1; // 歐皇三部曲：一般（隨機）蛋孵到新面孔才算
     if (duplicate) { current.fossils += DUPLICATE_FOSSILS; current.dex[character.no].dup = Math.min(battle.MAX_STARS, (current.dex[character.no].dup || 0) + 1); bondUp = gainBond(current, character.no, 'duplicate', todayKey()).up; }
     else current.dex[character.no] = { at: new Date().toISOString(), story: meetingStory(current) };
     current.hatched += 1; if (isNight()) current.bonus.total.nightHatch += 1; const resumed = current.shelf.shift(); current.egg = resumed || newEgg('ordinary'); current.eggOffer = resumed ? null : makeOffer();
@@ -1507,6 +1510,7 @@ $('reveal-arrange').addEventListener('click', () => {
 $('reveal-ok').addEventListener('click', () => {
   $('reveal').close();
   showView($('reveal').dataset.next);
+  if ($('reveal').dataset.kind === 'gift') { $('reveal').dataset.kind = ''; return; } // 非酋小湘這類直接加入收藏的，不是蛋孵出來的
   toast(state.egg.warmth > 0 ? '暫放的蛋回到培養架上了，繼續加油！' : state.eggOffer ? '小恐龍找到三顆新蛋，到培育室挑一顆吧！' : '新的蛋已送達培育室。');
 });
 $('reset-btn').addEventListener('click', () => {
@@ -1654,6 +1658,22 @@ const DEVTEAM_GIFT = {
   '087': '門口出現一顆頭頂著小鴨的蛋，旁邊貼著便利貼：「這個也要做嗎？！」',
   '088': '一顆閃閃發光的蛋從天而降：「欸欸欸！我又想到一個！」',
 };
+// 非酋三部曲：重複次數達標就自動加入收藏，用相遇畫面介紹她（不在其他視窗開著的時候跳）
+let unluckyBusy = false;
+function checkUnlucky() {
+  if (unluckyBusy || !state.seenIntro || !unluckyDue(state).length || document.querySelector('dialog[open]')) return;
+  unluckyBusy = true;
+  void updateState(current => grantUnlucky(current)).then(t => {
+    state = t.state; unluckyBusy = false;
+    if (!t.result) return;
+    const c = CHARACTERS[t.result];
+    showReveal(c, false);
+    $('reveal-en').textContent = c.newNeed ? 'LUCKY STAR' : 'UNLUCKY BUT HOPEFUL';
+    $('reveal-greeting').textContent = UNLUCKY_SCENES[c.no];
+    $('reveal').dataset.kind = 'gift';
+    welcomeResident(c.no, state.dex); renderAll();
+  }, () => { unluckyBusy = false; });
+}
 function checkDevteam() {
   if (devteamBusy || !state.seenIntro) return;
   const ctx = { residents: residentsFor(state.dex), today: todayKey() };
@@ -1899,6 +1919,8 @@ function howToGet(c) {
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const st = lab.labStatus(state); const brewing = st?.recipe.id === recipe.id; return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
   if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換專屬蛋，培育後固定孵出${h.requireText ? `（${h.requireText}）` : ''}`; }
+  if (c.newNeed) return `一般的蛋累計孵到新朋友 ${c.newNeed} 次，她會自己來找你（目前 ${Math.min(state.newTotal || 0, c.newNeed)} / ${c.newNeed}）`;
+  if (c.dupNeed) return `累計孵到重複的小湘 ${c.dupNeed} 次，她會自己來找你（目前 ${Math.min(state.dupTotal || 0, c.dupNeed)} / ${c.dupNeed}）`;
   if (c.no === '090') return state.dex[c.no] ? '湘研究所沒考上時，用暗號送給大家的紀念（沒關係，先吃蛋糕）' : '湘有心事的時候，會用暗號送給大家……';
   if (c.no === '089') return state.dex[c.no] ? '湘考上研究所時，用暗號送給大家的紀念' : '湘有好消息的時候，會用暗號送給大家……';
   if (c.series === 'devteam') {

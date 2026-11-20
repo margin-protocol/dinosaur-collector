@@ -100,4 +100,10 @@ export const TASTES = {
   '097': { like: '綿軟', dislike: '刺激', secret: ["cloud", "milk", "strawberry"] }, // 貓爬小湘：Koda 的牛奶＋爬爬的草莓，中間夾一朵雲（德寶補）
   '098': { like: '酥脆', dislike: '綿軟', secret: ["caramel", "gear", "lightning"] }, // 派派ver：牌桌上的消夜要喀滋喀滋、還要提神（德寶補）
   '099': { like: '清涼', dislike: '怪味', secret: ["milk", "star", "strawberry"] }, // 公民小湘：查證完來一杯草莓牛奶，再撒一點星星（德寶補）
+  '101': { like: '綿軟', dislike: '刺激', secret: ["caramel", "pudding", "star"] }, // 普通非酋小湘（德寶依皮寶口味定位補）
+  '102': { like: '濃甜', dislike: '怪味', secret: ["caramel", "cloud", "milk"] }, // 中級非酋小湘（德寶依皮寶口味定位補）
+  '103': { like: '清涼', dislike: '刺激', secret: ["gear", "moon", "mushroom"] }, // 究級非酋小湘（德寶依皮寶口味定位補）
+  '104': { like: '果香', dislike: '怪味', secret: ["milk", "moon", "pudding"] }, // 普通歐皇小湘（德寶依皮寶口味定位補）
+  '105': { like: '星光', dislike: '菇香', secret: ["caramel", "rainbow", "star"] }, // 中級歐皇小湘（德寶依皮寶口味定位補）
+  '106': { like: '果凍', dislike: '怪味', secret: ["cloud", "pudding", "star"] }, // 究級歐皇小湘（德寶依皮寶口味定位補）
 };

@@ -182,6 +182,7 @@ export function reaction(no, dish, r) {
   const sp = KITCHEN_LINES[no];
   if (r === 3 && sp?.[3]) return sp[3];
   if (dish.dark && sp?.dark) return sp.dark;
+  if (sp?.[r] && !dish.dark) return sp[r]; // 有些小湘四種評價都有專屬台詞（非酋三部曲）
   if (r === 0 && sp?.[0]) return sp[0];
   const list = dish.dark && r < 2 ? DARK : LINES[r];
   return list[hash(no + dish.id) % list.length];
