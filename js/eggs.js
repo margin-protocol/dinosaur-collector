@@ -105,7 +105,7 @@ export const EGGS = {
     warmthNeeded: 100,
     hatches: null,
     stocked: true, // 見面時掃描湘的約會 QR Code 取得
-    pool: { '014': 40, '042': 30, '083': 15, '084': 15 }, // 約會小湘、蝰蝰♡、蝰蝰睡著版、換我睡著版
+    pool: { '014': 25, '042': 25, '083': 25, '084': 25 }, // 約會小湘、蝰蝰♡、蝰蝰睡著版、換我睡著版（湘 11/20：四位機率一樣）
     // 正式三層素材：assets/eggs/date/{shell,glow,cracks}.webp
   },
   county: {
