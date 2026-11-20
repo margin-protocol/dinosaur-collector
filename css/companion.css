@@ -786,3 +786,27 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 /* 三位入住時房間長高一點，最上面那位的頭不會被切掉；上下也不再裁切，只裁左右（湘 11/20） */
 .companion-room { overflow-x:clip; overflow-y:visible; }
 .companion-room:has(.resident-lanes[data-count="3"]) { min-height:420px; }
+/* 月簽到（湘 11/20） */
+.checkin-week, .checkin-grid { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:4px; }
+.checkin-week { margin-bottom:4px; font-size:11px; text-align:center; opacity:.65; }
+.checkin-day { position:relative; aspect-ratio:1; display:grid; place-items:center; border-radius:10px; border:1px solid #e3b6a026; background:#ffffff06; font-size:12px; }
+.checkin-day.is-blank { border:0; background:none; }
+.checkin-day b { font-weight:500; }
+.checkin-day i { position:absolute; inset:0; display:grid; place-items:center; font-style:normal; font-size:18px; color:#ffd9a8; }
+.checkin-day.is-signed { background:#ffd9a81f; border-color:#ffd9a877; }
+.checkin-day.is-signed b { opacity:.35; }
+.checkin-day.is-today { border-color:#ffd9a8; border-width:2px; }
+.checkin-day.is-missed { opacity:.35; }
+.checkin-rewards { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin:12px 0 8px; }
+.checkin-reward { display:grid; gap:2px; justify-items:center; padding:8px 4px; border-radius:12px; border:1px dashed #e3b6a044; text-align:center; font-size:12px; min-width:0; }
+.checkin-reward b { font:14px var(--font-display); }
+.checkin-reward small { font-size:10.5px; opacity:.7; }
+.checkin-reward.is-egg { border-style:solid; border-color:#ffd36b99; }
+.checkin-reward.is-got { background:#ffd9a81f; border-style:solid; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day.is-blank { background:none; border:0; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day.is-signed { background:var(--t-selected); border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day.is-today { border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day i { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-reward { border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-reward.is-got { background:var(--t-selected); }

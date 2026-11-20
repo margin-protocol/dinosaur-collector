@@ -1,5 +1,6 @@
 import { ensureTeamBonds } from './team-bonds.js';
 import { ensureKitchen } from './kitchen.js';
+import { ensureCheckin } from './checkin.js';
 import { todayKey, wishesFor, legacyWishesFor, wishById, swapWishId, actProgress, QUIZZES, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';
 import { ensureWishEgg, stampDay } from './wish-egg.js';
 import { ensureTravel } from './travel.js';
@@ -93,6 +94,7 @@ export function hydrateProgression(state) {
   ensureDevteam(state);
   ensureGuide(state);
   ensureKitchen(state);
+  ensureCheckin(state);
   // 三選一只給剛換上的普通蛋；蛋已經換了或開始孵，就收起選單
   if (state.eggOffer && !(Array.isArray(state.eggOffer) && state.egg?.id === 'ordinary' && !state.egg.warmth && !state.egg.flavor)) state.eggOffer = null;
   if (!state.cradle || !(state.cradle.slots >= 1)) state.cradle = { slots: 1 };

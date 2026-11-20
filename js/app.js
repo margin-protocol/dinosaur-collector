@@ -53,6 +53,7 @@ import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLO
 const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
 import * as kitchen from './kitchen.js';
+import { CHECKIN_REWARDS, ensureCheckin, checkIn as monthlyCheckIn, checkedToday, daysInMonth } from './checkin.js';
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
@@ -491,14 +492,14 @@ function eggStock(s, id) {
   if (id === 'wish') return s.wishEgg?.stock || 0;
   if (id === 'county') return s.travel?.eggs?.length || 0;
   if (id === 'weather') return s.weather?.stock || 0;
-  if (id === 'cipher' || id === 'keepsake' || id === 'date') return s.gifts?.eggs?.filter(e => e.egg === id).length || 0;
+  if (id === 'cipher' || id === 'keepsake' || id === 'date' || id === 'star') return s.gifts?.eggs?.filter(e => e.egg === id).length || 0;
   return 0;
 }
 function returnEgg(s, egg) {
   if (egg.id === 'wish') s.wishEgg.stock += 1;
   if (egg.id === 'county' && egg.county) s.travel.eggs.unshift(egg.county);
   if (egg.id === 'weather') s.weather.stock += 1;
-  if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date') s.gifts.eggs.unshift({ egg: egg.id, ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
+  if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date' || egg.id === 'star') s.gifts.eggs.unshift({ egg: egg.id, ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
 }
 function takeEgg(s, egg, county, character) {
   if (egg.id === 'wish') s.wishEgg.stock -= 1;
@@ -507,7 +508,7 @@ function takeEgg(s, egg, county, character) {
     egg.county = s.travel.eggs.splice(Math.max(i, 0), 1)[0];
   }
   if (egg.id === 'weather') s.weather.stock -= 1;
-  if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date') {
+  if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date' || egg.id === 'star') {
     let i = character ? s.gifts.eggs.findIndex(e => giftMatch(e, egg.id, character)) : -1;
     if (i < 0) i = s.gifts.eggs.findIndex(e => e.egg === egg.id);
     const [gift] = s.gifts.eggs.splice(i, 1);
@@ -543,7 +544,7 @@ function canChooseEgg(current, id) {
 }
 
 // 選擇蛋：先選六個分類（普通、願望、天氣、縣市、暗號、紀念），再選那一類裡的蛋
-const EGG_CATEGORIES = ['ordinary', 'wish', 'weather', 'county', 'cipher', 'keepsake', 'date'];
+const EGG_CATEGORIES = ['ordinary', 'wish', 'weather', 'county', 'cipher', 'keepsake', 'date', 'star'];
 let eggCategory = null;
 const eggArt = (egg, pct = 0) => { const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true'); const v = createEggView(egg); v.setProgress(pct); art.append(v.el); return art; };
 const swapLabel = () => shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
@@ -653,7 +654,7 @@ function renderEggChoices() {
   else if (['keepsake', 'date'].includes(eggCategory) && state.gifts.eggs.some(g => g.egg === eggCategory)) fresh = [...(state.egg.id === eggCategory ? [eggCard(egg)] : []), ...giftCards(eggCategory)];
   else fresh = [eggCard(egg)];
   if (!fresh.length) fresh = [eggCard(egg)];
-  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣或徽章兌換時收到，固定孵出蛋裡指定的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。' }[eggCategory];
+  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣或徽章兌換時收到，固定孵出蛋裡指定的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。', star: '月簽到同一個月累積 28 天就會收到，裡面一定是 SR 以上的小湘。' }[eggCategory];
   $('egg-picker-note').textContent = detailText;
   const odds = egg.pool ? Object.assign(document.createElement('button'), { type: 'button', className: 'egg-odds-link', textContent: '📊 看這種蛋的機率表' }) : null;
   if (odds) odds.dataset.odds = egg.id;
@@ -706,7 +707,7 @@ function eggCard(egg) {
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
     const title = document.createElement('h3'); title.textContent = current && CHARACTERS[state.egg.character]?.badge ? `${CHARACTERS[state.egg.character].name}專屬蛋` : current && state.egg.county ? `${egg.name} · ${state.egg.county}` : egg.name;
-    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'weather' ? `天氣的蛋，今天的天氣決定誰比較容易出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
+    const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'star' ? `月簽到的獎勵，一定是 SR 以上（${Object.keys(activePool(egg)).length} 種）` : egg.id === 'weather' ? `天氣的蛋，今天的天氣決定誰比較容易出現（${Object.keys(egg.pool).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(egg.pool).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
     const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
@@ -717,6 +718,7 @@ function eggCard(egg) {
         ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
         : egg.id === 'weather' ? `持有 ${stock} 顆（每天第一次感應到天氣時取得）`
         : egg.id === 'cipher' ? `持有 ${stock} 顆（輸入湘給的暗號、完成她的委託時取得）`
+        : egg.id === 'star' ? `持有 ${stock} 顆（月簽到滿 28 天取得，一定是 SR 以上）`
         : egg.id === 'date' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'date').map(e => CHARACTERS[e.character]?.name || '隨機').join('、')}` : '見面時掃描湘的約會 QR Code 取得')
         : egg.id === 'keepsake' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'keepsake').map(e => CHARACTERS[e.character]?.name).join('、')}` : '節日、小湘生日、走遍臺灣時會收到')
         : stock ? `另外還有 ${stock} 顆，列在下面，可以自己選` : '到新的縣市按「探索」，那裡的小湘就會想出現';
@@ -911,6 +913,7 @@ function renderMaxBondResidents() {
   });
 }
 function renderAll() {
+  if ($('checkin-badge')) $('checkin-badge').hidden = !state.seenIntro || checkedToday(state);
   if (document.getElementById('missions-badge')) renderMissionsBadge();
   if (document.getElementById('bingo-badge')) { renderBingoBadge(); checkRecipes(); checkDevteam(); }
   if (document.getElementById('achievement-badge')) renderAchievementBadge();
@@ -1720,6 +1723,47 @@ function openBingo() {
   if (!$('bingo-dialog').open) { $('bingo-dialog').showModal(); syncRoomActivity(); }
 }
 $('open-bingo').addEventListener('click', () => { $('function-center').close(); openBingo(); });
+
+/* ---------- 月簽到（湘 11/20） ---------- */
+function renderCheckin() {
+  const now = new Date(); const c = state.checkin?.month ? state.checkin : ensureCheckin({ ...state });
+  const signed = new Set(state.checkin?.month === c.month ? c.days : []); const total = daysInMonth(now);
+  const first = new Date(now.getFullYear(), now.getMonth(), 1).getDay();
+  const count = signed.size; const next = CHECKIN_REWARDS.find(r => count < r.days);
+  $('checkin-title').textContent = `${now.getMonth() + 1} 月簽到`;
+  $('checkin-intro').textContent = `這個月已經簽到 ${count} 天${next ? `，再 ${next.days - count} 天可以拿「${next.label}」` : '，獎勵全部拿到了！'}。每個月 1 號重新開始，漏掉的日子不能補簽喔。`;
+  const cells = [];
+  for (let i = 0; i < first; i++) cells.push(mkEl('span', 'checkin-day is-blank'));
+  for (let d = 1; d <= total; d++) {
+    const cell = mkEl('span', `checkin-day${signed.has(d) ? ' is-signed' : ''}${d === now.getDate() ? ' is-today' : ''}${d < now.getDate() && !signed.has(d) ? ' is-missed' : ''}`);
+    cell.append(mkEl('b', '', String(d)), mkEl('i', '', signed.has(d) ? '✓' : ''));
+    cells.push(cell);
+  }
+  $('checkin-grid').replaceChildren(...cells);
+  $('checkin-rewards').replaceChildren(...CHECKIN_REWARDS.map(r => {
+    const got = state.checkin?.claimed?.includes(r.days); const box = mkEl('div', `checkin-reward${got ? ' is-got' : ''}${r.egg ? ' is-egg' : ''}`);
+    box.append(mkEl('b', '', `${r.days} 天`), mkEl('span', '', r.label), mkEl('small', '', got ? '✓ 已領取' : `${Math.min(count, r.days)} / ${r.days}`));
+    return box;
+  }));
+  const done = checkedToday(state, now);
+  $('checkin-sign').disabled = done; $('checkin-sign').textContent = done ? '今天簽過了 ✓' : '簽到';
+  $('checkin-badge').hidden = done;
+}
+function openCheckin() { $('checkin-status').textContent = ''; renderCheckin(); $('checkin-dialog').showModal(); syncRoomActivity(); }
+$('open-checkin').addEventListener('click', () => { $('function-center').close(); openCheckin(); });
+$('close-checkin').addEventListener('click', () => $('checkin-dialog').close());
+$('checkin-dialog').addEventListener('close', syncRoomActivity);
+$('checkin-sign').addEventListener('click', async () => {
+  $('checkin-sign').disabled = true;
+  const t = await updateState(current => monthlyCheckIn(current));
+  state = t.state; renderAll();
+  if (t.result) {
+    const egg = t.result.rewards.find(r => r.egg);
+    $('checkin-status').textContent = t.result.rewards.length ? `簽到成功！累積 ${t.result.count} 天，拿到${t.result.rewards.map(r => r.label).join('、')}${egg ? '，到「選擇蛋」把星光蛋拿出來吧！' : '！'}` : `簽到成功！這個月第 ${t.result.count} 天。`;
+    buzz([10, 30, 10]); if (t.result.rewards.length) say(egg ? '一整個月都有來找我！這顆星光蛋送你♡' : '簽到獎勵送到囉！', 'cheer', 3500);
+  }
+  renderCheckin();
+});
 $('close-bingo').addEventListener('click', () => $('bingo-dialog').close());
 $('bingo-dialog').addEventListener('close', syncRoomActivity);
 $('bingo-claim').addEventListener('click', async () => {
@@ -3664,6 +3708,7 @@ $('unlock-dialog').addEventListener('close', () => { syncRoomActivity(); setTime
 function todayItems() {
   const items = []; const today = todayKey(); const add = (key, label, detail, go) => items.push({ key, label, detail, go });
   const owned = Object.keys(state.dex || {}).length;
+  if (state.seenIntro && !checkedToday(state)) add('checkin', '月簽到', `這個月已經簽 ${state.checkin?.days?.length || 0} 天，滿 28 天送星光蛋`, () => { $('today-dialog').close(); openCheckin(); });
   if (!$('daily-gift').hidden) add('gift', '領今天的見面禮', '首頁右邊的禮物', () => { $('today-dialog').close(); $('daily-gift').click(); });
   if (!$('letter-badge')?.hidden) add('letter', '看新的紙條', '首頁右邊的紙條', () => { $('today-dialog').close(); $('home-letter').click(); });
   const done = state.wishes?.date === today ? state.wishes.done.length : 0;

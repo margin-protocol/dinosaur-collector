@@ -118,6 +118,16 @@ export const EGGS = {
     byCounty: true, // 固定孵出該縣市的小湘（見 rollFor）
     // 正式三層素材：assets/eggs/county/{shell,glow,cracks}.webp
   },
+  star: {
+    id: 'star',
+    name: '星光蛋',
+    code: 'STAR',
+    warmthNeeded: 150,
+    hatches: null,
+    stocked: true, // 月簽到滿 28 天的獎勵（湘 11/20）：一定是 SR 以上
+    pool: {}, // 下面依稀有度自動組：普通／願望／暗號／天氣蛋裡的 SR 權重 3、SSR 權重 1
+    // 圖層：assets/eggs/star/（願望蛋染成金色）
+  },
 };
 
 // 暫放架：換蛋時，已經注入能量的蛋放在這裡，進度保留
@@ -276,6 +286,12 @@ export const CHARACTERS = {
 };
 
 // 圖鑑系列：顯示順序就是這裡的順序
+// 星光蛋的池子：一般蛋池裡所有 SR 以上的小湘
+for (const id of ['ordinary', 'wish', 'cipher', 'weather']) for (const no of Object.keys(EGGS[id].pool)) {
+  const r = CHARACTERS[no]?.rarity;
+  if (r === 'SR') EGGS.star.pool[no] = 3; else if (r === 'SSR' || r === 'UR') EGGS.star.pool[no] = 1;
+}
+
 export const SERIES = {
   daily: { name: '日常系列', short: '日常' },
   weather: { name: '天氣與時間', short: '天氣' },

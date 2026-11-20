@@ -194,6 +194,9 @@
 <button class="nav__item" type="button" id="open-wheel">
       <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18M5.6 5.6l12.8 12.8M18.4 5.6 5.6 18.4"/></svg><span>小恐龍轉盤</span>
     <small class="nav__sub">每天 3 次，押能量</small></button>
+<button class="nav__item" type="button" id="open-checkin">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16v14H4zM4 10h16M8 3v5M16 3v5M8.5 15l2.2 2.2 4.8-4.8"/></svg><span>月簽到</span><span class="dot" id="checkin-badge" hidden></span>
+    <small class="nav__sub">每天簽一下，滿 28 天送星光蛋</small></button>
 <button class="nav__item" type="button" id="open-bingo">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h16v16H4zM9.33 4v16M14.67 4v16M4 9.33h16M4 14.67h16"/></svg><span>每週賓果</span><span class="dot" id="bingo-badge" hidden></span>
     <small class="nav__sub">每週的連線挑戰</small></button></div></section>
@@ -254,6 +257,8 @@
 <dialog class="presenter-dialog residents-dialog sheet" id="presenter" aria-labelledby="presenter-title"><div class="drawer-heading"><div><small>YOUR WISH COMPANION</small><h2 id="presenter-title">今天想和誰一起？</h2></div><button class="close-button" type="button" id="close-presenter" aria-label="關閉切換小湘">×</button></div><p class="residents-intro">選擇已收集的小湘陪你許願。切換不會改變當天任務與完成進度。</p><div id="presenter-list" class="residents-list"></div><p id="presenter-feedback" role="status" aria-live="polite"></p></dialog>
 
 <dialog class="residents-dialog sheet egg-picker" id="egg-picker" aria-labelledby="egg-picker-title"><div class="drawer-heading"><div><small>CHOOSE YOUR NEXT ENCOUNTER</small><h2 id="egg-picker-title">選擇培育的蛋</h2></div><button class="close-button" type="button" id="close-eggs" aria-label="關閉選擇蛋">×</button></div><p class="residents-intro" id="egg-picker-note"></p><div id="egg-choices"></div><p id="egg-picker-feedback" role="status" aria-live="polite"></p></dialog>
+
+<dialog class="residents-dialog sheet checkin-dialog" id="checkin-dialog" aria-labelledby="checkin-title"><div class="drawer-heading"><div><small>MONTHLY CHECK-IN</small><h2 id="checkin-title">月簽到</h2></div><button class="close-button" type="button" id="close-checkin" aria-label="關閉月簽到">×</button></div><p class="residents-intro" id="checkin-intro"></p><div class="checkin-week" aria-hidden="true"><span>日</span><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span></div><div class="checkin-grid" id="checkin-grid"></div><div class="checkin-rewards" id="checkin-rewards"></div><p class="cloud-status" id="checkin-status" role="status" aria-live="polite"></p><button class="btn" type="button" id="checkin-sign">簽到</button></dialog>
 
 <dialog class="residents-dialog sheet egg-odds" id="egg-odds" aria-labelledby="egg-odds-title"><div class="drawer-heading"><div><small>HATCH RATES</small><h2 id="egg-odds-title">機率表</h2></div><button class="close-button" type="button" id="close-egg-odds" aria-label="關閉機率表">×</button></div><div id="egg-odds-body"></div></dialog>
 
