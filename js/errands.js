@@ -6,6 +6,7 @@ import { PLACE_REPORTS, SERIES_REPORTS, CHARACTER_REPORTS, HOME_REPORTS, HOME_SE
 export const ERRAND_SLOTS = 2; // 同時最多兩趟
 export const STORY_BONUS = 3; // 第一次發現故事 +3 化石
 export const CARD_BONUS = 3; // 第一次收到某縣市的家鄉明信片 +3 化石
+export const CARD_RECYCLE = 1; // 丟掉一張重複的明信片 +1 化石
 const HOUR = 3600e3;
 
 export const PLACES = {
@@ -132,6 +133,7 @@ export function ensureErrands(state) {
     album: Array.isArray(old.album) ? old.album.filter((a) => a && str(a.id)).slice(0, 40) : [],
     stories: old.stories && typeof old.stories === 'object' ? old.stories : {},
     cards: old.cards && typeof old.cards === 'object' ? old.cards : {},
+    cardDupes: Object.fromEntries(Object.entries(old.cardDupes && typeof old.cardDupes === 'object' ? old.cardDupes : {}).filter(([, n]) => Number.isSafeInteger(n) && n > 0)), // 重複的家鄉明信片（湘 11/20：可以留下或丟掉）
     countyWeek: str(old.countyWeek) ? old.countyWeek : '',
     total: Number.isSafeInteger(old.total) ? old.total : 0,
     departed: Number.isSafeInteger(old.departed) ? old.departed : 0,
@@ -219,12 +221,12 @@ export function collect(state, id, { eggs, now = new Date() } = {}) {
     gains.push('一張紙條');
   }
   if (loot.dino) { state.dino.double = true; gains.push('下一個小恐龍委託獎勵加倍'); }
-  const cards = [];
+  const cards = []; const dupes = [];
   for (const county of loot.cards || []) {
     const first = !er.cards[county];
     er.cards[county] = er.cards[county] || now.toISOString();
     if (first) { state.fossils = (state.fossils || 0) + CARD_BONUS; gains.push(`${county}的家鄉明信片（第一次 +${CARD_BONUS} 化石）`); }
-    else gains.push(`${county}的家鄉明信片`);
+    else { er.cardDupes[county] = (er.cardDupes[county] || 0) + 1; dupes.push(county); gains.push(`${county}的家鄉明信片（重複，先放進明信片盒）`); }
     cards.push(county);
   }
   let story = null;
@@ -242,7 +244,17 @@ export function collect(state, id, { eggs, now = new Date() } = {}) {
   const entry = { id: errand.id, place: errand.place || null, task: errand.task || null, nos: errand.nos, at: now.toISOString(), line: loot.line || '', gains, story: story ? { id: story.id, title: story.title, text: story.text } : null, cards };
   if (errand.place) er.album.unshift(entry);
   er.album = er.album.slice(0, 40);
-  return { ...entry, names, boost: Boolean(loot.boost), storyFirst: story?.first || false };
+  return { ...entry, names, boost: Boolean(loot.boost), storyFirst: story?.first || false, dupes };
+}
+
+// 丟掉重複的明信片：一張 +1 化石；留下就什麼都不用做（會一直放在明信片盒）
+export function tossCard(state, county, count = 1) {
+  const er = state.errands; const have = er?.cardDupes?.[county] || 0;
+  const n = Math.min(have, Math.max(1, Math.floor(count)));
+  if (!n) return 0;
+  er.cardDupes[county] = have - n; if (!er.cardDupes[county]) delete er.cardDupes[county];
+  state.fossils = (state.fossils || 0) + n * CARD_RECYCLE;
+  return n;
 }
 
 export const fmtLeft = (errand, now = Date.now()) => {

@@ -46,7 +46,7 @@ import { createResearch } from './research.js';
 import { studyPair } from './research-notes.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward, todaysWishList, swapTodayWish } from './progression.js';
 import * as install from './install.js';
-import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft } from './errands.js';
+import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
 import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP } from './affection.js';
@@ -2798,6 +2798,7 @@ function renderErrands() {
   // 相簿與收藏
   const counties = Object.keys(state.errands.cards).length;
   $('errand-collection').textContent = `旅行故事 ${Object.keys(er.stories).length} / ${STORIES.length} · 家鄉明信片 ${counties} / ${Object.keys(COUNTY_CHARACTER).length} · 一共出門 ${er.total} 次`;
+  renderCardBox();
   $('errand-album').replaceChildren(...(er.album.length ? er.album.map(entry => {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'trip-card-btn'; btn.style.cssText = 'border:0;padding:0;background:none;color:inherit';
     btn.append(tripCard(entry)); btn.setAttribute('aria-label', `${entry.nos.map(no => CHARACTERS[no].name).join('和')}去${PLACES[entry.place]?.name}`);
@@ -2811,6 +2812,43 @@ function openErrands() {
   if (!$('errand-dialog').open) { $('errand-dialog').showModal(); syncRoomActivity(); }
   showTip('errand', $('errand-pane'));
 }
+function mkEl(tag, cls, text) { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; } // 函式宣告會提前，開遊戲時就能用
+// 重複的家鄉明信片：當場選「留下」或「丟掉（+1 化石）」；沒選就是留下，之後也能在明信片盒丟（湘 11/20）
+function renderResultDupes(list) {
+  const box = $('errand-result-dupes'); box.hidden = !list.length;
+  box.replaceChildren(...list.map(county => {
+    const row = mkEl('div', 'card-dupe'); row.append(mkEl('span', '', `📮 ${county}的明信片重複了`));
+    const keep = mkEl('button', 'btn btn--quiet', '留下'); keep.type = 'button';
+    const toss = mkEl('button', 'btn btn--quiet', `丟掉（+${CARD_RECYCLE} 化石）`); toss.type = 'button';
+    keep.addEventListener('click', () => { row.replaceChildren(mkEl('span', '', `📮 ${county}的明信片收進明信片盒了`)); });
+    toss.addEventListener('click', async () => { keep.disabled = toss.disabled = true; const n = await doToss(county, 1); row.replaceChildren(mkEl('span', '', n ? `📮 丟掉了一張${county}的明信片，化石 +${n * CARD_RECYCLE}` : '這張已經處理過了')); });
+    const btns = mkEl('div', 'card-dupe__btns'); btns.append(keep, toss); row.append(btns); return row;
+  }));
+}
+async function doToss(county, count) {
+  const t = await updateState(current => tossCard(current, county, count));
+  state = t.state; renderAll(); if ($('errand-dialog').open) renderErrands();
+  return t.result || 0;
+}
+function renderCardBox() {
+  const er = state.errands; const got = Object.keys(er.cards || {});
+  const dupTotal = Object.values(er.cardDupes || {}).reduce((a, b) => a + b, 0);
+  $('card-box').hidden = !got.length;
+  $('card-box-summary').textContent = `📮 明信片盒 · ${got.length} 種${dupTotal ? ` · 重複 ${dupTotal} 張` : ''}`;
+  const order = Object.keys(COUNTY_CHARACTER).filter(c => got.includes(c));
+  $('card-box-grid').replaceChildren(...order.map(county => {
+    const n = er.cardDupes?.[county] || 0;
+    const card = mkEl('div', `card-box__card${n ? ' has-dupes' : ''}`);
+    card.append(siangImg(COUNTY_CHARACTER[county]), mkEl('b', '', county), mkEl('small', '', n ? `重複 ${n} 張` : '收藏中'));
+    if (n) {
+      const toss = mkEl('button', 'card-box__toss', `丟掉 1 張 +${CARD_RECYCLE}🦴`); toss.type = 'button';
+      toss.addEventListener('click', async () => { toss.disabled = true; await doToss(county, 1); });
+      card.append(toss);
+      if (n > 1) { const all = mkEl('button', 'card-box__toss', `全部丟掉 +${n * CARD_RECYCLE}🦴`); all.type = 'button'; all.addEventListener('click', async () => { all.disabled = true; await doToss(county, n); }); card.append(all); }
+    }
+    return card;
+  }));
+}
 function showErrandResult(r, replay = false) {
   // 出門和在家幫忙都用同一種照片卡（在家幫忙的背景是 assets/places/home-*.webp）
   $('errand-result-card').replaceChildren(tripCard(r));
@@ -2820,6 +2858,7 @@ function showErrandResult(r, replay = false) {
   $('errand-result-story').hidden = !r.story;
   if (r.story) { $('errand-story-title').textContent = `📖 ${r.story.title}${r.storyFirst ? '（新故事！）' : ''}`; setParas($('errand-story-text'), r.story.text); }
   $('errand-result-gains').replaceChildren(...(r.gains || []).map(g => Object.assign(document.createElement('li'), { textContent: g })));
+  renderResultDupes(replay ? [] : (r.dupes || []));
   $('errand-result-ok').textContent = replay ? '關閉' : '收下';
   $('errand-result').showModal(); $('errand-result').scrollTop = 0;
 }

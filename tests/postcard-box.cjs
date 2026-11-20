@@ -1,0 +1,24 @@
+// 重複的家鄉明信片：放進明信片盒，可以留下或丟掉（一張 +1 化石）
+const {chromium}=require('playwright'),assert=require('node:assert/strict');
+(async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
+const key='siang-collector:v1';const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
+await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');
+const u=await p.evaluate(async()=>{const E=await import('/js/errands.js');const s={errands:{cards:{'臺中市':'x'},cardDupes:{'臺中市':0,'bad':'x'}},fossils:0};E.ensureErrands(s);const clean=JSON.stringify(s.errands.cardDupes);
+  s.errands.cardDupes={'臺中市':3};const one=E.tossCard(s,'臺中市',1);const many=E.tossCard(s,'臺中市',9);const none=E.tossCard(s,'臺中市',1);
+  return {clean,one,many,none,left:s.errands.cardDupes,fossils:s.fossils};});
+assert.deepEqual(u,{clean:'{}',one:1,many:2,none:0,left:{},fossils:3});
+const col=await p.evaluate(async()=>{const E=await import('/js/errands.js');const s={errands:{cards:{'臺中市':'x'}},fossils:0,energy:0,letters:{mail:[]},dino:{},egg:{id:'ordinary',warmth:0},travel:{eggs:[]}};E.ensureErrands(s);
+  s.errands.active=[{id:'e1',place:'park',nos:['023'],at:'2026-01-01T00:00:00Z',until:'2026-01-01T01:00:00Z',loot:{cards:['臺中市','臺北市']}}];
+  const r=E.collect(s,'e1',{now:new Date('2026-01-02T00:00:00Z')});return {dupes:r.dupes,box:s.errands.cardDupes,first:Boolean(s.errands.cards['臺北市']),fossils:s.fossils,gain:r.gains.join('|')};});
+assert.deepEqual(col.dupes,['臺中市']);assert.deepEqual(col.box,{'臺中市':1});assert.ok(col.first);assert.equal(col.fossils,3);assert.match(col.gain,/重複，先放進明信片盒/);
+await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=3;s.dex={'001':{at:'x'},'023':{at:'x'},'016':{at:'x'}};s.fossils=0;s.guide={seen:['errand'],unlocked:['errand']};s.errands={...(s.errands||{}),cards:{'臺中市':'2026-11-01T00:00:00Z','臺北市':'2026-11-02T00:00:00Z'},cardDupes:{'臺中市':2}};localStorage.setItem(k,JSON.stringify(s));},key);
+await p.reload();await p.waitForTimeout(600);await p.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());document.getElementById('open-errands').click();});
+await p.locator('#errand-dialog[open]').waitFor();
+assert.match(await p.textContent('#card-box-summary'),/2 種 · 重複 2 張/);
+await p.click('#card-box-summary');
+if(process.env.SHOT)await p.locator('#card-box').screenshot({path:process.env.SHOT});
+await p.locator('.card-box__card.has-dupes').getByRole('button',{name:/全部丟掉/}).click();await p.waitForTimeout(400);
+const s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(s.fossils,2);assert.deepEqual(s.errands.cardDupes,{});
+assert.doesNotMatch(await p.textContent('#card-box-summary'),/重複/);
+assert.equal(errs.length,0,errs.join('\n'));
+console.log('postcard box: duplicates kept, toss one/all for fossils, UI box PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
