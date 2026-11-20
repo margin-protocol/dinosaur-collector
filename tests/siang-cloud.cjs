@@ -34,6 +34,12 @@ const seen=await g.evaluate(async([a,inv,inv2,rev])=>{const h=t=>({headers:{Auth
  const playerAdmin=(await fetch(a+'/admin/players',h(inv))).status;
  return {mine:(await mine).length,other:(await other).length,asAdmin:asAdmin.length,playerAdmin,seenToday:Boolean(boy.seen)};},[API,invite,invite2,reviewer]);
 assert.deepEqual(seen,{mine:2,other:0,asAdmin:2,playerAdmin:403,seenToday:true});
+// 每天的備份只留最近 7 份
+await g.evaluate(async([a,inv])=>{for(let d=1;d<=10;d++)await fetch(`${a}/f/backups/2026-10-${String(d).padStart(2,'0')}.json`,{method:'PUT',headers:{Authorization:'Bearer '+inv},body:JSON.stringify({app:'siang-collector',v:1,at:'2026-10-01T00:00:00Z',keys:{}})});},[API,invite]);
+await g.evaluate(()=>localStorage.removeItem('siang-collector:last-backup'));
+await g.locator('#cloud-backup-now').click();await g.waitForFunction(()=>/備份完成/.test(document.getElementById('cloud-status').textContent));await g.waitForTimeout(800);
+const kept=await g.evaluate(async([a,inv])=>(await (await fetch(a+'/ls/backups',{headers:{Authorization:'Bearer '+inv}})).json()).map(f=>f.name).sort(),[API,invite]);
+assert.equal(kept.length,8,'latest＋最近 7 份：'+kept.join(','));assert.ok(kept.includes('latest.json'));assert.ok(!kept.includes('2026-10-01.json'));assert.ok(kept.includes('2026-10-10.json'));
 // 審核室：做印章、發全體暗號；玩家讀得到
 await r.locator('#key-generate').click();await r.waitForFunction(()=>!document.getElementById('code-create').disabled);
 await r.locator('#code-everyone').check();await r.locator('#code-phrase').fill('研究所上榜');await r.locator('#code-reusable').check();await r.locator('#code-create').click();

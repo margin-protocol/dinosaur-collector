@@ -2507,7 +2507,16 @@ async function backupNow({ auto = false } = {}) {
   await cloud.putJSON('backups/latest.json', data, 'backup: latest', { overwrite: true });
   await cloud.putJSON(`backups/${todayKey()}.json`, data, `backup: ${todayKey()}`, { overwrite: true });
   try { localStorage.setItem(LAST_BACKUP_KEY, data.at); } catch {}
+  await pruneBackups(cloud, best?.path);
   return data.at;
+}
+// 每天的備份只留最近 7 份（湘 11/20：雲端容量有限）；latest 和進度最多的那份永遠不刪
+const BACKUP_KEEP = 7;
+async function pruneBackups(cloud, keepPath) {
+  try {
+    const dated = (await cloud.list('backups')).filter(f => f.type === 'file' && /^\d{4}-\d{2}-\d{2}\.json$/.test(f.name)).map(f => f.name).sort().reverse();
+    for (const name of dated.slice(BACKUP_KEEP)) if (`backups/${name}` !== keepPath) await cloud.remove(`backups/${name}`, 'prune old backup');
+  } catch {} // 刪不掉就下次再說，不影響備份本身
 }
 
 async function autoBackup() {
