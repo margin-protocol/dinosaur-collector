@@ -426,13 +426,14 @@ $('date-form').addEventListener('submit', async (e) => {
     const gameUrl = $('date-url').value.trim(); localStorage.setItem(URL_KEY, gameUrl);
     const code = newDateCode();
     const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    const payload = { v: 1, type: 'date', code, title: $('date-title').value.trim() || '今天的約會', note: $('date-note').value.trim(), expires, createdAt: new Date().toISOString() };
+    const character = ['014', '042', '083', '084'].includes($('date-character').value) ? $('date-character').value : '';
+    const payload = { v: 1, type: 'date', code, title: $('date-title').value.trim() || '今天的約會', note: $('date-note').value.trim(), ...(character ? { character } : {}), expires, createdAt: new Date().toISOString() };
     await cloud().putJSON(`dates/${code}.json`, await signPayload(privateKey, payload), 'date code');
     const q = qrcode(0, 'M'); q.addData(`${gameUrl.replace(/#.*$/, '')}#date=${code}`); q.make();
     $('date-qr-svg').innerHTML = q.createSvgTag({ cellSize: 6, margin: 2 });
     $('date-code').textContent = code;
     $('date-expire').textContent = `有效到 ${new Date(expires).toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' })}，只能用一次`;
-    $('date-qr').hidden = false; $('date-status').textContent = '請他用手機相機掃描，或在遊戲「輸入暗號」打上這 6 碼。';
+    $('date-qr').hidden = false; $('date-status').textContent = `${character ? `這顆蛋會孵出${$('date-character').selectedOptions[0].textContent.replace('指定：', '')}。` : '這顆蛋會隨機孵出一位約會小湘。'}請他用手機相機掃描，或在遊戲「輸入暗號」打上這 6 碼。`;
   } catch (err) { $('date-status').textContent = `產生失敗：${err.message}`; }
   finally { $('date-create').disabled = !privateKey; }
 });

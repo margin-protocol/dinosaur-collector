@@ -670,7 +670,7 @@ function eggCard(egg) {
         ? `持有 ${stock} 顆 · 願望印記 ${state.wishEgg?.stamps || 0} / ${WISH_STAMPS_PER_EGG}（三個願望全部完成的日子各得一枚）`
         : egg.id === 'weather' ? `持有 ${stock} 顆（每天第一次感應到天氣時取得）`
         : egg.id === 'cipher' ? `持有 ${stock} 顆（輸入湘給的暗號、完成她的委託時取得）`
-        : egg.id === 'date' ? `持有 ${stock} 顆（見面時掃描湘的約會 QR Code 取得）`
+        : egg.id === 'date' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'date').map(e => CHARACTERS[e.character]?.name || '隨機').join('、')}` : '見面時掃描湘的約會 QR Code 取得')
         : egg.id === 'keepsake' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'keepsake').map(e => CHARACTERS[e.character]?.name).join('、')}` : '節日、小湘生日、走遍臺灣時會收到')
         : stock ? `另外還有 ${stock} 顆，列在下面，可以自己選` : '到新的縣市按「探索」，那裡的小湘就會想出現';
       content.append(own);
@@ -2139,14 +2139,15 @@ async function redeemDate(code) {
   const t = await updateState(current => {
     if (current.gifts.dates.includes(code)) return false;
     current.gifts.dates.push(code);
-    current.gifts.eggs.push({ egg: 'date', from: 'date', at: new Date().toISOString() });
-    current.memories.push({ id: `d-${code}`, kind: 'date', title: p.title || '今天的約會', note: String(p.note || '').slice(0, 600), at: new Date().toISOString(), character: '014' });
-    return true;
+    const pick = EGGS.date.pool[p.character] ? p.character : null; // 湘在審核室可以指定孵出誰，不指定就隨機
+    current.gifts.eggs.push({ egg: 'date', ...(pick ? { character: pick } : {}), from: 'date', at: new Date().toISOString() });
+    current.memories.push({ id: `d-${code}`, kind: 'date', title: p.title || '今天的約會', note: String(p.note || '').slice(0, 600), at: new Date().toISOString(), character: pick || '014' });
+    return pick || true;
   });
   state = t.state; renderAll();
   if (!t.result) return '這個約會碼已經用過了。';
   say('約會快樂！我收到一顆特別的蛋喔♡', 'cheer', 4000);
-  return '約會快樂♡ 獲得一顆約會蛋，今天的約會也收進記憶檔案了。到「選擇蛋」把它拿出來吧！';
+  return `約會快樂♡ 獲得一顆約會蛋${typeof t.result === 'string' ? `（會孵出${CHARACTERS[t.result].name}）` : ''}，今天的約會也收進記憶檔案了。到「選擇蛋」把它拿出來吧！`;
 }
 async function handleDateHash(url = location.href) {
   const m = String(url).match(/#.*date=([A-Za-z0-9]{6})/);
