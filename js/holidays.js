@@ -25,4 +25,15 @@ export function activeHolidays(now = new Date()) {
   return out;
 }
 
+// 一次性的紀念活動：期間內打開遊戲領一顆紀念蛋（每個活動一次）
+export const EVENTS = [
+  { id: 'civic-2026', key: 'civic-2026', name: '115 年九合一大選紀念', no: '099', from: '2026-11-20', to: '2026-11-27', when: '115/11/20–11/27' },
+];
+export function activeEvents(now = new Date()) {
+  const d = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return EVENTS.filter((e) => d >= e.from && d <= e.to);
+}
+// 投票日提醒（湘 11/20）：當天第一次打開遊戲跳一次
+export const VOTE_DAYS = [{ key: 'vote-2026', date: '2026-11-28', no: '099' }];
+
 export const TAIWAN_NO = '061';

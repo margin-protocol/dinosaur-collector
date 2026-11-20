@@ -765,3 +765,4 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__luck { background:var(--t-raised); color:var(--t-text); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__rarity { border-color:var(--t-line); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__list li.is-new small { color:var(--t-accent); }
+.vote-day__note { font-size:12px; opacity:.75; }

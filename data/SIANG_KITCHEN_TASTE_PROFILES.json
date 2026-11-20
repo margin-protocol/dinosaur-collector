@@ -1168,6 +1168,17 @@
         "gear",
         "lightning"
       ]
+    },
+    {
+      "no": "099",
+      "name": "公民小湘・115 年九合一大選版",
+      "like": "清涼",
+      "dislike": "怪味",
+      "secret_combo": [
+        "milk",
+        "star",
+        "strawberry"
+      ]
     }
   ]
 }

@@ -99,4 +99,5 @@ export const TASTES = {
   '096': { like: '果香', dislike: '怪味', secret: ["moon", "rainbow", "strawberry"] }, // 爬爬小湘：守宮愛吃水果泥（德寶補）
   '097': { like: '綿軟', dislike: '刺激', secret: ["cloud", "milk", "strawberry"] }, // 貓爬小湘：Koda 的牛奶＋爬爬的草莓，中間夾一朵雲（德寶補）
   '098': { like: '酥脆', dislike: '綿軟', secret: ["caramel", "gear", "lightning"] }, // 派派ver：牌桌上的消夜要喀滋喀滋、還要提神（德寶補）
+  '099': { like: '清涼', dislike: '怪味', secret: ["milk", "star", "strawberry"] }, // 公民小湘：查證完來一杯草莓牛奶，再撒一點星星（德寶補）
 };

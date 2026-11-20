@@ -30,7 +30,7 @@ export const EGGS = {
       '044': 8, '048': 8, '053': 8, // N 動物
       '045': 5, '046': 5, '047': 5, '050': 5, '054': 5, // R 動物
       '049': 2, '052': 2, '055': 2, // SR 動物
-      '051': 0.6, '095': 1.8, '096': 1.8, // SSR 恐龍小湘；Koda、爬爬要一起調配貓爬小湘，湘 11/20 調到和 SR 一樣常見
+      '051': 0.6, '095': 1.8, '096': 1.8, '099': 0.6, // SSR 恐龍小湘；Koda、爬爬要一起調配貓爬小湘，湘 11/20 調到和 SR 一樣常見
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -267,6 +267,8 @@ export const CHARACTERS = {
   '097': { no:'097', name:CAT_GECKO.name, rarity:'SSR', line:`「${CAT_GECKO.signature}」`, image:CAT_GECKO.image, series:'recipe', special:true },
   // 摯友小湘（派派 ver，湘 11/20）：被派派約打麻將的小湘。普通蛋、暗號蛋，機率同其他摯友。台詞：docs/SIANG_098_FRIEND_PAIPAI.md
   '098': { no: '098', name: '摯友小湘（派派ver）', rarity: 'SR', line: "「派派！！！！怎麼又找我打麻將啦！！！……等一下，我換個衣服，十分鐘後到！！」", image: 'siang-098-friend-paipai', series: 'friends' },
+  // 115 年九合一大選紀念（皮寶 docs/SIANG_CIVIC_ELECTION_2026.md，湘 11/20 定 SSR）：11/20–11/27 打開遊戲領紀念蛋；11/28 起放進普通蛋池
+  '099': { no: '099', name: '公民小湘・115 年九合一大選版', rarity: 'SSR', line: "「不管你支持誰，都要記得了解政見、珍惜自己的選擇喔！嘿嘿，民主就是讓大家都有表達想法的機會呀♡」", image: 'siang-099-civic', series: 'holiday', special: true, poolFrom: '2026-11-28' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -299,13 +301,22 @@ export const NEW_FACE_TIMES = 2;
 export const DUP_PITY = 3;
 export const SR_PITY = 10; // 隨機蛋連續 9 顆沒有 SR 以上，第 10 顆一定是 SR 以上（湘 11/20）
 const HIGH = new Set(['SR', 'SSR', 'UR']);
+// 有 poolFrom 的小湘（例如活動紀念角色）到那天才進蛋池；日期用手機的本地日期
+const localDay = (now = new Date()) => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+export function activePool(egg, now = new Date()) {
+  if (!egg?.pool) return null;
+  const today = localDay(now);
+  const hidden = Object.keys(egg.pool).filter((no) => CHARACTERS[no]?.poolFrom && CHARACTERS[no].poolFrom > today);
+  return hidden.length ? Object.fromEntries(Object.entries(egg.pool).filter(([no]) => !hidden.includes(no))) : egg.pool;
+}
 export const isHigh = (no) => HIGH.has(CHARACTERS[no]?.rarity);
 export const isRandomEgg = (eggState) => Boolean(EGGS[eggState.id]?.pool && !(eggState.character && CHARACTERS[eggState.character]) && !EGGS[eggState.id].byCounty);
 export function rollFor(eggState, boosts = [], { dex = null, dupStreak = 0, srStreak = 0 } = {}) {
   const egg = EGGS[eggState.id];
   if (eggState.character && CHARACTERS[eggState.character]) return eggState.character;
   if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
-  const base = traitPool(egg.pool || {}, eggState, CHARACTERS);
+  const live = activePool(egg) || {};
+  const base = traitPool(live, eggState, CHARACTERS);
   if (!egg.pool || (!boosts.length && !dex && base === egg.pool)) return rollHatch(egg);
   let pool = { ...base };
   for (const b of boosts) if (pool[b.no]) pool[b.no] *= b.times;

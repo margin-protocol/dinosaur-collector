@@ -5,13 +5,13 @@ import { savePreset, ensureTeamBonds, effectText } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
 import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
-import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRandomEgg, isHigh, NEW_FACE_TIMES, DUP_PITY, SR_PITY, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
+import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRandomEgg, isHigh, activePool, NEW_FACE_TIMES, DUP_PITY, SR_PITY, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
 import { unlockedMilestones, allLetters, unreadCount, lockedMilestones, stampLetters } from './letters.js';
 import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
-import { activeHolidays, HOLIDAYS, TAIWAN_NO } from './holidays.js';
+import { activeHolidays, HOLIDAYS, TAIWAN_NO, EVENTS, activeEvents, VOTE_DAYS } from './holidays.js';
 import { INTROS, MYSTERY_INTROS } from './intros.js';
 import { HERO_SHOP } from './badge-heroes.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
@@ -664,7 +664,7 @@ function renderEggChoices() {
 const RARITY_ORDER = ['UR', 'SSR', 'SR', 'R', 'N'];
 function openEggOdds(id) {
   const egg = EGGS[id]; if (!egg?.pool) return;
-  const pool = egg.pool; const total = Object.values(pool).reduce((a, b) => a + b, 0);
+  const pool = activePool(egg); const total = Object.values(pool).reduce((a, b) => a + b, 0);
   const mine = Object.fromEntries(Object.entries(pool).map(([no, w]) => [no, state.dex[no] ? w : w * NEW_FACE_TIMES]));
   const mineTotal = Object.values(mine).reduce((a, b) => a + b, 0);
   const pct = (v) => { const x = v * 100; return x >= 10 ? `${x.toFixed(0)}%` : x >= 1 ? `${x.toFixed(1)}%` : `${x.toFixed(2)}%`; };
@@ -1800,6 +1800,7 @@ let keepsakeBusy = false;
 function pendingKeepsakes(current) {
   const got = current.gifts?.keepsakes || [];
   const list = activeHolidays().filter(h => !got.includes(h.key)).map(h => ({ key: h.key, no: h.no, message: h.id === 'birthday' ? '今天是小湘的生日！收到一顆紀念蛋，只有今天才有喔。' : `${h.name}快樂！收到一顆${h.name}的紀念蛋。` }));
+  for (const e of activeEvents()) if (!got.includes(e.key)) list.push({ key: e.key, no: e.no, message: `${e.name}！收到一顆紀念蛋，裡面是${CHARACTERS[e.no].name}。` });
   const counties = Object.values(CHARACTERS).filter(c => c.county && MAIN_ISLAND.has(c.county));
   if (!got.includes('taiwan') && !current.dex[TAIWAN_NO] && counties.every(c => current.dex[c.no])) list.push({ key: 'taiwan', no: TAIWAN_NO, message: '你走遍了整個臺灣！收到一顆紀念蛋，裡面是台灣小湘。' });
   return list;
@@ -1817,11 +1818,38 @@ function grantKeepsakes() {
   });
 }
 
+/* ---------- 投票日提醒（湘 11/20）：當天第一次打開遊戲跳一次，公民小湘提醒 ---------- */
+function voteDayDue(s, now = new Date()) {
+  const d = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  return VOTE_DAYS.find(v => v.date === d && !(s.notices || []).includes(v.key)) || null;
+}
+function showVoteDay(tries = 0) {
+  if (navigator.webdriver && !window.__testVoteDay) return; // 自動化測試不跳
+  const v = voteDayDue(state); if (!v) return;
+  if (!state.seenIntro || document.querySelector('dialog[open]')) { if (tries < 40) setTimeout(() => showVoteDay(tries + 1), 4000); return; }
+  loadWithFallback($('vote-day-img'), characterSources(CHARACTERS[v.no].image));
+  $('vote-day-text').textContent = '你去投票了嗎？還沒的話記得要去喔♡ 投票到下午 4 點，記得帶身分證、印章和投票通知單！';
+  $('vote-day-note').textContent = '有投票資格的人才需要喔。投票所在哪裡，可以到中選會網站查詢。要投給誰，由你自己決定。';
+  $('vote-day').dataset.key = v.key;
+  $('vote-day').showModal();
+}
+async function markVoteDay() {
+  const key = $('vote-day').dataset.key; if (!key) return;
+  $('vote-day').dataset.key = '';
+  const t = await updateState(current => { current.notices = [...new Set([...(current.notices || []), key])]; });
+  state = t.state;
+}
+$('vote-day-ok').addEventListener('click', () => $('vote-day').close());
+$('vote-day').addEventListener('close', () => void markVoteDay());
+setTimeout(() => showVoteDay(), 2500);
+
 /* ---------- 圖鑑：小湘介紹 ---------- */
 function howToGet(c) {
   if (c.no === '001') return '從小湘本源蛋孵出';
   if (c.county) return `到${c.county}探索，收到縣市蛋後孵出`;
   if (c.no === TAIWAN_NO) return '集滿 19 位縣市小湘時收到紀念蛋';
+  const ev = EVENTS.find(x => x.no === c.no);
+  if (ev) return `${ev.when} 打開遊戲收到紀念蛋；${CHARACTERS[c.no].poolFrom ? `${CHARACTERS[c.no].poolFrom.slice(5).replace('-', '/')} 起普通蛋也孵得到` : ''}`;
   const h = HOLIDAYS.find(x => x.no === c.no);
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
@@ -1834,7 +1862,7 @@ function howToGet(c) {
     return state.dex[c.no] ? '開發團隊限定：達成條件後收到紀念蛋' : `開發團隊限定：${p}`;
   }
   if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
-  const eggs = Object.values(EGGS).filter(e => e.pool?.[c.no]).map(e => e.name);
+  const eggs = Object.values(EGGS).filter(e => activePool(e)?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
 }
 function openDexDetail(no) {
