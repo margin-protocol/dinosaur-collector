@@ -6,7 +6,7 @@ const key='siang-collector:v1';const save=()=>p.evaluate(k=>JSON.parse(localStor
 await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=3;s.dex={'001':{at:'x'},'002':{at:'x'}};s.fossils=58;s.energy=0;localStorage.setItem(k,JSON.stringify(s));},key);await p.reload();await p.waitForTimeout(400);
 await p.click('#chip-fossil');await p.locator('#fossil-dialog[open]').waitFor();
-await p.click('[data-offer="energy"]');await p.waitForTimeout(300);let s=await save();assert.equal(s.fossils,55);assert.equal(s.energy,30);
+await p.click('[data-offer="energy"]');await p.waitForTimeout(300);let s=await save();assert.equal(s.fossils,55);assert.equal(s.energy,10);
 await p.click('[data-offer="wish"]');await p.waitForTimeout(300);s=await save();assert.equal(s.fossils,45);assert.equal(s.wishEgg.stock,1);
 await p.click('[data-offer="cipher"]');await p.waitForTimeout(300);s=await save();assert.equal(s.fossils,30);assert.equal(s.gifts.eggs.filter(e=>e.from!=='civic-2026').length,1);
 await p.click('[data-offer="pick"]');await p.locator('#fossil-pick').waitFor();

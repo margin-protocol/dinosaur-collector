@@ -1,6 +1,7 @@
 // 化石交換所：抽到重複的小湘會得到化石碎片，可以在這裡換東西
+export const FOSSIL_ENERGY = 10; // 3 化石換多少能量
 export const FOSSIL_OFFERS = [
-  { id: 'energy', name: '30 能量', cost: 3, desc: '馬上可以拿去孵蛋' },
+  { id: 'energy', name: '10 能量', cost: 3, desc: '馬上可以拿去孵蛋（湘 11/20：從 30 調成 10，化石留著換蛋比較划算）' },
   { id: 'wish', name: '一顆願望蛋', cost: 10, desc: '比較容易遇到稀有的小湘' },
   { id: 'cipher', name: '一顆暗號蛋', cost: 15, desc: '隨機小湘，摯友和動物也在裡面' },
   { id: 'pick', name: '指定一位小湘', cost: 30, desc: '從還沒遇見、蛋裡可以孵出的小湘中選一位；越稀有越貴', from: true },
@@ -33,7 +34,7 @@ export function exchange(state, offerId, { eggs, chars, no } = {}) {
   const cost = offerId === 'pick' ? pickCost(chars, no) : offer.cost;
   if ((state.fossils || 0) < cost) return null;
   state.fossils -= cost;
-  if (offerId === 'energy') state.energy += 30;
+  if (offerId === 'energy') state.energy += FOSSIL_ENERGY;
   else if (offerId === 'wish') state.wishEgg.stock += 1;
   else if (offerId === 'slot') state.cradle = { slots: (state.cradle?.slots || 1) + 1 };
   else if (offerId === 'cipher') state.gifts.eggs.push({ egg: 'cipher', from: 'fossil', at: new Date().toISOString() });

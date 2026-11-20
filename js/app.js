@@ -17,7 +17,7 @@ import { HERO_SHOP } from './badge-heroes.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
-import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS } from './fossils.js';
+import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS, FOSSIL_ENERGY } from './fossils.js';
 import { FLAVORS, makeOffer, eggLabel, naughtyRequest, NAUGHTY_BONUS } from './egg-traits.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
 import { RECIPES } from './recipes.js';
@@ -2374,7 +2374,7 @@ async function doExchange(offerId, no) {
   state = t.state; renderAll();
   if (!t.result) { $('fossil-status').textContent = '化石不夠喔。'; return; }
   restart($('chip-fossil'), 'is-bump');
-  $('fossil-status').textContent = offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！到培育室就能看到副架：換蛋時，正在孵的那顆會放上去繼續保溫。` : offerId === 'energy' ? '換到 30 能量了！' : offerId === 'pick' ? `用 ${t.result.cost} 化石換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
+  $('fossil-status').textContent = offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！到培育室就能看到副架：換蛋時，正在孵的那顆會放上去繼續保溫。` : offerId === 'energy' ? `換到 ${FOSSIL_ENERGY} 能量了！` : offerId === 'pick' ? `用 ${t.result.cost} 化石換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
   openFossils();
 }
 $('chip-fossil').addEventListener('click', openFossils);
