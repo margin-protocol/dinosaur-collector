@@ -776,7 +776,7 @@ function announceLevel(result) {
 
 const DEX_MODE_KEY = 'siang-collector:dex-mode:v1';
 function dexMode() {
-  try { return localStorage.getItem(DEX_MODE_KEY) === 'series' ? 'series' : 'all'; } catch { return 'all'; }
+  try { const m = localStorage.getItem(DEX_MODE_KEY); return ['series', 'rarity'].includes(m) ? m : 'all'; } catch { return 'all'; }
 }
 document.querySelectorAll('[data-dex-mode]').forEach((button) => button.addEventListener('click', () => {
   try { localStorage.setItem(DEX_MODE_KEY, button.dataset.dexMode); } catch {}
@@ -831,8 +831,13 @@ function renderDex() {
   const mode = dexMode();
   document.querySelectorAll('[data-dex-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.dexMode === mode)));
   if (mode === 'all') { $('dex-grid').replaceChildren(dexList(all)); return; }
-  $('dex-grid').replaceChildren(...Object.entries(SERIES).map(([id, series]) => {
-    const members = all.filter((c) => c.series === id);
+  const groups = mode === 'rarity'
+    ? RARITY_ORDER.map((r) => [r, { name: r }])
+    : Object.entries(SERIES);
+  const key = mode === 'rarity' ? 'rarity' : 'series';
+  $('dex-grid').replaceChildren(...groups.map(([id, series]) => {
+    const members = all.filter((c) => c[key] === id);
+    if (mode === 'rarity') members.sort((a, b) => a.no.localeCompare(b.no));
     if (!members.length) return '';
     const section = document.createElement('section');
     section.className = 'dex__section';
