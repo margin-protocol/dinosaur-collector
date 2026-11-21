@@ -1,0 +1,196 @@
+{
+  "chapter": 3,
+  "title": "今天，可以不用笑",
+  "status": "art-delivered",
+  "sourceCommit": "d3e902f",
+  "assets": [
+    {
+      "id": "control-room",
+      "title": "笑臉停下來的控制室",
+      "kind": "background",
+      "scenes": [
+        1,
+        2
+      ],
+      "label": "01–02 · 共用場景",
+      "alt": "玩具星球控制室安靜下來，圓窗外是紫色星空，桌上有工作紀錄與音樂盒，大螢幕留白。",
+      "description": "前兩幕共用空場景。分數下降、工作紀錄與台詞可在繪本中另外排字。",
+      "references": [
+        "assets/scene/ch3-toy-planet-battle.webp"
+      ],
+      "original": "art/chapter-three-storybook/originals/control-room.png",
+      "web": "assets/storybooks/chapter-three/control-room.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 194462,
+      "transparent": false
+    },
+    {
+      "id": "director-confused",
+      "title": "總監第一次不知道答案",
+      "kind": "character",
+      "scenes": [
+        1,
+        2
+      ],
+      "label": "01–02 · 透明角色",
+      "alt": "歡笑總監坐在地上攤開小手，酒紅臉部螢幕變成兩個疑惑的小圓點，心形燈柔柔亮著。",
+      "description": "獨立透明角色。可與控制室背景疊合，演出低頭、靠近與輕微搖晃。",
+      "references": [
+        "assets/enemies/chapter-03/ch3-boss-director-giggle.webp"
+      ],
+      "original": "art/chapter-three-storybook/originals/director-confused.png",
+      "web": "assets/storybooks/chapter-three/director-confused.webp",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 241288,
+      "transparent": true
+    },
+    {
+      "id": "old-song",
+      "title": "一首唱錯也沒關係的歌",
+      "kind": "illustration",
+      "scenes": [
+        3
+      ],
+      "label": "03 · 金色鑰匙與舊旋律",
+      "alt": "小湘把金色鑰匙碰上音樂盒，八音盒衛兵跟著樂譜輕輕哼唱，坐在旁邊的總監抬頭想起舊時光。",
+      "description": "「然後……我們就會笑著，再唱一次。」",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-03/ch3-03-melody-guard.webp",
+        "assets/enemies/chapter-03/ch3-boss-director-giggle.webp"
+      ],
+      "original": "art/chapter-three-storybook/originals/old-song.png",
+      "web": "assets/storybooks/chapter-three/old-song.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 356858,
+      "transparent": false
+    },
+    {
+      "id": "listening",
+      "title": "這次，先聽你們說",
+      "kind": "illustration",
+      "scenes": [
+        4
+      ],
+      "label": "04 · 休息、抱抱、自己的歌",
+      "alt": "發條兔疲倦地靠在沙發上，衛兵讀著自己的樂譜，總監抱住還在流淚的軟糖熊，小湘陪在旁邊。",
+      "description": "「那……現在可以抱一下嗎？」「可以。」",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-03/ch3-boss-director-giggle.webp",
+        "assets/enemies/chapter-03/ch3-01-tick-tock-bunny.webp",
+        "assets/enemies/chapter-03/ch3-02-glitch-gummy.webp",
+        "assets/enemies/chapter-03/ch3-03-melody-guard.webp"
+      ],
+      "original": "art/chapter-three-storybook/originals/listening.png",
+      "web": "assets/storybooks/chapter-three/listening.webp",
+      "width": 1072,
+      "height": 1467,
+      "bytes": 278996,
+      "transparent": false
+    },
+    {
+      "id": "pudding",
+      "title": "那你自己快樂嗎？",
+      "kind": "illustration",
+      "scenes": [
+        5
+      ],
+      "label": "05 · 一顆遞出去的布丁",
+      "alt": "小湘跪坐在總監身旁，把一顆布丁遞向牠；總監的小手停在膝上，螢幕仍是有點困惑的小圓眼。",
+      "description": "「不知道也沒關係呀。先一起吃布丁嘛！」",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-03/ch3-boss-director-giggle.webp"
+      ],
+      "original": "art/chapter-three-storybook/originals/pudding.png",
+      "web": "assets/storybooks/chapter-three/pudding.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 327818,
+      "transparent": false
+    },
+    {
+      "id": "no-grades-party",
+      "title": "不用交成績的派對",
+      "kind": "illustration",
+      "scenes": [
+        6
+      ],
+      "label": "06 · 每種感受都能留下",
+      "alt": "小湘與玩具們坐在布丁旁；兔兔休息、軟糖熊流淚、衛兵讀譜，總監捧著布丁，還在慢慢理解自己的感覺。",
+      "description": "原來不必永遠開心，也能好好地被愛著。",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-03/ch3-boss-director-giggle.webp",
+        "assets/enemies/chapter-03/ch3-01-tick-tock-bunny.webp",
+        "assets/enemies/chapter-03/ch3-02-glitch-gummy.webp",
+        "assets/enemies/chapter-03/ch3-03-melody-guard.webp"
+      ],
+      "original": "art/chapter-three-storybook/originals/no-grades-party.png",
+      "web": "assets/storybooks/chapter-three/no-grades-party.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 374510,
+      "transparent": false
+    },
+    {
+      "id": "happy-tears",
+      "title": "今天學會哭哭了",
+      "kind": "illustration",
+      "scenes": [
+        7
+      ],
+      "label": "彩蛋上半 · 一張兔兔的畫",
+      "alt": "兔兔送來朋友一起吃布丁的蠟筆畫，小湘陪在旁邊，總監的螢幕亮起帶著眼淚的幸福表情。",
+      "description": "「我覺得好幸福，所以就哭了耶。……這樣也算快樂嗎？」",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-03/ch3-boss-director-giggle.webp",
+        "assets/enemies/chapter-03/ch3-01-tick-tock-bunny.webp"
+      ],
+      "original": "art/chapter-three-storybook/originals/happy-tears.png",
+      "web": "assets/storybooks/chapter-three/happy-tears.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 400648,
+      "transparent": false
+    },
+    {
+      "id": "bonus-laugh",
+      "title": "這個，我沒有按設定耶",
+      "kind": "illustration",
+      "scenes": [
+        7
+      ],
+      "label": "彩蛋下半 · 手帕擦不掉的表情",
+      "alt": "小恐龍拿乾手帕擦總監的螢幕，總監被逗得笑出來；小湘、兔兔、軟糖熊和衛兵圍在旁邊一起笑。",
+      "description": "從哭哭到笑出來，這次的表情是自己亮起來的。",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-03/ch3-boss-director-giggle.webp",
+        "assets/enemies/chapter-03/ch3-01-tick-tock-bunny.webp",
+        "assets/enemies/chapter-03/ch3-02-glitch-gummy.webp",
+        "assets/enemies/chapter-03/ch3-03-melody-guard.webp",
+        "assets/mascot/dinosaur-idle.webp"
+      ],
+      "original": "art/chapter-three-storybook/originals/bonus-laugh.png",
+      "web": "assets/storybooks/chapter-three/bonus-laugh.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 402766,
+      "transparent": false
+    }
+  ],
+  "notes": [
+    "六幕結尾與兩段片尾彩蛋，共八張美術；本次交付素材與驗收頁，播放器由遊戲功能另行接入。",
+    "PNG 合成原圖與 WebP（quality 84）保留原生尺寸，沒有插值放大或強制裁切成同一比例。",
+    "只有 director-confused 是獨立透明角色；完整情境插畫不是可獨立移動人物／手部的 PSD。",
+    "控制室大螢幕與工作紀錄保留排字空間，分數與中文對話交給 DOM/SVG／字幕呈現。",
+    "螢幕哭哭與笑臉是表情圖案，沒有畫入文字版表情符號；字幕可另用已定稿台詞。",
+    "listening 已移除總監額外的摸頭手，保留兩隻擁抱的手臂。"
+  ]
+}
