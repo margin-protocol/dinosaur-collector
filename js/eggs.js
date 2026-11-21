@@ -33,6 +33,7 @@ export const EGGS = {
       '051': 0.6, '095': 1.8, '096': 1.8, '099': 0.6, // SSR 恐龍小湘；Koda、爬爬要一起調配貓爬小湘，湘 11/20 調到和 SR 一樣常見
       '108': 0.6, // SSR 摯友小湘・柴郡貓小湘（湘 11/21 歸進摯友），SSR 機率同恐龍小湘
       '109': 0.3, // UR 白虎小湘（湘 11/21 先放摯友），UR 權重同 OWNED_WEIGHT
+      '110': 8, '111': 5, '112': 2, '113': 0.6, '114': 0.3, // 月見町花街五階（湘 11/21）：N／R／SR 比照動物小湘，SSR 同恐龍小湘、UR 同白虎小湘
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -90,6 +91,7 @@ export const EGGS = {
       '051': 1.5, '095': 1.5, '096': 1.5, // SSR 恐龍小湘
       '108': 1.5, // SSR 摯友小湘・柴郡貓小湘
       '109': 0.75, // UR 白虎小湘（SSR 的一半）
+      '110': 6, '111': 8, '112': 5, '113': 1.5, '114': 0.75, // 月見町花街五階
     },
     // 正式三層素材：assets/eggs/cipher/{shell,glow,cracks}.webp
   },
@@ -297,6 +299,12 @@ export const CHARACTERS = {
   '108': { no: '108', name: '柴郡貓小湘', rarity: 'SSR', line: "「你迷路了嗎？真有趣。可是……你怎麼知道，自己原本走的那條路就是對的呢？♡」", image: 'siang-108-cheshire', series: 'friends', cheshire: true },
   // 白虎小湘（湘 11/21 交付文案＋立繪；原稿系列「四象神獸」，湘說先放摯友）：UR，普通蛋＋暗號蛋（＋星光蛋）。不加戰鬥數值。台詞：docs/SIANG_109_WHITE_TIGER.md
   '109': { no: '109', name: '白虎小湘', rarity: 'UR', line: "「本座掌管金戈與秋收，庇佑勝利與豐饒！……什麼？你問我會不會替你加油？哼！本座才不做那種事！……加、加油啦！！」", image: 'siang-109-white-tiger', series: 'friends' },
+  // 月見町花街五階小湘（湘 11/21 交付文案＋立繪）：五位各自獨立收藏，普通蛋＋暗號蛋（SR 以上也進星光蛋）。台詞：docs/SIANG_110-114_TSUKIMI.md
+  '110': { no: '110', name: '禿小湘', rarity: 'N', line: "「欸欸欸！！等一下！！花魁大人的東西到底要送去哪裡啦啊啊啊！！」", image: 'siang-110-kamuro', series: 'tsukimi' },
+  '111': { no: '111', name: '番頭新造小湘', rarity: 'R', line: "「等一下！茶水還沒送、帳目還沒核、花魁大人的衣服還沒整理……誰把我的工作表拿走了啦？！」", image: 'siang-111-banto', series: 'tsukimi' },
+  '112': { no: '112', name: '太鼓新造小湘', rarity: 'SR', line: "「咚咚咚！！今天的宴席就交給我啦！！……欸？！剛剛是不是敲錯拍子了？！」", image: 'siang-112-taiko', series: 'tsukimi' },
+  '113': { no: '113', name: '振袖新造小湘', rarity: 'SSR', line: "「我會成為最出色的花魁候補。……欸？你說我已經很厲害了？……謝、謝謝你。」", image: 'siang-113-furisode', series: 'tsukimi' },
+  '114': { no: '114', name: '花魁小湘', rarity: 'UR', line: "「妾身不缺仰慕之人。只是……願意真正看見妾身的人，倒是不多呢。」", image: 'siang-114-oiran', series: 'tsukimi' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -325,6 +333,7 @@ export const SERIES = {
   devteam: { name: '開發團隊', short: '開發' },
   unlucky: { name: '非酋三部曲', short: '非酋' },
   lucky: { name: '歐皇三部曲', short: '歐皇' },
+  tsukimi: { name: '月見町', short: '月見' },
 };
 
 // 縣市 → 縣市小湘編號

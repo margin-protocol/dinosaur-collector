@@ -11,6 +11,7 @@ const seriesDone = (s, chars) => {
   return Object.values(by).filter((list) => list.every((no) => s.dex?.[no])).length;
 };
 const t = (s, k) => s.bonus?.total?.[k] || 0;
+export const TSUKIMI = ['110', '111', '112', '113', '114'];
 
 export const ACHIEVEMENT_GROUPS = ['孵化', '收藏', '願望', '旅行', '陪伴', '廚房', '隱藏'];
 export const ACHIEVEMENTS = [
@@ -24,6 +25,9 @@ export const ACHIEVEMENTS = [
   { id: 'series-1', group: '收藏', title: '整套收藏', hint: '集滿任何一個系列', goal: 1, value: seriesDone, reward: 50 },
   { id: 'ssr', group: '收藏', title: '閃閃發光', hint: '遇見一位 SSR 小湘', goal: 1, value: (s, c) => (rarityOwned(s, c, 'SSR') ? 1 : 0), reward: 50 },
   { id: 'ur', group: '收藏', title: '奇蹟', hint: '遇見一位 UR 小湘', goal: 1, value: (s, c) => (rarityOwned(s, c, 'UR') ? 1 : 0), reward: 100 },
+  // 月見町花街五階集齊（湘 11/21）：限定稱號＋共同事件《月見町的最後一盞燈》，領取時播放、之後點成就可重看
+  { id: 'tsukimi-5', group: '收藏', title: '月見町的五朵花', hint: '集齊月見町系列的五位小湘', goal: 5, value: (s) => TSUKIMI.filter((no) => s.dex?.[no]).length, reward: 100,
+    storyTitle: '月見町的最後一盞燈', storyArt: 'siang-114-oiran', story: "禿小湘：「花魁大人！！！！點心來了！！」\n番頭新造小湘：「等一下！妳先確認數量！！」\n太鼓新造小湘：「咚咚咚！！開宴啦！！」\n振袖新造小湘：「請大家先站好位置……」\n花魁小湘：「……呵呵。今日也真是熱鬧呢。」\n月見町一年一度的夜宴即將開始。禿小湘負責跑腿，番頭新造小湘負責安排，太鼓新造小湘負責演奏，振袖新造小湘負責舞蹈，花魁小湘則主持最後一場表演。\n所有人都非常忙碌。直到宴席結束，月見町的燈籠慢慢熄滅，五隻小湘終於坐在一起。\n禿小湘累得趴在桌上。番頭新造小湘闔上工作冊。太鼓新造小湘抱著鼓棒打哈欠。振袖新造小湘慢慢鬆開髮飾。花魁小湘則替大家倒了一杯茶。\n「今日辛苦了。」\n五隻小湘安靜了一會兒，然後突然一起笑了。\n因為她們發現，原來月見町最美好的時刻，不一定是燈火最明亮、宴席最熱鬧的時候。也可能是所有人終於卸下工作，坐在一起，好好休息的那一刻。" },
   { id: 'wish-10', group: '願望', title: '願望實現者', hint: '完成 10 個每日願望', goal: 10, value: (s) => s.player?.stats?.wishes || 0, reward: 30 },
   { id: 'wish-50', group: '願望', title: '願望守護者', hint: '完成 50 個每日願望', goal: 50, value: (s) => s.player?.stats?.wishes || 0, reward: 60 },
   { id: 'wish-days-7', group: '願望', title: '七天的約定', hint: '在 7 個不同的日子完成全部三個願望（不必連續）', goal: 7, value: (s) => s.wishEgg?.days?.length || 0, reward: 60 },

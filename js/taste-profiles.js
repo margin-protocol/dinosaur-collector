@@ -109,4 +109,9 @@ export const TASTES = {
   '107': { like: '濃甜', dislike: '怪味', secret: ["caramel", "moon", "pudding"] }, // 府城燈籠小湘：府城燈火豆花＝布丁粉＋焦糖糖水＋月光露（冰）
   '108': { like: '果香', dislike: '怪味', secret: ["gear", "moon", "strawberry"] }, // 柴郡貓小湘：彎月莓果塔＝齒輪餅乾（酥脆塔皮）＋月光露（彎月）＋草莓（酸甜莓果餡）
   '109': { like: '酥脆', dislike: '怪味', secret: ["caramel", "gear", "mushroom"] }, // 白虎小湘：金穗豐收飯＝焦糖（金黃）＋齒輪餅乾（烘烤穀物）＋魔法蘑菇（濃郁香氣）
+  '110': { like: '濃甜', dislike: '刺激', secret: ["caramel", "cloud", "moon"] }, // 禿小湘：月見糰子＝焦糖（蜜）＋雲朵棉花糖（白白軟軟的糰子）＋月光露（賞月）
+  '111': { like: '菇香', dislike: '怪味', secret: ["gear", "milk", "mushroom"] }, // 番頭新造小湘：暖心味噌飯糰＝齒輪餅乾（烤過的米香）＋牛奶（溫暖）＋魔法蘑菇（味噌般的鹹香）
+  '112': { like: '濃甜', dislike: '清涼', secret: ["caramel", "pudding", "rainbow"] }, // 太鼓新造小湘：祭典蜜糖糰子＝焦糖（蜜糖）＋布丁粉（Q 彈糰子）＋彩虹果凍（祭典的彩色）
+  '113': { like: '清涼', dislike: '怪味', secret: ["cloud", "moon", "strawberry"] }, // 振袖新造小湘：櫻花茶香和菓子＝雲朵棉花糖（柔軟外皮）＋月光露（清爽茶香）＋草莓（櫻花粉色）
+  '114': { like: '滑順', dislike: '刺激', secret: ["moon", "pudding", "strawberry"] }, // 花魁小湘：月下櫻花御膳＝月光露（月下）＋布丁粉（層次滑順）＋草莓（櫻花）
 };

@@ -1963,12 +1963,13 @@ $('achievement-list').addEventListener('click', async event => {
   if (!tile) return;
   const a = achievementStatus(state, CHARACTERS).find(x => x.id === tile.dataset.ach);
   if (!a) return;
-  if (!(a.done && !a.claimed)) { showAchievementInfo(a); return; }
+  if (!(a.done && !a.claimed)) { showAchievementInfo(a); if (a.claimed && a.story) showAchievementStory(a); return; }
   tile.disabled = true;
   const t = await updateState(current => claimAchievement(current, a.id, CHARACTERS));
   state = t.state; renderAll();
   if (t.result) { restart($('chip-energy'), 'is-bump'); toast(`🏆 ${a.title} · +${t.result} 能量`); }
   openAchievements();
+  if (t.result && a.story) showAchievementStory(a);
 });
 $('open-achievements').addEventListener('click', () => { $('function-center').close(); openAchievements(); });
 $('close-achievements').addEventListener('click', () => $('achievement-dialog').close());
@@ -3482,6 +3483,7 @@ function showNextBondUp(tries = 0) {
   const { no, level, reward, unlock, text } = bondQueue.shift();
   const c = CHARACTERS[no];
   loadWithFallback($('bond-up-img'), characterSources(c.image)); $('bond-up-img').alt = c.name;
+  $('bond-up').querySelector('.county-call__eyebrow').textContent = 'BOND LEVEL UP'; $('bond-up-ok').textContent = '好開心';
   // 「好感度升到 Lv.3！」黏在一起，名字太長時從名字後面換行，不會只剩等級孤單一行（11/21）
   const lv = document.createElement('span'); lv.className = 'bond-up__lv'; lv.textContent = `好感度升到 Lv.${level}！`;
   $('bond-up-title').replaceChildren(`${c.name}的`, lv);
@@ -3497,6 +3499,19 @@ function showNextBondUp(tries = 0) {
   renderResources();
 }
 $('bond-up-ok').addEventListener('click', () => $('bond-up').close());
+// 成就附帶的故事（例如集齊月見町五位的《月見町的最後一盞燈》）：借用好感升級的故事卡片
+function showAchievementStory(a) {
+  if (!a?.story || $('bond-up').open) return;
+  loadWithFallback($('bond-up-img'), characterSources(a.storyArt)); $('bond-up-img').alt = '';
+  $('bond-up').querySelector('.county-call__eyebrow').textContent = 'SPECIAL EVENT';
+  $('bond-up-title').textContent = a.storyTitle;
+  $('bond-up-unlock').textContent = `稱號「${a.title}」`;
+  setParas($('bond-up-text'), a.story, 50, true);
+  $('bond-up-reward').textContent = '';
+  $('bond-up-ok').textContent = '今日辛苦了';
+  $('bond-up').classList.add('is-story', 'is-shiny');
+  $('bond-up').showModal(); $('bond-up').scrollTop = 0; buzz([20, 40, 20]);
+}
 $('bond-up').addEventListener('close', () => { syncRoomActivity(); renderAll(); setTimeout(showNextBondUp, 300); });
 const bondCapTold = new Set();
 function bondCapNotice(no) {

@@ -1278,6 +1278,61 @@
         "gear",
         "mushroom"
       ]
+    },
+    {
+      "no": "110",
+      "name": "禿小湘",
+      "like": "濃甜",
+      "dislike": "刺激",
+      "secret_combo": [
+        "caramel",
+        "cloud",
+        "moon"
+      ]
+    },
+    {
+      "no": "111",
+      "name": "番頭新造小湘",
+      "like": "菇香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "milk",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "112",
+      "name": "太鼓新造小湘",
+      "like": "濃甜",
+      "dislike": "清涼",
+      "secret_combo": [
+        "caramel",
+        "pudding",
+        "rainbow"
+      ]
+    },
+    {
+      "no": "113",
+      "name": "振袖新造小湘",
+      "like": "清涼",
+      "dislike": "怪味",
+      "secret_combo": [
+        "cloud",
+        "moon",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "114",
+      "name": "花魁小湘",
+      "like": "滑順",
+      "dislike": "刺激",
+      "secret_combo": [
+        "moon",
+        "pudding",
+        "strawberry"
+      ]
     }
   ]
 }
