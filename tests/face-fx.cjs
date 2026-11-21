@@ -36,16 +36,21 @@ const r=await p.evaluate(async fx=>{const m=await import('./js/face-fx.js');
   let changedAbove=0;for(let y=Math.max(0,Math.round(pose.crown.y-pose.faceW*0.5));y<pose.crown.y+pose.faceW*0.05;y+=2)for(let x=Math.round(pose.crown.x-pose.faceW*0.3);x<pose.crown.x+pose.faceW*0.3;x+=2){const i=(y*W+x)*4;if(Math.abs(crown.d[i]-base[i])+Math.abs(crown.d[i+2]-base[i+2])>40)changedAbove++;}
   let changedChin=0;for(let y=Math.round(pts[152].y)+10;y<Math.min(H,pts[152].y+60);y+=2){const i=(y*W+Math.round(pts[152].x))*4;if(crown.d[i]!==base[i])changedChin++;}
   const sm=draw({smooth:100}).d;const vari=(d)=>{const c=pts[50];let s=0,s2=0,n=0;for(let y=c.y-12;y<c.y+12;y++)for(let x=c.x-12;x<c.x+12;x++){const i=(Math.round(y)*W+Math.round(x))*4;s+=d[i];s2+=d[i]*d[i];n++;}return s2/n-(s/n)**2;};
+  // 沒有分界線：從臉中間往耳朵方向，磨皮的改變量要慢慢變小，不能突然斷掉（11/21 iPhone 實測有一圈硬邊）
+  const prof=[];{const y=Math.round(pts[50].y),xs=Math.round((pts[1].x+pts[50].x)/2),xe=Math.round(pts[234].x-pose.faceW*0.08);
+    for(let x=xs;x>xe;x-=3){let s=0,n=0;for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const i=((y+dy)*W+x+dx)*4;s+=Math.abs(sm[i]-base[i]);n++;}prof.push(s/n);}}
+  const peak=Math.max(...prof);let jump=0;for(let k=1;k<prof.length;k++)jump=Math.max(jump,Math.abs(prof[k]-prof[k-1]));
   // 歪頭：把點位轉 20 度，算出來的角度也要是 20 度
   const rot=20*Math.PI/180,cx=0.5,cy=0.5;const turned=lm.map(q=>({x:cx+(q.x-cx)*Math.cos(rot)-(q.y-cy)*Math.sin(rot)*H/W,y:cy+((q.x-cx)*Math.sin(rot)*W/H+(q.y-cy)*Math.cos(rot))}));
   const angle=m.headPose(m.project(turned,map)).angle*180/Math.PI;
-  return {none:draw({}).n,lipN:lips.n,lipBase:at(base,lipPt),lipNow:at(lips.d,lipPt),cheekSame:at(lips.d,cheek).join()===at(base,cheek).join(),changedAbove,changedChin,varBase:vari(base),varSm:vari(sm),angle,base0:pose.angle*180/Math.PI,
+  return {peak,jump,tail:prof[prof.length-1],none:draw({}).n,lipN:lips.n,lipBase:at(base,lipPt),lipNow:at(lips.d,lipPt),cheekSame:at(lips.d,cheek).join()===at(base,cheek).join(),changedAbove,changedChin,varBase:vari(base),varSm:vari(sm),angle,base0:pose.angle*180/Math.PI,
     norm:m.normalizeFx({smooth:'250',lip:'xx',crown:'dino',lipAmt:-3}),active:[m.fxActive(m.normalizeFx({})),m.fxActive(m.normalizeFx({crown:'egg'}))]};
 },fixture);
 assert.equal(r.none,0,'沒選特效不畫');assert.equal(r.lipN,1);
 assert(r.lipNow[1]<r.lipBase[1]-25&&r.lipNow[0]-r.lipNow[1]>r.lipBase[0]-r.lipBase[1]+20,'嘴唇變紅 '+JSON.stringify([r.lipBase,r.lipNow]));
 assert(r.cheekSame,'口紅不會塗到臉頰');
 assert(r.changedAbove>150,'頭頂上方有頭飾 '+r.changedAbove);assert.equal(r.changedChin,0,'下巴底下沒有頭飾');
+assert(r.jump<r.peak*0.25&&r.tail<r.peak*0.15,'磨皮邊緣漸層 '+JSON.stringify([r.peak,r.jump,r.tail]));
 assert(r.varSm<r.varBase*0.6,'磨皮讓雜點變少 '+JSON.stringify([r.varBase,r.varSm]));
 assert(Math.abs(r.angle-r.base0-20)<2,'歪頭角度 '+JSON.stringify([r.base0,r.angle]));
 assert.deepEqual(r.norm,{smooth:100,lip:'none',lipAmt:0,crown:'dino'});assert.deepEqual(r.active,[false,true]);

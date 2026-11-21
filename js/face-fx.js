@@ -15,11 +15,11 @@ export const LIP_COLORS = [
 // w = 寬度（臉寬的幾倍），ax/ay = 圖上對準定位點的位置（0–1），rot = 額外轉的角度
 export const HEADPIECES = [
   { id: 'none', name: '不戴' },
-  { id: 'sakura', name: '櫻花髮夾', src: 'assets/photo-fx/sakura-clip.svg', dx: 0.5, dy: 0.06, w: 0.56, ax: 0.5, ay: 0.5, rot: 24 },
-  { id: 'dino', name: '恐龍角', src: 'assets/photo-fx/dino-horns.svg', dx: 0, dy: 0.0, w: 1.26, ax: 0.5, ay: 0.86, rot: 0 },
-  { id: 'lantern', name: '府城燈籠', src: 'assets/photo-fx/lantern.svg', dx: -0.58, dy: 0.04, w: 0.44, ax: 0.5, ay: 0.08, rot: -14 },
-  { id: 'egg', name: '蛋殼帽', src: 'assets/photo-fx/egg-shell.svg', dx: 0.04, dy: 0.18, w: 1.08, ax: 0.5, ay: 0.82, rot: -8 },
-  { id: 'tiara', name: '星光皇冠', src: 'assets/photo-fx/star-tiara.svg', dx: 0, dy: 0.06, w: 0.84, ax: 0.5, ay: 0.9, rot: 0 },
+  { id: 'sakura', name: '櫻花髮夾', src: 'assets/photo-fx/sakura-clip.svg', dx: 0.5, dy: 0.15, w: 0.56, ax: 0.5, ay: 0.5, rot: 24 },
+  { id: 'dino', name: '恐龍角', src: 'assets/photo-fx/dino-horns.svg', dx: 0, dy: 0.08, w: 1.2, ax: 0.5, ay: 0.86, rot: 0 },
+  { id: 'lantern', name: '府城燈籠', src: 'assets/photo-fx/lantern.svg', dx: -0.58, dy: 0.13, w: 0.44, ax: 0.5, ay: 0.08, rot: -14 },
+  { id: 'egg', name: '蛋殼帽', src: 'assets/photo-fx/egg-shell.svg', dx: 0.03, dy: 0.07, w: 0.95, ax: 0.5, ay: 0.82, rot: -8 },
+  { id: 'tiara', name: '星光皇冠', src: 'assets/photo-fx/star-tiara.svg', dx: 0, dy: 0.12, w: 0.8, ax: 0.5, ay: 0.9, rot: 0 },
 ];
 export const lipById = (id) => LIP_COLORS.find((c) => c.id === id) || LIP_COLORS[0];
 export const headpieceById = (id) => HEADPIECES.find((h) => h.id === id) || HEADPIECES[0];
@@ -40,7 +40,6 @@ const BROW_R = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
 const BROW_L = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
 const LIP_OUT = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
 const LIP_IN = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
-const NOSE_L = [98, 97, 2, 326, 327, 294, 278, 344, 440, 275, 4, 45, 220, 115, 48, 64];
 
 // 來源（影片或照片）裁成 W×H 的對應：和 photo-booth 的 capture 一樣是置中裁切
 export function coverMap(vw, vh, W, H) {
@@ -62,7 +61,7 @@ export function headPose(pts) {
   const right = { x: rx / faceW, y: ry / faceW }; const up = { x: ux / faceH, y: uy / faceH };
   const mid = { x: (L.x + R.x) / 2, y: (L.y + R.y) / 2 };
   const yaw = Math.max(-1, Math.min(1, ((nose.x - mid.x) * right.x + (nose.y - mid.y) * right.y) / (faceW / 2)));
-  const crown = { x: top.x + up.x * faceH * 0.16, y: top.y + up.y * faceH * 0.16 };
+  const crown = { x: top.x + up.x * faceH * 0.24, y: top.y + up.y * faceH * 0.24 };
   return { angle: Math.atan2(ry, rx), faceW, faceH, right, up, crown, yaw };
 }
 
@@ -97,8 +96,8 @@ function smoothSkin(g, source, pts, m, amount, pose) {
   const x1 = Math.min(m.W, box.x + box.w), y1 = Math.min(m.H, box.y + box.h);
   if (x1 - x0 < 8 || y1 - y0 < 8) return;
   const bw = x1 - x0, bh = y1 - y0;
-  // 模糊半徑跟臉的大小走：臉越大、縮得越小
-  const cell = Math.max(2, pose.faceW / (34 - amount * 0.12));
+  // 模糊半徑跟臉的大小走（臉越大、縮得越小）；調輕一點，100 也只是柔焦，不會糊成一片（11/21 湘 iPhone 實測後）
+  const cell = Math.max(2, pose.faceW / (60 - amount * 0.24));
   const sw = bw / cell, sh = bh / cell;
   // 先半半縮小，避免一次縮太多出現鋸齒
   const srcX = m.sx + x0 * m.sw / m.W, srcY = m.sy + y0 * m.sh / m.H, srcW = bw * m.sw / m.W, srcH = bh * m.sh / m.H;
@@ -111,21 +110,24 @@ function smoothSkin(g, source, pts, m, amount, pose) {
   }
   const small = scratch('small', sw, sh), sg = small.getContext('2d'); sg.imageSmoothingEnabled = true; sg.imageSmoothingQuality = 'high';
   if (cur) sg.drawImage(cur, 0, 0, cur.width, cur.height, 0, 0, small.width, small.height); else sg.drawImage(source, srcX, srcY, srcW, srcH, 0, 0, small.width, small.height);
-  // 遮罩：臉（稍微內縮）減掉眼睛、眉毛、嘴巴、鼻孔，用小尺寸畫再放大，邊緣自然變柔
-  const mk = Math.min(1, 96 / Math.max(bw, bh));
+  // 遮罩要漸層，不能有分界線：臉從中間往外一圈一圈淡掉（到髮際、下巴前就沒了），
+  // 眼睛眉毛嘴巴也是一圈一圈挖掉，所以五官清楚、周圍慢慢過渡。不靠瀏覽器放大來柔邊（iPhone 放大很銳利）。
+  const mk = Math.min(1, 160 / Math.max(bw, bh));
   const mask = scratch('mask', bw * mk, bh * mk), mg = mask.getContext('2d');
-  mg.fillStyle = '#000'; mg.beginPath(); polygon(mg, pts, OVAL, x0, y0, mk, 0.92); mg.fill();
-  mg.globalCompositeOperation = 'destination-out'; mg.beginPath();
-  polygon(mg, pts, EYE_R, x0, y0, mk, 1.6); polygon(mg, pts, EYE_L, x0, y0, mk, 1.6);
-  polygon(mg, pts, BROW_R, x0, y0, mk, 1.25); polygon(mg, pts, BROW_L, x0, y0, mk, 1.25);
-  polygon(mg, pts, LIP_OUT, x0, y0, mk, 1.12); polygon(mg, pts, NOSE_L, x0, y0, mk, 0.9);
-  mg.fill(); mg.globalCompositeOperation = 'source-over';
+  const rings = (idx, from, to, n, alpha) => { for (let i = 0; i < n; i++) { mg.globalAlpha = alpha; mg.beginPath(); polygon(mg, pts, idx, x0, y0, mk, from + (to - from) * i / (n - 1)); mg.fill(); } };
+  mg.fillStyle = '#000';
+  rings(OVAL, 0.9, 0.5, 10, 0.2);
+  mg.globalCompositeOperation = 'destination-out';
+  for (const eye of [EYE_R, EYE_L]) rings(eye, 2.6, 1.2, 7, 0.3);
+  for (const brow of [BROW_R, BROW_L]) rings(brow, 1.7, 1.0, 6, 0.3);
+  rings(LIP_OUT, 1.5, 1.0, 6, 0.3);
+  mg.globalCompositeOperation = 'source-over'; mg.globalAlpha = 1;
   const layer = scratch('layer', bw, bh), lg = layer.getContext('2d'); lg.imageSmoothingEnabled = true; lg.imageSmoothingQuality = 'high';
   lg.drawImage(small, 0, 0, small.width, small.height, 0, 0, bw, bh);
-  lg.globalCompositeOperation = 'source-atop'; lg.fillStyle = `rgba(255,238,236,${0.03 + amount / 100 * 0.05})`; lg.fillRect(0, 0, bw, bh);
+  lg.globalCompositeOperation = 'source-atop'; lg.fillStyle = `rgba(255,238,236,${amount / 100 * 0.04})`; lg.fillRect(0, 0, bw, bh);
   lg.globalCompositeOperation = 'destination-in'; lg.drawImage(mask, 0, 0, mask.width, mask.height, 0, 0, bw, bh);
   lg.globalCompositeOperation = 'source-over';
-  g.save(); g.globalAlpha = 0.15 + amount / 100 * 0.6; g.drawImage(layer, 0, 0, bw, bh, x0, y0, bw, bh); g.restore();
+  g.save(); g.globalAlpha = 0.1 + amount / 100 * 0.55; g.drawImage(layer, 0, 0, bw, bh, x0, y0, bw, bh); g.restore();
 }
 
 // 口紅：嘴唇外框減掉內框（張嘴時牙齒不會被塗到），用 multiply 疊色保留唇紋，邊緣略柔
