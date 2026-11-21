@@ -67,6 +67,7 @@ body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var
 .explore-pill svg,#chip-energy .chip__icon svg,#chip-fossil .chip__icon svg { stroke:var(--t-accent); }
 .cloud-form input,#postcard-text,.chapter-history select { background:var(--t-bg); border-color:var(--t-line); color:var(--t-text); }
 .btn--quiet { background:none; color:var(--t-muted); border-color:var(--t-line); }
+.errand-trip .errand-trip__recall,.errand-recall__no { border-color:var(--t-line) !important; }
 .btn--danger { color:#ffe1e8 !important; } /* Keep destructive actions semantically distinct. */
 #xp-fill,.bar__fill,.ach__bar i,.hatch-scene__progress .analysis__fill { background:linear-gradient(90deg,var(--t-button),var(--t-accent)); }
 .wish-tabs button[aria-selected="true"] { border-bottom-color:var(--t-accent); }

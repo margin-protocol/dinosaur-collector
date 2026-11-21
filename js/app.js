@@ -47,7 +47,7 @@ import { studyPair } from './research-notes.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward, todaysWishList, swapTodayWish } from './progression.js';
 import * as install from './install.js';
 import { CHARACTER_REPORTS, SERIES_REPORTS } from './errand-copy.js';
-import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
+import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, recall, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
 import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP } from './affection.js';
@@ -2927,6 +2927,7 @@ if (install.isInstalled()) $('open-install').hidden = true;
 // ── 派小湘出門
 var errandChoice = null; // { place } 或 { task }
 var errandPicked = [];
+var recallAsk = null; // 正在問「要叫回來嗎？」的那趟 id
 var announcedBack; // var：renderAll 在檔案尾端宣告之前就會跑
 function siangImg(no, cls = '') {
   const img = document.createElement('img'); img.alt = CHARACTERS[no].name; img.draggable = false; if (cls) img.className = cls;
@@ -2968,6 +2969,22 @@ function renderErrands() {
     small.textContent = back ? '回來了！' : `還要 ${fmtLeft(e, now)}`;
     text.append(b, small); row.append(who, text);
     if (back) { const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.textContent = '收下'; btn.addEventListener('click', () => void collectErrand(e.id)); row.append(btn); }
+    else if (recallAsk === e.id) {
+      // 二次確認：避免誤按把小湘叫回來
+      row.classList.add('is-asking');
+      const ask = document.createElement('div'); ask.className = 'errand-recall';
+      const p = document.createElement('p'); p.textContent = `要叫${names}回來嗎？這趟不會帶東西回來，下次出門要重新計時。`;
+      const yes = document.createElement('button'); yes.type = 'button'; yes.className = 'btn btn--danger errand-recall__yes'; yes.textContent = '叫回來';
+      yes.addEventListener('click', () => void recallErrand(e.id));
+      const no = document.createElement('button'); no.type = 'button'; no.className = 'btn btn--quiet errand-recall__no'; no.textContent = '再等等';
+      no.addEventListener('click', () => { recallAsk = null; renderErrands(); });
+      const acts = document.createElement('div'); acts.className = 'errand-recall__acts'; acts.append(no, yes);
+      ask.append(p, acts); row.append(ask);
+    } else {
+      const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn btn--quiet errand-trip__recall'; btn.textContent = e.place ? '叫回來' : '先不做了';
+      btn.addEventListener('click', () => { recallAsk = e.id; renderErrands(); });
+      row.append(btn);
+    }
     return row;
   }));
   const full = er.active.length >= ERRAND_SLOTS;
@@ -3053,7 +3070,7 @@ function albumNodes(album) {
   return nodes;
 }
 function openErrands() {
-  errandChoice = null; errandPicked = []; $('errand-status').textContent = '';
+  errandChoice = null; errandPicked = []; recallAsk = null; $('errand-status').textContent = '';
   renderErrands();
   if (!$('errand-dialog').open) { $('errand-dialog').showModal(); syncRoomActivity(); }
   showTip('errand', $('errand-pane'));
@@ -3134,6 +3151,17 @@ function showErrandResult(r, replay = false) {
   renderResultDupes(replay ? [] : (r.dupes || []));
   $('errand-result-ok').textContent = replay ? '關閉' : '收下';
   $('errand-result').showModal(); $('errand-result').scrollTop = 0;
+}
+async function recallErrand(id) {
+  recallAsk = null;
+  const t = await updateState(current => recall(current, id));
+  state = t.state;
+  const e = t.result;
+  if (e) {
+    const names = e.nos.map(no => CHARACTERS[no].name).join('和');
+    $('errand-status').textContent = e.place ? `${names}從半路回來了，這趟沒有帶東西。現在可以再派${e.nos.length > 1 ? "她們" : "她"}出門或去討伐。` : `${names}先不${HOME_TASKS[e.task].name}了，隨時可以再拜託她。`;
+  }
+  renderAll(); renderErrands(); syncRoomActivity();
 }
 async function collectErrand(id) {
   const t = await updateState(current => {

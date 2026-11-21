@@ -247,6 +247,19 @@ export function collect(state, id, { eggs, now = new Date() } = {}) {
   return { ...entry, names, boost: Boolean(loot.boost), storyFirst: story?.first || false, dupes };
 }
 
+// 叫回來（湘 11/21）：還在路上的才能叫回，這趟的收穫全部不算、時間也不保留，小湘馬上回到可用狀態。
+// 遠行時若這趟抽到了縣市蛋，把本週的機會還給玩家（她沒帶回來）。
+export function recall(state, id, now = new Date()) {
+  const er = ensureErrands(state);
+  const i = er.active.findIndex((e) => e.id === id);
+  if (i < 0) return null;
+  const errand = er.active[i];
+  if (isBack(errand, now.getTime())) return null;
+  er.active.splice(i, 1);
+  if (errand.loot?.county && er.countyWeek === weekOf(errand.start || now)) er.countyWeek = '';
+  return errand;
+}
+
 // 丟掉重複的明信片：一張 +1 化石；留下就什麼都不用做（會一直放在明信片盒）
 export function tossCard(state, county, count = 1) {
   const er = state.errands; const have = er?.cardDupes?.[county] || 0;
@@ -259,6 +272,6 @@ export function tossCard(state, county, count = 1) {
 
 export const fmtLeft = (errand, now = Date.now()) => {
   const ms = Math.max(0, Date.parse(errand.until) - now);
-  const h = Math.floor(ms / HOUR); const m = Math.ceil((ms % HOUR) / 60e3);
-  return h ? `${h} 小時 ${m} 分` : `${Math.max(1, m)} 分鐘`;
+  const mins = Math.ceil(ms / 60e3); const h = Math.floor(mins / 60); const m = mins % 60; // 先進位再拆，避免「1 小時 60 分」
+  return h ? (m ? `${h} 小時 ${m} 分` : `${h} 小時`) : `${Math.max(1, m)} 分鐘`;
 };
