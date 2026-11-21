@@ -1972,7 +1972,7 @@ function openDexDetail(no) {
   $('dex-detail-name').textContent = owned ? c.name : '???';
   $('dex-detail-line').textContent = owned ? c.line : '';
   $('dex-detail-line').hidden = !owned;
-  $('dex-detail-intro').textContent = owned ? (INTROS[no] || '') : (MYSTERY_INTROS[no] || '遠處好像有誰探了一下頭。再靠近一點，下次也許就能打個招呼。');
+  setParas($('dex-detail-intro'), owned ? (INTROS[no] || '') : (MYSTERY_INTROS[no] || '遠處好像有誰探了一下頭。再靠近一點，下次也許就能打個招呼。'), 90, true); // 長介紹照句子分段（11/21）
   $('dex-detail-how').textContent = `取得方式：${howToGet(c)}`;
   const at = state.dex[no]?.at;
   const story = owned ? storyText(c, state.dex[no]) : '';
@@ -3782,7 +3782,17 @@ function storyParas(text, maxLen = 70) {
   return out;
 }
 // 把多句的字分成一行一行塞進原本的 <p>（每行一個 block span），不會再擠成一大塊（11/20）
-function setParas(node, text, maxLen = 70) { node.replaceChildren(...storyParas(text, maxLen).map(t => el('span', 'para', t))); }
+// dialogue=true：連續幾句很短的對話（「……新的？」「對呀！」）併成一段，長篇介紹才不會碎成一行一行
+function dialogueParas(text, maxLen) {
+  const out = []; const pureQuote = (t) => /^[「『][^「『]*[」』]$/.test(t);
+  for (const p of storyParas(text, maxLen)) {
+    const prev = out[out.length - 1];
+    if (prev && pureQuote(p) && /^[「『]/.test(prev) && /[」』]$/.test(prev) && pureQuote(prev.split(/(?<=[」』])/).pop()) && prev.length + p.length <= 26) out[out.length - 1] = prev + p;
+    else out.push(p);
+  }
+  return out;
+}
+function setParas(node, text, maxLen = 70, dialogue = false) { node.replaceChildren(...(dialogue ? dialogueParas(text, maxLen) : storyParas(text, maxLen)).map(t => el('span', 'para', t))); }
 const storyBox = (text) => { const box = el('div', 'archive-text'); box.append(...storyParas(text).map(t => el('p', '', t))); return box; };
 let archiveSeries = 'all';
 function lockedCard(text) { const c = el('div', 'archive-card is-locked'); c.append(el('b', '', '🔒 ？？？'), el('small', '', text)); return c; }

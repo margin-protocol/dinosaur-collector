@@ -208,7 +208,9 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex-detail__no { font: 11px var(--font-mono); color: var(--rose-metal); letter-spacing: .1em; }
 .dex-detail h2 { margin: 4px 0 8px; font: 400 21px var(--font-display); letter-spacing: .08em; }
 .dex-detail__line { margin: 0 0 10px; font: 14px/1.8 var(--font-display); color: var(--ivory); }
-.dex-detail__intro { white-space:pre-line; margin: 0 0 12px; font-size: 13px; line-height: 1.8; color: var(--pearl); text-align: left; }
+.dex-detail__intro { margin: 0 0 12px; padding: 16px 16px 14px; border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--accent) 7%, transparent); font-size: 13.5px; line-height: 1.9; letter-spacing: .03em; color: var(--pearl); text-align: justify; }
+.dex-detail__intro:empty { display: none; }
+.dex-detail__intro .para + .para { margin-top: .6em; }
 .dex-detail__how { margin: 0 0 6px; padding: 8px 10px; border-radius: 8px; background: #ffffff0d; font-size: 12px; color: var(--silver); text-align: left; }
 .dex-detail__at { font-size: 11px; color: var(--silver); }
 .dex-detail__story { margin: 0 0 10px; padding: 10px 12px; border-left: 2px solid #c9a8ff; border-radius: 4px; background: #c9a8ff12; font: 13px/1.8 var(--font-display); color: var(--ivory); text-align: left; }
