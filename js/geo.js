@@ -4,6 +4,7 @@ let cache = null;
 
 export async function loadCounties(url = 'assets/geo/counties.json') {
   if (!cache) cache = fetch(url).then((r) => { if (!r.ok) throw new Error('geo'); return r.json(); }).then((d) => d.counties);
+  cache.catch(() => { cache = null; }); // 下載失敗不要記住，下次再抓
   return cache;
 }
 
@@ -64,15 +65,27 @@ export function spotAt(lon, lat) {
   return null;
 }
 
-export function currentPosition() {
+// 先用快速的低精確度（WiFi／基地台）；抓不到或逾時就改用 GPS 再試一次。
+// 11/21 湘回報：連 WiFi 時定位失敗、行動網路正常 —— 有些 WiFi（手機熱點、新換的路由器）不在定位資料庫裡，
+// 低精確度模式就會回「位置不可用」或逾時，改用 GPS 通常就抓得到。
+function getPosition(options) {
   return new Promise((resolve, reject) => {
-    if (!navigator.geolocation) { reject(Object.assign(new Error('unsupported'), { code: 'unsupported' })); return; }
     navigator.geolocation.getCurrentPosition(
       (pos) => resolve({ lon: pos.coords.longitude, lat: pos.coords.latitude }),
       (err) => reject(err),
-      { enableHighAccuracy: false, timeout: 15000, maximumAge: 60 * 1000 },
+      options,
     );
   });
+}
+
+export async function currentPosition({ getter = getPosition } = {}) {
+  if (getter === getPosition && (typeof navigator === 'undefined' || !navigator.geolocation)) throw Object.assign(new Error('unsupported'), { code: 'unsupported' });
+  try {
+    return await getter({ enableHighAccuracy: false, timeout: 10000, maximumAge: 10 * 60 * 1000 });
+  } catch (err) {
+    if (err?.code === 1) throw err; // 沒有允許定位，再試也沒用
+    return getter({ enableHighAccuracy: true, timeout: 25000, maximumAge: 0 });
+  }
 }
 
 export async function geoPermission() {

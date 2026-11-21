@@ -27,6 +27,9 @@ body[data-view="home"] .app { height:auto; min-height:max(760px,100svh); overflo
 .county-call h2 { font:400 21px/1.5 var(--font-display); margin:6px 0; }
 .county-call__text { font-size:14px; line-height:1.8; margin:0 0 10px; }
 .county-call__note { font-size:12px; color:#f4c6db; margin:0 0 12px; white-space:pre-line; }
+.county-call__note.is-tips { text-align:left; line-height:1.8; padding:10px 12px; border-radius:12px; background:rgba(150,150,150,.1); }
+.county-call__note.is-tips > span { display:block; }
+.county-call__note.is-tips > .is-item { padding-left:1em; text-indent:-1em; }
 .county-call__actions { display:grid; gap:8px; }
 .county-call__actions .btn--quiet { width:100%; margin:0; }
 .county-call__privacy { margin:12px 0 0; font-size:10px; color:var(--pearl); }

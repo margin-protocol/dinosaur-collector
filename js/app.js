@@ -1636,8 +1636,10 @@ function showCountyCall({ county, result, error, weather }) {
   if (c) { img.className = `county-call__img${owned ? '' : ' is-locked'}`; loadWithFallback(img, characterSources(c.image)); img.alt = owned ? c.name : '還看不清楚的小湘'; }
   $('county-eyebrow').textContent = county ? `LOCAL SIGNAL · ${county}` : 'LOCAL SIGNAL';
   let title; let text; let note = '';
-  if (error === 'denied') { title = '小湘感應不到你在哪裡'; text = '需要允許定位，才能知道你在哪個縣市。請到瀏覽器或手機設定，允許這個網站使用位置。'; }
-  else if (error) { title = '訊號有點微弱'; text = '這次沒有成功定位，到空曠一點的地方再試一次。'; }
+  if (error === 'denied') { title = '小湘感應不到你在哪裡'; text = '需要允許定位，才能知道你在哪個縣市。'; note = 'iPhone：設定 › 隱私權與安全性 › 定位服務，打開定位，並允許 Safari 網站（或這個遊戲）使用位置。\nAndroid：在 Chrome 網址列左邊的圖示 › 權限 › 位置，改成允許。'; }
+  else if (error === 'unsupported') { title = '這個瀏覽器不能定位'; text = '換成 Safari 或 Chrome 打開遊戲，再按一次「探索附近」試試。'; }
+  else if (error === 'data') { title = '地圖還沒載好'; text = '縣市地圖沒有下載成功，等網路穩一點再試一次。'; }
+  else if (error) { title = '訊號有點微弱'; text = 'WiFi 和 GPS 都試過了，還是沒抓到。'; note = '可以這樣試試：\n・手機的定位服務要打開，iPhone 也要打開「精確位置」\n・連著 WiFi 抓不到時，先關掉 WiFi，用行動網路試一次\n・走到窗邊或室外，GPS 比較收得到'; }
   else if (!county) { title = '這裡還沒有小湘的訊號'; text = '臺灣 22 個縣市和綠島都有小湘，到別的地方再試試看吧。'; }
   else if (!c) { title = `${county}的訊號`; text = `${county}的小湘還在路上，之後再來找她吧！`; }
   else if (result?.egg) { title = `${c.name}想出現！`; text = c.line; note = `獲得一顆「縣市蛋 · ${county}」，到培育室的「選擇蛋」把它拿出來吧。`; }
@@ -1649,9 +1651,12 @@ function showCountyCall({ county, result, error, weather }) {
   $('county-title').textContent = title;
   $('county-text').textContent = text;
   note = [note, weatherNote(weather)].filter(Boolean).join('\n');
-  $('county-note').textContent = note;
+  if (error) $('county-note').replaceChildren(...note.split('\n').map(line => Object.assign(document.createElement('span'), { className: line.startsWith('・') ? 'is-item' : '', textContent: line }))); // 提示一行一條，換行時縮排對齊
+  else $('county-note').textContent = note;
   $('county-note').hidden = !note;
+  $('county-note').classList.toggle('is-tips', Boolean(error));
   $('county-go').hidden = !(result?.egg || result?.daily || weather?.egg);
+  $('county-retry').hidden = !error || error === 'unsupported';
   $('county-call').showModal(); syncRoomActivity();
 }
 
@@ -1675,9 +1680,9 @@ async function explore({ silent = false } = {}) {
   try {
     let pos;
     try { pos = await currentPosition(); }
-    catch (err) { if (!silent) showCountyCall({ error: err?.code === 1 ? 'denied' : 'failed' }); return; }
+    catch (err) { if (!silent) showCountyCall({ error: err?.code === 1 ? 'denied' : err?.code === 'unsupported' ? 'unsupported' : 'failed' }); return; }
     let counties;
-    try { counties = await loadCounties(); } catch { if (!silent) showCountyCall({ error: 'failed' }); return; }
+    try { counties = await loadCounties(); } catch { if (!silent) showCountyCall({ error: 'data' }); return; }
     const county = spotAt(pos.lon, pos.lat) || offshoreAt(pos.lon, pos.lat) || countyAt(counties, pos.lon, pos.lat);
     state = (await updateState(current => { if (current.bonus.explored !== todayKey()) current.bonus.total.explores += 1; current.bonus.explored = todayKey(); })).state;
     const weather = await checkWeather(pos);
@@ -1702,6 +1707,7 @@ $('explore-intro-ok').addEventListener('click', () => { try { localStorage.setIt
 $('explore-intro-later').addEventListener('click', () => $('explore-intro').close());
 $('explore-intro').addEventListener('close', syncRoomActivity);
 $('county-ok').addEventListener('click', () => $('county-call').close());
+$('county-retry').addEventListener('click', () => { $('county-call').close(); void explore(); });
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);
 
