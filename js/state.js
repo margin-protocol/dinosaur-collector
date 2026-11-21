@@ -49,6 +49,7 @@ export function resetState() {
 }
 
 // All game-resource writes share a lock and read the latest save inside it.
+const SAVE_LOCK_HOLD_MS = 30;
 export async function updateState(mutator) {
   const commit = () => {
     const state = loadState();
@@ -57,5 +58,14 @@ export async function updateState(mutator) {
     saveState(state);
     return { state, result, growthEnergyAdded };
   };
-  return globalThis.navigator?.locks ? navigator.locks.request('siang-game-save', commit) : commit();
+  if (!globalThis.navigator?.locks) return commit();
+  // 存完先把結果交回去，但鎖再多握一下（11/21）：localStorage 同步到別的分頁要幾毫秒，
+  // 太快放鎖的話，另一個分頁拿到鎖時會讀到舊存檔，同一個獎勵可能被領兩次。
+  return new Promise((resolve, reject) => {
+    navigator.locks.request('siang-game-save', () => {
+      let out; try { out = commit(); } catch (e) { reject(e); return; }
+      resolve(out);
+      return new Promise(r => setTimeout(r, SAVE_LOCK_HOLD_MS));
+    }).catch(reject);
+  });
 }

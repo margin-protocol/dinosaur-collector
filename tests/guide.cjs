@@ -17,7 +17,7 @@ await p.reload();await p.locator('#unlock-dialog[open]').waitFor({timeout:6000})
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.click('#unlock-go');await p.locator('#errand-dialog[open]').waitFor();
 // first-open tip, once
-await p.locator('.guide-tip[data-tip="errand"]').waitFor();assert(await p.locator('.errand-tabs').isHidden(),'battle tab hidden while locked');
+await p.locator('.guide-tip[data-tip="errand"]').waitFor();assert(await p.locator('#errand-dialog .errand-tabs').isHidden(),'battle tab hidden while locked');
 await p.click('.guide-tip[data-tip="errand"] .guide-tip__ok');await p.waitForTimeout(200);
 s=await save();assert(s.guide.seen.includes('errand'));assert(s.guide.unlocked.includes('errand'));
 await p.click('#close-errands');await p.click('#home-errand');await p.waitForTimeout(200);assert.equal(await p.locator('.guide-tip[data-tip="errand"]').count(),0,'tip only once');
