@@ -1442,12 +1442,16 @@ $('side-cradles')?.addEventListener('click', async event => {
       const index = current.shelf.findIndex(e => e.id === saved?.id && e.since === saved?.since);
       if (index < 0) return false;
       const [next] = current.shelf.splice(index, 1);
-      if (current.egg.warmth > 0) current.shelf.splice(index, 0, current.egg); else if (EGGS[current.egg.id]?.stocked) returnEgg(current, current.egg);
+      const prev = current.egg; const kept = prev.warmth > 0;
+      if (kept) current.shelf.splice(index, 0, prev); else if (EGGS[prev.id]?.stocked) returnEgg(current, prev);
       current.egg = next;
-      return true;
+      return kept ? 'shelf' : EGGS[prev.id]?.stocked ? 'stock' : 'away';
     });
     state = latest;
-    if (result) toast('換好了！剛才的蛋換到副架上，一樣會保溫。');
+    // 剛才的蛋還沒餵過能量就不會上副架，提示要跟畫面一致
+    if (result === 'shelf') toast('換好了！剛才的蛋換到副架上，一樣會保溫。');
+    else if (result === 'stock') toast('換好了！剛才那顆還沒開始孵，先收回蛋庫了。');
+    else if (result) toast('換好了！剛才那顆還沒開始孵，先收起來了，想孵隨時再選。');
   } finally { busy = false; state = loadState(); renderAll(); }
 });
 $('feed-all').addEventListener('click', () => void onFeedAll());

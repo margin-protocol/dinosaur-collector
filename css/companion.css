@@ -582,6 +582,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .side-cradles__row { display:grid; grid-template-columns:repeat(auto-fit,minmax(130px,1fr)); gap:8px; }
 .side-cradle { display:grid; justify-items:center; gap:2px; padding:8px 6px; border:1px solid #f0d6c84d; border-radius:14px; background:#ffffff0d; color:inherit; font:12px/1.5 var(--font-display); }
 .side-cradle .egg-choice__art { width:56px; height:64px; }
+.side-cradle .egg-choice__art .egg { width:116px; height:116px; }
 .side-cradle__pct { font-size:11px; color:var(--pearl); }
 .side-cradle.is-empty { border-style:dashed; padding:14px 8px; }
 .side-cradle.is-empty .side-cradle__pct { max-width:16em; text-align:center; }
