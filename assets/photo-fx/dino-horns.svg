@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="320" viewBox="0 0 300 160">
+<defs>
+<linearGradient id="pl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffb3c8"/><stop offset=".45" stop-color="#bfe8c4"/><stop offset="1" stop-color="#7cc498"/></linearGradient>
+<linearGradient id="band" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fdab0"/><stop offset="1" stop-color="#5fa77c"/></linearGradient>
+<path id="spike" d="M-22 0 C-20 -22 -8 -46 0 -54 C8 -46 20 -22 22 0Z"/>
+</defs>
+<g stroke="#5b4040" stroke-width="2" stroke-linejoin="round" fill="url(#pl)">
+<use href="#spike" transform="translate(52 140) rotate(-40) scale(.72)"/>
+<use href="#spike" transform="translate(248 140) rotate(40) scale(.72)"/>
+<use href="#spike" transform="translate(92 118) rotate(-22) scale(.9)"/>
+<use href="#spike" transform="translate(208 118) rotate(22) scale(.9)"/>
+<use href="#spike" transform="translate(150 112) scale(1.12)"/>
+</g>
+<g fill="#fff" opacity=".55"><path d="M144 60 C140 74 139 88 141 100 C134 88 136 72 144 60Z"/><path d="M92 62 C86 72 84 82 85 92 C80 84 82 72 92 62Z" transform="rotate(-22 92 118) translate(0 14)"/><path d="M208 62 C202 72 200 82 201 92 C196 84 198 72 208 62Z" transform="rotate(22 208 118) translate(0 14)"/></g>
+<path d="M28 150 C70 100 230 100 272 150" fill="none" stroke="#5b4040" stroke-width="15" stroke-linecap="round"/>
+<path d="M28 150 C70 100 230 100 272 150" fill="none" stroke="url(#band)" stroke-width="11" stroke-linecap="round"/>
+<path d="M60 128 C100 108 200 108 240 128" fill="none" stroke="#e4f7e8" stroke-width="2.5" stroke-linecap="round" opacity=".8"/>
+<g fill="#ff8fae" stroke="#5b4040" stroke-width="1.2"><circle cx="118" cy="114" r="3.4"/><circle cx="182" cy="114" r="3.4"/><circle cx="150" cy="110" r="3.8"/></g>
+</svg>

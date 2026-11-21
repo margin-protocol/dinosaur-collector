@@ -2,10 +2,14 @@
 // 拍照前可以選濾鏡（photo-filters.js），預覽即時套用，存下來的照片也有同樣的濾鏡（署名不套）。
 // 照片只在手機上合成，不上傳；拍好後可以分享或存到手機。
 // 相機打不開（沒權限、沒有相機）時，可以改用拍照／相簿選一張照片當背景。
+// 臉部特效（美顏磨皮、口紅、小湘頭飾，face-fx.js）：預覽畫在影片上面的 .photo-face 畫布，拍照時用同一套畫進照片（11/21）。
 import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
 import { PHOTO_FILTERS, filterById, cssFilter, overlayCss, applyPhotoFilter } from './photo-filters.js';
+import { LIP_COLORS, HEADPIECES, normalizeFx, fxActive, coverMap, drawFaceFx, headpieceImage, faceFxSupport, rememberSlow, loadTracker } from './face-fx.js';
 
 const FILTER_KEY = 'siang-collector:photo-filter:v1';
+const FACE_FX_KEY = 'siang-collector:face-fx:v1';
+const TAB_KEY = 'siang-collector:photo-tab:v1';
 
 const RATIO = 3 / 4; // 畫面寬：高
 const MAX_W = 1440;
@@ -17,7 +21,7 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
   const size = $('.photo-size'), status = $('.photo-status'), fileInput = $('.photo-file');
   let stream = null, facing = 'environment', no = null, blob = null, url = null, mirrored = false;
   const pos = { x: 0.5, y: 0.97, h: 0.62, flip: false };
-  const fx = $('.photo-fx'), fxOverlay = $('.photo-fx-overlay'), filterRow = $('.photo-filters');
+  const fxLayer = $('.photo-fx'), fxOverlay = $('.photo-fx-overlay'), filterRow = $('.photo-filters');
   let filter = PHOTO_FILTERS[0];
   try { filter = filterById(localStorage.getItem(FILTER_KEY)); } catch { /* 無痕模式 */ }
 
@@ -33,11 +37,129 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
   }));
   function setFilter(f) {
     filter = f;
-    fx.style.filter = cssFilter(f); fxOverlay.style.background = overlayCss(f);
+    fxLayer.style.filter = cssFilter(f); fxOverlay.style.background = overlayCss(f);
     filterRow.querySelectorAll('.photo-filter').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.filter === f.id)));
     try { localStorage.setItem(FILTER_KEY, f.id); } catch { /* 存不了也沒關係 */ }
   }
   setFilter(filter);
+
+  // ---------- 臉部特效 ----------
+  const face = $('.photo-face'), faceCtx = face.getContext('2d');
+  const badge = $('.photo-fx-badge'), note = $('.photo-fx-note__text'), retry = $('.photo-fx-retry');
+  const smoothIn = $('.photo-smooth'), lipAmtIn = $('.photo-lip-amt');
+  let fx = normalizeFx(null);
+  try { fx = normalizeFx(JSON.parse(localStorage.getItem(FACE_FX_KEY) || 'null')); } catch { /* */ }
+  let tracker = null, fxState = 'idle', faces = [], stillFaces = null, loopId = 0, lastFrame = -1, lastFaceAt = 0, perf = [];
+  const chip = (cls, data, label, inner) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = `photo-chip ${cls}`; b.setAttribute('role', 'radio');
+    Object.assign(b.dataset, data);
+    const sw = document.createElement('span'); sw.className = 'photo-chip__swatch'; inner(sw);
+    const name = document.createElement('span'); name.className = 'photo-chip__name'; name.textContent = label;
+    b.append(sw, name); return b;
+  };
+  $('.photo-lips').replaceChildren(...LIP_COLORS.map((c) => chip('photo-lip', { lip: c.id }, c.name, (sw) => { if (c.color) sw.style.background = `radial-gradient(circle at 35% 30%, #fff8 0 12%, transparent 30%), ${c.color}`; else sw.classList.add('is-none'); })));
+  $('.photo-crowns').replaceChildren(...HEADPIECES.map((h) => chip('photo-crown', { crown: h.id }, h.name, (sw) => {
+    if (!h.src) { sw.classList.add('is-none'); return; }
+    const img = document.createElement('img'); img.alt = ''; img.src = h.src; img.decoding = 'async'; sw.append(img);
+  })));
+  function syncFxUi() {
+    smoothIn.value = String(fx.smooth); $('.photo-smooth-val').textContent = String(fx.smooth);
+    lipAmtIn.value = String(fx.lipAmt); $('.photo-lip-val').textContent = String(fx.lipAmt);
+    $('.photo-lip-row').classList.toggle('is-off', fx.lip === 'none'); lipAmtIn.disabled = fx.lip === 'none';
+    dialog.querySelectorAll('.photo-lip').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.lip === fx.lip)));
+    dialog.querySelectorAll('.photo-crown').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.crown === fx.crown)));
+  }
+  function setFx(patch) {
+    fx = normalizeFx({ ...fx, ...patch }); syncFxUi();
+    try { localStorage.setItem(FACE_FX_KEY, JSON.stringify(fx)); } catch { /* */ }
+    if (fx.crown !== 'none') headpieceImage(fx.crown);
+    ensureTracker(); updateNote(); startLoop();
+  }
+  function setTab(id) {
+    dialog.querySelectorAll('.photo-tab').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === id)));
+    dialog.querySelectorAll('.photo-panel').forEach((p) => { p.hidden = p.dataset.panel !== id; });
+    dialog.dataset.tab = id;
+    try { localStorage.setItem(TAB_KEY, id); } catch { /* */ }
+    updateNote();
+  }
+  syncFxUi();
+  { let t = 'filter'; try { t = localStorage.getItem(TAB_KEY) || 'filter'; } catch { /* */ } setTab(['filter', 'beauty', 'crown'].includes(t) ? t : 'filter'); }
+
+  const FX_NOTES = {
+    loading: '美顏準備中…第一次要下載一下下',
+    old: '這支手機的瀏覽器跑不動臉部特效，濾鏡還是可以用喔。',
+    slow: '這支手機跑臉部特效有點吃力，先幫你關掉了，濾鏡還是可以用。',
+    error: '臉部特效載入失敗了，網路好一點再點一次試試看。',
+    noface: '把臉放進畫面裡，特效就會出現 ✨',
+  };
+  function updateNote() {
+    const onFxTab = dialog.dataset.tab !== 'filter';
+    let key = '';
+    if (['old', 'slow', 'error'].includes(fxState) && (onFxTab || fxActive(fx))) key = fxState;
+    else if (fxState === 'loading' && fxActive(fx)) key = 'loading';
+    else if (fxState === 'ready' && fxActive(fx) && onFxTab && !faces.length && performance.now() - lastFaceAt > 1500 && dialog.dataset.step === 'cam') key = 'noface';
+    note.textContent = key ? FX_NOTES[key] : '';
+    retry.hidden = !(key === 'slow' || key === 'error');
+    badge.hidden = key !== 'loading'; badge.textContent = key === 'loading' ? '✨ 美顏準備中' : '';
+    dialog.dataset.fx = fxState;
+  }
+  function ensureTracker() {
+    if (!fxActive(fx) || tracker || fxState === 'loading' || fxState === 'old' || fxState === 'slow') return;
+    const support = faceFxSupport();
+    if (support !== 'ok') { fxState = support; updateNote(); return; }
+    fxState = 'loading'; updateNote();
+    loadTracker().then((t) => { tracker = t; fxState = 'ready'; perf = []; lastFaceAt = performance.now(); updateNote(); startLoop(); })
+      .catch(() => { fxState = 'error'; updateNote(); });
+  }
+  function turnOffSlow() {
+    fxState = 'slow'; rememberSlow(true); faces = []; stillFaces = null; clearFace(); updateNote();
+  }
+  function clearFace() { faceCtx.clearRect(0, 0, face.width, face.height); }
+  function currentSource() {
+    if (!video.hidden && video.videoWidth) return video;
+    if (!still.hidden && still.naturalWidth) return still;
+    return null;
+  }
+  function detectNow(source) {
+    if (!tracker || fxState !== 'ready') return [];
+    try {
+      if (source === still) { if (!stillFaces || stillFaces.src !== still.src) stillFaces = { src: still.src, list: tracker.detect(still) }; return stillFaces.list; }
+      return tracker.detect(source);
+    } catch { return faces; }
+  }
+  function frame() {
+    loopId = 0;
+    if (!dialog.open || dialog.dataset.step !== 'cam') { clearFace(); return; }
+    const source = currentSource();
+    const active = fxActive(fx) && fxState === 'ready';
+    if (!source || !active) { clearFace(); if (fxState === 'ready' && fxActive(fx)) loopId = requestAnimationFrame(frame); return; }
+    const box = stage.getBoundingClientRect(); const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const cw = Math.max(1, Math.round(box.width * dpr)), ch = Math.max(1, Math.round(box.height * dpr));
+    if (face.width !== cw || face.height !== ch) { face.width = cw; face.height = ch; }
+    const isVideo = source === video;
+    face.classList.toggle('is-mirrored', isVideo && mirrored);
+    if (isVideo) {
+      if (video.currentTime !== lastFrame) {
+        lastFrame = video.currentTime;
+        const t0 = performance.now(); faces = detectNow(video); const dt = performance.now() - t0;
+        perf.push(dt);
+        // 前幾張暖機不算，之後 8 張的中位數太慢（每秒不到 11 張）就關掉
+        if (perf.length === 11) {
+          const recent = perf.slice(3).sort((a, b) => a - b); const median = recent[recent.length >> 1];
+          if (median > (globalThis.SIANG_FACE_FX_SLOW_MS || 90)) { turnOffSlow(); return; }
+        }
+      }
+    } else faces = detectNow(still);
+    if (faces.length) lastFaceAt = performance.now();
+    clearFace();
+    const vw = source.videoWidth || source.naturalWidth, vh = source.videoHeight || source.naturalHeight;
+    drawFaceFx(faceCtx, source, faces, fx, coverMap(vw, vh, cw, ch));
+    updateNote();
+    loopId = requestAnimationFrame(frame);
+  }
+  function startLoop() { if (!loopId && dialog.open && dialog.dataset.step === 'cam') loopId = requestAnimationFrame(frame); }
+  smoothIn.addEventListener('input', () => setFx({ smooth: Number(smoothIn.value) }));
+  lipAmtIn.addEventListener('input', () => setFx({ lipAmt: Number(lipAmtIn.value) }));
 
   function step(name) {
     pick.hidden = name !== 'pick'; cam.hidden = name !== 'cam'; result.hidden = name !== 'result';
@@ -74,6 +196,7 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
       mirrored = (settings.facingMode || facing) === 'user';
       video.classList.toggle('is-mirrored', mirrored);
       $('.photo-flipcam').hidden = false;
+      lastFrame = -1; ensureTracker(); startLoop();
     } catch (err) {
       noCamera(err?.name === 'NotAllowedError' ? '相機權限沒有打開。可以到瀏覽器設定允許相機，或改用下面的按鈕拍一張。' : '相機打不開。可以改用下面的按鈕拍一張或選相簿的照片。');
     }
@@ -94,7 +217,7 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
     sprite.alt = c.name; loadWithFallback(sprite, characterSources(c.image));
     $('.photo-who').textContent = c.name;
     Object.assign(pos, { x: 0.5, y: 0.97, h: 0.62, flip: false }); place();
-    step('cam'); $('.photo-fallback').hidden = true; void startCamera();
+    step('cam'); $('.photo-fallback').hidden = true; updateNote(); void startCamera();
   }
   function close() { stopStream(); if (dialog.open) dialog.close(); }
 
@@ -135,7 +258,12 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
     const g = canvas.getContext('2d');
     const flipBg = source === video && mirrored;
     g.save(); if (flipBg) { g.translate(W, 0); g.scale(-1, 1); }
-    g.drawImage(source, sx, sy, sw, sh, 0, 0, W, H); g.restore();
+    g.drawImage(source, sx, sy, sw, sh, 0, 0, W, H);
+    if (fxActive(fx) && fxState === 'ready') {
+      const list = source === video ? detectNow(video) : detectNow(still);
+      try { drawFaceFx(g, source, list, fx, { vw, vh, sx, sy, sw, sh, W, H }); } catch { /* 特效畫不出來就照原圖 */ }
+    }
+    g.restore();
     if (sprite.naturalWidth) {
       const dh = pos.h * H, dw = dh * sprite.naturalWidth / sprite.naturalHeight;
       const cx = pos.x * W, bottom = pos.y * H;
@@ -174,6 +302,10 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.pick) choose(b.dataset.pick);
     else if (b.dataset.filter) setFilter(filterById(b.dataset.filter));
+    else if (b.dataset.tab) setTab(b.dataset.tab);
+    else if (b.dataset.lip) setFx({ lip: b.dataset.lip });
+    else if (b.dataset.crown) setFx({ crown: b.dataset.crown });
+    else if (b.matches('.photo-fx-retry')) { rememberSlow(false); perf = []; fxState = tracker ? 'ready' : 'idle'; lastFaceAt = performance.now(); ensureTracker(); updateNote(); startLoop(); }
     else if (b.matches('.photo-close')) close();
     else if (b.matches('.photo-back')) { stopStream(); renderPick(); }
     else if (b.matches('.photo-shutter')) capture();
@@ -185,7 +317,7 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
   fileInput.addEventListener('change', () => {
     const f = fileInput.files?.[0]; if (!f) return;
     stopStream(); video.hidden = true; still.hidden = false; status.textContent = '';
-    still.onload = () => URL.revokeObjectURL(still.src);
+    still.onload = () => { URL.revokeObjectURL(still.src); stillFaces = null; ensureTracker(); startLoop(); };
     still.src = URL.createObjectURL(f); fileInput.value = '';
   });
   dialog.addEventListener('close', stopStream);

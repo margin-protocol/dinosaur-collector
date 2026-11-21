@@ -1,0 +1,224 @@
+// 外出合照的臉部特效：美顏磨皮、口紅、小湘頭飾（11/21）
+// 臉部追蹤用 MediaPipe Face Landmarker，程式和模型都放在 vendor/mediapipe/，在手機上跑，畫面不會上傳。
+// 第一次選特效時才載入（約 13 MB，之後有快取）；舊手機跑不動（太慢、不支援）就自動關掉，只留一般濾鏡。
+// 這個檔案的畫圖函式不碰 DOM 以外的東西，預覽（疊在影片上的畫布）和存檔（合成畫布）用同一套。
+
+export const LIP_COLORS = [
+  { id: 'none', name: '不擦' },
+  { id: 'sakura', name: '櫻花粉', color: '#e9577f' },
+  { id: 'peach', name: '蜜桃', color: '#f2775a' },
+  { id: 'maple', name: '楓紅', color: '#b3172f' },
+  { id: 'rosewood', name: '豆沙', color: '#b0505c' },
+];
+
+// 頭飾：place 'crown' 以頭頂為準，'side' 以頭頂往旁邊移；dx/dy 以臉寬為單位（dx 往畫面右、dy 往下）
+// w = 寬度（臉寬的幾倍），ax/ay = 圖上對準定位點的位置（0–1），rot = 額外轉的角度
+export const HEADPIECES = [
+  { id: 'none', name: '不戴' },
+  { id: 'sakura', name: '櫻花髮夾', src: 'assets/photo-fx/sakura-clip.svg', dx: 0.5, dy: 0.06, w: 0.56, ax: 0.5, ay: 0.5, rot: 24 },
+  { id: 'dino', name: '恐龍角', src: 'assets/photo-fx/dino-horns.svg', dx: 0, dy: 0.0, w: 1.26, ax: 0.5, ay: 0.86, rot: 0 },
+  { id: 'lantern', name: '府城燈籠', src: 'assets/photo-fx/lantern.svg', dx: -0.58, dy: 0.04, w: 0.44, ax: 0.5, ay: 0.08, rot: -14 },
+  { id: 'egg', name: '蛋殼帽', src: 'assets/photo-fx/egg-shell.svg', dx: 0.04, dy: 0.18, w: 1.08, ax: 0.5, ay: 0.82, rot: -8 },
+  { id: 'tiara', name: '星光皇冠', src: 'assets/photo-fx/star-tiara.svg', dx: 0, dy: 0.06, w: 0.84, ax: 0.5, ay: 0.9, rot: 0 },
+];
+export const lipById = (id) => LIP_COLORS.find((c) => c.id === id) || LIP_COLORS[0];
+export const headpieceById = (id) => HEADPIECES.find((h) => h.id === id) || HEADPIECES[0];
+
+export const DEFAULT_FX = { smooth: 0, lip: 'none', lipAmt: 55, crown: 'none' };
+export function normalizeFx(raw) {
+  const o = { ...DEFAULT_FX, ...(raw && typeof raw === 'object' ? raw : {}) };
+  const num = (v, d) => (Number.isFinite(Number(v)) ? Math.min(100, Math.max(0, Math.round(Number(v)))) : d);
+  return { smooth: num(o.smooth, 0), lip: lipById(o.lip).id, lipAmt: num(o.lipAmt, 55), crown: headpieceById(o.crown).id };
+}
+export const fxActive = (fx) => fx.smooth > 0 || fx.lip !== 'none' || fx.crown !== 'none';
+
+// Face Mesh 的點位編號
+const OVAL = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
+const EYE_R = [33, 246, 161, 160, 159, 158, 157, 173, 133, 155, 154, 153, 145, 144, 163, 7];
+const EYE_L = [263, 466, 388, 387, 386, 385, 384, 398, 362, 382, 381, 380, 374, 373, 390, 249];
+const BROW_R = [70, 63, 105, 66, 107, 55, 65, 52, 53, 46];
+const BROW_L = [300, 293, 334, 296, 336, 285, 295, 282, 283, 276];
+const LIP_OUT = [61, 185, 40, 39, 37, 0, 267, 269, 270, 409, 291, 375, 321, 405, 314, 17, 84, 181, 91, 146];
+const LIP_IN = [78, 191, 80, 81, 82, 13, 312, 311, 310, 415, 308, 324, 318, 402, 317, 14, 87, 178, 88, 95];
+const NOSE_L = [98, 97, 2, 326, 327, 294, 278, 344, 440, 275, 4, 45, 220, 115, 48, 64];
+
+// 來源（影片或照片）裁成 W×H 的對應：和 photo-booth 的 capture 一樣是置中裁切
+export function coverMap(vw, vh, W, H) {
+  const r = W / H; let sw = vw, sh = vh, sx = 0, sy = 0;
+  if (vw / vh > r) { sw = vh * r; sx = (vw - sw) / 2; } else { sh = vw / r; sy = (vh - sh) / 2; }
+  return { vw, vh, sx, sy, sw, sh, W, H };
+}
+// 正規化座標（0–1，相對整個來源）→ 畫布座標
+export function project(lm, m) {
+  const kx = m.W / m.sw, ky = m.H / m.sh;
+  return lm.map((p) => ({ x: (p.x * m.vw - m.sx) * kx, y: (p.y * m.vh - m.sy) * ky }));
+}
+
+// 頭的姿勢：歪頭角度、臉寬、頭頂位置、左右轉頭的程度（-1 ~ 1）
+export function headPose(pts) {
+  const L = pts[234], R = pts[454], top = pts[10], chin = pts[152], nose = pts[1];
+  const rx = R.x - L.x, ry = R.y - L.y; const faceW = Math.hypot(rx, ry) || 1;
+  const ux = top.x - chin.x, uy = top.y - chin.y; const faceH = Math.hypot(ux, uy) || 1;
+  const right = { x: rx / faceW, y: ry / faceW }; const up = { x: ux / faceH, y: uy / faceH };
+  const mid = { x: (L.x + R.x) / 2, y: (L.y + R.y) / 2 };
+  const yaw = Math.max(-1, Math.min(1, ((nose.x - mid.x) * right.x + (nose.y - mid.y) * right.y) / (faceW / 2)));
+  const crown = { x: top.x + up.x * faceH * 0.16, y: top.y + up.y * faceH * 0.16 };
+  return { angle: Math.atan2(ry, rx), faceW, faceH, right, up, crown, yaw };
+}
+
+function bbox(pts, idx, pad = 0) {
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const i of idx) { const p = pts[i]; if (p.x < x0) x0 = p.x; if (p.y < y0) y0 = p.y; if (p.x > x1) x1 = p.x; if (p.y > y1) y1 = p.y; }
+  const w = x1 - x0, h = y1 - y0;
+  return { x: x0 - w * pad, y: y0 - h * pad, w: w * (1 + 2 * pad), h: h * (1 + 2 * pad) };
+}
+function polygon(g, pts, idx, ox, oy, k, grow = 1) {
+  let cx = 0, cy = 0; for (const i of idx) { cx += pts[i].x; cy += pts[i].y; } cx /= idx.length; cy /= idx.length;
+  idx.forEach((i, n) => {
+    const x = ((cx + (pts[i].x - cx) * grow) - ox) * k, y = ((cy + (pts[i].y - cy) * grow) - oy) * k;
+    n ? g.lineTo(x, y) : g.moveTo(x, y);
+  });
+  g.closePath();
+}
+
+const pool = new Map();
+function scratch(name, w, h) {
+  let c = pool.get(name);
+  if (!c) { c = document.createElement('canvas'); pool.set(name, c); }
+  w = Math.max(1, Math.round(w)); h = Math.max(1, Math.round(h));
+  if (c.width !== w || c.height !== h) { c.width = w; c.height = h; } else c.getContext('2d').clearRect(0, 0, w, h);
+  return c;
+}
+
+// 磨皮：把臉的區域縮小再放大（＝模糊，Safari 的畫布不支援 ctx.filter），只留在臉上、避開眼睛眉毛嘴巴，邊緣柔柔的
+function smoothSkin(g, source, pts, m, amount, pose) {
+  const box = bbox(pts, OVAL, 0.06);
+  const x0 = Math.max(0, box.x), y0 = Math.max(0, box.y);
+  const x1 = Math.min(m.W, box.x + box.w), y1 = Math.min(m.H, box.y + box.h);
+  if (x1 - x0 < 8 || y1 - y0 < 8) return;
+  const bw = x1 - x0, bh = y1 - y0;
+  // 模糊半徑跟臉的大小走：臉越大、縮得越小
+  const cell = Math.max(2, pose.faceW / (34 - amount * 0.12));
+  const sw = bw / cell, sh = bh / cell;
+  // 先半半縮小，避免一次縮太多出現鋸齒
+  const srcX = m.sx + x0 * m.sw / m.W, srcY = m.sy + y0 * m.sh / m.H, srcW = bw * m.sw / m.W, srcH = bh * m.sh / m.H;
+  let w = bw, h = bh, cur = null, flip = 0;
+  while (w / 2 > sw) {
+    w /= 2; h /= 2;
+    const c = scratch(`down${flip}`, w, h), cg = c.getContext('2d'); cg.imageSmoothingEnabled = true; cg.imageSmoothingQuality = 'high';
+    if (cur) cg.drawImage(cur, 0, 0, cur.width, cur.height, 0, 0, c.width, c.height); else cg.drawImage(source, srcX, srcY, srcW, srcH, 0, 0, c.width, c.height);
+    cur = c; flip ^= 1;
+  }
+  const small = scratch('small', sw, sh), sg = small.getContext('2d'); sg.imageSmoothingEnabled = true; sg.imageSmoothingQuality = 'high';
+  if (cur) sg.drawImage(cur, 0, 0, cur.width, cur.height, 0, 0, small.width, small.height); else sg.drawImage(source, srcX, srcY, srcW, srcH, 0, 0, small.width, small.height);
+  // 遮罩：臉（稍微內縮）減掉眼睛、眉毛、嘴巴、鼻孔，用小尺寸畫再放大，邊緣自然變柔
+  const mk = Math.min(1, 96 / Math.max(bw, bh));
+  const mask = scratch('mask', bw * mk, bh * mk), mg = mask.getContext('2d');
+  mg.fillStyle = '#000'; mg.beginPath(); polygon(mg, pts, OVAL, x0, y0, mk, 0.92); mg.fill();
+  mg.globalCompositeOperation = 'destination-out'; mg.beginPath();
+  polygon(mg, pts, EYE_R, x0, y0, mk, 1.6); polygon(mg, pts, EYE_L, x0, y0, mk, 1.6);
+  polygon(mg, pts, BROW_R, x0, y0, mk, 1.25); polygon(mg, pts, BROW_L, x0, y0, mk, 1.25);
+  polygon(mg, pts, LIP_OUT, x0, y0, mk, 1.12); polygon(mg, pts, NOSE_L, x0, y0, mk, 0.9);
+  mg.fill(); mg.globalCompositeOperation = 'source-over';
+  const layer = scratch('layer', bw, bh), lg = layer.getContext('2d'); lg.imageSmoothingEnabled = true; lg.imageSmoothingQuality = 'high';
+  lg.drawImage(small, 0, 0, small.width, small.height, 0, 0, bw, bh);
+  lg.globalCompositeOperation = 'source-atop'; lg.fillStyle = `rgba(255,238,236,${0.03 + amount / 100 * 0.05})`; lg.fillRect(0, 0, bw, bh);
+  lg.globalCompositeOperation = 'destination-in'; lg.drawImage(mask, 0, 0, mask.width, mask.height, 0, 0, bw, bh);
+  lg.globalCompositeOperation = 'source-over';
+  g.save(); g.globalAlpha = 0.15 + amount / 100 * 0.6; g.drawImage(layer, 0, 0, bw, bh, x0, y0, bw, bh); g.restore();
+}
+
+// 口紅：嘴唇外框減掉內框（張嘴時牙齒不會被塗到），用 multiply 疊色保留唇紋，邊緣略柔
+function paintLips(g, pts, color, amount) {
+  const box = bbox(pts, LIP_OUT, 0.15);
+  if (box.w < 4) return;
+  const k = Math.min(1, 90 / box.w);
+  const layer = scratch('lip', box.w * k, box.h * k), lg = layer.getContext('2d');
+  lg.fillStyle = color; lg.beginPath(); polygon(lg, pts, LIP_OUT, box.x, box.y, k); polygon(lg, pts, LIP_IN, box.x, box.y, k, 1.05); lg.fill('evenodd');
+  const a = amount / 100;
+  g.save(); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.globalCompositeOperation = 'multiply'; g.globalAlpha = 0.25 + a * 0.55; g.drawImage(layer, box.x, box.y, box.w, box.h);
+  g.globalCompositeOperation = 'source-over'; g.globalAlpha = a * 0.28; g.drawImage(layer, box.x, box.y, box.w, box.h);
+  g.restore();
+}
+
+// 頭飾：跟著頭轉、歪頭，轉頭時往那邊偏一點、寬度稍微收
+function drawHeadpiece(g, img, h, pose) {
+  if (!img?.naturalWidth) return;
+  const w = pose.faceW * h.w, hh = w * img.naturalHeight / img.naturalWidth;
+  const { crown, right, faceW, yaw } = pose; const down = { x: -pose.up.x, y: -pose.up.y };
+  const shift = h.place === 'side' ? 0 : yaw * 0.12;
+  const px = crown.x + (right.x * (h.dx + shift) + down.x * h.dy) * faceW;
+  const py = crown.y + (right.y * (h.dx + shift) + down.y * h.dy) * faceW;
+  g.save(); g.translate(px, py); g.rotate(pose.angle + (h.rot || 0) * Math.PI / 180);
+  g.scale(1 - Math.abs(yaw) * (h.dx ? 0.1 : 0.22), 1);
+  g.shadowColor = 'rgba(0,0,0,.22)'; g.shadowBlur = Math.max(2, faceW * 0.03); g.shadowOffsetY = faceW * 0.012;
+  g.drawImage(img, -w * h.ax, -hh * h.ay, w, hh); g.restore();
+}
+
+const imgs = new Map();
+export function headpieceImage(id) {
+  const h = headpieceById(id); if (!h.src) return null;
+  let img = imgs.get(id);
+  if (!img) { img = new Image(); img.decoding = 'async'; img.src = h.src; imgs.set(id, img); }
+  return img;
+}
+
+// 在 g 上（座標 = m.W × m.H 的裁切畫面）畫所有臉的特效
+export function drawFaceFx(g, source, faces, fx, m) {
+  if (!faces?.length || !fxActive(fx)) return 0;
+  const lip = lipById(fx.lip), hp = headpieceById(fx.crown), img = headpieceImage(hp.id);
+  let n = 0;
+  for (const lm of faces) {
+    if (!lm || lm.length < 468) continue;
+    const pts = project(lm, m); const pose = headPose(pts);
+    if (pose.faceW < 12) continue;
+    if (fx.smooth > 0) smoothSkin(g, source, pts, m, fx.smooth, pose);
+    if (lip.color && fx.lipAmt > 0) paintLips(g, pts, lip.color, fx.lipAmt);
+    if (img) drawHeadpiece(g, img, { place: hp.dx ? 'side' : 'crown', ...hp }, pose);
+    n += 1;
+  }
+  return n;
+}
+
+// ---------- 臉部追蹤器 ----------
+const SLOW_KEY = 'siang-collector:face-fx-slow:v1';
+const BASE = new URL('../vendor/mediapipe/', import.meta.url).href;
+
+// 一開始就看得出跑不動的手機：不支援 WebAssembly SIMD、沒有 WebGL、記憶體很小
+export function faceFxSupport() {
+  try {
+    if (typeof WebAssembly !== 'object') return 'old';
+    // (module (func (result v128) i32.const 0 i8x16.splat))
+    const simd = new Uint8Array([0, 97, 115, 109, 1, 0, 0, 0, 1, 5, 1, 96, 0, 1, 123, 3, 2, 1, 0, 10, 10, 1, 8, 0, 65, 0, 253, 15, 253, 98, 11]);
+    if (!WebAssembly.validate(simd)) return 'old';
+    if (navigator.deviceMemory && navigator.deviceMemory < 2) return 'old';
+    const c = document.createElement('canvas');
+    if (!(c.getContext('webgl2') || c.getContext('webgl'))) return 'old';
+    if (localStorage.getItem(SLOW_KEY)) return 'slow';
+  } catch { /* 無痕模式讀不到 localStorage 也沒關係 */ }
+  return 'ok';
+}
+export function rememberSlow(on) { try { on ? localStorage.setItem(SLOW_KEY, String(Date.now())) : localStorage.removeItem(SLOW_KEY); } catch { /* */ } }
+
+let loading = null;
+export function loadTracker() {
+  if (!loading) loading = (async () => {
+    const vision = await import(`${BASE}vision_bundle.mjs`);
+    const fileset = { wasmLoaderPath: `${BASE}vision_wasm_internal.js`, wasmBinaryPath: `${BASE}vision_wasm_internal.wasm` };
+    const make = (delegate) => vision.FaceLandmarker.createFromOptions(fileset, {
+      baseOptions: { modelAssetPath: `${BASE}face_landmarker.task`, delegate },
+      runningMode: 'VIDEO', numFaces: 3, minFaceDetectionConfidence: 0.5, minFacePresenceConfidence: 0.5, minTrackingConfidence: 0.5,
+    });
+    let lm; try { lm = await make('GPU'); } catch { lm = await make('CPU'); }
+    let last = 0;
+    return {
+      // 影片或照片都用 VIDEO 模式（時間戳要一直往前）
+      detect(source) {
+        const t = Math.max(last + 1, Math.round(performance.now())); last = t;
+        return lm.detectForVideo(source, t)?.faceLandmarks || [];
+      },
+    };
+  })().catch((err) => { loading = null; throw err; });
+  return loading;
+}
