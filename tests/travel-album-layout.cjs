@@ -15,6 +15,11 @@ const fs=require('node:fs');
    s.errands.album=Array.from({length:count},(_,i)=>({id:`trip-${i}`,place:['market','park','conv','beach','mountain','faraway'][i%6],nos:i%3===0?['002','003']:i%3===1?['001']:['037','001'],at:new Date().toISOString(),line:'一起出門的旅行紀念。',gains:['+30 能量'],cards:[],story:i%2?null:{id:'weather',title:'追著天氣跑',text:'一路看雲，也記得等對方一起走。'}}));
    localStorage.setItem(key,JSON.stringify(s));localStorage.setItem('siang-collector:residents:v1','[]');localStorage.setItem('siang-collector:theme:v1','sakura');
   },count);
+  async function openLast(){ // 同地點會合併成一張 ×N，先展開最後一組再點最後一趟
+   const g=p.locator('#errand-album .trip-group-btn').last();
+   if(await g.count()&&await g.getAttribute('aria-expanded')!=='true')await g.click();
+   await p.locator('#errand-album .trip-card-btn').last().click();
+  }
   async function bounds(dialog){
    const size=await p.locator(dialog).evaluate(e=>{
     const r=e.getBoundingClientRect();return {left:r.left,right:r.right,width:e.clientWidth,scroll:e.scrollWidth,window:innerWidth};
@@ -32,12 +37,12 @@ const fs=require('node:fs');
    await p.locator('#open-center').click();await p.locator('#open-errands').click();
    await p.locator('#errand-album').evaluate(e=>Promise.all([...e.querySelectorAll('img')].map(i=>i.decode().catch(()=>{}))));
    const save=await p.evaluate(()=>localStorage.getItem('siang-collector:v1'));
-   await bounds('#errand-dialog');assert.equal(await p.locator('#errand-album .trip-card-btn').count(),count);
+   await bounds('#errand-dialog');assert.equal(await p.locator('#errand-album > button').count(),Math.min(count,6),'one photo per place');
    const first=await p.locator('#errand-album .trip-card').first().boundingBox();assert(first.width<200,'album photo is a thumbnail, not a source-size portrait');
-   await p.locator('#errand-album .trip-card-btn').first().scrollIntoViewIfNeeded();
+   await p.locator('#errand-album > button').first().scrollIntoViewIfNeeded();
    if(count===1) await p.screenshot({path:`docs/review/travel-album-fix/album-${width}.png`});
    // Replay the last photo too, after scrolling through a full 40-entry album.
-   await p.locator('#errand-album .trip-card-btn').last().click();await p.locator('#errand-result[open]').waitFor();
+   await openLast();await p.locator('#errand-result[open]').waitFor();
    await p.locator('#errand-result-card').evaluate(e=>Promise.all([...e.querySelectorAll('img')].map(i=>i.decode().catch(()=>{}))));
    await bounds('#errand-result');assert.equal(await p.locator('#errand-result-ok').textContent(),'關閉');
    if(count===1)await p.screenshot({path:`docs/review/travel-album-fix/result-${width}.png`});
@@ -48,7 +53,7 @@ const fs=require('node:fs');
   await p.setViewportSize({width,height:612});
   await p.evaluate(()=>{document.documentElement.style.setProperty('--safe-top','47px');document.documentElement.style.setProperty('--safe-bottom','34px')});
   await p.locator('#home-errand').click();await bounds('#errand-dialog');
-  await p.locator('#errand-album .trip-card-btn').last().click();await bounds('#errand-result');await p.locator('#errand-result-ok').click();
+  await openLast();await bounds('#errand-result');await p.locator('#errand-result-ok').click();
   await p.locator('#close-errands').click();assert(await p.locator('#open-center').isVisible());
   assert.deepEqual(errors,[]);console.log(`${width}px: 1/40 album entries, decoded 1024/1254px portraits, result replay, close controls, short safe-area layout and unchanged progress PASS`);
   await c.close();

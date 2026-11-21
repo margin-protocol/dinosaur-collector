@@ -2886,12 +2886,39 @@ function renderErrands() {
   const counties = Object.keys(state.errands.cards).length;
   $('errand-collection').textContent = `旅行故事 ${Object.keys(er.stories).length} / ${STORIES.length} · 家鄉明信片 ${counties} / ${Object.keys(COUNTY_CHARACTER).length} · 一共出門 ${er.total} 次`;
   renderCardBox();
-  $('errand-album').replaceChildren(...(er.album.length ? er.album.map(entry => {
-    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'trip-card-btn'; btn.style.cssText = 'border:0;padding:0;background:none;color:inherit';
-    btn.append(tripCard(entry)); btn.setAttribute('aria-label', `${entry.nos.map(no => CHARACTERS[no].name).join('和')}去${PLACES[entry.place]?.name}`);
-    btn.addEventListener('click', () => showErrandResult({ ...entry, names: entry.nos.map(no => CHARACTERS[no].name).join('和') }, true));
-    return btn;
-  }) : [Object.assign(document.createElement('p'), { className: 'residents-intro', textContent: '還沒有旅行照片，派小湘出門看看吧！' })]));
+  $('errand-album').replaceChildren(...(er.album.length ? albumNodes(er.album) : [Object.assign(document.createElement('p'), { className: 'residents-intro', textContent: '還沒有旅行照片，派小湘出門看看吧！' })]));
+}
+// 旅行相簿：同一個地點合併成一張「×N」，點開再看每一趟（湘 11/21）
+let albumOpen = null;
+function tripBtn(entry, cls = 'trip-card-btn') {
+  const btn = mkEl('button', cls); btn.type = 'button';
+  btn.append(tripCard(entry)); btn.setAttribute('aria-label', `${entry.nos.map(no => CHARACTERS[no].name).join('和')}去${PLACES[entry.place]?.name}`);
+  btn.addEventListener('click', () => showErrandResult({ ...entry, names: entry.nos.map(no => CHARACTERS[no].name).join('和') }, true));
+  return btn;
+}
+function albumNodes(album) {
+  const groups = [];
+  for (const entry of album) { let g = groups.find(x => x.place === entry.place); if (!g) groups.push(g = { place: entry.place, list: [] }); g.list.push(entry); }
+  if (!groups.some(g => g.place === albumOpen && g.list.length > 1)) albumOpen = null;
+  const nodes = [];
+  for (const g of groups) {
+    if (g.list.length === 1) { nodes.push(tripBtn(g.list[0])); continue; }
+    const open = albumOpen === g.place; const name = PLACES[g.place]?.name || '';
+    const btn = mkEl('button', `trip-group-btn${open ? ' is-open' : ''}`); btn.type = 'button';
+    btn.setAttribute('aria-expanded', String(open)); btn.setAttribute('aria-label', `${name}的 ${g.list.length} 趟旅行`);
+    const card = tripCard({ ...g.list[0], story: g.list.some(e => e.story) });
+    card.append(mkEl('span', 'trip-card__count', `×${g.list.length}`)); btn.append(card);
+    btn.addEventListener('click', () => { albumOpen = open ? null : g.place; renderErrands(); });
+    nodes.push(btn);
+    if (open) {
+      const more = mkEl('div', 'errand-album__more');
+      more.append(mkEl('p', 'errand-album__more-title', `${PLACES[g.place]?.emoji || ''} ${name} · ${g.list.length} 趟`));
+      const grid = mkEl('div', 'errand-album__more-grid');
+      grid.append(...g.list.map(entry => { const b = tripBtn(entry); b.append(mkEl('small', 'trip-card__date', new Date(entry.at).toLocaleDateString('zh-TW', { month: 'numeric', day: 'numeric' }))); return b; }));
+      more.append(grid); nodes.push(more);
+    }
+  }
+  return nodes;
 }
 function openErrands() {
   errandChoice = null; errandPicked = []; $('errand-status').textContent = '';
@@ -2917,6 +2944,11 @@ async function doToss(county, count) {
   state = t.state; renderAll(); if ($('errand-dialog').open) renderErrands();
   return t.result || 0;
 }
+// 明信片盒用按鈕開關（iPhone Safari 上 <details> 點了不會展開，湘 11/21）
+$('card-box-summary').addEventListener('click', () => {
+  const open = $('card-box-summary').getAttribute('aria-expanded') !== 'true';
+  $('card-box-summary').setAttribute('aria-expanded', String(open)); $('card-box-grid').hidden = !open;
+});
 function renderCardBox() {
   const er = state.errands; const got = Object.keys(er.cards || {});
   const dupTotal = Object.values(er.cardDupes || {}).reduce((a, b) => a + b, 0);
