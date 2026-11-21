@@ -80,11 +80,13 @@ export function ensureKitchen(state) {
     ingredients: old ? count(old.ingredients, (id) => ING[id]) : { ...STARTER },
     meals: count(old?.meals, (id) => dishById(id)),
     known: Object.fromEntries(Object.entries(old?.known || {}).filter(([id, v]) => dishById(id) && typeof v === 'string')),
+    made: {}, // 每道料理做過幾次（料理小書用）；11/21 以前做過的至少算 1 次
     tasted: {},
     buffs: {},
     darkFed: Number.isFinite(old?.darkFed) ? Math.max(0, Math.floor(old.darkFed)) : 0,
     cooked: Number.isFinite(old?.cooked) ? Math.max(0, Math.floor(old.cooked)) : 0,
   };
+  for (const id of Object.keys(k.known)) { const n = old?.made?.[id]; k.made[id] = Number.isFinite(n) && n >= 1 ? Math.floor(n) : 1; }
   for (const [no, list] of Object.entries(old?.tasted || {})) {
     if (!CHARACTERS[no] || !list || typeof list !== 'object') continue;
     const clean = Object.fromEntries(Object.entries(list).filter(([id, r]) => dishById(id) && [0, 1, 2, 3].includes(r)));
@@ -107,6 +109,7 @@ export function cook(state, ids, now = new Date()) {
   k.meals[dish.id] = (k.meals[dish.id] || 0) + 1;
   const first = !k.known[dish.id];
   if (first) k.known[dish.id] = now.toISOString();
+  k.made ||= {}; k.made[dish.id] = (k.made[dish.id] || 0) + 1;
   k.cooked += 1;
   return { dish, first };
 }
@@ -167,6 +170,17 @@ export const ingredientText = (ids) => {
 };
 
 export const secretsFound = (state) => Object.values(state.kitchen?.tasted || {}).reduce((n, list) => n + Object.values(list).filter((r) => r === 3).length, 0);
+// 料理小書：做過的每一道（新的在前），附做過次數、第一次的時間、吃過的小湘
+export function cookbook(state) {
+  const k = state.kitchen || {};
+  const order = Object.entries(k.known || {}).filter(([id]) => dishById(id)).sort((a, b) => a[1].localeCompare(b[1]) || a[0].localeCompare(b[0]));
+  return order.map(([id, at], i) => {
+    const dish = dishById(id);
+    const eaters = Object.entries(k.tasted || {}).filter(([, list]) => id in list).map(([no, list]) => ({ no, rating: list[id] }));
+    eaters.sort((a, b) => b.rating - a.rating || a.no.localeCompare(b.no));
+    return { dish, no: i + 1, at, times: Math.max(1, k.made?.[id] || 0), left: k.meals?.[id] || 0, eaters, kind: dish.dark ? 'dark' : dish.recipe ? 'recipe' : 'home' };
+  }).reverse();
+}
 export const recipesFound = (state) => RECIPES.filter((r) => state.kitchen?.known?.[key(r.ings)]).length;
 export const darkFound = (state) => Object.keys(state.kitchen?.known || {}).filter((id) => dishById(id)?.dark).length;
 

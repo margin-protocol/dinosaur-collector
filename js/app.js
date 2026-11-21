@@ -3416,7 +3416,7 @@ function showErrandTab(tab) {
   $('errand-title').textContent = { battle: '討伐', kitchen: '小湘廚房' }[tab] || '派小湘出門';
   $('errand-title').previousElementSibling.textContent = { battle: 'BATTLE', kitchen: 'SIANG KITCHEN' }[tab] || 'ERRANDS';
   if (tab === 'battle') { renderBattle(); showTip('battle', $('battle-pane')); }
-  if (tab === 'kitchen') { kitchenResult = null; kitchenMeal = null; renderKitchen(); }
+  if (tab === 'kitchen') { kitchenResult = null; kitchenMeal = null; cookbookPage = 0; renderKitchen(); }
 }
 $('tab-errand').addEventListener('click', () => showErrandTab('errand'));
 $('tab-battle').addEventListener('click', () => showErrandTab('battle'));
@@ -3479,7 +3479,8 @@ function renderKitchen() {
   }
   // 圖鑑
   const known = Object.keys(k.known).length;
-  $('kitchen-stats').textContent = `做過 ${known} / 286 道 · 特色料理 ${kitchen.recipesFound(state)} / 8 · 黑暗料理 ${kitchen.darkFound(state)} 道 · 秘密最愛 ${kitchen.secretsFound(state)} 個`;
+  $('kitchen-stats').replaceChildren(...[`做過 ${known} / 286 道`, `特色料理 ${kitchen.recipesFound(state)} / 8`, `秘密最愛 ${kitchen.secretsFound(state)} 個`].flatMap((t, i) => [...(i ? [' · '] : []), Object.assign(document.createElement('span'), { textContent: t })]));
+  renderCookbook();
   $('kitchen-book').replaceChildren(...kitchen.RECIPES.map(rc => {
     const id = [...rc.ings].sort().join('+'); const got = Boolean(k.known[id]);
     const card = document.createElement('div'); card.className = `kitchen-recipe${got ? ' is-found' : ''}${rc.dark ? ' is-dark' : ''}`;
@@ -3496,6 +3497,55 @@ function renderKitchen() {
     return row;
   }) : [Object.assign(document.createElement('p'), { className: 'residents-intro', textContent: '還沒找到任何一位的秘密最愛。找到的時候，她會把那道料理畫成小愛心貼在這裡。' })]));
 }
+// 料理小書：做過的每一道，一頁 6 道，新做的在前
+const COOKBOOK_PER_PAGE = 6;
+const COOKBOOK_TABS = [['all', '全部'], ['recipe', '特色'], ['home', '家常'], ['dark', '黑暗']];
+let cookbookTab = 'all'; let cookbookPage = 0;
+function renderCookbook() {
+  const all = kitchen.cookbook(state);
+  const counts = Object.fromEntries(COOKBOOK_TABS.map(([id]) => [id, id === 'all' ? all.length : all.filter(e => e.kind === id).length]));
+  $('cookbook-tabs').replaceChildren(...COOKBOOK_TABS.map(([id, label]) => {
+    const btn = document.createElement('button'); btn.type = 'button'; btn.role = 'tab'; btn.setAttribute('aria-selected', String(cookbookTab === id)); btn.dataset.tab = id;
+    btn.append(label, Object.assign(document.createElement('small'), { textContent: counts[id] }));
+    btn.addEventListener('click', () => { cookbookTab = id; cookbookPage = 0; renderCookbook(); });
+    return btn;
+  }));
+  const list = cookbookTab === 'all' ? all : all.filter(e => e.kind === cookbookTab);
+  const pages = Math.max(1, Math.ceil(list.length / COOKBOOK_PER_PAGE));
+  cookbookPage = Math.min(Math.max(0, cookbookPage), pages - 1);
+  const shown = list.slice(cookbookPage * COOKBOOK_PER_PAGE, (cookbookPage + 1) * COOKBOOK_PER_PAGE);
+  const md = (iso) => { const d = new Date(iso); return Number.isNaN(d.getTime()) ? '' : `${d.getMonth() + 1}/${d.getDate()}`; };
+  $('cookbook-pages').replaceChildren(...(shown.length ? shown.map(e => {
+    const d = e.dish;
+    const card = document.createElement('article'); card.className = `cookbook-page is-${e.kind}`; card.dataset.dish = d.id;
+    card.innerHTML = '<div class="cookbook-page__head"><span class="cookbook-page__icons" aria-hidden="true"></span><span class="cookbook-page__no"></span></div><b></b><span class="cookbook-page__tag"></span><p class="cookbook-page__meta"></p><div class="cookbook-page__eaters"></div>';
+    card.querySelector('.cookbook-page__no').textContent = `No.${String(e.no).padStart(3, '0')}`;
+    card.querySelector('.cookbook-page__icons').textContent = d.ings.map(x => kitchen.ING[x].icon).join('');
+    card.querySelector('b').textContent = d.name;
+    card.querySelector('.cookbook-page__tag').textContent = e.kind === 'recipe' ? `特色｜${d.type}` : e.kind === 'dark' ? '黑暗料理' : '家常料理';
+    card.querySelector('.cookbook-page__meta').append(
+      Object.assign(document.createElement('span'), { textContent: `做過 ${e.times} 次` }),
+      Object.assign(document.createElement('span'), { textContent: md(e.at) && `${md(e.at)} 初登場` }),
+      Object.assign(document.createElement('span'), { className: 'cookbook-page__left', textContent: e.left ? `🍽 手上還有 ${e.left} 份` : '' }));
+    const eat = card.querySelector('.cookbook-page__eaters');
+    if (e.eaters.length) {
+      const MAX = 4;
+      eat.append(...e.eaters.slice(0, MAX).map(({ no, rating }) => {
+        const who = document.createElement('span'); who.className = 'cookbook-eater'; who.title = `${CHARACTERS[no].name}：${kitchen.RATINGS[rating].label}`;
+        const face = document.createElement('span'); face.className = 'cookbook-eater__face'; face.append(siangImg(no));
+        who.append(face, Object.assign(document.createElement('i'), { textContent: kitchen.RATINGS[rating].icon }));
+        return who;
+      }));
+      if (e.eaters.length > MAX) eat.append(Object.assign(document.createElement('small'), { textContent: `+${e.eaters.length - MAX}` }));
+    } else eat.append(Object.assign(document.createElement('small'), { textContent: '還沒給小湘吃過' }));
+    return card;
+  }) : [Object.assign(document.createElement('p'), { className: 'cookbook__empty', textContent: all.length ? '這一類還沒有做過喔。' : '小書還是空白的。煮出第一道料理，就會寫在第一頁。' })]));
+  $('cookbook-nav').hidden = pages <= 1;
+  $('cookbook-page').textContent = `第 ${cookbookPage + 1} / ${pages} 頁`;
+  $('cookbook-prev').disabled = cookbookPage === 0; $('cookbook-next').disabled = cookbookPage >= pages - 1;
+}
+$('cookbook-prev').addEventListener('click', () => { cookbookPage -= 1; renderCookbook(); });
+$('cookbook-next').addEventListener('click', () => { cookbookPage += 1; renderCookbook(); });
 $('kitchen-cook').addEventListener('click', async () => {
   if (kitchenBusy) return; kitchenBusy = true; $('kitchen-cook').disabled = true;
   try {
