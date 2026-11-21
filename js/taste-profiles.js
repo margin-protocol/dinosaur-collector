@@ -108,4 +108,5 @@ export const TASTES = {
   '106': { like: '果凍', dislike: '怪味', secret: ["cloud", "pudding", "star"] }, // 究級歐皇小湘（德寶依皮寶口味定位補）
   '107': { like: '濃甜', dislike: '怪味', secret: ["caramel", "moon", "pudding"] }, // 府城燈籠小湘：府城燈火豆花＝布丁粉＋焦糖糖水＋月光露（冰）
   '108': { like: '果香', dislike: '怪味', secret: ["gear", "moon", "strawberry"] }, // 柴郡貓小湘：彎月莓果塔＝齒輪餅乾（酥脆塔皮）＋月光露（彎月）＋草莓（酸甜莓果餡）
+  '109': { like: '酥脆', dislike: '怪味', secret: ["caramel", "gear", "mushroom"] }, // 白虎小湘：金穗豐收飯＝焦糖（金黃）＋齒輪餅乾（烘烤穀物）＋魔法蘑菇（濃郁香氣）
 };

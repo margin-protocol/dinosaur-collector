@@ -1267,6 +1267,17 @@
         "moon",
         "strawberry"
       ]
+    },
+    {
+      "no": "109",
+      "name": "白虎小湘",
+      "like": "酥脆",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "gear",
+        "mushroom"
+      ]
     }
   ]
 }
