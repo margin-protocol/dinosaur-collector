@@ -863,3 +863,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .review-result__reward { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; border: 1px dashed currentColor; font-size: 14px; }
 .review-result__note { margin-bottom: 18px; }
 .review-result__mission { margin: 0; font: 15px var(--font-display); letter-spacing: .06em; opacity: .85; overflow-wrap: anywhere; }
+.cloud-push { display:grid; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid #ad96b13d; }
+.cloud-push p { margin:0; font-size:12px; line-height:1.7; color:var(--pearl); }
+.cloud-push .btn { width:100%; margin:0; }

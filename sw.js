@@ -41,3 +41,17 @@ self.addEventListener('fetch', (event) => {
       .catch(() => caches.match(request, { ignoreSearch: true })),
   );
 });
+
+// 手機通知（11/21）：後台推來的通知內容是固定的一句話，點了打開遊戲
+self.addEventListener('push', (event) => {
+  let note = { title: '小湘收集器', body: '湘有新消息給你！', tag: 'siang' };
+  try { note = { ...note, ...(event.data ? event.data.json() : {}) }; } catch {}
+  event.waitUntil(self.registration.showNotification(note.title, { body: note.body, tag: note.tag, icon: 'assets/icons/siang-icon-v2-192.png', badge: 'assets/icons/siang-icon-v2-192.png', data: { url: './' } }));
+});
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    const open = list.find((c) => new URL(c.url).pathname.startsWith(new URL('./', self.registration.scope).pathname));
+    return open ? open.focus() : self.clients.openWindow('./');
+  }));
+});

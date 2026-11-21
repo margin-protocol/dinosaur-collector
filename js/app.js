@@ -60,6 +60,7 @@ import { CHECKIN_REWARDS, ensureCheckin, checkIn as monthlyCheckIn, checkedToday
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
+import { pushState, enablePush, disablePush, refreshPush } from './push.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -2336,6 +2337,7 @@ $('mission-input').addEventListener('change', async () => {
     const t = await updateState(current => { current.missions.pending[id] = { sid, thumb, at: new Date().toISOString() }; delete current.missions.status[id]; });
     state = t.state; renderAll(); renderMissions();
     $('missions-status').textContent = '上傳好了！等湘審核，通過會收進記憶檔案。';
+    if (cloudConfig()?.kind === 'siang' && (await pushState().catch(() => 'unsupported')) === 'off') $('missions-status').textContent += '\n想在審完時收到通知？到「雲端與備份」開啟手機通知 🔔';
   } catch (err) { $('missions-status').textContent = `上傳失敗：${err.message}`; }
 });
 
@@ -2634,7 +2636,37 @@ function renderCloud(message = '') {
   const last = lastBackup();
   $('cloud-last').textContent = last ? `上次備份：${new Date(last).toLocaleString('zh-TW')}（每天打開遊戲時自動備份）` : '還沒有備份過';
   $('cloud-status').textContent = message;
+  void renderPush();
 }
+// 手機通知（11/21）：只有小湘雲端（邀請碼）的玩家可以開
+const PUSH_HINTS = {
+  on: '已開啟：湘審完委託、寄紙條或回覆照片時，這支手機會跳通知。',
+  off: '打開後，湘審完委託、寄紙條或回覆照片時，就算沒開遊戲也會跳通知。',
+  'need-home-screen': 'iPhone 要先用 Safari 的「分享 → 加入主畫面」，再從主畫面的小湘打開，才能開通知。',
+  denied: '這支手機擋掉了通知。要開的話，到手機的設定裡把這個遊戲的通知打開。',
+  unsupported: '這個瀏覽器不支援通知，可以換成 Chrome 或把遊戲加入主畫面再試試。',
+};
+async function renderPush() {
+  const config = cloudConfig();
+  $('cloud-push').hidden = config?.kind !== 'siang';
+  if ($('cloud-push').hidden) return;
+  const st = await pushState().catch(() => 'unsupported');
+  $('push-hint').textContent = PUSH_HINTS[st];
+  $('push-toggle').hidden = !['on', 'off'].includes(st);
+  $('push-toggle').textContent = st === 'on' ? '關閉手機通知' : '🔔 開啟手機通知';
+  $('push-toggle').className = st === 'on' ? 'btn btn--quiet' : 'btn';
+  $('push-toggle').dataset.state = st;
+}
+$('push-toggle').addEventListener('click', async () => {
+  const config = cloudConfig(); if (config?.kind !== 'siang') return;
+  const on = $('push-toggle').dataset.state === 'on';
+  $('push-toggle').disabled = true;
+  try {
+    if (on) { await disablePush(config.token); $('cloud-status').textContent = '已關閉手機通知。'; }
+    else { await enablePush(config.token); $('cloud-status').textContent = '開好了！湘有新消息時這支手機會跳通知 🔔'; }
+  } catch (err) { $('cloud-status').textContent = `通知沒有開成功：${err.message}`; }
+  finally { $('push-toggle').disabled = false; void renderPush(); }
+});
 
 // 進度大小：圖鑑幾位為主，孵化次數次之。用來防止「進度不見的新手機」一連上雲端就把舊備份蓋掉（11/19）
 function progressOf(saveText) {
@@ -2823,6 +2855,7 @@ renderAll();
 renderExplore();
 setTimeout(showRestoreResult, 900); // 等開場切換畫面（showView 會關掉所有彈窗）跑完再打開
 void autoBackup().catch(() => {}).then(() => syncFromCloud(true));
+if (cloudConfig()?.kind === 'siang') void refreshPush(cloudConfig().token).catch(() => {});
 setInterval(() => { if (!document.hidden) void syncFromCloud(); }, 10 * 60 * 1000);
 void handleDateHash();
 addEventListener('hashchange', event => { if (/date=/.test(event.newURL)) void handleDateHash(event.newURL); });
