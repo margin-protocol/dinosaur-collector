@@ -5,10 +5,10 @@
 
 export const LIP_COLORS = [
   { id: 'none', name: '不擦' },
-  { id: 'sakura', name: '櫻花粉', color: '#e9577f' },
-  { id: 'peach', name: '蜜桃', color: '#f2775a' },
-  { id: 'maple', name: '楓紅', color: '#b3172f' },
-  { id: 'rosewood', name: '豆沙', color: '#b0505c' },
+  { id: 'sakura', name: '櫻花粉', color: '#c46a7c' },
+  { id: 'peach', name: '蜜桃', color: '#c97866' },
+  { id: 'maple', name: '楓紅', color: '#9a3542' },
+  { id: 'rosewood', name: '豆沙', color: '#a0636a' },
 ];
 
 // 頭飾：place 'crown' 以頭頂為準，'side' 以頭頂往旁邊移；dx/dy 以臉寬為單位（dx 往畫面右、dy 往下）
@@ -130,7 +130,7 @@ function smoothSkin(g, source, pts, m, amount, pose) {
   g.save(); g.globalAlpha = 0.1 + amount / 100 * 0.55; g.drawImage(layer, 0, 0, bw, bh, x0, y0, bw, bh); g.restore();
 }
 
-// 口紅：逐點算顏色，保留原本嘴唇的明暗和唇紋（只換色相、飽和度），邊緣一圈圈淡出（11/21 湘 iPhone 實測：舊版是一塊平平的貼紙）
+// 口紅（霧面）：逐點算顏色，保留原本嘴唇的明暗和唇紋（只換色相、飽和度），邊緣一圈圈淡出（11/21 湘 iPhone 實測：舊版是一塊平平的貼紙）
 // 預覽畫在透明畫布上，multiply 之類的混色沒有底圖可以混，所以這裡自己把嘴唇那塊的原圖讀進來算。
 const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
 const lum = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
@@ -152,13 +152,16 @@ function paintLips(g, source, pts, m, color, amount) {
   // 嘴唇本身的平均亮度當基準：比平均亮的地方（反光）保持亮、暗的地方（唇紋、嘴角）保持暗
   let sum = 0, n = 0;
   for (let i = 0; i < d.length; i += 4) if (mk[i + 3] > 200) { sum += lum(d[i], d[i + 1], d[i + 2]); n++; }
-  const avg = n ? sum / n : 128, a = 0.12 + amount / 100 * 0.58;
+  const avg = n ? sum / n : 128, a = 0.12 + amount / 100 * 0.56;
+  // 霧面（11/21 湘：太亮了要霧一點）：不比原本唇色亮、反光壓平、顏色帶一點原本的灰
+  const tone = Math.min(1, Math.max(0.74, avg / cl));
   for (let i = 0; i < d.length; i += 4) {
     const t = mk[i + 3] / 255 * a; if (!t) { d[i + 3] = 0; continue; }
     const L = lum(d[i], d[i + 1], d[i + 2]);
-    const f = Math.pow(L / avg, 1.1) * Math.min(1.15, Math.max(0.75, avg / cl));
+    const r = L / avg, f = (r > 1 ? 1 + (r - 1) * 0.2 : Math.pow(r, 0.85)) * tone;
     // 顏色直接換成口紅色（帶原本明暗），透明度 = 遮罩 × 濃淡：疊在原圖上就是兩者混合，邊緣自然淡出
-    d[i] = Math.min(255, cr * f); d[i + 1] = Math.min(255, cg * f); d[i + 2] = Math.min(255, cb * f);
+    const gray = L * 0.85;
+    d[i] = Math.min(255, cr * f * 0.92 + gray * 0.08); d[i + 1] = Math.min(255, cg * f * 0.92 + gray * 0.08); d[i + 2] = Math.min(255, cb * f * 0.92 + gray * 0.08);
     d[i + 3] = Math.round(t * 255);
   }
   wg.putImageData(img, 0, 0);
