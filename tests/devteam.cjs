@@ -31,13 +31,18 @@ assert.deepEqual(r.c3,{eggs:['088'],day:3});assert.deepEqual(r.eggs,['086:keepsa
 assert.equal(r.evNo,false);assert.equal(r.ev,true);assert.equal(r.r1,true,'第一次一定出現');assert.equal(r.ev2,false,'同一天只擲一次');assert.equal(r.r2,false);assert.equal(r.r3,true);assert.equal(r.ur,'UR');
 // 實際畫面：三寶入住 → 茶水間彩蛋；圖鑑顯示進度；狂戳德寶小鴨掉下來
 await p.click('#intro-ok');
+// 先離開遊戲頁再改存檔（11/21）：遊戲頁還開著的話，它下一次存檔會讀到改好的存檔，
+// 在 reload 前就先把「今天的茶水間彩蛋」擲掉了，重開後就等不到。改到同網域的空白頁改，遊戲程式不會跑。
+await p.waitForFunction(()=>JSON.parse(localStorage.getItem('siang-collector:v1'))?.seenIntro===true);
+await p.goto('http://127.0.0.1:8000/tests/__blank__');
 await p.evaluate(()=>{const k='siang-collector:v1',s=JSON.parse(localStorage.getItem(k));s.hatched=10;s.dex={'001':{at:'x'},'086':{at:'x'},'087':{at:'x'},'088':{at:'x'}};localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:residents:v1',JSON.stringify(['086','087','088']));});
-await p.reload();await p.locator('#devteam-event[open]').waitFor({timeout:8000});
+await p.goto('http://127.0.0.1:8000');await p.locator('#devteam-event[open]').waitFor({timeout:8000});
 for(let i=0;i<30&&await p.locator('#devteam-event[open]').count();i++)await p.locator('#devteam-event-next').click();
 assert.equal(await p.locator('#devteam-event[open]').count(),0);
 let s=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v1')));assert.equal(s.devteam.eventSeen,true);
 const doll=p.locator('.resident-slot[data-character="087"] .resident-static');
-for(let i=0;i<5;i++){await doll.click({force:true});await p.waitForTimeout(150);}
+// 小湘們會在房間裡走動，用座標點有時會點到疊在上面的皮寶；直接對德寶本人送 click（11/21）
+for(let i=0;i<5;i++){await doll.dispatchEvent('click');await p.waitForTimeout(150);}
 await p.waitForTimeout(200);assert.equal(await p.locator('.room-duck').count(),1,'小鴨掉下來');
 assert.match((await p.locator('.resident-bubble').allTextContents()).join('|'),/排到下一個版本/);
 if(process.env.SHOT)await p.screenshot({path:process.env.SHOT});
