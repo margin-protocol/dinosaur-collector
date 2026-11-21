@@ -2,11 +2,13 @@
 .epilogue { width:min(calc(100vw - 16px),460px); max-height:calc(100dvh - 16px); padding:0; overflow:hidden; border-radius:18px; background:var(--t-panel); color:var(--t-text); text-align:left; font-family:var(--font-display); }
 .epi__stage { position:relative; aspect-ratio:4/5; max-height:calc(100dvh - 16px); margin:0 auto; overflow:hidden; isolation:isolate; background:#2b1d1a; user-select:none; -webkit-user-select:none; -webkit-tap-highlight-color:transparent; outline:none; }
 .epi__stage:focus-visible { box-shadow:inset 0 0 0 2px var(--t-accent); }
-.epi__cam { position:absolute; inset:0; transition:transform 1.6s cubic-bezier(.35,.1,.25,1),transform-origin 1.6s cubic-bezier(.35,.1,.25,1); will-change:transform; }
+.epi__cam { position:absolute; inset:0; container-type:size; transition:transform 1.6s cubic-bezier(.35,.1,.25,1),transform-origin 1.6s cubic-bezier(.35,.1,.25,1); will-change:transform; }
 .epi__bg { display:block; width:100%; height:100%; object-fit:cover; transition:filter .8s; }
 .epi__stage[data-tone="hush"] .epi__bg { filter:brightness(.78) saturate(.75); }
 .epi__stage[data-tone="cool"] .epi__bg { filter:brightness(.82) saturate(.45) hue-rotate(-8deg); }
 .epi__stage[data-tone="blur"] .epi__bg { filter:blur(7px) brightness(.9) saturate(.9); }
+.epi__stage[data-tone="storm"] .epi__bg { filter:brightness(.62) saturate(.6) hue-rotate(12deg); }
+.epi__stage[data-tone="sunset"] .epi__bg { filter:sepia(.18) saturate(1.15) brightness(1.02); }
 .epi__stage::after { content:""; position:absolute; inset:0; z-index:1; pointer-events:none; background:radial-gradient(120% 90% at 50% 40%,transparent 60%,#1a0f0c55); }
 
 .epi__cast { position:absolute; inset:0; z-index:2; pointer-events:none; }
@@ -19,24 +21,48 @@
 .epi__actor.is-T1 { left:0; width:37%; }
 .epi__actor.is-T2 { left:31%; width:37%; bottom:27%; }
 .epi__actor.is-T3 { right:-1%; width:38%; }
+.epi__actor.is-P { right:10%; width:46%; bottom:12%; }
 .epi__actor[data-key="dino"].is-L { left:6%; width:42%; bottom:24%; }
 .epi__actor.is-dim { filter:brightness(.62) saturate(.8); }
 .epi__actor.is-on:not(.is-C) { transform:translateY(-2%) scale(1.04); }
 .is-pulled .epi__actor[data-key="kingCry"].is-R { right:14%; transform:rotate(-7deg); }
 
 .fx-hop { animation:epi-hop .55s ease-out; }
+.fx-lean { animation:epi-lean .9s ease-out both; }
+.fx-fidget { animation:epi-fidget .45s ease-in-out 3; }
+.fx-nod { animation:epi-nod .5s ease-in-out .15s 1; }
+.fx-puff { animation:epi-puff .9s cubic-bezier(.3,1.6,.5,1) both; }
+.fx-peek { animation:epi-peek 1.6s ease-out both; }
+.is-C.fx-puff { animation-name:epi-puff-c; }
 .fx-droop { animation:epi-droop 1.4s ease-in-out both; }
 .fx-droop-end { transform:rotate(-5deg); }
 .fx-shake { animation:epi-shake .9s ease-in-out 2; }
 .fx-bounce { animation:epi-bounce .5s cubic-bezier(.3,1.6,.5,1); }
 .fx-shrink { animation:epi-shrink .6s ease-out forwards; }
 .is-C.fx-droop { animation-name:epi-droop-c; }
+@keyframes epi-lean { 0% { transform:translateX(6%); } 60% { transform:translateX(-7%) rotate(-3deg); } 100% { transform:translateX(-5%) rotate(-2deg); } }
+@keyframes epi-fidget { 50% { transform:rotate(-2deg) translateY(1%); } }
+@keyframes epi-nod { 50% { transform:translateY(5%) scaleY(.95); } }
+@keyframes epi-puff { 40% { transform:scale(1.12) translateY(-3%); } 100% { transform:scale(1.06) translateY(-2%); } }
+@keyframes epi-puff-c { 0% { transform:translateX(-50%); } 40% { transform:translateX(-50%) scale(1.12) translateY(-3%); } 100% { transform:translateX(-50%) scale(1.06) translateY(-2%); } }
+@keyframes epi-peek { from { transform:translateY(45%); opacity:0; } to { transform:none; opacity:1; } }
 @keyframes epi-hop { 40% { transform:translateY(-8%) scale(1.04); } }
 @keyframes epi-droop { 20% { transform:rotate(4deg); } 45% { transform:rotate(-5deg); } 70%,100% { transform:rotate(-3deg) translateY(2%); } }
 @keyframes epi-droop-c { 0% { transform:translateX(-50%); } 20% { transform:translateX(-50%) rotate(4deg); } 45% { transform:translateX(-50%) rotate(-5deg); } 70%,100% { transform:translateX(-50%) rotate(-3deg) translateY(2%); } }
 @keyframes epi-shake { 25% { transform:rotate(-5deg); } 75% { transform:rotate(5deg); } }
 @keyframes epi-bounce { 50% { transform:scale(1.08,.94); } }
 @keyframes epi-shrink { to { transform:scale(.9) translateY(3%); filter:brightness(.62) saturate(.8); } }
+
+/* 蘑菇的木牌（跟著鏡頭縮放，位置對齊 helping 插畫裡的牌子） */
+.epi__sign { position:absolute; left:77.6%; top:45.7%; width:19.6%; height:8.6%; display:none; flex-direction:column; justify-content:center; align-items:center; gap:2%; border-radius:4px; transform:rotate(-2deg); background:linear-gradient(#c58f5a,#a8713f); box-shadow:inset 0 0 0 1px #6e4423aa; color:#3e2412; font:700 2.3cqw/1.15 var(--font-display); letter-spacing:.04em; }
+.has-sign .epi__sign { display:flex; }
+.epi__sign span { animation:epi-fade .6s ease-out both; }
+/* 打雷閃光 */
+.epi__stage::before { content:""; position:absolute; inset:0; z-index:4; pointer-events:none; background:#fffbe8; opacity:0; }
+.epi__stage[data-flash="big"]::before { animation:epi-flash-big .9s ease-out; }
+.epi__stage[data-flash="soft"]::before { animation:epi-flash-soft .7s ease-out; }
+@keyframes epi-flash-big { 0%,30% { opacity:.95; } 15% { opacity:.3; } 100% { opacity:0; } }
+@keyframes epi-flash-soft { 20% { opacity:.35; } 100% { opacity:0; } }
 
 /* 黏成一串的邀請卡 */
 .epi__cards { position:absolute; z-index:3; left:30%; top:42%; width:44%; display:flex; gap:2px; align-items:center; transform-origin:0 50%; transform:scaleX(0); opacity:0; transition:transform .9s cubic-bezier(.3,1.3,.5,1),opacity .3s; pointer-events:none; }
@@ -83,6 +109,10 @@
 .epi__card small { font-size:15px; color:#f1cfb5; letter-spacing:.08em; }
 .epi__card small:empty { display:none; }
 .epi__stage[data-kind="card"] .epi__card { opacity:1; pointer-events:auto; }
+.epi__stage[data-card="over"] .epi__card { background:#1a0f0cb0; }
+.epi__stage[data-card="over"] .epi__card b { font-size:19px; letter-spacing:.12em; }
+.epi__stage[data-card="boom"] .epi__card { background:#fffdf3; color:#3a2a40; transition:none; }
+.epi__stage[data-card="boom"] .epi__card b { font-size:30px; letter-spacing:.06em; }
 .epi__stage[data-kind="card"] .epi__box, .epi__stage:is([data-kind="stamp"],[data-kind="end"]) .epi__box { opacity:0; pointer-events:none; }
 .epi__stamp { position:absolute; z-index:4; right:7%; bottom:8%; padding:8px 14px; border:2px solid #b5384a; border-radius:8px; color:#b5384a; background:#fff6eedd; font-size:20px; font-weight:700; letter-spacing:.16em; transform:rotate(-8deg); opacity:0; pointer-events:none; }
 .epi__stage[data-kind="stamp"] .epi__stamp { animation:epi-stamp .6s 1.2s cubic-bezier(.3,1.6,.5,1) both; }
@@ -108,6 +138,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .epi__cam, .epi__actor, .epi__cards, .epi__bg { transition:none; }
-  .epilogue [class*="fx-"], .epi__hint, .has-spark .epi__spark i, .epi__end, .epi__stage[data-kind="stamp"] .epi__stamp { animation:none; }
+  .epilogue [class*="fx-"], .epi__stage::before, .epi__hint, .has-spark .epi__spark i, .epi__end, .epi__stage[data-kind="stamp"] .epi__stamp { animation:none; }
   .epi__stage[data-kind="stamp"] .epi__stamp { opacity:1; }
 }

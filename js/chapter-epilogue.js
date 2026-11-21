@@ -1,12 +1,13 @@
 // 章節尾聲劇場：第一次打倒章節 Boss 後播放的純故事演出（湘 11/21 選 A 劇場對話版）。
 // 只負責演出：不讀寫存檔、不發獎勵。什麼時候播由 app.js 決定（第一次通關自動播，檔案館可重看）。
-// 劇本照湘 11/21 給的第一章六幕＋片尾彩蛋；素材在 assets/storybooks/chapter-one/。
+// 劇本照湘 11/21 給的第一、二章六幕＋片尾彩蛋；素材在 assets/storybooks/chapter-one/、chapter-two/。
 // 每一句（beat）沒寫的 bg / cam / cast / tone 會沿用上一句。
 // cam: [x%, y%, 放大倍數]，以該點為中心放大；pan: 這句播放時慢慢移到的位置。
-// cast: [[角色, 站位], …]；fx: { 角色: 動作 }；prop: 'cards'（黏成一串的邀請卡）。
+// cast: [[角色, 站位], …]；fx: { 角色: 動作 }；prop: 'cards'（黏成一串的邀請卡）／'sign'（蘑菇的木牌，sign: 牌子上的字）。
+// card: 全黑轉場字卡（over: 疊在畫面上；boom: 白光大字）；flash: 'soft' | 'big' 打雷閃光。
 import { characterSources, loadWithFallback, CHARACTERS } from './eggs.js';
 
-const STORY = 'assets/storybooks/chapter-one/';
+const STORY = 'assets/storybooks/chapter-one/', STORY2 = 'assets/storybooks/chapter-two/';
 const ACTORS = {
   siang: { name: '原味小湘', src: characterSources(CHARACTERS['001'].image) },
   king: { name: '焦糖大王', src: ['assets/enemies/chapter-01/ch1-boss-caramel-king.webp'] },
@@ -15,8 +16,17 @@ const ACTORS = {
   sock: { name: '襪子遊俠', src: ['assets/enemies/chapter-01/ch1-02-sock-ranger.webp'] },
   bento: { name: '碎碎念便當盒', src: ['assets/enemies/chapter-01/ch1-03-nagging-bento.webp'] },
   dino: { name: '小恐龍', src: ['assets/mascot/dinosaur-idle.webp'] },
+  thunder: { name: '雷雷大魔王', src: ['assets/enemies/chapter-02/ch2-boss-thunder-king.webp'] },
+  thunderShy: { name: '雷雷大魔王', src: [`${STORY2}thunder-shy.webp`] },
+  sneeze: { name: '噴嚏烏雲', src: ['assets/enemies/chapter-02/ch2-01-sneeze-cloud.webp'] },
+  shadow: { name: '迷路影子', src: ['assets/enemies/chapter-02/ch2-02-lost-shadow.webp'] },
+  mushroom: { name: '生氣蘑菇', src: ['assets/enemies/chapter-02/ch2-03-angry-mushroom.webp'] },
 };
-const BG = { hall: `${STORY}hall.webp`, banquet: `${STORY}banquet.webp`, afterparty: `${STORY}afterparty.webp` };
+const BG = {
+  hall: `${STORY}hall.webp`, banquet: `${STORY}banquet.webp`, afterparty: `${STORY}afterparty.webp`,
+  valley: `${STORY2}valley.webp`, heardYou: `${STORY2}heard-you.webp`, helping: `${STORY2}helping.webp`,
+  seeYou: `${STORY2}see-you.webp`, welcomeHome: `${STORY2}welcome-home.webp`, aftermath: `${STORY2}bonus-aftermath.webp`,
+};
 
 export const EPILOGUES = {
   'caramel-king': {
@@ -54,6 +64,73 @@ export const EPILOGUES = {
       { bg: 'afterparty', tone: '', cast: [], cam: [50, 45, 1.12], pan: [50, 50, 1], stamp: '第一章・完' },
     ],
   },
+  'thunder-king': {
+    chapter: 2, title: '烏雲山谷', subtitle: '尾聲・小聲一點，也聽得見', next: '第三章《故障的玩具星球》',
+    beats: [
+      { act: '最後一聲雷', bg: 'valley', cam: [50, 55, 1], tone: 'storm', cast: [['thunderShy', 'C']], text: '最後一道閃電熄滅。', flash: 'big' },
+      { text: '雷雷大魔王的閃電瀏海軟軟垂下，連披風都不蓬鬆了。', fx: { thunderShy: 'droop' } },
+      { cast: [], cam: [22, 45, 1.6], text: '牠偷偷看向吊橋。' },
+      { cam: [50, 55, 1], cast: [['siang', 'L'], ['thunderShy', 'R']], text: '小湘才剛轉身，牠就急忙往前飄了一點。', fx: { thunderShy: 'lean' } },
+      { who: 'thunderShy', text: '「你、你們……」', fx: { thunderShy: 'lean' } },
+      { who: 'thunderShy', text: '「不會就這樣走掉吧？」' },
+      { act: '原來，牠一直在看橋', tone: '', text: '小湘停下腳步。雷雷大魔王低頭搓著兩隻雲拳。', fx: { thunderShy: 'fidget' } },
+      { who: 'thunderShy', voice: true, cast: [], cam: [20, 44, 1.7], pan: [32, 46, 1.7], text: '「以前，吊橋每天都會晃。」' },
+      { who: 'thunderShy', voice: true, text: '「有人來野餐，有人躲雨……還有人會坐在那邊，陪本王看夕陽。」' },
+      { cam: [80, 42, 1.9], tone: 'cool', text: '牠指向岩台旁一塊平平的石頭。上面積著幾片沒有人坐過的落葉。' },
+      { who: 'thunderShy', voice: true, text: '「後來這裡安靜了。」' },
+      { who: 'thunderShy', tone: '', cam: [50, 55, 1], cast: [['siang', 'L'], ['thunderShy', 'R']], text: '「本王想說……再大聲一點，總會有人聽見吧。」' },
+      { act: '這麼近，聽得見的', bg: 'heardYou', cast: [], cam: [57, 30, 1.6], pan: [50, 45, 1.05], text: '小湘走近，替牠扶正歪掉的皇冠。' },
+      { who: 'siang', cam: [30, 46, 1.5], text: '「可是你雷打得那麼大，大家都以為你在生氣耶。」' },
+      { cam: [65, 44, 1.8], text: '雷雷大魔王愣住。' },
+      { who: 'thunder', text: '「……本王看起來，很兇嗎？」' },
+      { bg: 'valley', cam: [50, 55, 1], cast: [['sneeze', 'T1'], ['shadow', 'T2'], ['mushroom', 'T3']], text: '後面的三位小怪，同時點了一下頭。', fx: { sneeze: 'nod', shadow: 'nod', mushroom: 'nod' } },
+      { cast: [['siang', 'L'], ['thunderShy', 'R']], text: '牠的雲角瞬間垂得更低。小湘忍住笑。', fx: { thunderShy: 'droop' } },
+      { who: 'siang', bg: 'heardYou', cast: [], cam: [45, 45, 1.25], text: '「你現在想說什麼？」' },
+      { text: '沉默了一會兒。', hold: 1400 },
+      { who: 'thunder', voice: true, cam: [65, 44, 1.7], text: '「……想找你們玩。」' },
+      { who: 'siang', cam: [40, 44, 1.4], pan: [50, 50, 1], text: '「嗯，聽見了。」' },
+      { act: '山谷重新開門', bg: 'helping', cam: [40, 22, 1.9], text: '噴嚏烏雲遞來一條乾淨手帕。' },
+      { cam: [47, 90, 1.8], text: '迷路影子蹲在地上，把吊橋和入口畫進新地圖。' },
+      { cam: [97, 50, 1.8], prop: 'sign', sign: ['歡迎來玩。'], text: '生氣蘑菇則抱來一塊木牌，認真掛好：「歡迎來玩。」' },
+      { prop: 'sign', sign: ['歡迎來玩。', '請勿踩菇。'], text: '想了想，牠又補上一行：「請勿踩菇。」' },
+      { cam: [76, 18, 1.8], prop: 'sign', sign: ['歡迎來玩。', '請勿踩菇。'], text: '雷雷大魔王看著大家忙進忙出，幾次張開嘴，又不好意思地閉上。' },
+      { who: 'thunder', voice: true, prop: 'sign', sign: ['歡迎來玩。', '請勿踩菇。'], cam: [60, 45, 1.1], text: '最後只小小聲地說：「那個……謝謝。」' },
+      { prop: 'sign', sign: ['歡迎來玩。', '請勿踩菇。'], pan: [50, 50, 1], text: '這一次，大家都聽見了。' },
+      { act: '今天先說再見', bg: 'seeYou', tone: 'sunset', cam: [50, 45, 1.15], pan: [50, 50, 1], text: '夕陽照進山谷，大家準備回家。' },
+      { cam: [70, 40, 1.8], text: '雷雷大魔王一路送到吊橋前，披風的小角偷偷勾著欄杆。' },
+      { who: 'thunder', text: '「那、那下次來的時候……」' },
+      { who: 'siang', cam: [25, 40, 1.7], text: '「會先跟你打招呼的。」' },
+      { bg: 'valley', cam: [50, 55, 1], cast: [['siang', 'L'], ['thunder', 'R']], text: '牠立刻挺起胸口。', fx: { thunder: 'puff' } },
+      { who: 'thunder', text: '「本王才沒有在等！」', fx: { thunder: 'hop' } },
+      { text: '停了一下。', hold: 1200 },
+      { who: 'thunderShy', cast: [['siang', 'L'], ['thunderShy', 'R']], text: '「……不過，那塊看夕陽的石頭，本王會擦乾淨。」' },
+      { card: '幾天後……' },
+      { act: '很小聲的歡迎', tone: '', cast: [], cam: [22, 45, 1.6], pan: [26, 47, 1.6], text: '幾天後，吊橋又輕輕晃了起來。' },
+      { who: 'siang', voice: true, text: '「雷雷，我們來了！」' },
+      { cam: [50, 55, 1], cast: [['thunder', 'P']], text: '岩台後面，立刻冒出一小撮金色閃電。接著是一頂差點戴反的皇冠。', fx: { thunder: 'peek' } },
+      { text: '山谷裡響起一聲很輕、很輕的雷。', flash: 'soft' },
+      { who: 'thunder', voice: true, text: '「轟隆。」' },
+      { who: 'siang', cast: [['siang', 'L'], ['thunder', 'R']], text: '「嗯，我們回來了。」' },
+      { bg: 'welcomeHome', cast: [], cam: [50, 42, 1.15], pan: [50, 50, 1], text: '大家坐在擦乾淨的石頭旁。雷雷大魔王努力把披風攤大一點，讓每個人都有地方坐。' },
+      { card: '這一天，雷聲很小。', sub: '回應牠的聲音，卻有好多個。', over: true },
+      { card: '片尾彩蛋', sub: '音量調好了……大概 ⛈' },
+      { act: '音量調好了……大概', bg: 'valley', cam: [62, 70, 1.25], cast: [['thunder', 'C']], text: '雷雷大魔王對著小水窪，練習打招呼。' },
+      { who: 'thunder', text: '「歡迎回來。」' },
+      { text: '一聲小小的雷。', flash: 'soft' },
+      { who: 'thunder', text: '「很好。自然、穩重，非常有王者風範。」', fx: { thunder: 'puff' } },
+      { who: 'dino', voice: true, text: '遠處傳來小恐龍的聲音：「雷雷——我們帶點心來了！」' },
+      { who: 'thunder', text: '「你們真的又來了！！！！」', fx: { thunder: 'hop' } },
+      { card: '轟——隆——！！！！', boom: true },
+      { bg: 'aftermath', cast: [], cam: [18, 67, 1.8], pan: [62, 55, 1.05], text: '再亮起時，小湘的頭髮蓬成一團，迷路影子的地圖貼在臉上，生氣蘑菇正用兩隻小手死死按住帽子。' },
+      { cam: [53, 22, 1.7], text: '雷雷大魔王慢慢縮小。' },
+      { who: 'thunder', text: '「……本王只是太開心了。」' },
+      { who: 'mushroom', cam: [78, 53, 1.8], text: '「我知道！！但你先救一下我的帽子！！」', shake: true },
+      { who: 'dino', cam: [80, 72, 1.8], text: '小恐龍從點心籃裡探出頭：「所以……今天也在這裡吃嗎？」' },
+      { cam: [53, 22, 1.7], text: '雷雷大魔王立刻點頭，又趕快捂住自己的嘴巴。從指縫漏出一聲小小的——' },
+      { who: 'thunder', voice: true, text: '「轟隆♡」', flash: 'soft' },
+      { cam: [50, 45, 1.12], pan: [50, 50, 1], stamp: '第二章・完' },
+    ],
+  },
 };
 export const epilogueFor = (enemyId) => EPILOGUES[enemyId] || null;
 
@@ -64,7 +141,7 @@ export function resolveBeats(ep) {
     if (b.card) return { ...b, kind: 'card' };
     pulled = b.prop === 'cards' && (pulled || b.fx?.kingCry === 'pulled');
     cur = { ...cur, ...Object.fromEntries(['bg', 'cam', 'cast', 'tone', 'act'].filter((k) => k in b).map((k) => [k, b[k]])) };
-    return { ...cur, kind: b.stamp ? 'stamp' : 'line', who: b.who || null, text: b.text || '', fx: b.fx || {}, prop: b.prop || null, pulled, pan: b.pan || null, voice: Boolean(b.voice), shake: Boolean(b.shake), hold: b.hold || 0, stamp: b.stamp || null, newAct: 'act' in b };
+    return { ...cur, kind: b.stamp ? 'stamp' : 'line', who: b.who || null, text: b.text || '', fx: b.fx || {}, prop: b.prop || null, sign: b.sign || null, flash: b.flash || null, pulled, pan: b.pan || null, voice: Boolean(b.voice), shake: Boolean(b.shake), hold: b.hold || 0, stamp: b.stamp || null, newAct: 'act' in b };
   });
 }
 
@@ -73,7 +150,7 @@ const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls)
 export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   dialog.innerHTML = `<div class="epi__stage" tabindex="0" aria-label="尾聲劇場，點一下看下一句">
-    <div class="epi__cam"><img class="epi__bg" alt=""></div>
+    <div class="epi__cam"><img class="epi__bg" alt=""><div class="epi__sign" aria-hidden="true"></div></div>
     <div class="epi__cast"></div>
     <div class="epi__cards" aria-hidden="true">${'<i></i>'.repeat(6)}</div>
     <div class="epi__spark" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i></div>
@@ -107,6 +184,8 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     q('.epi__count').textContent = `${String(index + 1).padStart(2, '0')} / ${String(beats.length).padStart(2, '0')}`;
     if (b.kind === 'card') {
       q('.epi__card b').textContent = b.card; q('.epi__card small').textContent = b.sub || '';
+      stage.dataset.card = b.boom ? 'boom' : b.over ? 'over' : '';
+      stage.classList.remove('is-shake'); if (b.boom && !reduced.matches) { void stage.offsetWidth; stage.classList.add('is-shake'); }
       full = ''; return finishLine(1800);
     }
     if (!bg.src.endsWith(BG[b.bg])) bg.src = BG[b.bg];
@@ -126,6 +205,8 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
       else if (slot && fx) a.node.classList.add(`fx-${fx}-end`);
     }
     stage.classList.toggle('has-cards', b.prop === 'cards');
+    stage.classList.toggle('has-sign', b.prop === 'sign'); q('.epi__sign').replaceChildren(...(b.sign || []).map((t) => el('span', '', t)));
+    stage.dataset.flash = ''; if (b.flash && !reduced.matches) { void stage.offsetWidth; stage.dataset.flash = b.flash; }
     stage.classList.toggle('is-pulled', b.pulled);
     stage.classList.toggle('has-spark', b.fx.dino === 'sparkle');
     stage.classList.remove('is-shake'); if (b.shake && !reduced.matches) { void stage.offsetWidth; stage.classList.add('is-shake'); }
