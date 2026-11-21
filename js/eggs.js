@@ -34,6 +34,7 @@ export const EGGS = {
       '108': 0.6, // SSR 摯友小湘・柴郡貓小湘（湘 11/21 歸進摯友），SSR 機率同恐龍小湘
       '109': 0.3, // UR 白虎小湘（湘 11/21 先放摯友），UR 權重同 OWNED_WEIGHT
       '110': 8, '111': 5, '112': 2, '113': 0.6, '114': 0.3, // 月見町花街五階（湘 11/21）：N／R／SR 比照動物小湘，SSR 同恐龍小湘、UR 同白虎小湘
+      '115': 2, '116': 0.6, // 十五年友情・法律ㄊㄧ雙人組（湘 11/21）：SR 律師ㄊㄧ比照摯友 SR、SSR 檢察官ㄊㄧ比照柴郡貓
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -92,6 +93,7 @@ export const EGGS = {
       '108': 1.5, // SSR 摯友小湘・柴郡貓小湘
       '109': 0.75, // UR 白虎小湘（SSR 的一半）
       '110': 6, '111': 8, '112': 5, '113': 1.5, '114': 0.75, // 月見町花街五階
+      '115': 4, '116': 1.5, // 法律ㄊㄧ雙人組
     },
     // 正式三層素材：assets/eggs/cipher/{shell,glow,cracks}.webp
   },
@@ -305,6 +307,9 @@ export const CHARACTERS = {
   '112': { no: '112', name: '太鼓新造小湘', rarity: 'SR', line: "「咚咚咚！！今天的宴席就交給我啦！！……欸？！剛剛是不是敲錯拍子了？！」", image: 'siang-112-taiko', series: 'tsukimi' },
   '113': { no: '113', name: '振袖新造小湘', rarity: 'SSR', line: "「我會成為最出色的花魁候補。……欸？你說我已經很厲害了？……謝、謝謝你。」", image: 'siang-113-furisode', series: 'tsukimi' },
   '114': { no: '114', name: '花魁小湘', rarity: 'UR', line: "「妾身不缺仰慕之人。只是……願意真正看見妾身的人，倒是不多呢。」", image: 'siang-114-oiran', series: 'tsukimi' },
+  // 十五年友情・法律ㄊㄧ雙人組（湘 11/21 交付文案＋立繪；原稿「熊貓」湘指定一律寫成「ㄊㄧ」）：摯友系列，普通蛋＋暗號蛋（＋星光蛋）。ㄊㄧ是好友不是寵物，台詞以小湘為主。台詞：docs/SIANG_115-116_LAW_TI.md
+  '115': { no: '115', name: '小湘 × 律師ㄊㄧ', rarity: 'SR', line: "「異議！！！！！我才沒有偷吃啦！！！！……ㄊㄧ！！你快幫我辯護！！！」", image: 'siang-115-lawyer-ti', series: 'friends' },
+  '116': { no: '116', name: '小湘 × 檢察官ㄊㄧ', rarity: 'SSR', line: "「ㄊㄧ！！！我有重大發現！！！！……欸？你說要先保全證據？好啦！！！」", image: 'siang-116-prosecutor-ti', series: 'friends' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）

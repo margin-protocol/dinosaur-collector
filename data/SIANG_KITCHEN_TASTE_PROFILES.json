@@ -1333,6 +1333,28 @@
         "pudding",
         "strawberry"
       ]
+    },
+    {
+      "no": "115",
+      "name": "小湘 × 律師ㄊㄧ",
+      "like": "酥脆",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "mushroom",
+        "strawberry"
+      ]
+    },
+    {
+      "no": "116",
+      "name": "小湘 × 檢察官ㄊㄧ",
+      "like": "清涼",
+      "dislike": "刺激",
+      "secret_combo": [
+        "gear",
+        "milk",
+        "moon"
+      ]
     }
   ]
 }

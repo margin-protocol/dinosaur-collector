@@ -3508,7 +3508,7 @@ function showAchievementStory(a) {
   $('bond-up-unlock').textContent = `稱號「${a.title}」`;
   setParas($('bond-up-text'), a.story, 50, true);
   $('bond-up-reward').textContent = '';
-  $('bond-up-ok').textContent = '今日辛苦了';
+  $('bond-up-ok').textContent = a.storyOk || '今日辛苦了';
   $('bond-up').classList.add('is-story', 'is-shiny');
   $('bond-up').showModal(); $('bond-up').scrollTop = 0; buzz([20, 40, 20]);
 }

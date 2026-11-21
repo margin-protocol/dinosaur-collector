@@ -114,4 +114,6 @@ export const TASTES = {
   '112': { like: '濃甜', dislike: '清涼', secret: ["caramel", "pudding", "rainbow"] }, // 太鼓新造小湘：祭典蜜糖糰子＝焦糖（蜜糖）＋布丁粉（Q 彈糰子）＋彩虹果凍（祭典的彩色）
   '113': { like: '清涼', dislike: '怪味', secret: ["cloud", "moon", "strawberry"] }, // 振袖新造小湘：櫻花茶香和菓子＝雲朵棉花糖（柔軟外皮）＋月光露（清爽茶香）＋草莓（櫻花粉色）
   '114': { like: '滑順', dislike: '刺激', secret: ["moon", "pudding", "strawberry"] }, // 花魁小湘：月下櫻花御膳＝月光露（月下）＋布丁粉（層次滑順）＋草莓（櫻花）
+  '115': { like: '酥脆', dislike: '怪味', secret: ["gear", "mushroom", "strawberry"] }, // 小湘 × 律師ㄊㄧ：友情無罪雙拼飯糰＝齒輪餅乾（烤米香）＋魔法蘑菇（鹹口味）＋草莓（甜口味），兩種口味一人一顆
+  '116': { like: '清涼', dislike: '刺激', secret: ["gear", "milk", "moon"] }, // 小湘 × 檢察官ㄊㄧ：真相大白雙人茶泡飯＝齒輪餅乾（米果）＋牛奶（溫暖）＋月光露（清爽茶湯）
 };
