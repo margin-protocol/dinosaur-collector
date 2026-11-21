@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#f8f2e9">
+  <meta name="description" content="小湘收集器第一章動畫繪本試看：沒有寄出的布丁邀請函。六幕故事，和一個偷偷藏起來的片尾彩蛋。">
+  <title>沒有寄出的布丁邀請函｜小湘動畫繪本</title>
+  <link rel="preload" as="image" href="../../../assets/storybooks/chapter-one/banquet.webp">
+  <link rel="preload" as="image" href="../../../assets/storybooks/chapter-one/hall.webp">
+  <link rel="preload" as="image" href="../../../assets/storybooks/chapter-one/king-shy.webp">
+  <link rel="stylesheet" href="./story.css">
+</head>
+<body>
+<main id="storybook" class="storybook" data-paused="false">
+  <section id="cover" class="cover" aria-labelledby="book-title">
+    <img class="cover-art" src="../../../assets/storybooks/chapter-one/banquet.webp" alt="小湘與焦糖大王、小恐龍和三位小怪圍坐宴會桌，留了一個空位給你。" width="1122" height="1402" fetchpriority="high">
+    <div class="cover-shade"></div>
+    <div class="cover-top"><span class="brand">SIANG <i></i> STORYBOOK</span><span class="edition">第一章・試看</span></div>
+    <div class="cover-copy">
+      <span class="eyebrow">有些邀請，只是晚了一點送到。</span>
+      <h1 id="book-title">沒有寄出的<br>布丁邀請函<span class="title-dot">。</span></h1>
+      <p class="cover-intro">一座沒有客人的王宮，<br>和一個偷偷期待朋友的大王。</p>
+      <button id="start" class="primary" type="button">翻開這個故事 <span aria-hidden="true">↗</span></button>
+      <p class="preview-note">六幕故事＋片尾彩蛋 · 點讀或自動播放</p>
+    </div>
+  </section>
+
+  <section id="reader" class="reader" aria-label="第一章繪本播放器" hidden>
+    <header class="reader-head">
+      <button id="close" type="button" class="icon-button" aria-label="關閉繪本，返回封面"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17"/></svg></button>
+      <div class="reader-heading"><span class="eyebrow">CHAPTER 01</span><span id="scene-title">王冠歪掉了</span></div>
+      <span id="scene-count" class="scene-count">01 / 06</span>
+    </header>
+    <figure id="stage" class="stage" role="button" tabindex="0" aria-label="點畫面讀下一句">
+      <div id="scene-art" class="scene-art" aria-hidden="true"></div>
+      <div id="stage-note" class="stage-note" aria-hidden="true"></div>
+      <figcaption id="art-description" class="sr-only"></figcaption>
+      <span class="stage-corner" aria-hidden="true"></span>
+    </figure>
+    <div class="reading-panel">
+      <div class="voice-line"><span id="speaker">故事開始了</span><span id="line-count" aria-label="目前句數"></span></div>
+      <p id="story-text" aria-hidden="true"></p>
+      <p id="spoken-text" class="sr-only" aria-live="polite" aria-atomic="true"></p>
+    </div>
+    <footer class="reader-footer">
+      <nav id="chapters" class="chapters" aria-label="選擇繪本場景"></nav>
+      <div class="reader-controls">
+        <button id="previous" type="button" class="icon-button" aria-label="上一句"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14 6-6 6 6 6"/></svg></button>
+        <button id="auto" type="button" class="auto-button" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path class="play-shape" d="m9 6 9 6-9 6Z"/><path class="pause-shape" d="M8 6v12M16 6v12"/></svg><span>自動播放</span></button>
+        <button id="next" type="button" class="primary next-button">下一句 <span aria-hidden="true">→</span></button>
+      </div>
+    </footer>
+  </section>
+
+  <section id="ending" class="ending" aria-labelledby="end-title" hidden>
+    <img class="ending-art" src="../../../assets/storybooks/chapter-one/afterparty.webp" alt="焦糖大王摸摸小恐龍的頭，小恐龍抱住大王，桌上只剩空布丁杯。" width="1122" height="1402" loading="lazy">
+    <div class="ending-copy"><span class="eyebrow">THE END · 第一章</span><h2 id="end-title" tabindex="-1">下次，也一起吃吧。</h2><p>這一次，邀請終於送到了。</p><button id="replay" class="primary" type="button">再翻一次 <span aria-hidden="true">↻</span></button><button id="return-cover" class="quiet-button" type="button">返回封面</button></div>
+  </section>
+  <noscript><p class="no-script">請開啟 JavaScript 閱讀動畫繪本。上方宴會插畫保留供欣賞。</p></noscript>
+</main>
+<script type="module" src="./story.js"></script>
+</body>
+</html>

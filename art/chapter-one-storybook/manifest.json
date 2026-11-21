@@ -1,0 +1,48 @@
+{
+  "status": "prototype",
+  "chapter": 1,
+  "title": "沒有寄出的布丁邀請函",
+  "assets": [
+    {
+      "id": "hall",
+      "original": "art/chapter-one-storybook/originals/hall.png",
+      "web": "assets/storybooks/chapter-one/hall.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 224072,
+      "transparent": false
+    },
+    {
+      "id": "banquet",
+      "original": "art/chapter-one-storybook/originals/banquet.png",
+      "web": "assets/storybooks/chapter-one/banquet.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 427516,
+      "transparent": false
+    },
+    {
+      "id": "king-shy",
+      "original": "art/chapter-one-storybook/originals/king-shy.png",
+      "web": "assets/storybooks/chapter-one/king-shy.webp",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 213882,
+      "transparent": true
+    },
+    {
+      "id": "afterparty",
+      "original": "art/chapter-one-storybook/originals/afterparty.png",
+      "web": "assets/storybooks/chapter-one/afterparty.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 277860,
+      "transparent": false
+    }
+  ],
+  "notes": [
+    "使用正式角色與第一章 Boss 故事作參考的新繪素材。",
+    "保留原生尺寸；PNG 為合成原圖，非可獨立編輯的 PSD。",
+    "繪本僅在 docs/review/chapter-one-storybook/ 試看，不接遊戲領獎或進度。"
+  ]
+}
