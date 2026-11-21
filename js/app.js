@@ -53,6 +53,7 @@ import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './w
 import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP } from './affection.js';
 const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
+import { siangStatuses, statusCounts } from './siang-status.js';
 import * as kitchen from './kitchen.js';
 import { talkFor } from './luck-talk.js';
 import { SCENES as UNLUCKY_SCENES, unluckyDue, grantUnlucky } from './unlucky.js';
@@ -3606,7 +3607,7 @@ function renderBattle() {
       return btn;
     }));
     wildSec.append(wh, wnote, wgrid);
-    $('battle-map').replaceChildren(wildSec, ...battle.CHAPTERS.map(ch => {
+    $('battle-map').replaceChildren(siangRoster(), wildSec, ...battle.CHAPTERS.map(ch => {
       const sec = document.createElement('section'); sec.className = 'battle-chapter';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = `第 ${ch.id} 章 · ${ch.name}`;
       const chScene = sceneOf(ch); if (chScene) { sec.classList.add('has-scene'); sec.style.setProperty('--scene', `url("${chScene}")`); }
@@ -3644,6 +3645,40 @@ function renderBattle() {
   }
   if (inStage) renderBattleStage();
 }
+// 小湘出勤狀態：不用點進關卡就能看誰可以出戰、誰在休息（還要多久）、誰出門了；收合狀態記在這台裝置
+const ROSTER_KEY = 'siang-collector:battle-roster:v1';
+let rosterOpen = (() => { try { return localStorage.getItem(ROSTER_KEY) === 'open'; } catch { return false; } })();
+const shortLeft = ms => { const m = Math.max(1, Math.ceil(ms / 60e3)); return m >= 60 ? `${Math.floor(m / 60)} 時 ${m % 60} 分` : `${m} 分`; };
+function siangRoster() {
+  const list = siangStatuses(state, Date.now()); const n = statusCounts(list);
+  const sec = document.createElement('section'); sec.className = `siang-roster${rosterOpen ? ' is-open' : ''}`; sec.id = 'siang-roster';
+  const head = document.createElement('button'); head.type = 'button'; head.className = 'siang-roster__head'; head.setAttribute('aria-expanded', String(rosterOpen));
+  const title = el('b', null, '小湘出勤狀態');
+  const sum = el('span', 'siang-roster__sum');
+  sum.append(el('em', 'is-ready', `可出戰 ${n.ready}`), el('em', 'is-rest', `休息 ${n.rest}`), el('em', 'is-busy', `忙碌 ${n.busy}`));
+  head.append(title, el('i', 'siang-roster__caret', rosterOpen ? '收起 ▾' : '展開 ▸'), sum);
+  head.addEventListener('click', () => { rosterOpen = !rosterOpen; try { localStorage.setItem(ROSTER_KEY, rosterOpen ? 'open' : 'closed'); } catch {} $('siang-roster').replaceWith(siangRoster()); });
+  sec.append(head);
+  if (!rosterOpen) return sec;
+  const body = document.createElement('div'); body.className = 'siang-roster__body';
+  const groups = [['ready', '可出戰', '點進關卡就能派她們'], ['rest', '休息中', '打完要休息 1 小時'], ['busy', '忙碌中', '出門、討伐或調配中']];
+  for (const [kind, label, hint] of groups) {
+    const items = list.filter(s => s.kind === kind); if (!items.length) continue;
+    const h = el('h4', 'siang-roster__group'); h.append(el('span', null, `${label} ${items.length}`), el('small', null, hint));
+    const grid = document.createElement('div'); grid.className = 'siang-roster__grid';
+    grid.append(...items.map(s => {
+      const tile = document.createElement('div'); tile.className = `siang-roster__tile is-${s.kind}`; tile.dataset.siang = s.no;
+      const name = CHARACTERS[s.no].name.replace(/小湘.*/, '') || CHARACTERS[s.no].name;
+      // 第二行是狀態，休息／忙碌有倒數就再多一行時間（360px 寬也不會擠出格子）
+      tile.append(siangImg(s.no), el('span', 'siang-roster__name', name), el('small', 'siang-roster__state', s.kind === 'ready' ? `戰力 ${s.power}` : s.kind === 'rest' ? `還要 ${shortLeft(s.left)}` : s.label));
+      if (s.kind === 'busy' && s.left) tile.append(el('small', 'siang-roster__state', shortLeft(s.left)));
+      return tile;
+    }));
+    body.append(h, grid);
+  }
+  if (!list.length) body.append(el('p', 'residents-intro', '還沒有小湘，先去孵蛋吧。'));
+  sec.append(body); return sec;
+}
 // 討伐場景：章節的 bg 剛好是出門地點（conv 便利商店、mountain 山上）時，借用那張地點背景；沒有圖的章節維持原樣
 // 注意：CSS 變數裡的 url() 會以 css/ 資料夾為起點解析，所以要給完整網址
 function placeUrl(key) { return new URL(`assets/places/${key}.webp`, document.baseURI).href; } // function：renderAll 可能在這行之前就跑
@@ -3664,7 +3699,9 @@ function renderBattleStage() {
   $('battle-gift-hint').hidden = Boolean(e.wild); if (!e.wild) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
   const busy = allBusy(); const now = Date.now();
   const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
-  owned.sort((a, b2) => battle.siangPower(state, b2).power - battle.siangPower(state, a).power);
+  // 可以出戰的排前面（照戰力），休息、忙碌的放後面，進關卡就能直接挑還在家的
+  const offRank = no => busy.has(no) ? 2 : battle.restLeft(state, no, now) > 0 ? 1 : 0;
+  owned.sort((a, b2) => offRank(a) - offRank(b2) || battle.siangPower(state, b2).power - battle.siangPower(state, a).power);
   $('battle-siangs').replaceChildren(...owned.map(no => {
     const p = battle.siangPower(state, no); const rest = battle.restLeft(state, no, now); const off = busy.has(no) || rest > 0;
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang'; btn.dataset.siang = no; btn.disabled = off;
