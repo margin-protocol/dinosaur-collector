@@ -259,7 +259,7 @@ export const CHARACTERS = {
   '083': { no: '083', name: '約會小湘・蝰蝰睡著版', rarity: 'SSR', line: "「蝰蝰又睡著了૮₍˃⤙˂₎ა ……算了，一起睡好了⋯⋯♡」", image: 'siang-hug-sleeping-horned-viper', series: 'date', special: true },
   '084': { no: '084', name: '約會小湘・換我睡著版', rarity: 'SSR', line: "「我才沒有睡著……只是眼睛休息一下……蝰蝰，你不要偷笑嘛……呼……♡」", image: 'siang-sleeping-unamused-horned-viper', series: 'date', special: true },
   '085': { no: '085', name: '約會小湘・雙雙睡著版', rarity: 'SSR', line: "「蝰蝰……我們就睡五分鐘喔……五分鐘之後……一定要起床……呼……♡」", image: 'siang-085-sleepy-together-date', series: 'recipe', special: true },
-  // 開發團隊系列（湘 × 皮寶 11/19 企劃）：不進任何蛋池，達成里程碑後送固定紀念蛋（js/devteam.js）
+  // 開發團隊系列（湘 × 皮寶 11/19 企劃）：達成里程碑後送固定紀念蛋（js/devteam.js）
   '086': { no: '086', name: '加班皮寶', rarity: 'SSR', line: "「湘寶！這張真的最後一張！……欸等一下，我又想到新的了！！」", image: 'siang-086-overtime-pibao', series: 'devteam', special: true },
   '087': { no: '087', name: '崩潰德寶', rarity: 'SSR', line: "「……妳們又新增三隻？？？？？」", image: 'siang-087-crashing-debao', series: 'devteam', special: true },
   '088': { no: '088', name: '靈感爆發小湘', rarity: 'UR', line: "「欸欸欸欸欸！！！！我突然想到一個超棒的！！！」", image: 'siang-088-idea-overload-siang', series: 'devteam', special: true },
@@ -279,11 +279,11 @@ export const CHARACTERS = {
   '098': { no: '098', name: '摯友小湘（派派ver）', rarity: 'SR', line: "「派派！！！！怎麼又找我打麻將啦！！！……等一下，我換個衣服，十分鐘後到！！」", image: 'siang-098-friend-paipai', series: 'friends' },
   // 115 年九合一大選紀念（皮寶 docs/SIANG_CIVIC_ELECTION_2026.md，湘 11/20 定 SSR）：11/20–11/27 打開遊戲領紀念蛋；11/28 起放進普通蛋池
   '099': { no: '099', name: '公民小湘・115 年九合一大選版', rarity: 'SSR', line: "「不管你支持誰，都要記得了解政見、珍惜自己的選擇喔！嘿嘿，民主就是讓大家都有表達想法的機會呀♡」", image: 'siang-099-civic', series: 'holiday', special: true, poolFrom: '2026-11-28' },
-  // 非酋三部曲（皮寶 docs/SIANG_UNLUCKY_TRIO.md，湘 11/20）：終身累計孵到重複 10／50／100 次自動加入收藏，不進任何蛋池；No.100 先空著留給特殊小湘
+  // 非酋三部曲（皮寶 docs/SIANG_UNLUCKY_TRIO.md，湘 11/20）：終身累計孵到重複 10／50／100 次自動加入收藏；No.100 先空著留給特殊小湘
   '101': { no: '101', name: '普通非酋小湘', rarity: 'SR', line: "「沒有關係！新的小湘一定就在下一顆蛋裡！！……大概吧！」", image: 'siang-101-unlucky', series: 'unlucky', special: true, dupNeed: 10 },
   '102': { no: '102', name: '中級非酋小湘', rarity: 'SSR', line: "「為什麼又是妳啦啊啊啊！！！！我明明已經有了！！！！😭」", image: 'siang-102-unluckier', series: 'unlucky', special: true, dupNeed: 50 },
   '103': { no: '103', name: '究級非酋小湘', rarity: 'UR', line: "「又重複了呀。呵呵，真是令人安心的結果。」", image: 'siang-103-unluckiest', series: 'unlucky', special: true, dupNeed: 100 },
-  // No.104–106 歐皇三部曲（皮寶 docs/SIANG_LUCKY_TRIO.md，湘 11/20）：一般蛋累計孵到新面孔 10／50／100 次自動加入收藏，不進任何蛋池
+  // No.104–106 歐皇三部曲（皮寶 docs/SIANG_LUCKY_TRIO.md，湘 11/20）：一般蛋累計孵到新面孔 10／30／50 次自動加入收藏（湘 11/21 確認門檻）
   '104': { no: '104', name: '普通歐皇小湘', rarity: 'SR', line: "「欸？！又是新的耶！！嘿嘿，我是不是很幸運呀♡」", image: 'siang-104-lucky', series: 'lucky', special: true, newNeed: 10 },
   '105': { no: '105', name: '中級歐皇小湘', rarity: 'SSR', line: "「不是吧？！又是新的？！哈哈哈哈哈哈我是不是被抽卡之神選中了！！！」", image: 'siang-105-luckier', series: 'lucky', special: true, newNeed: 30 },
   '106': { no: '106', name: '究級歐皇小湘', rarity: 'UR', line: "「欸？抽到重複不是很正常的事情嗎？……嗯？你說我抽到新的才比較正常？」", image: 'siang-106-luckiest', series: 'lucky', special: true, newNeed: 50 },
@@ -329,11 +329,18 @@ export const SR_PITY = 10; // 隨機蛋連續 9 顆沒有 SR 以上，第 10 顆
 const HIGH = new Set(['SR', 'SSR', 'UR']);
 // 有 poolFrom 的小湘（例如活動紀念角色）到那天才進蛋池；日期用手機的本地日期
 const localDay = (now = new Date()) => `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-export function activePool(egg, now = new Date()) {
+// 拿到之後才進蛋池（湘 11/21 選「普通蛋＋星光蛋」）：加班皮寶、崩潰德寶、非酋／歐皇三部曲
+// 只有自己圖鑑裡已經有的才會出現，權重跟該蛋同稀有度的小湘一樣
+export const JOIN_WHEN_OWNED = ['086', '087', '101', '102', '103', '104', '105', '106'];
+export const OWNED_WEIGHT = { ordinary: { SR: 2, SSR: 0.6, UR: 0.3 }, star: { SR: 3, SSR: 1, UR: 1 } };
+export function activePool(egg, now = new Date(), dex = null) {
   if (!egg?.pool) return null;
   const today = localDay(now);
   const hidden = Object.keys(egg.pool).filter((no) => CHARACTERS[no]?.poolFrom && CHARACTERS[no].poolFrom > today);
-  return hidden.length ? Object.fromEntries(Object.entries(egg.pool).filter(([no]) => !hidden.includes(no))) : egg.pool;
+  const base = hidden.length ? Object.fromEntries(Object.entries(egg.pool).filter(([no]) => !hidden.includes(no))) : egg.pool;
+  const weights = OWNED_WEIGHT[egg.id];
+  const joined = dex && weights ? JOIN_WHEN_OWNED.filter((no) => dex[no] && weights[CHARACTERS[no]?.rarity] && !base[no]) : [];
+  return joined.length ? { ...base, ...Object.fromEntries(joined.map((no) => [no, weights[CHARACTERS[no].rarity]])) } : base;
 }
 export const isHigh = (no) => HIGH.has(CHARACTERS[no]?.rarity);
 export const isRandomEgg = (eggState) => Boolean(EGGS[eggState.id]?.pool && !(eggState.character && CHARACTERS[eggState.character]) && !EGGS[eggState.id].byCounty);
@@ -341,7 +348,7 @@ export function rollFor(eggState, boosts = [], { dex = null, dupStreak = 0, srSt
   const egg = EGGS[eggState.id];
   if (eggState.character && CHARACTERS[eggState.character]) return eggState.character;
   if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
-  const live = activePool(egg) || {};
+  const live = activePool(egg, new Date(), dex) || {};
   const base = traitPool(live, eggState, CHARACTERS);
   if (!egg.pool || (!boosts.length && !dex && base === egg.pool)) return rollHatch(egg);
   let pool = { ...base };
