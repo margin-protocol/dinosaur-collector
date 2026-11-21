@@ -68,6 +68,10 @@ body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var
 .cloud-form input,#postcard-text,.chapter-history select { background:var(--t-bg); border-color:var(--t-line); color:var(--t-text); }
 .btn--quiet { background:none; color:var(--t-muted); border-color:var(--t-line); }
 .errand-trip .errand-trip__recall,.errand-recall__no { border-color:var(--t-line) !important; }
+.battle-stage-card.is-fighting { border-color:var(--t-accent) !important; box-shadow:inset 0 0 0 1px var(--t-accent); }
+.battle-stage-card__fight em { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }
+.battle-stage-card__fight.is-back em { background:#9fe0b033; border-color:#5aa871; color:var(--t-text); }
+.battle-stage-card__fight small { color:var(--t-muted); opacity:1; }
 .btn--danger { color:#ffe1e8 !important; } /* Keep destructive actions semantically distinct. */
 #xp-fill,.bar__fill,.ach__bar i,.hatch-scene__progress .analysis__fill { background:linear-gradient(90deg,var(--t-button),var(--t-accent)); }
 .wish-tabs button[aria-selected="true"] { border-bottom-color:var(--t-accent); }

@@ -3629,8 +3629,9 @@ function renderBattle() {
       info.innerHTML = '<small></small><b></b><span></span>';
       info.querySelector('small').textContent = e.boss ? '流浪 Boss' : e.trait.shiny ? '稀有！' : '野生';
       info.querySelector('b').textContent = e.name;
-      info.querySelector('span').textContent = w.defeated ? '✓ 已經打跑了' : busyKeys.has(w.key) ? '隊伍討伐中…' : `戰力 ${e.power}`;
+      info.querySelector('span').textContent = w.defeated ? '✓ 已經打跑了' : `戰力 ${e.power}`;
       btn.append(info);
+      if (!w.defeated) stageFight(btn, info, w.key);
       btn.addEventListener('click', () => { battleEnemy = w.key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
       return btn;
     }));
@@ -3649,6 +3650,7 @@ function renderBattle() {
         info.querySelector('b').textContent = open ? e.name : '？？？';
         info.querySelector('span').textContent = !open ? '🔒 先打贏前一關' : st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
         btn.append(info);
+        if (open) stageFight(btn, info, id);
         btn.addEventListener('click', () => { battleEnemy = id; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
         return btn;
       }));
@@ -3666,6 +3668,7 @@ function renderBattle() {
       info.querySelector('small').textContent = `${e.stage} · 可重複挑戰`; info.querySelector('b').textContent = e.name;
       info.querySelector('span').textContent = st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
       btn.append(info);
+      stageFight(btn, info, x.id);
       btn.addEventListener('click', () => { battleEnemy = x.id; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
       const grid = document.createElement('div'); grid.className = 'battle-stages'; grid.append(btn);
       sec.append(h, grid); $('battle-map').append(sec);
@@ -3676,7 +3679,21 @@ function renderBattle() {
 // 小湘出勤狀態：不用點進關卡就能看誰可以出戰、誰在休息（還要多久）、誰出門了；收合狀態記在這台裝置
 const ROSTER_KEY = 'siang-collector:battle-roster:v1';
 let rosterOpen = (() => { try { return localStorage.getItem(ROSTER_KEY) === 'open'; } catch { return false; } })();
-const shortLeft = ms => { const m = Math.max(1, Math.ceil(ms / 60e3)); return m >= 60 ? `${Math.floor(m / 60)} 時 ${m % 60} 分` : `${m} 分`; };
+const shortLeft = ms => { const m = Math.max(1, Math.ceil(ms / 60e3)); return m >= 60 ? (m % 60 ? `${Math.floor(m / 60)} 時 ${m % 60} 分` : `${m / 60} 小時`) : `${m} 分`; };
+// 關卡卡片上的「討伐中」標記（湘 11/21：不用點進去就知道這關已經有隊伍在打）
+function stageFight(btn, info, id) {
+  const now = Date.now(); const list = (state.battle?.active || []).filter(a => a.enemy === id);
+  if (!list.length) return;
+  const going = list.filter(a => Date.parse(a.until) > now);
+  const box = document.createElement('div'); box.className = 'battle-stage-card__fight';
+  const tag = document.createElement('em');
+  if (going.length < list.length) { box.classList.add('is-back'); tag.textContent = '📜 戰報待收'; box.append(tag); }
+  else {
+    tag.textContent = `⚔ ${list.length > 1 ? `${list.length} 隊` : ''}討伐中`;
+    box.append(tag, Object.assign(document.createElement('small'), { textContent: `還要 ${shortLeft(Math.min(...going.map(a => Date.parse(a.until))) - now)}` }));
+  }
+  btn.classList.add('is-fighting'); info.querySelector('b').after(box);
+}
 function siangRoster() {
   const list = siangStatuses(state, Date.now()); const n = statusCounts(list);
   const sec = document.createElement('section'); sec.className = `siang-roster${rosterOpen ? ' is-open' : ''}`; sec.id = 'siang-roster';

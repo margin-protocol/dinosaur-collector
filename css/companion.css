@@ -398,7 +398,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .enemy-art.has-scene { background:linear-gradient(180deg,#0000 45%,#0000002e), var(--scene) center/cover; }
 .battle-chapter.has-scene > .egg-choices__heading { display:flex; align-items:flex-end; min-height:72px; margin-bottom:8px; padding:10px 12px; border-radius:12px; background:linear-gradient(180deg,#0000 20%,#000000a6), var(--scene) center/cover #3a2f3a; color:#fff8f2; text-shadow:0 1px 6px #000a; }
 .enemy-art.is-big { width:120px; } .enemy-art.is-big .enemy-art__emoji { font-size:64px; }
-.battle-stages { display:grid; grid-template-columns:repeat(2,1fr); gap:8px; margin-bottom:6px; }
+.battle-stages { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:6px; }
 .battle-stage-card { display:grid; grid-template-columns:52px 1fr; align-items:center; gap:8px; padding:8px; border-radius:14px; border:1px solid #ffffff1f; background:#ffffff0a; color:inherit; text-align:left; }
 .battle-stage-card .enemy-art { width:52px; }
 .battle-stage-card.is-boss { border-color:#f0a8c066; background:#f0a8c010; }
@@ -430,6 +430,12 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 @keyframes star-gift-in { from { opacity:0; transform:translateY(6px) scale(.96); } to { opacity:1; transform:none; } }
 @media (prefers-reduced-motion:reduce) { .star-gift { animation:none; } }
 .battle-stage-card { position:relative; }
+.battle-stage-card.is-fighting { border-color:#ffd9a8aa; box-shadow:inset 0 0 0 1px #ffd9a855; }
+.battle-stage-card__fight { margin:3px 0 2px; }
+.battle-stage-card__fight em { display:inline-block; padding:1px 7px; border-radius:7px; background:#ffd9a826; border:1px solid #ffd9a880; color:#ffe7c4; font:600 11px/1.5 var(--font-body); font-style:normal; white-space:nowrap; }
+.battle-stage-card__fight small { display:block; margin-top:2px; font-size:11px; opacity:.8; white-space:nowrap; }
+.battle-stage-card__info { min-width:0; }
+.battle-stage-card__fight.is-back em { background:#9fe0b026; border-color:#9fe0b080; color:#d4f5dc; }
 .star-gift-hint { margin:0 0 10px; padding:8px 12px; border-radius:12px; background:#ffd36b1a; border:1px solid #ffd36b55; font-size:13px; line-height:1.6; text-align:left; }
 .battle-score { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; margin:0 0 10px; }
 .battle-score div { padding:8px 4px; border-radius:12px; background:#ffffff0d; }
