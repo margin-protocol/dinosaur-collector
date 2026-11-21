@@ -1,5 +1,5 @@
 import { TEAM_BONDS, teamBond, discoverBond, effectText } from './team-bonds.js';
-import { teamFood, useFood, dropsFor, addIngredients, ingredientText, buffText } from './kitchen.js';
+import { teamFood, useFood, dropsFor, addIngredients, ingredientText, buffText, INGREDIENTS } from './kitchen.js';
 // 討伐：派 1～3 位小湘去打敵人（像皮克敏那樣派遣，回來看戰報）。
 // 設計原則（皮寶 11/17）：剋制只影響效率與評分、不是通關必要條件；只有原味小湘也能打完入門關；
 // 戰敗提示依實際原因；保留分數、歷史最高與進步；徽章可以拿來特訓，讓下一次打得更好。
@@ -193,6 +193,13 @@ export function forecast(state, nos, enemyId) {
 }
 
 export const scoreOf = (ratio, weakHit, win) => (win ? Math.round(ratio * 1000) + (weakHit ? 150 : 0) : Math.round(ratio * 400));
+// 三星小禮物：每一關第一次拿到三星送一份（野生小怪不算）
+export const STAR_GIFT = { badges: 1, fossils: 2 };
+export function starGiftFor(chapter, rand = Math.random) {
+  const pool = INGREDIENTS.filter((i) => i.chapter === chapter);
+  return { ...STAR_GIFT, ingredients: pool.length ? [pool[Math.floor(rand() * pool.length) % pool.length].id] : [] };
+}
+export const starGiftText = (g) => [g.badges && `徽章 +${g.badges}`, g.fossils && `+${g.fossils} 化石`, g.ingredients?.length && ingredientText(g.ingredients)].filter(Boolean).join('、');
 export const starsOf = (ratio, win) => (!win ? 0 : ratio >= 1.6 ? 3 : ratio >= 1.2 ? 2 : 1);
 
 const ACTIONS = {
@@ -286,10 +293,11 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   const loot = enemy.wild
     ? (win ? { badges: Math.max(1, Math.round((enemy.boss ? 3 : 1) * enemy.reward)), energy: Math.round(enemy.power * 0.4 * enemy.reward), fossils: (enemy.trait.id === 'shiny' ? 3 : 0) + (enemy.boss ? 2 : 0) } : { badges: 0, energy: 5, fossils: 0 })
     : win
-      ? { badges: (enemy.boss ? 3 : 1) + (stars === 3 && prev.stars < 3 ? 1 : 0), energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
+      ? { badges: enemy.boss ? 3 : 1, energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
       : { badges: 0, energy: 5, fossils: 0 };
   const chapterNo = enemy.wild ? Math.max(...CHAPTERS.filter((c) => unlocked(state, c.stages[0])).map((c) => c.id), 1) : (CHAPTERS.find((c) => c.stages.includes(enemyId))?.id || 1);
   loot.ingredients = dropsFor(chapterNo, { win, boss: Boolean(enemy.boss), gather: f.food?.kind === 'gather' ? 1 : 0 }, rand);
+  if (!enemy.wild && win && stars === 3 && prev.stars < 3) loot.starGift = starGiftFor(chapterNo, rand);
   const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries };
   if (enemy.story && !enemy.wild && !b.story[`${enemyId}:before`]) b.story[`${enemyId}:before`] = iso(now); // 看過 Boss 開場故事
   const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + minutes * 60e3)), report, ...(wildEntry ? { snapshot: wildEntry } : {}) };
@@ -327,6 +335,8 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   b.badges += r.loot.badges; state.energy += r.loot.energy; if (r.loot.fossils) state.fossils = (state.fossils || 0) + r.loot.fossils;
   if (r.loot.firstBoss) state.wishEgg.stock += 1;
   if (r.loot.ingredients?.length) addIngredients(state, r.loot.ingredients);
+  const gift = r.loot.starGift || null;
+  if (gift) { b.badges += gift.badges || 0; state.fossils = (state.fossils || 0) + (gift.fossils || 0); addIngredients(state, gift.ingredients); if (st) st.starGiftAt = now.toISOString(); }
   const restUntil = iso(new Date(now.getTime() + REST_MINUTES * 60e3));
   for (const no of battle.nos) b.rest[no] = restUntil;
   b.total += 1; if (r.win) b.wins += 1;
@@ -341,7 +351,7 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const note = observe(kind, r, enemy, prevStage);
   const review = lines.length ? { kind, text: lines[Math.floor(rand() * lines.length) % lines.length], ...(note ? { note } : {}), at: now.toISOString() } : null;
   if (!enemy.wild) { st.lastWin = r.win; if (review) st.review = review; }
-  return { ...battle, report: r, record, best, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild) };
+  return { ...battle, report: r, record, best, starGift: gift, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild) };
 }
 
 // 徽章兌換專屬蛋：孵化後才加入隊伍，不進隨機蛋池

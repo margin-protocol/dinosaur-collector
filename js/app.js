@@ -3570,6 +3570,7 @@ function renderBattle() {
         info.querySelector('b').textContent = open ? e.name : '？？？';
         info.querySelector('span').textContent = !open ? '🔒 先打贏前一關' : st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
         btn.append(info);
+        if (open && (st?.stars || 0) < 3) btn.append(Object.assign(document.createElement('i'), { className: 'battle-stage-card__gift', title: '第一次三星有小禮物', textContent: '🎁' }));
         btn.addEventListener('click', () => { battleEnemy = id; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
         return btn;
       }));
@@ -3677,6 +3678,7 @@ async function collectBattle(id) {
   $('battle-result-eyebrow').textContent = `${e.stage} · ${e.name}`;
   $('battle-result-title').textContent = rep.win ? '討伐成功！' : '先撤退了……';
   $('battle-result-stars').textContent = rep.win ? `${'★'.repeat(rep.stars)}${'☆'.repeat(3 - rep.stars)}` : '';
+  $('battle-result-gift').hidden = !r.starGift; if (r.starGift) $('battle-result-gift-text').replaceChildren(...battle.starGiftText(r.starGift).split('、').map(t => el('span', null, t)));
   const delta = r.delta === null ? '第一次挑戰' : r.delta > 0 ? `比上次 +${r.delta}` : r.delta < 0 ? `比上次 ${r.delta}` : '跟上次一樣';
   $('battle-result-score').innerHTML = '';
   for (const [label, value, cls] of [['這次分數', rep.score, ''], [r.wild ? '本週最高' : '歷史最高', r.best, r.record ? 'is-record' : ''], ['進步', r.wild && r.delta === null ? '新的對手' : delta, r.delta > 0 ? 'is-up' : '']]) {
