@@ -677,11 +677,11 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .resident-choice__away { position:absolute; top:3px; left:3px; padding:0 4px; border-radius:6px; background:#000a; color:#ffd9a8; font:10px/16px var(--font-body); font-style:normal; }
 .resident-choice.is-away img { filter:grayscale(.7); opacity:.55; }
 .resident-choice:disabled { cursor:not-allowed; }
-/* 好感滿級：跟圖鑑一樣的金框（列表會捲動，用內框避免被裁掉） */
-#residents :is(.resident-choice,.residents-slot).is-shiny { border-color:#ffd9a8; box-shadow:inset 0 0 0 1px #ffd9a8, inset 0 0 12px #ffd9a833, 0 0 8px #ffd9a844; }
-#residents :is(.resident-choice,.residents-slot).is-shiny img { filter:drop-shadow(0 0 5px #ffe7a6aa); }
-#residents .resident-choice.is-shiny.is-away img { filter:grayscale(.7); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) #residents :is(.resident-choice,.residents-slot).is-shiny { border-color:#d9a24e; box-shadow:inset 0 0 0 1px #d9a24e, inset 0 0 12px #f3c97a40; }
+/* 好感滿級：香檳金細框（漸層邊框用遮罩畫，不發光、不蓋到原本的框色） */
+#residents :is(.resident-choice,.residents-slot).is-shiny::after { content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1.5px; background:linear-gradient(135deg,#fff4d6,#d8ae5e 30%,#9c7330 50%,#e9c97f 70%,#fff4d6); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
+#residents :is(.resident-choice,.residents-slot).is-shiny::before { content:"✦"; position:absolute; top:-8px; left:50%; z-index:2; width:16px; height:16px; transform:translateX(-50%); color:#e9c97f; font:12px/16px var(--font-body); text-align:center; text-shadow:0 0 4px #ffe7a6aa; pointer-events:none; }
+#residents-list .residents-grid { padding-top:8px; row-gap:10px; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) #residents :is(.resident-choice,.residents-slot).is-shiny::before { color:#d29a3e; text-shadow:0 0 3px #fff6dc; }
 @media (max-width:359px) { .residents-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
 /* 長按小湘的名字提示 */
 .errand-siang { -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; }
