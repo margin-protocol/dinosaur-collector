@@ -17,6 +17,7 @@ await p.locator('#errand-dialog[open]').waitFor();
 assert.match(await p.textContent('#card-box-summary'),/2 種 · 重複 2 張/);
 await p.click('#card-box-summary');
 if(process.env.SHOT)await p.locator('#card-box').screenshot({path:process.env.SHOT});
+await p.locator('.card-box__open').first().click();await p.locator('#postcard-view[open]').waitFor();assert.match(await p.textContent('#postcard-view-title'),/的家鄉明信片/);assert((await p.textContent('#postcard-view-msg')).includes('— '));await p.click('#close-postcard-view');
 await p.locator('.card-box__card.has-dupes').getByRole('button',{name:/全部丟掉/}).click();await p.waitForTimeout(400);
 const s=await p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);assert.equal(s.fossils,2);assert.deepEqual(s.errands.cardDupes,{});
 assert.doesNotMatch(await p.textContent('#card-box-summary'),/重複/);

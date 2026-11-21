@@ -46,6 +46,7 @@ import { createResearch } from './research.js';
 import { studyPair } from './research-notes.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward, todaysWishList, swapTodayWish } from './progression.js';
 import * as install from './install.js';
+import { CHARACTER_REPORTS, SERIES_REPORTS } from './errand-copy.js';
 import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
@@ -2958,7 +2959,9 @@ function renderCardBox() {
   $('card-box-grid').replaceChildren(...order.map(county => {
     const n = er.cardDupes?.[county] || 0;
     const card = mkEl('div', `card-box__card${n ? ' has-dupes' : ''}`);
-    card.append(siangImg(COUNTY_CHARACTER[county]), mkEl('b', '', county), mkEl('small', '', n ? `重複 ${n} 張` : '收藏中'));
+    const open = mkEl('button', 'card-box__open'); open.type = 'button'; open.setAttribute('aria-label', `看${county}的明信片`);
+    open.append(siangImg(COUNTY_CHARACTER[county]), mkEl('b', '', county), mkEl('small', '', n ? `重複 ${n} 張` : '收藏中'));
+    open.addEventListener('click', () => showPostcard(county)); card.append(open);
     if (n) {
       const toss = mkEl('button', 'card-box__toss', `丟掉 1 張 +${CARD_RECYCLE}🦴`); toss.type = 'button';
       toss.addEventListener('click', async () => { toss.disabled = true; await doToss(county, 1); });
@@ -2968,6 +2971,26 @@ function renderCardBox() {
     return card;
   }));
 }
+// 點明信片：放大成一張明信片，正面是家鄉小湘，下面是她的話和旅途中的一句（湘 11/21，用現有台詞）
+function postcardTrip(no, county) {
+  const c = CHARACTERS[no]; const mine = CHARACTER_REPORTS[no] || {};
+  const pool = mine.faraway?.length ? mine.faraway : Object.values(mine).flat();
+  const list = pool.length ? pool : (SERIES_REPORTS[c.series]?.faraway || []).map(t => `${c.name}${t}`);
+  if (!list.length) return '';
+  const h = [...county].reduce((a, ch) => a + ch.codePointAt(0), 0); // 同一張明信片每次打開都是同一句
+  return list[h % list.length];
+}
+function showPostcard(county) {
+  const no = COUNTY_CHARACTER[county]; const c = CHARACTERS[no]; const at = state.errands.cards?.[county];
+  const card = $('postcard-view-card'); const bg = mkEl('img', 'postcard-view__bg'); bg.alt = ''; bg.src = 'assets/places/faraway.webp'; bg.onerror = () => bg.remove();
+  card.replaceChildren(bg, siangImg(no, 'postcard-view__siang'), mkEl('span', 'postcard-view__stamp', county));
+  $('postcard-view-date').textContent = at ? `${new Date(at).toLocaleDateString('zh-TW')} 收到` : '';
+  $('postcard-view-title').textContent = `${county}的家鄉明信片`;
+  const msg = $('postcard-view-msg'); msg.replaceChildren(document.createTextNode(c.line || ''), mkEl('span', 'postcard-view__sign', `— ${c.name}`));
+  const trip = postcardTrip(no, county); $('postcard-view-trip').textContent = trip; $('postcard-view-trip').hidden = !trip;
+  $('postcard-view').showModal(); $('postcard-view').scrollTop = 0;
+}
+$('close-postcard-view').addEventListener('click', () => $('postcard-view').close());
 function showErrandResult(r, replay = false) {
   // 出門和在家幫忙都用同一種照片卡（在家幫忙的背景是 assets/places/home-*.webp）
   $('errand-result-card').replaceChildren(tripCard(r));
