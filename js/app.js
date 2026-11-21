@@ -497,7 +497,7 @@ function renderGrowth() {
     row.append(no, content, status); return row;
   }));
   const pending = chapter.goals.find(g => !goalProgress(state, g).complete);
-  $('growth-action').textContent = pending ? ({ daily: '去實現今日願望 ⟶', incubate: '前往培育 ⟶', errands: '派小湘出門 ⟶', home: '回首頁 ⟶', dex: '看看圖鑑 ⟶' }[pending.destination] || '前往培育 ⟶') : chapter.goals.some(g => !goalProgress(state, g).claimed) ? '領取已完成的願望' : '看看今日願望 ⟶';
+  $('growth-action').textContent = pending ? ({ daily: '去實現今日願望 ⟶', incubate: '前往培育 ⟶', errands: '派小湘出門 ⟶', home: '回首頁 ⟶', dex: '看看圖鑑 ⟶', kitchen: '去小湘廚房 ⟶', battle: '去對戰 ⟶', achievements: '看看成就 ⟶' }[pending.destination] || '前往培育 ⟶') : chapter.goals.some(g => !goalProgress(state, g).claimed) ? '領取已完成的願望' : '看看今日願望 ⟶';
 }
 
 // 從蛋庫取出的蛋（願望蛋、縣市蛋）
@@ -1366,6 +1366,9 @@ $('growth-action').addEventListener('click', () => {
   else if (pending?.destination === 'errands') openErrands();
   else if (pending?.destination === 'home') showView('home');
   else if (pending?.destination === 'dex') showView('dex');
+  else if (pending?.destination === 'kitchen') { openErrands(); showErrandTab('kitchen'); }
+  else if (pending?.destination === 'battle') { openErrands(); showErrandTab('battle'); }
+  else if (pending?.destination === 'achievements') openAchievements();
   else if (!pending && goals.some(g => !goalProgress(state, g).claimed)) $('growth-list').querySelector('button')?.focus();
   else showWishTab('daily', true);
 });

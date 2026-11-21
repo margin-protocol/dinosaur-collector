@@ -1,5 +1,5 @@
 import { ensureTeamBonds } from './team-bonds.js';
-import { ensureKitchen } from './kitchen.js';
+import { ensureKitchen, RECIPES as DISH_RECIPES } from './kitchen.js';
 import { ensureCheckin } from './checkin.js';
 import { ensureDupCount } from './unlucky.js';
 import { todayKey, wishesFor, legacyWishesFor, wishById, swapWishId, actProgress, QUIZZES, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';
@@ -10,8 +10,8 @@ import { ensureGifts } from './gifts.js';
 import { ensureShelf, CHARACTERS } from './eggs.js';
 import { ensureErrands } from './errands.js';
 import { ensureWheel } from './wheel.js';
-import { ensureAffection } from './affection.js';
-import { ensureBattle } from './battle.js';
+import { ensureAffection, levelOf, MAX_LEVEL as BOND_MAX } from './affection.js';
+import { ensureBattle, CHAPTERS as BATTLE_CHAPTERS } from './battle.js';
 import { ensureGuide } from './guide.js';
 import { ensureDevteam } from './devteam.js';
 import { ensureBonus } from './energy.js';
@@ -28,7 +28,9 @@ export const XP_PER_LEVEL = 100;
 const count = value => Number.isSafeInteger(value) && value >= 0 ? value : 0;
 const unique = values => [...new Set(Array.isArray(values) ? values.filter(v => typeof v === 'string') : [])];
 export const playerLevel = state => Math.floor(count(state.player?.xp) / XP_PER_LEVEL) + 1;
-export const rankTitle = level => ['初見研究者', '新芽研究者', '同行研究者', '尋光研究者'][level - 1] || '星願研究者';
+// 稱號：Lv.1～4 各一個，之後每 4 級換一個，Lv.30 起是「永恆」（湘 11/21 B 案）
+export const rankTitle = level => ['初見研究者', '新芽研究者', '同行研究者', '尋光研究者'][level - 1]
+  || (level <= 8 ? '星願研究者' : level <= 12 ? '拾光研究者' : level <= 16 ? '遠行研究者' : level <= 20 ? '守護研究者' : level <= 24 ? '織夢研究者' : level <= 29 ? '傳說研究者' : '永恆研究者');
 
 const dayBase = state => ({ pets: count(state.bonus?.total?.pets), greets: count(state.bonus?.total?.greets), taps: count(state.bonus?.total?.taps), explores: count(state.bonus?.total?.explores), departed: count(state.errands?.departed) });
 export function ensureDaily(state, date = todayKey()) {
@@ -133,17 +135,45 @@ export function growthGoals(level) {
     { name: '把溫暖留下來', reward: { slot: true }, goals: [goal('十五天的日常', '在 15 個不同日子完成願望', 'days', 15, 'daily'), goal('滿滿的能量', '累計注入 2000 能量', 'fed', 2000, 'incubate'), goal('十五位夥伴', '收集 15 位不同的小湘', 'dex', 15, 'dex')] },
     { name: '走遍各地', reward: { fossils: 15 }, goals: [goal('三個地方', '在 3 個不同縣市按「探索附近」', 'counties', 3, 'home'), goal('家鄉的明信片', '收到 2 張家鄉明信片（縣市小湘去遠行）', 'cards', 2, 'errands'), goal('二十五趟旅行', '累計派小湘出門 25 次', 'errands', 25, 'errands')] },
     { name: '星願研究者', reward: { egg: 'wish', fossils: 20 }, goals: [goal('二十天的日常', '在 20 個不同日子完成願望', 'days', 20, 'daily'), goal('二十五位夥伴', '收集 25 位不同的小湘', 'dex', 25, 'dex'), goal('說不完的故事', '發現 5 個旅行故事', 'stories', 5, 'errands')] },
+    // 第 13～30 章（湘 11/21 選 B 案）
+    { name: '遠方的來信', reward: { egg: 'weather' }, goals: [goal('三十位夥伴', '收集 30 位不同的小湘', 'dex', 30, 'dex'), goal('四張明信片', '收到 4 張家鄉明信片（縣市小湘去遠行）', 'cards', 4, 'errands'), goal('四個地方', '在 4 個不同縣市按「探索附近」', 'counties', 4, 'home')] },
+    { name: '心意相通', reward: { egg: 'wish' }, goals: [goal('最親近的人', '讓 1 位小湘的好感度升到 Lv.5', 'bond5', 1, 'dex'), goal('一起拍照', '累計和小湘外出合照 10 次', 'photos', 10, 'home'), goal('摸摸頭的習慣', '累計幫小湘摸摸頭 60 次', 'pets', 60, 'home')] },
+    { name: '小湘廚房開張', reward: { fossils: 25 }, goals: [goal('開火囉', '在小湘廚房做料理 15 次', 'cooked', 15, 'kitchen'), goal('第一本食譜', '解開 3 道特色料理', 'recipes', 3, 'kitchen'), goal('暖暖的爐火', '累計注入 4000 能量', 'fed', 4000, 'incubate')] },
+    { name: '第一場冒險', reward: { egg: 'wish', fossils: 20 }, goals: [goal('出發討伐', '通關 4 個對戰關卡', 'battles', 4, 'battle'), goal('小恐龍的助手', '完成小恐龍的委託 25 次', 'tasks', 25, 'home'), goal('四十趟旅行', '累計派小湘出門 40 次', 'errands', 40, 'errands')] },
+    { name: '二十五天的日常', reward: { egg: 'weather' }, goals: [goal('二十五天', '在 25 個不同日子完成願望', 'days', 25, 'daily'), goal('六十個小願望', '累計完成 60 個每日願望', 'wishes', 60, 'daily'), goal('三十五位夥伴', '收集 35 位不同的小湘', 'dex', 35, 'dex')] },
+    { name: '熱鬧的大家庭', reward: { egg: 'wish' }, goals: [goal('十五次相遇', '累計孵化 15 顆蛋', 'hatched', 15, 'incubate'), goal('同一國的好朋友', '任一系列收集到 6 位（縣市除外）', 'seriesMax', 6, 'dex'), goal('早安晚安', '累計跟小湘打招呼 80 次', 'greets', 80, 'home')] },
+    { name: '好朋友們', reward: { fossils: 30 }, goals: [goal('三位知心好友', '讓 3 位小湘的好感度升到 Lv.5', 'bond5', 3, 'dex'), goal('二十張合照', '累計和小湘外出合照 20 次', 'photos', 20, 'home'), goal('八個故事', '發現 8 個旅行故事', 'stories', 8, 'errands')] },
+    { name: '守護的約定', reward: { egg: 'wish', weather: 1 }, goals: [goal('勇敢的隊伍', '通關 8 個對戰關卡', 'battles', 8, 'battle'), goal('四十五位夥伴', '收集 45 位不同的小湘', 'dex', 45, 'dex'), goal('成就收藏', '領取 20 個成就', 'achievements', 20, 'achievements')] },
+    { name: '環島的路上', reward: { energy: 100 }, goals: [goal('五個地方', '在 5 個不同縣市按「探索附近」', 'counties', 5, 'home'), goal('八張明信片', '收到 8 張家鄉明信片', 'cards', 8, 'errands'), goal('六十趟旅行', '累計派小湘出門 60 次', 'errands', 60, 'errands')] },
+    { name: '拿手好菜', reward: { egg: 'wish' }, goals: [goal('廚房常客', '在小湘廚房做料理 40 次', 'cooked', 40, 'kitchen'), goal('六道特色料理', '解開 6 道特色料理', 'recipes', 6, 'kitchen'), goal('隨手收藏家', '累計隨手拍 80 張', 'snaps', 80, 'daily')] },
+    { name: '三十天的日常', reward: { egg: 'weather' }, goals: [goal('三十天', '在 30 個不同日子完成願望', 'days', 30, 'daily'), goal('一百個小願望', '累計完成 100 個每日願望', 'wishes', 100, 'daily'), goal('五十五位夥伴', '收集 55 位不同的小湘', 'dex', 55, 'dex')] },
+    { name: '一起寫的故事', reward: { egg: 'wish', weather: 1, fossils: 40, energy: 100 }, goals: [goal('五位知心好友', '讓 5 位小湘的好感度升到 Lv.5', 'bond5', 5, 'dex'), goal('十二個故事', '發現 12 個旅行故事', 'stories', 12, 'errands'), goal('二十五次相遇', '累計孵化 25 顆蛋', 'hatched', 25, 'incubate')] },
+    { name: '星星收集家', reward: { egg: 'wish' }, goals: [goal('滿天星星', '對戰關卡累計拿到 24 顆星', 'stars', 24, 'battle'), goal('全部通關', '通關全部 12 個對戰關卡', 'battles', 12, 'battle'), goal('可靠的助手', '完成小恐龍的委託 50 次', 'tasks', 50, 'home')] },
+    { name: '滿滿的回憶', reward: { fossils: 30 }, goals: [goal('四十張合照', '累計和小湘外出合照 40 次', 'photos', 40, 'home'), goal('三十個成就', '領取 30 個成就', 'achievements', 30, 'achievements'), goal('六十五位夥伴', '收集 65 位不同的小湘', 'dex', 65, 'dex')] },
+    { name: '走遍台灣', reward: { egg: 'weather' }, goals: [goal('六個地方', '在 6 個不同縣市按「探索附近」', 'counties', 6, 'home'), goal('十二張明信片', '收到 12 張家鄉明信片', 'cards', 12, 'errands'), goal('一百趟旅行', '累計派小湘出門 100 次', 'errands', 100, 'errands')] },
+    { name: '小湘大廚', reward: { egg: 'wish' }, goals: [goal('八十道料理', '在小湘廚房做料理 80 次', 'cooked', 80, 'kitchen'), goal('食譜全收集', `解開全部 ${DISH_RECIPES.length} 道特色料理`, 'recipes', DISH_RECIPES.length, 'kitchen'), goal('一萬點溫暖', '累計注入 10000 能量', 'fed', 10000, 'incubate')] },
+    { name: '四十天的日常', reward: { fossils: 40 }, goals: [goal('四十天', '在 40 個不同日子完成願望', 'days', 40, 'daily'), goal('一百五十個小願望', '累計完成 150 個每日願望', 'wishes', 150, 'daily'), goal('八十位夥伴', '收集 80 位不同的小湘', 'dex', 80, 'dex')] },
+    { name: '永遠的飼養員', reward: { egg: 'wish', wish: 1, weather: 1, fossils: 60, energy: 150 }, goals: [goal('十位知心好友', '讓 10 位小湘的好感度升到 Lv.5', 'bond5', 10, 'dex'), goal('九十位夥伴', '收集 90 位不同的小湘', 'dex', 90, 'dex'), goal('五十天', '在 50 個不同日子完成願望', 'days', 50, 'daily')] },
   ];
   const n = level - chapters.length;
-  const chapter = chapters[level - 1] || { name: `同行旅程 · ${level}`, reward: { fossils: 10 }, goals: [goal('繼續一起過日子', `在 ${20 + n * 3} 個不同日子完成願望`, 'days', 20 + n * 3, 'daily'), goal('繼續出門', `累計派小湘出門 ${25 + n * 8} 次`, 'errands', 25 + n * 8, 'errands'), goal('繼續孵蛋', `累計孵化 ${6 + n * 3} 顆蛋`, 'hatched', 6 + n * 3, 'incubate')] };
+  // Lv.31 起自動章節：三組題目輪流換，獎勵在願望蛋／化石／天氣蛋之間輪
+  const AUTO = [
+    () => [goal('繼續一起過日子', `在 ${50 + n * 3} 個不同日子完成願望`, 'days', 50 + n * 3, 'daily'), goal('繼續出門', `累計派小湘出門 ${100 + n * 10} 次`, 'errands', 100 + n * 10, 'errands'), goal('繼續孵蛋', `累計孵化 ${25 + n * 3} 顆蛋`, 'hatched', 25 + n * 3, 'incubate')],
+    () => [goal('更多小願望', `累計完成 ${150 + n * 9} 個每日願望`, 'wishes', 150 + n * 9, 'daily'), goal('更多合照', `累計和小湘外出合照 ${40 + n * 4} 次`, 'photos', 40 + n * 4, 'home'), goal('更多料理', `在小湘廚房做料理 ${80 + n * 8} 次`, 'cooked', 80 + n * 8, 'kitchen')],
+    () => [goal('天天見面', `累計跟小湘打招呼 ${80 + n * 10} 次`, 'greets', 80 + n * 10, 'home'), goal('摸摸頭', `累計幫小湘摸摸頭 ${60 + n * 10} 次`, 'pets', 60 + n * 10, 'home'), goal('小恐龍的委託', `完成小恐龍的委託 ${50 + n * 5} 次`, 'tasks', 50 + n * 5, 'home')],
+  ];
+  const AUTO_REWARD = [{ egg: 'wish' }, { fossils: 20 }, { egg: 'weather' }];
+  const chapter = chapters[level - 1] || { name: `同行旅程 · ${level}`, reward: AUTO_REWARD[(n - 1) % 3], goals: AUTO[(n - 1) % 3]() };
   return { ...chapter, level, goals: chapter.goals.map((g, i) => ({ ...g, id: `growth:${level}:${i + 1}` })) };
 }
 export const SLOT_MAX = 3;
 export function describeChapterReward(r) {
   const parts = [];
   if (r.energy) parts.push(`${r.energy} 能量`);
-  if (r.egg === 'wish') parts.push('一顆願望蛋');
-  if (r.egg === 'weather') parts.push('一顆天氣蛋');
+  const wish = (r.egg === 'wish' ? 1 : 0) + (r.wish || 0), weather = (r.egg === 'weather' ? 1 : 0) + (r.weather || 0);
+  const num = n => (n === 1 ? '一' : n === 2 ? '兩' : String(n));
+  if (wish) parts.push(`${num(wish)}顆願望蛋`);
+  if (weather) parts.push(`${num(weather)}顆天氣蛋`);
   if (r.fossils) parts.push(`${r.fossils} 化石`);
   if (r.slot) parts.push('蛋架擴充一格（滿了改成 20 化石）');
   return parts.join(' + ');
@@ -160,6 +190,8 @@ function finishChapter(state, level) {
   if (r.energy) state.energy += r.energy;
   if (r.egg === 'wish') state.wishEgg.stock += 1;
   if (r.egg === 'weather') state.weather.stock += 1;
+  if (r.wish) state.wishEgg.stock += r.wish;
+  if (r.weather) state.weather.stock += r.weather;
   if (r.fossils) state.fossils = (state.fossils || 0) + r.fossils;
   if (r.slot) {
     const slots = state.cradle?.slots || 1;
@@ -182,6 +214,12 @@ export function goalProgress(state, goal) {
   else if (goal.metric === 'counties') current = Object.keys(state.travel?.visits || {}).length;
   else if (goal.metric === 'dex') current = owned(state).length;
   else if (goal.metric === 'seriesMax') current = goalSeriesMax(state);
+  else if (goal.metric === 'bond5') current = Object.values(state.affection || {}).filter(a => a && levelOf(a.pts || 0) >= BOND_MAX).length;
+  else if (goal.metric === 'cooked') current = count(state.kitchen?.cooked);
+  else if (goal.metric === 'recipes') current = DISH_RECIPES.filter(r => state.kitchen?.known?.[[...new Set(r.ings)].sort().join('+')]).length;
+  else if (goal.metric === 'battles') current = BATTLE_CHAPTERS.flatMap(c => c.stages).filter(id => (state.battle?.stages?.[id]?.clears || 0) > 0 || (state.battle?.stages?.[id]?.stars || 0) > 0).length;
+  else if (goal.metric === 'stars') current = BATTLE_CHAPTERS.flatMap(c => c.stages).reduce((t, id) => t + Math.min(3, state.battle?.stages?.[id]?.stars || 0), 0);
+  else if (goal.metric === 'achievements') current = (state.achievements?.claimed || []).length;
   else if (['explores', 'pets', 'greets', 'tasks', 'snaps'].includes(goal.metric)) current = count(total[goal.metric]);
   else current = count(state.player.stats[goal.metric]);
   return { current: Math.min(current, goal.target), complete: current >= goal.target, claimed: state.player.claimed.includes(goal.id) };
