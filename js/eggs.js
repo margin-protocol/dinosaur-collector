@@ -31,7 +31,7 @@ export const EGGS = {
       '045': 5, '046': 5, '047': 5, '050': 5, '054': 5, // R 動物
       '049': 2, '052': 2, '055': 2, // SR 動物
       '051': 0.6, '095': 1.8, '096': 1.8, '099': 0.6, // SSR 恐龍小湘；Koda、爬爬要一起調配貓爬小湘，湘 11/20 調到和 SR 一樣常見
-      '108': 0.6, // SSR 柴郡貓小湘（童話奇境），機率同恐龍小湘
+      '108': 0.6, // SSR 摯友小湘・柴郡貓小湘（湘 11/21 歸進摯友），SSR 機率同恐龍小湘
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -51,7 +51,6 @@ export const EGGS = {
       '045': 6, '046': 6, '047': 6, '050': 6, '054': 6, // R 動物
       '049': 5, '052': 5, '055': 5, // SR 動物
       '051': 2, '095': 2, '096': 2, // SSR 恐龍小湘
-      '108': 2, // SSR 柴郡貓小湘
     },
     // 正式三層素材：assets/eggs/wish/{shell,glow,cracks}.webp
   },
@@ -88,7 +87,7 @@ export const EGGS = {
       '045': 8, '046': 8, '047': 8, '050': 8, '054': 8, // R 動物
       '049': 5, '052': 5, '055': 5, // SR 動物
       '051': 1.5, '095': 1.5, '096': 1.5, // SSR 恐龍小湘
-      '108': 1.5, // SSR 柴郡貓小湘
+      '108': 1.5, // SSR 摯友小湘・柴郡貓小湘
     },
     // 正式三層素材：assets/eggs/cipher/{shell,glow,cracks}.webp
   },
@@ -292,8 +291,8 @@ export const CHARACTERS = {
   '106': { no: '106', name: '究級歐皇小湘', rarity: 'UR', line: "「欸？抽到重複不是很正常的事情嗎？……嗯？你說我抽到新的才比較正常？」", image: 'siang-106-luckiest', series: 'lucky', special: true, newNeed: 50 },
   // 府城燈籠小湘（湘 11/21 交付文案＋立繪）：約會蛋，五位機率一樣。台詞：docs/DATE_SIANG_107_FUCHENG_LANTERN.md
   '107': { no: '107', name: '府城燈籠小湘', rarity: 'SSR', line: "「欸欸！你看這盞燈籠！是我親手畫的耶！……嘿嘿，雖然畫得有一點歪，可是我把想送給你的祝福都畫進去了喔♡」", image: 'siang-107-fucheng-lantern', series: 'date', special: true },
-  // 柴郡貓小湘（湘 11/21 交付文案＋立繪）：童話奇境系列第一位；普通／願望／暗號蛋（＋星光蛋），機率同恐龍小湘。隱身只是圖鑑與許願畫面的視覺效果（cheshire: true），不影響戰鬥數值。台詞：docs/SIANG_108_CHESHIRE.md
-  '108': { no: '108', name: '柴郡貓小湘', rarity: 'SSR', line: "「你迷路了嗎？真有趣。可是……你怎麼知道，自己原本走的那條路就是對的呢？♡」", image: 'siang-108-cheshire', series: 'fairytale', cheshire: true },
+  // 柴郡貓小湘（湘 11/21 交付文案＋立繪）：湘 11/21 改歸摯友系列，取得比照摯友小湘＝普通蛋＋暗號蛋（＋星光蛋、有花紋的蛋較容易），SSR 權重同恐龍小湘。隱身只是圖鑑與許願畫面的視覺效果（cheshire: true），不影響戰鬥數值。台詞：docs/SIANG_108_CHESHIRE.md
+  '108': { no: '108', name: '柴郡貓小湘', rarity: 'SSR', line: "「你迷路了嗎？真有趣。可是……你怎麼知道，自己原本走的那條路就是對的呢？♡」", image: 'siang-108-cheshire', series: 'friends', cheshire: true },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -322,7 +321,6 @@ export const SERIES = {
   devteam: { name: '開發團隊', short: '開發' },
   unlucky: { name: '非酋三部曲', short: '非酋' },
   lucky: { name: '歐皇三部曲', short: '歐皇' },
-  fairytale: { name: '童話奇境', short: '童話' },
 };
 
 // 縣市 → 縣市小湘編號
