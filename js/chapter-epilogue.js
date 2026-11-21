@@ -1,13 +1,14 @@
 // 章節尾聲劇場：第一次打倒章節 Boss 後播放的純故事演出（湘 11/21 選 A 劇場對話版）。
 // 只負責演出：不讀寫存檔、不發獎勵。什麼時候播由 app.js 決定（第一次通關自動播，檔案館可重看）。
-// 劇本照湘 11/21 給的第一、二章六幕＋片尾彩蛋；素材在 assets/storybooks/chapter-one/、chapter-two/。
+// 劇本照湘 11/21 給的第一～三章六幕＋片尾彩蛋；素材在 assets/storybooks/chapter-one/、chapter-two/、chapter-three/。
 // 每一句（beat）沒寫的 bg / cam / cast / tone 會沿用上一句。
 // cam: [x%, y%, 放大倍數]，以該點為中心放大；pan: 這句播放時慢慢移到的位置。
 // cast: [[角色, 站位], …]；fx: { 角色: 動作 }；prop: 'cards'（黏成一串的邀請卡）／'sign'（蘑菇的木牌，sign: 牌子上的字）。
+// screen: 控制室大螢幕上的字 { lines, count（{n} 依序換數字）, stamp（紅章）, alert, fade }；prop 'notes'：飄音符。
 // card: 全黑轉場字卡（over: 疊在畫面上；boom: 白光大字）；flash: 'soft' | 'big' 打雷閃光。
 import { characterSources, loadWithFallback, CHARACTERS } from './eggs.js';
 
-const STORY = 'assets/storybooks/chapter-one/', STORY2 = 'assets/storybooks/chapter-two/';
+const STORY = 'assets/storybooks/chapter-one/', STORY2 = 'assets/storybooks/chapter-two/', STORY3 = 'assets/storybooks/chapter-three/';
 const ACTORS = {
   siang: { name: '原味小湘', src: characterSources(CHARACTERS['001'].image) },
   king: { name: '焦糖大王', src: ['assets/enemies/chapter-01/ch1-boss-caramel-king.webp'] },
@@ -21,11 +22,18 @@ const ACTORS = {
   sneeze: { name: '噴嚏烏雲', src: ['assets/enemies/chapter-02/ch2-01-sneeze-cloud.webp'] },
   shadow: { name: '迷路影子', src: ['assets/enemies/chapter-02/ch2-02-lost-shadow.webp'] },
   mushroom: { name: '生氣蘑菇', src: ['assets/enemies/chapter-02/ch2-03-angry-mushroom.webp'] },
+  director: { name: '歡笑總監', src: ['assets/enemies/chapter-03/ch3-boss-director-giggle.webp'] },
+  directorConfused: { name: '歡笑總監', src: [`${STORY3}director-confused.webp`] },
+  bunny: { name: '發條兔', src: ['assets/enemies/chapter-03/ch3-01-tick-tock-bunny.webp'] },
+  gummy: { name: '軟糖熊', src: ['assets/enemies/chapter-03/ch3-02-glitch-gummy.webp'] },
+  guard: { name: '八音盒衛兵', src: ['assets/enemies/chapter-03/ch3-03-melody-guard.webp'] },
 };
 const BG = {
   hall: `${STORY}hall.webp`, banquet: `${STORY}banquet.webp`, afterparty: `${STORY}afterparty.webp`,
   valley: `${STORY2}valley.webp`, heardYou: `${STORY2}heard-you.webp`, helping: `${STORY2}helping.webp`,
   seeYou: `${STORY2}see-you.webp`, welcomeHome: `${STORY2}welcome-home.webp`, aftermath: `${STORY2}bonus-aftermath.webp`,
+  controlRoom: `${STORY3}control-room.webp`, oldSong: `${STORY3}old-song.webp`, listening: `${STORY3}listening.webp`, pudding: `${STORY3}pudding.webp`,
+  party: `${STORY3}no-grades-party.webp`, happyTears: `${STORY3}happy-tears.webp`, laugh: `${STORY3}bonus-laugh.webp`,
 };
 
 export const EPILOGUES = {
@@ -131,6 +139,88 @@ export const EPILOGUES = {
       { cam: [50, 45, 1.12], pan: [50, 50, 1], stamp: '第二章・完' },
     ],
   },
+  'director-giggle': {
+    chapter: 3, title: '故障的玩具星球', subtitle: '尾聲・今天，可以不用笑', next: '',
+    beats: [
+      { act: '笑臉停下來了', bg: 'controlRoom', tone: 'alarm', cam: [50, 50, 1], cast: [], screen: { lines: ['今日歡笑指數', '100%'] }, text: '控制室裡，最後一聲警報熄滅。' },
+      { tone: '', cam: [80, 22, 1.7], screen: { lines: ['今日歡笑指數', '{n}%'], count: [100, 80, 60, 30, 0] }, text: '牆上的歡笑指數從百分之百，慢慢降到八十、六十、三十……' },
+      { screen: { lines: ['今日歡笑指數', '0%'] }, text: '最後，停在零。' },
+      { cam: [50, 45, 1.15], screen: { lines: ['「請保持微笑！☺」'], fade: true }, text: '「請保持微笑」的廣播，終於沒有再次響起。' },
+      { cam: [50, 55, 1], cast: [['director', 'C']], text: '歡笑總監坐在地上，螢幕上的大笑臉閃了兩下——', fx: { director: 'flicker' } },
+      { cast: [['directorConfused', 'C']], text: '變成兩個茫然的小圓點。' },
+      { who: 'directorConfused', text: '「……怎麼辦。」' },
+      { who: 'directorConfused', text: '「我是不是，把大家的快樂弄丟了？」', fx: { directorConfused: 'droop' } },
+      { act: '那些被蓋成故障的心願', cast: [], cam: [80, 22, 1.7], screen: { lines: ['工作紀錄', '異常情緒修復'] }, text: '牠翻開工作紀錄。' },
+      { screen: { lines: ['發條兔：', '我好累。'] }, text: '「發條兔：我好累。」' },
+      { screen: { lines: ['發條兔：', '我好累。'], stamp: '故障' }, text: '旁邊蓋著紅紅的「故障」。' },
+      { screen: { lines: ['軟糖熊：', '我想念朋友。'], stamp: '故障' }, text: '「軟糖熊：我想念朋友。」也是故障。' },
+      { screen: { lines: ['八音盒衛兵：', '我想唱自己的歌。'], stamp: '故障' }, text: '「八音盒衛兵：我想唱自己的歌。」還是故障。' },
+      { cam: [50, 55, 1], cast: [['directorConfused', 'C']], text: '總監的手慢慢停住。' },
+      { who: 'directorConfused', text: '「你們那時候……是在跟我求救嗎？」' },
+      { cast: [['bunny', 'L'], ['directorConfused', 'R']], text: '發條兔低頭看著自己的腳。', fx: { bunny: 'droop' } },
+      { who: 'bunny', text: '「我只是想問……可不可以先坐一下。」' },
+      { act: '一首唱錯也沒關係的歌', bg: 'oldSong', cast: [], cam: [35, 55, 1.6], text: '小湘拿出那把金色鑰匙，輕輕碰上控制台。' },
+      { prop: 'notes', text: '叮、叮——噹。一段有點舊、有點慢的旋律響起。' },
+      { prop: 'notes', cam: [52, 42, 1.7], text: '八音盒衛兵小聲跟著哼，唱到一半，突然停住。' },
+      { who: 'guard', text: '「對不起，我剛剛唱錯了。」' },
+      { cam: [78, 62, 1.7], text: '歡笑總監抬起頭。' },
+      { who: 'director', text: '「……以前唱到這裡，你也會唱錯。」' },
+      { cam: [52, 40, 1.7], text: '衛兵緊張地抓住帽沿。' },
+      { who: 'guard', text: '「然後呢？」' },
+      { who: 'director', cam: [78, 62, 1.7], text: '「然後……我們就會笑著，再唱一次。」' },
+      { prop: 'notes', cam: [78, 62, 1.7], pan: [50, 50, 1], text: '那時候，沒有人拿著評分表。' },
+      { act: '這次，先聽你們說', bg: 'controlRoom', cam: [50, 55, 1], cast: [['directorConfused', 'C']], text: '總監低下頭。', fx: { directorConfused: 'droop' } },
+      { who: 'directorConfused', text: '「對不起。」' },
+      { who: 'directorConfused', text: '「我把你們想說的話，全都當成故障了。」' },
+      { cast: [['gummy', 'L'], ['directorConfused', 'R']], text: '軟糖熊站在旁邊，猶豫了好久，才伸出兩隻小手。', fx: { gummy: 'fidget' } },
+      { who: 'gummy', text: '「那……現在可以抱一下嗎？」' },
+      { cast: [], cam: [80, 22, 1.7], screen: { lines: ['⚠ 未授權接觸'], alert: true }, text: '總監下意識看向控制台。螢幕上，還留著「未授權接觸」的舊提醒。' },
+      { screen: { lines: ['⚠ 未授權接觸'], alert: true, fade: true }, text: '牠慢慢把提醒關掉。' },
+      { who: 'director', bg: 'listening', cam: [72, 48, 1.5], text: '「可以。」' },
+      { cam: [22, 32, 1.7], text: '發條兔終於靠著牆坐下。' },
+      { prop: 'notes', cam: [22, 72, 1.7], text: '衛兵翻開自己偷偷寫的樂譜，輕聲哼唱。' },
+      { prop: 'notes', text: '有一個音唱歪了。' },
+      { prop: 'notes', cam: [22, 72, 1.7], pan: [50, 50, 1], text: '這一次，沒有警報響起。' },
+      { act: '那你自己快樂嗎？', bg: 'pudding', cam: [72, 45, 1.5], text: '歡笑總監低頭看著停止閃爍的笑臉螢幕。' },
+      { who: 'director', text: '「可是……我被製造出來，就是為了讓大家快樂。」' },
+      { cam: [24, 42, 1.5], text: '小湘歪著頭想了一會兒。' },
+      { who: 'siang', text: '「那你自己快樂嗎？」' },
+      { who: 'director', cam: [72, 42, 1.7], text: '「……」', hold: 1400 },
+      { text: '歡笑總監沒有立刻回答。' },
+      { cam: [40, 58, 1.7], text: '小湘從口袋裡掏出一顆布丁，遞給他。' },
+      { who: 'siang', cam: [40, 58, 1.7], pan: [50, 50, 1], text: '「不知道也沒關係呀。先一起吃布丁嘛！」' },
+      { act: '不用交成績的派對', bg: 'party', cam: [50, 45, 1.15], pan: [50, 50, 1], text: '那天，玩具星球第一次出現了沒有笑臉的慶祝派對。' },
+      { text: '有玩具在哭、有玩具在發呆，也有玩具開心得滿地打滾。' },
+      { cam: [55, 42, 1.4], text: '而歡笑總監第一次學會：' },
+      { card: '不必永遠開心，', sub: '也能被好好愛著。', over: true },
+      { card: '片尾彩蛋', sub: '今天學會哭哭了 (´；ω；｀)' },
+      { act: '今天學會哭哭了', bg: 'controlRoom', cam: [50, 55, 1], cast: [['siang', 'L'], ['director', 'R']], who: 'director', text: '「小湘！小湘！我今天學會新表情了！」', fx: { director: 'hop' } },
+      { text: '歡笑總監興奮地跑過來。螢幕慢慢變成——' },
+      { bg: 'happyTears', cast: [], cam: [66, 36, 1.9], text: '(´；ω；｀)' },
+      { who: 'director', text: '「你看！我現在可以哭哭了！」' },
+      { cam: [28, 42, 1.5], text: '小湘蹲下來。' },
+      { who: 'siang', text: '「可是，你為什麼哭呀？」' },
+      { cam: [45, 86, 1.8], text: '總監小心翼翼展開一張畫。上面是幾個歪歪的小圓圈，圍著一顆畫得特別大的布丁。' },
+      { who: 'director', text: '「發條兔送我的。」' },
+      { who: 'director', text: '「牠說，這是我們那天一起吃布丁的樣子。」' },
+      { cam: [66, 38, 1.7], text: '牠摸摸螢幕。' },
+      { who: 'director', text: '「我覺得好幸福，所以就哭了耶。」' },
+      { who: 'director', text: '「……這樣也算快樂嗎？」' },
+      { cam: [50, 50, 1], text: '小湘笑著抱住牠。' },
+      { who: 'siang', text: '「當然算呀！」' },
+      { bg: 'laugh', cam: [40, 92, 2], text: '就在這時，小恐龍抱著手帕衝過來，認真擦了兩下螢幕。' },
+      { who: 'dino', text: '「咦？怎麼擦不掉？」' },
+      { bg: 'happyTears', cam: [66, 36, 1.9], text: '總監愣住。' },
+      { who: 'director', text: '「那、那是我的表情啦！」' },
+      { bg: 'laugh', cam: [40, 92, 2], text: '小恐龍又擦了一下。' },
+      { who: 'director', voice: true, text: '「等一下……好癢……哈哈哈哈！」', shake: true },
+      { cam: [74, 70, 1.8], text: '螢幕突然變成：(≧▽≦)' },
+      { who: 'bunny', cam: [16, 68, 1.8], text: '「欸！你又學會一個了！」' },
+      { cam: [70, 45, 1.5], text: '總監看看自己的小手，又看看大家。' },
+      { who: 'director', text: '「……這個，我沒有按設定耶。」' },
+      { cam: [50, 45, 1.12], pan: [50, 50, 1], stamp: '第三章・完' },
+    ],
+  },
 };
 export const epilogueFor = (enemyId) => EPILOGUES[enemyId] || null;
 
@@ -141,7 +231,7 @@ export function resolveBeats(ep) {
     if (b.card) return { ...b, kind: 'card' };
     pulled = b.prop === 'cards' && (pulled || b.fx?.kingCry === 'pulled');
     cur = { ...cur, ...Object.fromEntries(['bg', 'cam', 'cast', 'tone', 'act'].filter((k) => k in b).map((k) => [k, b[k]])) };
-    return { ...cur, kind: b.stamp ? 'stamp' : 'line', who: b.who || null, text: b.text || '', fx: b.fx || {}, prop: b.prop || null, sign: b.sign || null, flash: b.flash || null, pulled, pan: b.pan || null, voice: Boolean(b.voice), shake: Boolean(b.shake), hold: b.hold || 0, stamp: b.stamp || null, newAct: 'act' in b };
+    return { ...cur, kind: b.stamp ? 'stamp' : 'line', who: b.who || null, text: b.text || '', fx: b.fx || {}, prop: b.prop || null, sign: b.sign || null, screen: b.screen || null, flash: b.flash || null, pulled, pan: b.pan || null, voice: Boolean(b.voice), shake: Boolean(b.shake), hold: b.hold || 0, stamp: b.stamp || null, newAct: 'act' in b };
   });
 }
 
@@ -150,7 +240,8 @@ const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls)
 export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
   dialog.innerHTML = `<div class="epi__stage" tabindex="0" aria-label="尾聲劇場，點一下看下一句">
-    <div class="epi__cam"><img class="epi__bg" alt=""><div class="epi__sign" aria-hidden="true"></div></div>
+    <div class="epi__cam"><img class="epi__bg" alt=""><div class="epi__sign" aria-hidden="true"></div><div class="epi__screen" aria-hidden="true"><div class="epi__screen-lines"></div><b class="epi__screen-stamp"></b></div></div>
+    <div class="epi__notes" aria-hidden="true"><i>♪</i><i>♫</i><i>♪</i><i>♬</i></div>
     <div class="epi__cast"></div>
     <div class="epi__cards" aria-hidden="true">${'<i></i>'.repeat(6)}</div>
     <div class="epi__spark" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i></div>
@@ -172,7 +263,18 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
   }
   let ep = null, beats = [], index = 0, typing = null, autoTimer = null, auto = false, full = '', panTimer = null;
 
-  const stopTimers = () => { clearInterval(typing); typing = null; clearTimeout(autoTimer); autoTimer = null; clearTimeout(panTimer); };
+  let countTimer = null;
+  const stopTimers = () => { clearInterval(typing); typing = null; clearTimeout(autoTimer); autoTimer = null; clearTimeout(panTimer); clearInterval(countTimer); };
+  function renderScreen(sc) {
+    const box = q('.epi__screen'), lines = q('.epi__screen-lines');
+    box.hidden = !sc; if (!sc) return;
+    box.className = `epi__screen${sc.alert ? ' is-alert' : ''}${sc.fade ? ' is-fade' : ''}`;
+    q('.epi__screen-stamp').textContent = sc.stamp || '';
+    const draw = (n) => lines.replaceChildren(...sc.lines.map((t) => el('span', '', t.replace('{n}', n))));
+    if (!sc.count || reduced.matches) return draw(sc.count ? sc.count.at(-1) : '');
+    let k = 0; draw(sc.count[0]);
+    countTimer = setInterval(() => { k += 1; draw(sc.count[Math.min(k, sc.count.length - 1)]); if (k >= sc.count.length - 1) clearInterval(countTimer); }, 650);
+  }
   function setCam([x, y, z], ms) {
     cam.style.transitionDuration = reduced.matches ? '0s' : `${ms}ms`;
     cam.style.transformOrigin = `${x}% ${y}%`; cam.style.transform = `scale(${z})`;
@@ -205,6 +307,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
       else if (slot && fx) a.node.classList.add(`fx-${fx}-end`);
     }
     stage.classList.toggle('has-cards', b.prop === 'cards');
+    stage.classList.toggle('has-notes', b.prop === 'notes'); renderScreen(b.screen);
     stage.classList.toggle('has-sign', b.prop === 'sign'); q('.epi__sign').replaceChildren(...(b.sign || []).map((t) => el('span', '', t)));
     stage.dataset.flash = ''; if (b.flash && !reduced.matches) { void stage.offsetWidth; stage.dataset.flash = b.flash; }
     stage.classList.toggle('is-pulled', b.pulled);
