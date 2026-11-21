@@ -23,10 +23,14 @@ assert.equal([...fake.files.keys()].filter(k=>k.startsWith('submissions/')&&k.en
 // reviewer rejects
 await r.click('#tab-inbox');await r.click('#inbox-refresh');await r.locator('#inbox-list .review-photo').waitFor();assert.equal(await r.textContent('#inbox-count'),'1');await r.locator('#inbox-list textarea').fill('太暗了，再拍一張～');await r.locator('#inbox-list .btn',{hasText:'退回'}).click();await r.waitForFunction(()=>/已退回/.test(document.querySelector('#inbox-status').textContent));assert.equal(await r.locator('#inbox-list .review-photo').count(),0,'removed without reload');
 await g.reload();await g.waitForFunction(k=>Object.values(JSON.parse(localStorage.getItem(k)).missions.status).includes('rejected'),key,{timeout:10000});
+await g.locator('#review-result[open]').waitFor();assert.match(await g.textContent('#review-result-title'),/被退回了/);assert.match(await g.textContent('#review-result-mission'),/今天晚餐吃什麼/);assert.match(await g.textContent('#review-result-note'),/太暗了/);assert(await g.locator('#review-result-img').isVisible());await g.click('#review-result-ok');await g.waitForTimeout(300);
 await upload('#3c3');
 await r.click('#inbox-refresh');await r.locator('#inbox-list .review-photo').waitFor();assert.equal(await r.locator('#inbox-list .review-photo').count(),1);
 await r.locator('#inbox-list textarea').fill('看起來好好吃！下次帶我去。');await r.locator('#inbox-list .btn',{hasText:'通過'}).click();await r.waitForFunction(()=>/已通過/.test(document.querySelector('#inbox-status').textContent));
 await g.reload();await g.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).memories.length===1,key,{timeout:10000});
+await g.locator('#review-result[open]').waitFor();assert.match(await g.textContent('#review-result-title'),/通過了/);assert.match(await g.textContent('#review-result-reward'),/100 能量/);assert.match(await g.textContent('#review-result-note'),/好好吃/);
+if(process.env.SHOT_RESULT) await g.screenshot({path:process.env.SHOT_RESULT});
+await g.click('#review-result-ok');await g.waitForTimeout(300);assert.equal(await g.locator('#review-result[open]').count(),0);
 let s=await save();assert.equal(s.energy>=100,true);assert.equal(s.memories[0].note,'看起來好好吃！下次帶我去。');assert.ok(s.memories[0].thumb.startsWith('data:image/jpeg'));
 await g.reload();await g.waitForTimeout(1500);s=await save();assert.equal(s.memories.length,1,'review applied once');
 await g.click('#open-center');await g.click('#open-memories');await g.locator('.memory').click();await g.locator('#memory-view[open]').waitFor();assert.match(await g.textContent('#memory-view-note'),/好好吃/);

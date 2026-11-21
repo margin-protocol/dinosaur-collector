@@ -282,6 +282,16 @@
   <button class="letter-star-toggle" id="letter-read-star" type="button" aria-pressed="false">☆ 收藏成重要紙條</button>
   <button class="btn" id="letter-read-ok" type="button">收好</button>
 </dialog>
+<dialog class="sheet sheet--letter review-result" id="review-result" aria-labelledby="review-result-title">
+  <div class="sheet__seal" aria-hidden="true"><span class="gem"></span></div>
+  <small class="review-result__kicker" id="review-result-kicker"></small>
+  <h2 class="letter-read__title" id="review-result-title"></h2>
+  <p class="review-result__mission" id="review-result-mission"></p>
+  <img class="review-result__photo" id="review-result-img" alt="" hidden>
+  <p class="review-result__reward" id="review-result-reward" hidden></p>
+  <p class="sheet__note review-result__note" id="review-result-note" hidden></p>
+  <button class="btn" id="review-result-ok" type="button">收下</button>
+</dialog>
 <dialog class="residents-dialog sheet dex-detail" id="dex-detail" aria-labelledby="dex-detail-name"><button class="close-button dex-detail__close" type="button" id="close-dex-detail" aria-label="關閉">×</button><div class="dex-detail__art"><img class="dex-detail__img" id="dex-detail-img" alt=""><div class="shiny-stars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div><small class="dex-detail__no" id="dex-detail-no"></small><h2 id="dex-detail-name"></h2><p class="dex-detail__stars" id="dex-detail-stars" hidden></p><p class="dex-detail__line" id="dex-detail-line"></p><button class="btn btn--quiet dex-detail__photo" type="button" id="dex-photo" hidden>📷 跟她合照</button><p class="dex-detail__intro" id="dex-detail-intro"></p><p class="dex-detail__story" id="dex-detail-story" hidden></p><section class="dex-bond" id="dex-detail-bond" hidden><div class="dex-bond__head"><span class="dex-bond__hearts" id="bond-hearts" aria-hidden="true"></span><b id="bond-level"></b></div><div class="dex-bond__bar" id="bond-bar"></div><p class="dex-bond__today" id="bond-today"></p><ul class="dex-bond__unlocks" id="bond-unlocks"></ul></section><p class="dex-detail__how" id="dex-detail-how"></p><small class="dex-detail__at" id="dex-detail-at"></small></dialog>
 <dialog class="residents-dialog sheet achievement-dialog" id="achievement-dialog" aria-labelledby="achievement-title"><div class="drawer-heading"><div><small>ACHIEVEMENTS</small><h2 id="achievement-title">成就</h2></div><button class="close-button" type="button" id="close-achievements" aria-label="關閉成就">×</button></div><p class="residents-intro" id="achievement-summary"></p><p class="ach-info" id="achievement-info" hidden></p><div id="achievement-list"></div></dialog>
 <dialog class="residents-dialog sheet bingo-dialog" id="bingo-dialog" aria-labelledby="bingo-title"><div class="drawer-heading"><div><small>WEEKLY BINGO</small><h2 id="bingo-title">每週賓果</h2></div><button class="close-button" type="button" id="close-bingo" aria-label="關閉每週賓果">×</button></div><p class="residents-intro" id="bingo-week"></p><div class="bingo-grid" id="bingo-grid"></div><p class="residents-intro">連成一條線就能領獎：第一條線送一顆願望蛋，之後每條 +40 能量，九格全滿再 +150。每週一換新的一張。</p><button class="btn" type="button" id="bingo-claim" hidden>領取獎勵</button></dialog>

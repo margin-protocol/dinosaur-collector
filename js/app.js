@@ -2201,6 +2201,33 @@ async function fetchMail() {
 }
 
 /* ---------- 湘的委託、記憶檔案、約會碼 ---------- */
+// 審核結果小卡（湘 11/21）：通過或退回都跳一張要按按鈕才會關的小卡，附照片和湘的批註，一次一張
+const reviewQueue = [];
+function showReviewResults(list) {
+  reviewQueue.push(...list);
+  if (!$('review-result').open) nextReviewResult();
+}
+function nextReviewResult() {
+  const r = reviewQueue.shift();
+  if (!r) return;
+  $('review-result-kicker').textContent = r.approved ? 'COMMISSION APPROVED' : 'COMMISSION RETURNED';
+  $('review-result-title').textContent = r.approved ? '委託通過了！' : '委託被退回了';
+  $('review-result-mission').textContent = `「${r.mission.title}」`;
+  $('review-result-img').hidden = !r.thumb; if (r.thumb) $('review-result-img').src = r.thumb;
+  $('review-result-img').alt = `${r.mission.title} 的照片`;
+  $('review-result-reward').hidden = !r.approved;
+  $('review-result-reward').textContent = r.approved ? `🎁 獲得 ${describeReward(r.mission.reward, CHARACTERS, EGGS)}，照片收進記憶檔案` : '';
+  const note = String(r.note || '').trim();
+  $('review-result-note').hidden = !note && r.approved;
+  $('review-result-note').textContent = note ? `湘的批註：\n${note}` : '湘沒有寫批註，換個角度再拍一張試試吧！';
+  $('review-result-ok').textContent = r.approved ? '收下' : '知道了，再拍一次';
+  $('review-result').dataset.approved = r.approved ? '1' : '';
+  $('review-result').showModal();
+  say(r.approved ? '委託通過了！好開心～' : '沒關係，再拍一次吧！', r.approved ? 'happy' : 'cheer', 3000);
+}
+$('review-result-ok').addEventListener('click', () => $('review-result').close());
+$('review-result').addEventListener('close', () => setTimeout(nextReviewResult, 200));
+
 function ready2() { return Boolean(cloudConfig() && REVIEWER_PUBLIC_JWK); }
 let missionsSyncing = null;
 // 讀取湘的委託與審核結果（驗證印章後才採用）
@@ -2246,12 +2273,12 @@ async function syncMissions() {
           current.missions.notes[r.mission] = String(r.note || '').slice(0, 600);
           delete current.missions.pending[r.mission];
         }
-        applied.push({ ...r, mission });
+        applied.push({ ...r, mission, thumb: pending.thumb || '' });
       }
       return { fresh, applied, badSeal };
     });
     state = t.state; renderAll();
-    for (const r of t.result.applied) toast(r.approved ? `委託「${r.mission.title}」通過了！獲得${describeReward(r.mission.reward, CHARACTERS, EGGS)}，照片收進記憶檔案。` : `委託「${r.mission.title}」被退回了，看看湘的批註吧。`);
+    if (t.result.applied.length) showReviewResults(t.result.applied);
     if (!t.result.applied.length && t.result.fresh) toast(`湘出了 ${t.result.fresh} 個新委託！在研究者手記的「湘的委託」。`);
     return t.result;
   })().finally(() => { missionsSyncing = null; });
