@@ -3695,11 +3695,16 @@ function guguAvatar(box) {
 function storyParas(text, maxLen = 70) {
   const raw = String(text || '');
   if (raw.includes('\n')) return raw.split(/\n+/).map(s => s.trim()).filter(Boolean);
-  const sentences = []; let buf = ''; let depth = 0;
+  // 括號（）也當成一組；句尾標點後面如果緊跟著 ！？。」）或 ，、 就先不切，避免標點或右括號自己掉到下一行（11/21）
+  const sentences = []; let buf = ''; let depth = 0; let pending = false;
   for (const ch of raw) {
+    if (pending) {
+      if ('，、：；,'.includes(ch)) pending = false;
+      else if (!'。！？!?」』）)'.includes(ch)) { sentences.push(buf.trim()); buf = ''; pending = false; }
+    }
     buf += ch;
-    if ('「『'.includes(ch)) depth += 1; else if ('」』'.includes(ch)) depth = Math.max(0, depth - 1);
-    if ((depth === 0 && '。！？'.includes(ch)) || (depth === 0 && '」』'.includes(ch) && /[。！？…]」$|[。！？…]』$/.test(buf))) { sentences.push(buf.trim()); buf = ''; }
+    if ('「『（('.includes(ch)) depth += 1; else if ('」』）)'.includes(ch)) depth = Math.max(0, depth - 1);
+    if (depth === 0 && ('。！？!?'.includes(ch) || ('」』）)'.includes(ch) && /[。！？!?…～~][」』）)]$/.test(buf)))) pending = true;
   }
   if (buf.trim()) sentences.push(buf.trim());
   const out = []; let cur = '';
