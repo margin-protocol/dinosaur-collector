@@ -105,7 +105,7 @@ export const EGGS = {
     warmthNeeded: 100,
     hatches: null,
     stocked: true, // 見面時掃描湘的約會 QR Code 取得
-    pool: { '014': 25, '042': 25, '083': 25, '084': 25 }, // 約會小湘、蝰蝰♡、蝰蝰睡著版、換我睡著版（湘 11/20：四位機率一樣）
+    pool: { '014': 20, '042': 20, '083': 20, '084': 20, '107': 20 }, // 約會小湘、蝰蝰♡、蝰蝰睡著版、換我睡著版、府城燈籠（湘 11/20：機率都一樣）
     // 正式三層素材：assets/eggs/date/{shell,glow,cracks}.webp
   },
   county: {
@@ -287,6 +287,8 @@ export const CHARACTERS = {
   '104': { no: '104', name: '普通歐皇小湘', rarity: 'SR', line: "「欸？！又是新的耶！！嘿嘿，我是不是很幸運呀♡」", image: 'siang-104-lucky', series: 'lucky', special: true, newNeed: 10 },
   '105': { no: '105', name: '中級歐皇小湘', rarity: 'SSR', line: "「不是吧？！又是新的？！哈哈哈哈哈哈我是不是被抽卡之神選中了！！！」", image: 'siang-105-luckier', series: 'lucky', special: true, newNeed: 30 },
   '106': { no: '106', name: '究級歐皇小湘', rarity: 'UR', line: "「欸？抽到重複不是很正常的事情嗎？……嗯？你說我抽到新的才比較正常？」", image: 'siang-106-luckiest', series: 'lucky', special: true, newNeed: 50 },
+  // 府城燈籠小湘（湘 11/21 交付文案＋立繪）：約會蛋，五位機率一樣。台詞：docs/DATE_SIANG_107_FUCHENG_LANTERN.md
+  '107': { no: '107', name: '府城燈籠小湘', rarity: 'SSR', line: "「欸欸！你看這盞燈籠！是我親手畫的耶！……嘿嘿，雖然畫得有一點歪，可是我把想送給你的祝福都畫進去了喔♡」", image: 'siang-107-fucheng-lantern', series: 'date', special: true },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）

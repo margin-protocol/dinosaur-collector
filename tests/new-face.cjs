@@ -13,7 +13,7 @@ const r=await p.evaluate(async()=>{const m=await import('/js/eggs.js');
   const T=Object.values(pool).reduce((a,b)=>a+b);const base001=pool['001']/T;
   const n=20000;const got=Array.from({length:n},()=>m.rollFor({id:'ordinary'},[], {dex:{'001':{at:'x'}}})).filter(x=>x==='001').length/n;
   const fixed=[m.rollFor({id:'keepsake',character:'015'},[], {dex:{},dupStreak:9}),m.rollFor({id:'county',county:'臺中市'},[], {dex:{},dupStreak:9})];
-  const full=m.rollFor({id:'date'},[], {dex:{'014':{},'042':{},'083':{},'084':{}},dupStreak:5}); // 全遇過：照原本池
+  const full=m.rollFor({id:'date'},[], {dex:{'014':{},'042':{},'083':{},'084':{},'107':{}},dupStreak:5}); // 全遇過：照原本池
   const lows=Object.keys(pool).filter(n=>!['SR','SSR','UR'].includes(m.CHARACTERS[n].rarity));
   const srPity=Array.from({length:300},()=>m.rollFor({id:'ordinary'},[], {dex:{},srStreak:9})).every(n=>['SR','SSR','UR'].includes(m.CHARACTERS[n].rarity));
   const srBoth=Array.from({length:200},()=>m.rollFor({id:'ordinary'},[], {dex:dexAllBut(['051']),dupStreak:3,srStreak:9})).every(n=>n==='051');
@@ -21,7 +21,7 @@ const r=await p.evaluate(async()=>{const m=await import('/js/eggs.js');
   return {srPity,srBoth,srBefore,pity:new Set(pity).size===1&&pity[0]==='051',normal,base001,got,fixed,full,flags:[m.isRandomEgg({id:'ordinary'}),m.isRandomEgg({id:'keepsake',character:'015'}),m.isRandomEgg({id:'county',county:'臺中市'}),m.isRandomEgg({id:'date',character:'083'})]};});
 assert.ok(r.pity,'保底一定是新面孔');assert.ok(r.srPity,'第 10 顆必 SR');assert.ok(r.srBoth,'兩個保底一起：沒遇過的 SR');assert.ok(r.srBefore,'第 9 顆還不保底');assert.ok(r.normal<60,'沒保底時不會一直出新面孔 '+r.normal);
 assert.ok(r.got<r.base001*0.7,`遇過的原味機率下降 ${r.got} vs ${r.base001}`);
-assert.deepEqual(r.fixed,['015','023']);assert.ok(['014','042','083','084'].includes(r.full));assert.deepEqual(r.flags,[true,false,false,false]);
+assert.deepEqual(r.fixed,['015','023']);assert.ok(['014','042','083','084','107'].includes(r.full));assert.deepEqual(r.flags,[true,false,false,false]);
 // 孵化記連續重複
 const key='siang-collector:v1';await p.click('#intro-ok');
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));const m=['001','005','007','008'];s.dex=Object.fromEntries(Object.keys({'001':1,'002':1,'003':1,'004':1,'005':1,'006':1,'007':1,'008':1,'009':1,'010':1,'011':1,'012':1,'013':1}).map(n=>[n,{at:'x'}]));s.hatched=5;s.dupStreak=0;s.egg={id:'ordinary',warmth:999,since:new Date().toISOString()};localStorage.setItem(k,JSON.stringify(s));},key);

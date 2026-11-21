@@ -1245,6 +1245,17 @@
         "pudding",
         "star"
       ]
+    },
+    {
+      "no": "107",
+      "name": "府城燈籠小湘",
+      "like": "濃甜",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "moon",
+        "pudding"
+      ]
     }
   ]
 }

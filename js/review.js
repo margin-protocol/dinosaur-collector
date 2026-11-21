@@ -464,7 +464,7 @@ $('date-form').addEventListener('submit', async (e) => {
     const gameUrl = $('date-url').value.trim(); localStorage.setItem(URL_KEY, gameUrl);
     const code = newDateCode();
     const expires = new Date(Date.now() + 10 * 60 * 1000).toISOString();
-    const character = ['014', '042', '083', '084'].includes($('date-character').value) ? $('date-character').value : '';
+    const character = ['014', '042', '083', '084', '107'].includes($('date-character').value) ? $('date-character').value : '';
     const payload = { v: 1, type: 'date', code, title: $('date-title').value.trim() || '今天的約會', note: $('date-note').value.trim(), ...(character ? { character } : {}), expires, createdAt: new Date().toISOString() };
     await cloud().putJSON(`dates/${code}.json`, await signPayload(privateKey, payload), 'date code');
     const q = qrcode(0, 'M'); q.addData(`${gameUrl.replace(/#.*$/, '')}#date=${code}`); q.make();
