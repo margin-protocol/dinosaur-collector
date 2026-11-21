@@ -42,3 +42,19 @@ export function presenterCopy(wish, date, stage, id, dex = {}) {
   }
   return copy;
 }
+
+// 最近陪伴過的小湘（只存在這支手機，最多 8 位，新的在前）。
+export const PRESENTER_RECENT_KEY = 'siang-collector:wish-character-recent:v1';
+export function recentPresenters(state) {
+  try {
+    const list = JSON.parse(localStorage.getItem(PRESENTER_RECENT_KEY) || '[]');
+    return Array.isArray(list) ? list.filter(no => CHARACTERS[no] && state.dex?.[no]) : [];
+  } catch { return []; }
+}
+export function rememberPresenter(id) {
+  try {
+    const list = JSON.parse(localStorage.getItem(PRESENTER_RECENT_KEY) || '[]');
+    const next = [id, ...(Array.isArray(list) ? list : []).filter(no => no !== id)].slice(0, 8);
+    localStorage.setItem(PRESENTER_RECENT_KEY, JSON.stringify(next));
+  } catch {}
+}

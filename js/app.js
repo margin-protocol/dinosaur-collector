@@ -62,7 +62,7 @@ import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
 import { pushState, enablePush, disablePush, refreshPush } from './push.js';
-import { PRESENTER_KEY, selectedPresenter, presenterCopy } from './wish-presenter.js';
+import { PRESENTER_KEY, selectedPresenter, presenterCopy, recentPresenters, rememberPresenter } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
 const TAP_ENERGY = 10; // 每點一下蛋，注入多少能量
@@ -752,20 +752,78 @@ function showWishTab(name, focus = false) {
   if (focus) $(`tab-${name}`).focus();
 }
 
+let presenterFilter = 'all';
+function presenterTile(character, selected, extraClass = '') {
+  const button = document.createElement('button'); button.type = 'button';
+  button.className = `presenter-tile${extraClass}`; button.dataset.presenter = character.no;
+  const on = selected === character.no;
+  button.setAttribute('aria-pressed', String(on));
+  button.setAttribute('aria-label', `${character.name}，${character.rarity}${on ? '，陪伴中' : ''}`);
+  const image = document.createElement('img'); image.alt = ''; image.loading = 'lazy'; image.decoding = 'async'; loadWithFallback(image, characterSources(character.image));
+  const name = document.createElement('span'); name.className = 'presenter-tile__name'; name.textContent = character.name.replace(/小湘$/, '') || character.name;
+  const rarity = document.createElement('i'); rarity.className = 'presenter-tile__rarity'; rarity.dataset.rarity = character.rarity; rarity.textContent = character.rarity;
+  button.append(image, name, rarity);
+  if (on) button.append(Object.assign(document.createElement('i'), { className: 'presenter-tile__check', textContent: '✓' }));
+  return button;
+}
+function renderPresenterNow(selected, total) {
+  const box = $('presenter-now'); const c = CHARACTERS[selected];
+  box.hidden = !c; if (!c) return;
+  const img = document.createElement('img'); img.alt = ''; loadWithFallback(img, characterSources(c.image));
+  const text = document.createElement('div'); text.className = 'presenter-now__text';
+  text.append(
+    Object.assign(document.createElement('small'), { textContent: '現在陪著你' }),
+    Object.assign(document.createElement('b'), { textContent: c.name }),
+    Object.assign(document.createElement('span'), { textContent: `No.${c.no} · ${c.rarity} · ${SERIES[c.series]?.name || ''}` }),
+  );
+  const count = Object.assign(document.createElement('em'), { className: 'presenter-now__count', textContent: `共 ${total} 位` });
+  box.replaceChildren(img, text, count);
+}
+function renderPresenterList() {
+  const selected = selectedPresenter(state);
+  const owned = Object.values(CHARACTERS).filter(c => state.dex[c.no]);
+  const query = $('presenter-search').value.trim().toLowerCase().replace(/^no\.?/, '');
+  const recent = recentPresenters(state).filter(no => no !== selected);
+  const list = $('presenter-list');
+  // 篩選鈕：全部、最近（有紀錄才出現）、各系列
+  const series = Object.keys(SERIES).filter(id => owned.some(c => c.series === id));
+  if (presenterFilter === 'recent' && !recent.length) presenterFilter = 'all';
+  if (presenterFilter !== 'all' && presenterFilter !== 'recent' && !series.includes(presenterFilter)) presenterFilter = 'all';
+  const chips = [['all', `全部 ${owned.length}`], ...(recent.length ? [['recent', '最近']] : []), ...series.map(id => [id, `${SERIES[id].short} ${owned.filter(c => c.series === id).length}`])];
+  $('presenter-filters').replaceChildren(...chips.map(([id, label]) => {
+    const chip = document.createElement('button'); chip.type = 'button'; chip.className = 'presenter-filter'; chip.dataset.filter = id; chip.textContent = label;
+    chip.setAttribute('aria-pressed', String(presenterFilter === id)); return chip;
+  }));
+  let pool = owned;
+  if (query) pool = owned.filter(c => c.name.toLowerCase().includes(query) || c.no.includes(query) || (SERIES[c.series]?.name || '').includes(query) || c.rarity.toLowerCase() === query);
+  else if (presenterFilter === 'recent') pool = recent.map(no => CHARACTERS[no]);
+  else if (presenterFilter !== 'all') pool = owned.filter(c => c.series === presenterFilter);
+  const grid = items => { const g = document.createElement('div'); g.className = 'presenter-grid'; g.append(...items.map(c => presenterTile(c, selected, ' presenter-choice'))); return g; };
+  const head = text => Object.assign(document.createElement('p'), { className: 'residents-series presenter-series', textContent: text });
+  if (!pool.length) { list.replaceChildren(Object.assign(document.createElement('p'), { className: 'presenter-empty', textContent: query ? `找不到「${$('presenter-search').value.trim()}」，換個字試試看。` : '這裡還沒有小湘。' })); return; }
+  if (query || presenterFilter !== 'all') { list.replaceChildren(grid(pool)); return; }
+  const groups = Object.keys(SERIES).map(id => [id, owned.filter(c => c.series === id)]).filter(([, l]) => l.length);
+  if (groups.length === 1) { list.replaceChildren(grid(owned)); return; }
+  const parts = [];
+  if (recent.length && owned.length > 8) {
+    const row = document.createElement('div'); row.className = 'presenter-grid presenter-grid--recent';
+    row.append(...recent.slice(0, 4).map(no => presenterTile(CHARACTERS[no], selected, ' is-recent')));
+    parts.push(head('最近陪伴'), row);
+  }
+  for (const [id, l] of groups) parts.push(head(`${SERIES[id].name} · ${l.length}`), grid(l));
+  list.replaceChildren(...parts);
+}
 function renderPresenters() {
   const selected = selectedPresenter(state);
   const owned = Object.values(CHARACTERS).filter(c => state.dex[c.no]);
-  $('presenter-list').replaceChildren(...owned.map(character => {
-    const button = document.createElement('button'); button.type = 'button'; button.className = 'resident-choice presenter-choice'; button.dataset.presenter = character.no; button.setAttribute('aria-pressed', String(selected === character.no));
-    const image = document.createElement('img'); image.alt = ''; loadWithFallback(image, characterSources(character.image));
-    const name = document.createElement('span'); name.textContent = character.name;
-    const status = document.createElement('span'); status.className = 'resident-choice__action'; status.textContent = selected === character.no ? '✓ 陪伴中' : '選擇她';
-    button.append(image, name, status); return button;
-  }));
+  renderPresenterNow(selected, owned.length);
+  $('presenter-tools').hidden = owned.length < 2;
   if (!owned.length) {
     const text = document.createElement('p'); text.className = 'residents-intro'; text.textContent = '先前往培育，迎接第一位小湘。孵化後就能選擇陪伴你的角色。';
-    const action = document.createElement('button'); action.type = 'button'; action.className = 'btn'; action.textContent = '前往培育'; action.addEventListener('click', () => showView('incubate')); $('presenter-list').append(text, action);
+    const action = document.createElement('button'); action.type = 'button'; action.className = 'btn'; action.textContent = '前往培育'; action.addEventListener('click', () => showView('incubate')); $('presenter-list').replaceChildren(text, action);
+    return;
   }
+  renderPresenterList();
 }
 
 function announceLevel(result) {
@@ -1373,7 +1431,14 @@ $('growth-action').addEventListener('click', () => {
   else if (!pending && goals.some(g => !goalProgress(state, g).claimed)) $('growth-list').querySelector('button')?.focus();
   else showWishTab('daily', true);
 });
-$('open-presenter').addEventListener('click', () => { renderPresenters(); $('presenter-feedback').textContent = ''; $('presenter').showModal(); syncRoomActivity(); });
+$('open-presenter').addEventListener('click', () => { $('presenter-search').value = ''; renderPresenters(); $('presenter-feedback').textContent = ''; $('presenter').showModal(); $('presenter-list').scrollTop = 0; syncRoomActivity(); });
+$('presenter-search').addEventListener('input', () => { renderPresenterList(); $('presenter-list').scrollTop = 0; });
+$('presenter-search').addEventListener('keydown', event => { if (event.key === 'Enter') { event.preventDefault(); event.currentTarget.blur(); } });
+$('presenter-filters').addEventListener('click', event => {
+  const chip = event.target.closest('[data-filter]'); if (!chip) return;
+  presenterFilter = chip.dataset.filter; $('presenter-search').value = '';
+  renderPresenterList(); $('presenter-list').scrollTop = 0;
+});
 $('close-presenter').addEventListener('click', () => $('presenter').close());
 $('presenter-list').addEventListener('click', event => {
   const button = event.target.closest('[data-presenter]');
@@ -1381,8 +1446,11 @@ $('presenter-list').addEventListener('click', event => {
   state = loadState();
   const id = button.dataset.presenter;
   if (!CHARACTERS[id] || !state.dex[id]) return;
+  const before = selectedPresenter(state);
   try { localStorage.setItem(PRESENTER_KEY, id); }
   catch { $('presenter-feedback').textContent = '這次選擇無法儲存，請再試一次。'; return; }
+  if (before && before !== id) rememberPresenter(before);
+  rememberPresenter(id);
   renderWishes(); $('presenter').close();
 });
 
