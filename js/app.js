@@ -1640,11 +1640,17 @@ let pressTimer = null, pressShown = false;
 function hidePressTip() { document.querySelector('.press-tip')?.remove(); }
 function showPressTip(btn) {
   hidePressTip();
-  const c = CHARACTERS[btn.dataset.siang]; if (!c) return;
   const tip = document.createElement('div'); tip.className = 'press-tip'; tip.setAttribute('role', 'tooltip');
-  const p = battle.siangPower(state, c.no);
-  const b = bondInfo(state, c.no, todayKey());
-  tip.append(Object.assign(document.createElement('b'), { textContent: c.name }), Object.assign(document.createElement('span'), { textContent: `${c.rarity} · ${SERIES[c.series]?.name || ''} · 戰力 ${p.power} · ♥ Lv.${b.level}${p.stars ? ` · ★${p.stars}` : ''}` }));
+  if (btn.dataset.more) tip.append(Object.assign(document.createElement('b'), { textContent: '也吃過' }), Object.assign(document.createElement('span'), { className: 'press-tip__list', textContent: btn.dataset.more })); // 料理小書「+N」
+  else {
+    const c = CHARACTERS[btn.dataset.siang]; if (!c) return;
+    if (btn.dataset.taste) tip.append(Object.assign(document.createElement('b'), { textContent: c.name }), Object.assign(document.createElement('span'), { textContent: `吃過，覺得 ${btn.dataset.taste}` })); // 料理小書吃過的小湘
+    else {
+      const p = battle.siangPower(state, c.no);
+      const b = bondInfo(state, c.no, todayKey());
+      tip.append(Object.assign(document.createElement('b'), { textContent: c.name }), Object.assign(document.createElement('span'), { textContent: `${c.rarity} · ${SERIES[c.series]?.name || ''} · 戰力 ${p.power} · ♥ Lv.${b.level}${p.stars ? ` · ★${p.stars}` : ''}` }));
+    }
+  }
   const host = btn.closest('dialog') || document.body; host.append(tip);
   const r = btn.getBoundingClientRect(); const hr = host.getBoundingClientRect();
   const half = tip.offsetWidth / 2 + 8; // 不要超出畫面左右
@@ -1652,15 +1658,18 @@ function showPressTip(btn) {
   tip.style.top = `${r.top - hr.top + host.scrollTop - 6}px`;
   buzz(15);
 }
+const PRESS_SEL = '.errand-siang[data-siang], .cookbook-eater[data-siang], .cookbook-eater-more';
 document.addEventListener('pointerdown', e => {
-  const btn = e.target.closest('.errand-siang[data-siang]'); if (!btn) return;
+  const btn = e.target.closest(PRESS_SEL); if (!btn) return;
   pressShown = false; clearTimeout(pressTimer);
   pressTimer = setTimeout(() => { pressShown = true; showPressTip(btn); }, 450);
 }, { passive: true });
 for (const type of ['pointerup', 'pointercancel', 'pointerleave', 'scroll']) document.addEventListener(type, () => { clearTimeout(pressTimer); if (pressShown) setTimeout(hidePressTip, 1600); }, { capture: true, passive: true });
 // 長按完不要順便選到她
-document.addEventListener('click', e => { if (pressShown && e.target.closest('.errand-siang[data-siang]')) { e.stopPropagation(); e.preventDefault(); pressShown = false; } }, true);
-document.addEventListener('contextmenu', e => { if (e.target.closest('.errand-siang[data-siang]')) e.preventDefault(); });
+document.addEventListener('click', e => { if (pressShown && e.target.closest(PRESS_SEL)) { e.stopPropagation(); e.preventDefault(); pressShown = false; } }, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest(PRESS_SEL)) e.preventDefault(); });
+// 料理小書的頭像本來點了沒反應，輕點也顯示是誰
+document.addEventListener('click', e => { const el = e.target.closest('.cookbook-eater[data-siang], .cookbook-eater-more'); if (!el || pressShown) return; showPressTip(el); setTimeout(hidePressTip, 1800); });
 
 /* ---------- 外出合照 ---------- */
 const photoBooth = createPhotoBooth({ dialog: $('photo-dialog'), getState: () => state, onTaken: no => {
@@ -3509,7 +3518,7 @@ function renderKitchen() {
   }
   // 圖鑑
   const known = Object.keys(k.known).length;
-  $('kitchen-stats').replaceChildren(...[`做過 ${known} / 286 道`, `特色料理 ${kitchen.recipesFound(state)} / 8`, `秘密最愛 ${kitchen.secretsFound(state)} 個`].flatMap((t, i) => [...(i ? [' · '] : []), Object.assign(document.createElement('span'), { textContent: t })]));
+  $('kitchen-stats').replaceChildren(...[`做過 ${known} / 286 道`, `特色料理 ${kitchen.recipesFound(state)} / 8`, `秘密最愛 ${kitchen.secretsFound(state)} 個`].flatMap((t, i) => [...(i ? [' '] : []), Object.assign(document.createElement('span'), { textContent: i ? `· ${t}` : t })])); // 「·」跟著後一段，換行時不會落單在行首
   renderCookbook();
   $('kitchen-book').replaceChildren(...kitchen.RECIPES.map(rc => {
     const id = [...rc.ings].sort().join('+'); const got = Boolean(k.known[id]);
@@ -3561,12 +3570,12 @@ function renderCookbook() {
     if (e.eaters.length) {
       const MAX = 4;
       eat.append(...e.eaters.slice(0, MAX).map(({ no, rating }) => {
-        const who = document.createElement('span'); who.className = 'cookbook-eater'; who.title = `${CHARACTERS[no].name}：${kitchen.RATINGS[rating].label}`;
+        const who = document.createElement('span'); who.className = 'cookbook-eater'; who.dataset.siang = no; who.dataset.taste = `${kitchen.RATINGS[rating].icon} ${kitchen.RATINGS[rating].label}`; who.title = `${CHARACTERS[no].name}：${kitchen.RATINGS[rating].label}`;
         const face = document.createElement('span'); face.className = 'cookbook-eater__face'; face.append(siangImg(no));
         who.append(face, Object.assign(document.createElement('i'), { textContent: kitchen.RATINGS[rating].icon }));
         return who;
       }));
-      if (e.eaters.length > MAX) eat.append(Object.assign(document.createElement('small'), { textContent: `+${e.eaters.length - MAX}` }));
+      if (e.eaters.length > MAX) { const more = Object.assign(document.createElement('small'), { className: 'cookbook-eater-more', textContent: `+${e.eaters.length - MAX}` }); more.dataset.more = e.eaters.slice(MAX).map(({ no, rating }) => `${kitchen.RATINGS[rating].icon} ${CHARACTERS[no].name}`).join('\n'); eat.append(more); }
     } else eat.append(Object.assign(document.createElement('small'), { textContent: '還沒給小湘吃過' }));
     return card;
   }) : [Object.assign(document.createElement('p'), { className: 'cookbook__empty', textContent: all.length ? '這一類還沒有做過喔。' : '小書還是空白的。煮出第一道料理，就會寫在第一頁。' })]));
@@ -3574,6 +3583,17 @@ function renderCookbook() {
   $('cookbook-page').textContent = `第 ${cookbookPage + 1} / ${pages} 頁`;
   $('cookbook-prev').disabled = cookbookPage === 0; $('cookbook-next').disabled = cookbookPage >= pages - 1;
 }
+// 料理小書可以整本收起來（湘 11/21），開關記在這台裝置，預設打開
+const COOKBOOK_KEY = 'siang-collector:cookbook:v1';
+let cookbookOpen = (() => { try { return localStorage.getItem(COOKBOOK_KEY) !== 'closed'; } catch { return true; } })();
+function syncCookbook() {
+  $('cookbook-toggle').setAttribute('aria-expanded', String(cookbookOpen));
+  $('cookbook-body').hidden = !cookbookOpen;
+  $('kitchen-cookbook').classList.toggle('is-closed', !cookbookOpen);
+  $('cookbook-caret').textContent = cookbookOpen ? '收起 ▾' : '打開 ▸';
+}
+syncCookbook();
+$('cookbook-toggle').addEventListener('click', () => { cookbookOpen = !cookbookOpen; try { localStorage.setItem(COOKBOOK_KEY, cookbookOpen ? 'open' : 'closed'); } catch {} syncCookbook(); });
 $('cookbook-prev').addEventListener('click', () => { cookbookPage -= 1; renderCookbook(); });
 $('cookbook-next').addEventListener('click', () => { cookbookPage += 1; renderCookbook(); });
 $('kitchen-cook').addEventListener('click', async () => {

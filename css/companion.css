@@ -671,6 +671,10 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .press-tip { position:absolute; z-index:30; transform:translate(-50%,-100%); display:grid; gap:2px; padding:8px 12px; max-width:240px; border-radius:12px; background:#1c1520f0; color:#f6ede6; border:1px solid #ffd9a866; box-shadow:0 6px 18px #0007; font:12px/1.5 var(--font-display); text-align:center; pointer-events:none; animation:press-tip-in .15s ease-out; }
 .press-tip b { font-size:14px; font-weight:400; }
 .press-tip span { color:#e6d3dc; font-size:11px; }
+.press-tip__list { white-space:pre-line; line-height:1.6; }
+.cookbook-eater, .cookbook-eater-more { -webkit-touch-callout:none; user-select:none; -webkit-user-select:none; cursor:pointer; }
+.cookbook-eater img { -webkit-user-drag:none; pointer-events:none; }
+.cookbook-eater-more { padding:4px 2px; }
 @keyframes press-tip-in { from { opacity:0; translate:0 4px; } to { opacity:1; translate:0 0; } }
 
 /* ---------- 星級（重複孵到） ---------- */
@@ -893,9 +897,13 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .cloud-push .btn { width:100%; margin:0; }
 /* 料理小書：做過的料理，一頁 6 道 */
 .cookbook { position:relative; padding:12px 12px 10px 16px; margin-bottom:14px; border-radius:6px 16px 16px 6px; background:var(--t-raised); border:1px solid var(--t-line); box-shadow:inset 6px 0 0 var(--t-accent), 0 2px 10px #0000001f; color:var(--t-text); }
-.cookbook__cover { display:flex; align-items:center; gap:10px; padding-bottom:10px; margin-bottom:10px; border-bottom:1px dashed var(--t-line); }
+.cookbook__cover { display:flex; align-items:center; gap:10px; width:100%; padding:0 0 10px; margin:0 0 10px; border:0; border-bottom:1px dashed var(--t-line); background:none; color:inherit; font:inherit; text-align:left; cursor:pointer; -webkit-tap-highlight-color:transparent; }
+.cookbook__title { flex:1; min-width:0; }
+.cookbook__caret { flex:none; align-self:flex-start; margin-top:4px; font-style:normal; font-size:12px; white-space:nowrap; color:var(--t-muted); }
+.cookbook.is-closed { padding-bottom:12px; }
+.cookbook.is-closed .cookbook__cover { padding-bottom:0; margin-bottom:0; border-bottom:0; }
+.cookbook__body[hidden] { display:none; }
 .cookbook__emblem { flex:none; display:grid; place-items:center; width:38px; height:38px; border-radius:50%; background:var(--t-panel); border:1px solid var(--t-line); font-size:20px; }
-.cookbook__cover > div { min-width:0; }
 .cookbook__cover b { display:block; font:16px var(--font-display); letter-spacing:.04em; }
 .cookbook__cover small { display:block; margin-top:2px; font:11.5px/1.5 var(--font-body); color:var(--t-muted); word-break:keep-all; }
 .cookbook__tabs { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:4px; padding:3px; margin-bottom:10px; border-radius:999px; background:var(--t-panel); border:1px solid var(--t-line); }
@@ -904,7 +912,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .cookbook__tabs button[aria-selected="true"] { background:var(--t-selected); color:var(--t-text); box-shadow:0 0 0 1px var(--t-accent); }
 .cookbook__pages { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
 .cookbook-page { position:relative; display:flex; flex-direction:column; gap:3px; min-width:0; padding:10px 10px 9px; border-radius:12px; border:1px solid var(--t-line); color:var(--t-text);
-  background:repeating-linear-gradient(to bottom, transparent 0 21px, color-mix(in srgb, var(--t-line) 22%, transparent) 21px 22px), var(--t-panel); }
+  background:var(--t-panel); } /* 湘 11/21：拿掉橫線，線會穿過字 */
 .cookbook-page__head { display:flex; align-items:flex-start; justify-content:space-between; gap:4px; }
 .cookbook-page__no { flex:none; font:10px/1.8 var(--font-body); letter-spacing:.04em; color:var(--t-muted); opacity:.85; }
 .cookbook-page__icons { min-width:0; font-size:17px; line-height:1.3; letter-spacing:-1px; white-space:nowrap; }

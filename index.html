@@ -320,10 +320,11 @@
 <div id="kitchen-result" class="kitchen-result" hidden aria-live="polite"></div>
 <p class="cloud-status" id="kitchen-status" role="status" aria-live="polite"></p>
 <h3 class="egg-choices__heading">料理小書</h3>
-<section class="cookbook" id="kitchen-cookbook" aria-label="料理小書"><div class="cookbook__cover"><span class="cookbook__emblem" aria-hidden="true">📖</span><div><b>小湘的料理小書</b><small id="kitchen-stats"></small></div></div>
+<section class="cookbook" id="kitchen-cookbook" aria-label="料理小書"><button type="button" class="cookbook__cover" id="cookbook-toggle" aria-expanded="true" aria-controls="cookbook-body"><span class="cookbook__emblem" aria-hidden="true">📖</span><span class="cookbook__title"><b>小湘的料理小書</b><small id="kitchen-stats"></small></span><i class="cookbook__caret" id="cookbook-caret">收起 ▾</i></button>
+<div class="cookbook__body" id="cookbook-body">
 <div class="cookbook__tabs" id="cookbook-tabs" role="tablist" aria-label="料理分類"></div>
 <div class="cookbook__pages" id="cookbook-pages"></div>
-<div class="cookbook__nav" id="cookbook-nav"><button type="button" id="cookbook-prev" aria-label="上一頁">‹</button><span id="cookbook-page"></span><button type="button" id="cookbook-next" aria-label="下一頁">›</button></div></section>
+<div class="cookbook__nav" id="cookbook-nav"><button type="button" id="cookbook-prev" aria-label="上一頁">‹</button><span id="cookbook-page"></span><button type="button" id="cookbook-next" aria-label="下一頁">›</button></div></div></section>
 <h3 class="egg-choices__heading">特色料理食譜</h3><div id="kitchen-book" class="kitchen-book"></div>
 <h3 class="egg-choices__heading">秘密最愛</h3><div id="kitchen-secrets" class="kitchen-secrets"></div>
 </div>

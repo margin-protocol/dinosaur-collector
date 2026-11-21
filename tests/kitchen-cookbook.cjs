@@ -2,7 +2,7 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const key='siang-collector:v1';
-const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'});
+const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce',deviceScaleFactor:process.env.SHOT_DIR?2:1});
 const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.goto('http://127.0.0.1:8000');await p.locator('#intro-ok').click();
 const r=await p.evaluate(async()=>{
@@ -20,10 +20,10 @@ assert.equal(r.before,1);
 assert.deepEqual(r.made,{'milk+strawberry':3,'caramel+milk':1});
 assert.deepEqual(r.book,[['caramel+milk',2,1,'home','',1],['milk+strawberry',1,3,'recipe','001',1]],'newest first, counts, eaters');
 // UI：13 道 → 3 頁（全部），黑暗分頁
-await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=5;for(const n of ['001','002','003','005','087'])s.dex[n]={at:'x'};s.guide={seen:['battle','errand'],unlocked:['errand','wheel','battle','archive']};
+await p.evaluate(([k,theme])=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=5;for(const n of ['001','002','003','005','087'])s.dex[n]={at:'x'};s.guide={seen:['battle','errand'],unlocked:['errand','wheel','battle','archive']};
   const ids=['milk+strawberry','caramel+milk+pudding','mushroom+strawberry','glitch+lightning+star','caramel+milk','milk+pudding','caramel+pudding','caramel+strawberry','pudding+strawberry','milk+moon','cloud+milk','cloud+moon','lightning+moon'];
   s.kitchen={ingredients:{milk:3},known:Object.fromEntries(ids.map((id,i)=>[id,new Date(Date.UTC(2026,10,10+i)).toISOString()])),made:{'milk+strawberry':4},meals:{'cloud+milk':2},tasted:{'001':{'milk+strawberry':3,'cloud+milk':1},'002':{'milk+strawberry':2},'003':{'milk+strawberry':0},'005':{'milk+strawberry':2},'087':{'milk+strawberry':1}}};
-  localStorage.setItem(k,JSON.stringify(s));},key);
+  localStorage.setItem(k,JSON.stringify(s));if(theme)localStorage.setItem('siang-collector:theme:v1',theme);},[key,process.env.THEME||'']);
 await p.reload();await p.waitForTimeout(600);
 await p.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
 await p.evaluate(()=>document.getElementById('open-errands').click());await p.locator('#errand-dialog[open]').waitFor();
@@ -46,5 +46,27 @@ for(const w of [360,390,430]){await p.setViewportSize({width:w,height:844});awai
 }
 await p.locator('#cookbook-next').click();assert.match(await p.locator('#cookbook-page').textContent(),/2 \/ 3/);
 await p.locator('#cookbook-tabs [data-tab="dark"]').click();assert.equal(await p.locator('.cookbook-page.is-dark').count(),await p.locator('.cookbook-page').count());
+// 長按吃過的小湘頭像 → 顯示名字和評價；+N 顯示其他人
+await p.locator('#cookbook-tabs [data-tab="recipe"]').click();
+const face=p.locator('[data-dish="milk+strawberry"] .cookbook-eater').first();
+const box=await face.boundingBox();await p.mouse.move(box.x+box.width/2,box.y+box.height/2);await p.mouse.down();await p.waitForTimeout(600);
+assert.match(await p.textContent('.press-tip'),/小湘.*吃過，覺得/);
+if(shot){await p.locator('#errand-dialog').screenshot({path:`${shot}/eater-press.png`});}
+await p.mouse.up();await p.waitForTimeout(100);
+assert.equal(await p.locator('.press-tip').count(),1,'tip stays after release');
+await p.waitForTimeout(1800);assert.equal(await p.locator('.press-tip').count(),0);
+await p.locator('[data-dish="milk+strawberry"] .cookbook-eater-more').click();
+assert.match(await p.textContent('.press-tip'),/也吃過/);
+await p.waitForTimeout(1900);await p.locator('#cookbook-tabs [data-tab="all"]').click();
+// 整本收合：預設打開；點封面收起，重新整理後記得
+assert.equal(await p.getAttribute('#cookbook-toggle','aria-expanded'),'true');
+await p.locator('#cookbook-toggle').click();
+assert.equal(await p.getAttribute('#cookbook-toggle','aria-expanded'),'false');assert.equal(await p.locator('#cookbook-body').isVisible(),false);
+assert.match(await p.textContent('#cookbook-caret'),/打開/);assert.match(await p.textContent('#kitchen-stats'),/做過/);
+if(shot){await p.setViewportSize({width:360,height:844});await p.locator('#kitchen-cookbook').screenshot({path:`${shot}/cookbook-closed-360.png`});}
+await p.reload();await p.waitForTimeout(500);await p.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.close()));
+await p.evaluate(()=>document.getElementById('open-errands').click());await p.locator('#errand-dialog[open]').waitFor();await p.locator('#tab-kitchen').click();
+assert.equal(await p.locator('#cookbook-body').isVisible(),false,'remembered closed');
+await p.locator('#cookbook-toggle').click();assert.equal(await p.locator('.cookbook-page').first().isVisible(),true);
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('kitchen-cookbook: made counts, old saves ≥1, newest first, eaters, tabs+pages, 360–430 fit PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
