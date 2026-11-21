@@ -1,0 +1,172 @@
+{
+  "chapter": 2,
+  "title": "小聲一點，也聽得見",
+  "status": "art-delivered",
+  "sourceCommit": "e0840f5",
+  "assets": [
+    {
+      "id": "valley",
+      "title": "雨後的烏雲山谷",
+      "kind": "background",
+      "scenes": [
+        1,
+        2,
+        7
+      ],
+      "label": "01–02 · 共用場景",
+      "alt": "雨後的山谷有一座亮著暖燈的吊橋，旁邊的空石頭座位落著幾片葉子，前景留有小水窪。",
+      "description": "前兩幕共用的空場景，保留吊橋、石頭座位與水窪，供角色和鏡頭演出。",
+      "references": [],
+      "original": "art/chapter-two-storybook/originals/valley.png",
+      "web": "assets/storybooks/chapter-two/valley.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 462184,
+      "transparent": false
+    },
+    {
+      "id": "thunder-shy",
+      "title": "雷雷委屈版",
+      "kind": "character",
+      "scenes": [
+        1,
+        2
+      ],
+      "label": "01–02 · 透明角色",
+      "alt": "雷雷大魔王的皇冠微歪、閃電瀏海垂成小捲，低頭搓著雲拳，露出害羞又怕朋友離開的表情。",
+      "description": "獨立透明圖，可與山谷背景疊合，做飄浮、靠近與低幅搖晃。",
+      "references": [
+        "assets/enemies/chapter-02/ch2-boss-thunder-king.webp"
+      ],
+      "original": "art/chapter-two-storybook/originals/thunder-shy.png",
+      "web": "assets/storybooks/chapter-two/thunder-shy.webp",
+      "width": 1254,
+      "height": 1254,
+      "bytes": 209464,
+      "transparent": true
+    },
+    {
+      "id": "heard-you",
+      "title": "這麼近，聽得見的",
+      "kind": "illustration",
+      "scenes": [
+        3
+      ],
+      "label": "03 · 扶正皇冠",
+      "alt": "小湘靠近雷雷大魔王，輕輕扶正牠的皇冠；牠捧著雲拳，害羞地與小湘對望。",
+      "description": "「你現在想說什麼？」「……想找你們玩。」「嗯，聽見了。」",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-02/ch2-boss-thunder-king.webp"
+      ],
+      "original": "art/chapter-two-storybook/originals/heard-you.png",
+      "web": "assets/storybooks/chapter-two/heard-you.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 408916,
+      "transparent": false
+    },
+    {
+      "id": "helping",
+      "title": "山谷重新開門",
+      "kind": "illustration",
+      "scenes": [
+        4
+      ],
+      "label": "04 · 一起整理山谷",
+      "alt": "小湘擦乾淨石頭座位，噴嚏烏雲遞出手帕，迷路影子畫新地圖，生氣蘑菇豎起路牌，雷雷感激地看著大家。",
+      "description": "每位夥伴都有一件小任務。路牌保留蘑菇圖案，文字可在繪本中另行疊上。",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-02/ch2-boss-thunder-king.webp",
+        "assets/enemies/chapter-02/ch2-01-sneeze-cloud.webp",
+        "assets/enemies/chapter-02/ch2-02-lost-shadow.webp",
+        "assets/enemies/chapter-02/ch2-03-angry-mushroom.webp"
+      ],
+      "original": "art/chapter-two-storybook/originals/helping.png",
+      "web": "assets/storybooks/chapter-two/helping.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 482216,
+      "transparent": false
+    },
+    {
+      "id": "see-you",
+      "title": "今天先說再見",
+      "kind": "illustration",
+      "scenes": [
+        5
+      ],
+      "label": "05 · 吊橋道別",
+      "alt": "夕陽下，小湘踏上吊橋回頭揮手，雷雷大魔王抓著欄杆捨不得離開，披風的小角掛在橋繩上。",
+      "description": "「……不過，那塊看夕陽的石頭，本王會擦乾淨。」",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/enemies/chapter-02/ch2-boss-thunder-king.webp"
+      ],
+      "original": "art/chapter-two-storybook/originals/see-you.png",
+      "web": "assets/storybooks/chapter-two/see-you.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 471912,
+      "transparent": false
+    },
+    {
+      "id": "welcome-home",
+      "title": "很小聲的歡迎",
+      "kind": "illustration",
+      "scenes": [
+        6
+      ],
+      "label": "06 · 大家真的回來了",
+      "alt": "大家回到山谷，坐在乾淨的石頭旁喝茶；雷雷開心地攤開披風替朋友留位置，小恐龍帶來點心籃。",
+      "description": "這一天，雷聲很小。回應牠的聲音，卻有好多個。",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/mascot/dinosaur-idle.webp",
+        "assets/enemies/chapter-02/ch2-boss-thunder-king.webp",
+        "assets/enemies/chapter-02/ch2-01-sneeze-cloud.webp",
+        "assets/enemies/chapter-02/ch2-02-lost-shadow.webp",
+        "assets/enemies/chapter-02/ch2-03-angry-mushroom.webp"
+      ],
+      "original": "art/chapter-two-storybook/originals/welcome-home.png",
+      "web": "assets/storybooks/chapter-two/welcome-home.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 349464,
+      "transparent": false
+    },
+    {
+      "id": "bonus-aftermath",
+      "title": "音量調好了……大概",
+      "kind": "illustration",
+      "scenes": [
+        7
+      ],
+      "label": "片尾彩蛋 · 太開心了",
+      "alt": "雷雷意外大聲打雷後捂住嘴巴，小湘頭髮炸蓬，影子的地圖黏住半張臉，蘑菇雙手按緊帽子，小恐龍守著點心籃笑。",
+      "description": "「……本王只是太開心了。」「我知道！！但你先救一下我的帽子！！」",
+      "references": [
+        "assets/characters/siang-001-hd/idle-open.webp",
+        "assets/mascot/dinosaur-idle.webp",
+        "assets/enemies/chapter-02/ch2-boss-thunder-king.webp",
+        "assets/enemies/chapter-02/ch2-01-sneeze-cloud.webp",
+        "assets/enemies/chapter-02/ch2-02-lost-shadow.webp",
+        "assets/enemies/chapter-02/ch2-03-angry-mushroom.webp"
+      ],
+      "original": "art/chapter-two-storybook/originals/bonus-aftermath.png",
+      "web": "assets/storybooks/chapter-two/bonus-aftermath.webp",
+      "width": 1122,
+      "height": 1402,
+      "bytes": 467842,
+      "transparent": false
+    }
+  ],
+  "notes": [
+    "六幕故事與片尾彩蛋的素材交付；尚未接入第二章正式尾聲播放器。",
+    "原生尺寸 PNG 合成原圖＋WebP（quality 84），未插值放大。",
+    "只有 thunder-shy 是透明獨立角色；完整插畫非可分層 PSD，人物、帽子與手部動作已合成在圖內。",
+    "所有圖內不含介面文字。helping 路牌文字「歡迎來玩／請勿踩菇」可由字幕或 DOM/SVG 疊加。",
+    "野餐合照已修正雷雷的多餘手部，保留兩隻攤開披風的雲手。"
+  ]
+}
