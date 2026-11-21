@@ -10,7 +10,7 @@ await r.fill('#cloud-repo',fake.repo);await r.fill('#cloud-token','bad-token');a
 await r.fill('#cloud-token','good-token');await r.click('#cloud-save');await r.waitForFunction(()=>/連線成功/.test(document.querySelector('#cloud-status').textContent));
 assert(await r.locator('#code-create').isDisabled(),'cannot sign without key');
 await r.click('#key-generate');await r.waitForFunction(()=>document.querySelector('#key-public').value.length>20);
-const pub=JSON.parse(await r.inputValue('#key-public'));assert.equal(pub.d,undefined,'public key has no private part');
+const pub=JSON.parse(await r.inputValue('#key-public'));assert.equal(pub.d,undefined,'public key has no private part');await r.click('#tab-make');
 const backup=await r.evaluate(async()=>{const d=await new Promise(res=>{const q=indexedDB.open('siang-review',1);q.onsuccess=()=>res(q.result)});return new Promise(res=>{const q=d.transaction('keys').objectStore('keys').get('reviewer');q.onsuccess=()=>res(q.result)})});
 assert.ok(backup.d);
 // create codes

@@ -4,7 +4,7 @@ require('./_legacy-cloud.cjs');const {chromium}=require('playwright'),assert=req
 const errs=[];const opts={viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'};
 const rc=await b.newContext(opts);await rc.route('https://api.github.com/**',fake.handler);const r=await rc.newPage();r.on('pageerror',e=>errs.push('review: '+e.message));
 await r.goto('http://127.0.0.1:8000/review.html');await r.fill('#cloud-repo',fake.repo);await r.fill('#cloud-token','good-token');await r.click('#cloud-save');await r.waitForFunction(()=>/連線成功/.test(document.querySelector('#cloud-status').textContent));
-await r.click('#key-generate');await r.waitForFunction(()=>document.querySelector('#key-public').value.length>20);const pub=JSON.parse(await r.inputValue('#key-public'));
+await r.click('#key-generate');await r.waitForFunction(()=>document.querySelector('#key-public').value.length>20);const pub=JSON.parse(await r.inputValue('#key-public'));await r.click('#tab-make');
 await r.fill('#mission-title','今天晚餐吃什麼');await r.fill('#mission-body','拍下你的晚餐');await r.selectOption('#mission-reward','energy:100');await r.click('#mission-create');await r.waitForFunction(()=>/出題了/.test(document.querySelector('#mission-status').textContent));
 // game
 const gc=await b.newContext(opts);await gc.route('https://api.github.com/**',fake.handler);
@@ -21,11 +21,11 @@ const upload=async(color)=>{await g.click('#open-center');await g.click('#open-m
 await upload('#c33');
 assert.equal([...fake.files.keys()].filter(k=>k.startsWith('submissions/')&&k.endsWith('.jpg')).length,1);
 // reviewer rejects
-await r.click('#mission-refresh');await r.locator('.review-photo').waitFor();await r.locator('#mission-list textarea').fill('太暗了，再拍一張～');await r.locator('#mission-list .btn',{hasText:'退回'}).click();await r.waitForFunction(()=>/已退回/.test(document.querySelector('#mission-status').textContent));
+await r.click('#tab-inbox');await r.click('#inbox-refresh');await r.locator('#inbox-list .review-photo').waitFor();assert.equal(await r.textContent('#inbox-count'),'1');await r.locator('#inbox-list textarea').fill('太暗了，再拍一張～');await r.locator('#inbox-list .btn',{hasText:'退回'}).click();await r.waitForFunction(()=>/已退回/.test(document.querySelector('#inbox-status').textContent));assert.equal(await r.locator('#inbox-list .review-photo').count(),0,'removed without reload');
 await g.reload();await g.waitForFunction(k=>Object.values(JSON.parse(localStorage.getItem(k)).missions.status).includes('rejected'),key,{timeout:10000});
 await upload('#3c3');
-await r.click('#mission-refresh');await r.locator('.review-photo').waitFor();assert.equal(await r.locator('.review-photo').count(),1);
-await r.locator('#mission-list textarea').fill('看起來好好吃！下次帶我去。');await r.locator('#mission-list .btn',{hasText:'通過'}).click();await r.waitForFunction(()=>/已通過/.test(document.querySelector('#mission-status').textContent));
+await r.click('#inbox-refresh');await r.locator('#inbox-list .review-photo').waitFor();assert.equal(await r.locator('#inbox-list .review-photo').count(),1);
+await r.locator('#inbox-list textarea').fill('看起來好好吃！下次帶我去。');await r.locator('#inbox-list .btn',{hasText:'通過'}).click();await r.waitForFunction(()=>/已通過/.test(document.querySelector('#inbox-status').textContent));
 await g.reload();await g.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).memories.length===1,key,{timeout:10000});
 let s=await save();assert.equal(s.energy>=100,true);assert.equal(s.memories[0].note,'看起來好好吃！下次帶我去。');assert.ok(s.memories[0].thumb.startsWith('data:image/jpeg'));
 await g.reload();await g.waitForTimeout(1500);s=await save();assert.equal(s.memories.length,1,'review applied once');
@@ -34,7 +34,7 @@ await g.waitForFunction(()=>document.querySelector('#memory-view-img').src.start
 if(process.env.SHOT) await g.screenshot({path:process.env.SHOT});
 await g.click('#close-memory-view');await g.click('#close-memories');
 // date QR via scanned URL
-await r.fill('#date-title','高美濕地看夕陽');await r.fill('#date-note','謝謝你陪我');await r.click('#date-create');await r.locator('#date-qr svg').waitFor();
+await r.click('#tab-make');await r.fill('#date-title','高美濕地看夕陽');await r.fill('#date-note','謝謝你陪我');await r.click('#date-create');await r.locator('#date-qr svg').waitFor();
 const code=await r.textContent('#date-code');assert.match(code,/^[A-Z2-9]{6}$/);
 await g.goto(`http://127.0.0.1:8000/#date=${code}`);await g.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).gifts.eggs.some(e=>e.egg==='date'),key,{timeout:10000});
 s=await save();assert.equal(s.memories.filter(m=>m.kind==='date').length,1);assert.equal(s.memories.find(m=>m.kind==='date').title,'高美濕地看夕陽');

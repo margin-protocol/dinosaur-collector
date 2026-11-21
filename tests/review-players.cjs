@@ -15,12 +15,12 @@ await r.click('#gh-add');await r.fill('#player-name','朋朋');await r.fill('#cl
 await r.waitForFunction(()=>/連線成功/.test(document.querySelector('#cloud-status').textContent));
 assert.equal(await r.locator('#player-select option').count(),2);assert.match(await r.textContent('#sec-code h2'),/朋朋/);
 // 重複資料庫
-await r.click('#gh-add');await r.fill('#cloud-repo','me/player-a');await r.fill('#cloud-token','good-token');await r.click('#cloud-save');assert.match(await r.textContent('#cloud-status'),/已經在名單/);await r.click('#player-cancel');
+await r.click('#gh-add');await r.fill('#cloud-repo','me/player-a');await r.fill('#cloud-token','good-token');await r.click('#cloud-save');assert.match(await r.textContent('#cloud-status'),/已經在名單/);await r.click('#player-cancel');await r.click('#tab-make');
 // 暗號給朋朋
 await r.fill('#code-phrase','給朋朋的暗號');await r.click('#code-create');await r.waitForFunction(()=>/完成/.test(document.querySelector('#code-status').textContent));
 assert.equal([...B.files.keys()].filter(k=>k.startsWith('codes/')).length,1);assert.equal([...A.files.keys()].filter(k=>k.startsWith('codes/')).length,0);
 // 切回玩家 1
-await r.selectOption('#player-select','gh:0');assert.match(await r.textContent('#sec-letter h2'),/玩家 1/);
+await r.selectOption('#make-player','gh:0');assert.match(await r.textContent('#sec-letter h2'),/玩家 1/);
 await r.fill('#letter-body','給玩家一的紙條');await r.click('#letter-send');await r.waitForFunction(()=>/寄出了/.test(document.querySelector('#letter-status').textContent));
 assert.equal([...A.files.keys()].filter(k=>k.startsWith('letters/')).length,1);assert.equal([...B.files.keys()].filter(k=>k.startsWith('letters/')).length,0);
 assert.equal(errs.length,0,errs.join('\n'));

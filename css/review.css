@@ -60,3 +60,44 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, .btn:focus-vi
 .review-photo { background: #f4dbe4; }
 #date-qr-svg svg { box-shadow: 0 0 0 1px var(--line); }
 details > summary { margin-top: 8px; font: 13px var(--font-body); color: var(--pearl); cursor: pointer; }
+
+/* ---------- 分頁＋待審核收件匣＋批次（湘 11/21） ---------- */
+.tabs { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 14px -16px 0; padding: calc(var(--safe-top) + 6px) 16px 8px; background: #fff0f3ee; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.tabs button { min-height: 44px; border: 1px solid transparent; border-radius: 10px; background: none; color: var(--pearl); font: 15px var(--font-display); letter-spacing: .1em; display: inline-flex; align-items: center; justify-content: center; gap: 6px; touch-action: manipulation; }
+.tabs button[aria-selected=true] { background: var(--sakura-raised); border-color: var(--line); color: var(--sakura-accent); }
+.tab-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--sakura-accent); color: #fff; font: 12px/20px var(--font-body); letter-spacing: 0; }
+.inbox-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.inbox-top h2 { margin: 0; }
+.btn--small { min-height: 40px; padding: 0 14px; font-size: 14px; }
+.chips { display: flex; gap: 6px; overflow-x: auto; margin: 4px -4px 0; padding: 2px 4px 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; min-height: 36px; padding: 0 12px; border: 1px solid #d6a9ba; border-radius: 18px; background: none; color: var(--pearl); font: 13px var(--font-body); white-space: nowrap; }
+.chip[aria-pressed=true] { background: var(--sakura-accent); border-color: var(--sakura-accent); color: #fff; }
+.chip span { opacity: .8; margin-left: 2px; }
+.inbox .inbox-item { padding: 10px; }
+.inbox-item.is-picked { border-color: var(--sakura-accent); box-shadow: 0 0 0 1px var(--sakura-accent) inset; }
+.inbox-head { display: flex; align-items: flex-start; gap: 6px; }
+.inbox-head .pick { flex: none; display: grid; place-items: center; width: 44px; height: 44px; margin: -6px -2px -6px -8px; }
+.inbox-head .pick input { width: 22px; min-height: 22px; height: 22px; accent-color: var(--sakura-accent); }
+.inbox-title { min-width: 0; flex: 1; }
+.inbox-title b { display: block; overflow-wrap: anywhere; }
+.inbox-title .who { display: inline-block; margin-bottom: 2px; padding: 0 8px; border-radius: 9px; background: var(--sakura-button); color: var(--sakura-accent); font-size: 12px; line-height: 18px; }
+.review-photo.is-loading { min-height: 180px; }
+.review-photo--small { max-height: 200px; }
+.inbox .row .btn { flex: 1; min-height: 44px; font-size: 15px; }
+.inbox-empty { text-align: center; color: var(--pearl); padding: 24px 12px !important; }
+#postcard-history { margin-top: 14px; }
+#postcard-history > summary { min-height: 44px; display: flex; align-items: center; }
+.make-for { display: flex; align-items: center; gap: 10px; margin: 18px 0 0; font-size: 13px; color: var(--pearl); }
+.make-for select { flex: 1; min-width: 0; }
+.batch-bar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; display: grid; gap: 6px; padding: 10px max(16px, calc(50vw - 264px)) calc(var(--safe-bottom, 0px) + 10px); background: #fff8faf2; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-top: 1px solid var(--line); box-shadow: 0 -6px 20px #b9809422; }
+.batch-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.batch-row b { flex: 1; font-weight: 500; font-size: 14px; color: var(--sakura-accent); }
+.batch-row input { flex: 1; min-width: 0; min-height: 42px; font-size: 14px; }
+.batch-row .btn { flex: none; }
+.link { min-height: 36px; padding: 0 6px; border: 0; background: none; color: var(--sakura-accent); font: 13px var(--font-body); text-decoration: underline; text-underline-offset: 3px; }
+body.has-batch .review { padding-bottom: 150px; }
+#sec-inbox { padding: 14px 12px; }
+#inbox-status:empty { min-height: 0; margin: 0; }
+.inbox .review-photo { max-height: min(46vh, 320px); }
+.inbox textarea { min-height: 44px; }

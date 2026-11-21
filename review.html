@@ -12,9 +12,35 @@
 <body>
 <main class="review">
   <header><small>CHIEF RESEARCHER</small><h1>首席研究員審核室</h1><p>只有湘的手機需要打開這一頁。印章（私鑰）只存在這支手機裡。</p></header>
+  <nav class="tabs" role="tablist" aria-label="審核室分頁">
+    <button type="button" role="tab" id="tab-inbox" data-tab="inbox" aria-selected="true">審核<span class="tab-count" id="inbox-count" hidden></span></button>
+    <button type="button" role="tab" id="tab-make" data-tab="make" aria-selected="false">出題</button>
+    <button type="button" role="tab" id="tab-setup" data-tab="setup" aria-selected="false">設定</button>
+  </nav>
 
-  <section class="card" id="sec-cloud">
-    <h2>1. 玩家與雲端</h2>
+  <section class="card" id="sec-inbox" data-panel="inbox">
+    <div class="inbox-top"><h2>待審核</h2><button class="btn btn--quiet btn--small" type="button" id="inbox-refresh">重新整理</button></div>
+    <p class="hint">所有玩家的照片都在這裡，先寄來的排前面。勾選委託照片可以一次通過或退回。</p>
+    <div class="chips" id="inbox-filter" role="group" aria-label="篩選">
+      <button type="button" class="chip" data-filter="all" aria-pressed="true">全部 <span data-n="all">0</span></button>
+      <button type="button" class="chip" data-filter="mission" aria-pressed="false">委託照片 <span data-n="mission">0</span></button>
+      <button type="button" class="chip" data-filter="postcard" aria-pressed="false">寄來的照片 <span data-n="postcard">0</span></button>
+    </div>
+    <p class="status" id="inbox-status" role="status"></p>
+    <ul class="list inbox" id="inbox-list"></ul>
+    <details id="postcard-history">
+      <summary>已回覆過的照片 · <span data-player-name>玩家</span></summary>
+      <ul class="list" id="postcard-list"></ul>
+      <p class="status" id="postcard-status" role="status"></p>
+    </details>
+  </section>
+  <div class="batch-bar" id="batch-bar" hidden>
+    <div class="batch-row"><b id="batch-count">已選 0 張</b><button type="button" class="link" id="batch-all">全選</button><button type="button" class="link" id="batch-clear">取消選取</button></div>
+    <div class="batch-row"><input id="batch-note" maxlength="600" autocomplete="off" placeholder="共用批註（可不填）" aria-label="共用批註：沒寫個別批註的照片用這句"><button class="btn btn--small" type="button" id="batch-approve">通過</button><button class="btn btn--quiet btn--small" type="button" id="batch-reject">退回</button></div>
+  </div>
+
+  <section class="card" id="sec-cloud" data-panel="setup" hidden>
+    <h2>玩家與雲端</h2>
     <p class="hint">所有玩家都放在「小湘雲端」：新玩家只要一組邀請碼，不用 GitHub。下面的暗號、紙條、委託，都是給目前選擇的玩家。印章所有玩家共用。</p>
     <div id="rv-setup" class="form">
       <p class="hint" id="rv-setup-hint">第一次使用：按下面的按鈕，這支手機會產生一組「審核員通行碼」。之後換手機時要用它登入，請存進密碼管理器。</p>
@@ -64,8 +90,8 @@
     <p class="status" id="cloud-status" role="status"></p>
   </section>
 
-  <section class="card" id="sec-key">
-    <h2>2. 首席研究員的印章</h2>
+  <section class="card" id="sec-key" data-panel="setup" hidden>
+    <h2>首席研究員的印章</h2>
     <p class="status" id="key-state"></p>
     <div class="row">
       <button class="btn" type="button" id="key-generate">產生新的印章</button>
@@ -85,8 +111,9 @@
     <p class="status" id="key-status" role="status"></p>
   </section>
 
-  <section class="card" id="sec-code">
-    <h2>3. 暗號 · 給<span data-player-name>玩家</span></h2>
+  <label class="make-for" data-panel="make" hidden>出題給<select id="make-player" aria-label="出題給哪位玩家"></select></label>
+  <section class="card" id="sec-code" data-panel="make" hidden>
+    <h2>暗號 · 給<span data-player-name>玩家</span></h2>
     <p class="hint">設定一句暗號，藏在聊天、卡片或禮物裡。他在遊戲「輸入暗號」兌換。空格、標點、全形半形不影響。</p>
     <form id="code-form" class="form">
       <label>暗號<span class="inline"><input id="code-phrase" autocomplete="off" maxlength="80" placeholder="例如：恐龍偷吃草莓"><button class="btn btn--quiet" type="button" id="code-random">隨機</button></span></label>
@@ -109,8 +136,8 @@
     <button class="btn btn--quiet" type="button" id="code-refresh">重新整理</button>
     <ul class="list" id="code-list"></ul>
   </section>
-  <section class="card" id="sec-letter">
-    <h2>4. 寄紙條 · 給<span data-player-name>玩家</span></h2>
+  <section class="card" id="sec-letter" data-panel="make" hidden>
+    <h2>寄紙條 · 給<span data-player-name>玩家</span></h2>
     <p class="hint">寫好蓋章送出，他下次打開遊戲就會收到「湘寄來一張新紙條」，收在首頁的紙條裡。</p>
     <form id="letter-form" class="form">
       <label>標題（可不填）<input id="letter-title" maxlength="40" placeholder="例如：今天好想你"></label>
@@ -122,9 +149,9 @@
     <h3>寄過的紙條</h3>
     <ul class="list" id="letter-list"></ul>
   </section>
-  <section class="card" id="sec-mission">
-    <h2>5. 照片委託 · 給<span data-player-name>玩家</span></h2>
-    <p class="hint">出一個照片題目，他拍好上傳後，在下面審核、寫批註。通過的照片會收進他的記憶檔案。</p>
+  <section class="card" id="sec-mission" data-panel="make" hidden>
+    <h2>照片委託 · 給<span data-player-name>玩家</span></h2>
+    <p class="hint">出一個照片題目，他拍好上傳後，到「審核」分頁審核、寫批註。通過的照片會收進他的記憶檔案。</p>
     <form id="mission-form" class="form">
       <label>題目<input id="mission-title" maxlength="60" placeholder="例如：今天晚餐吃什麼"></label>
       <label>說明（可不填）<textarea id="mission-body" rows="3" maxlength="600" placeholder="例如：拍下你今天的晚餐，要有飲料喔！"></textarea></label>
@@ -141,13 +168,13 @@
       <button class="btn" type="submit" id="mission-create">蓋章並出題</button>
     </form>
     <p class="status" id="mission-status" role="status"></p>
-    <h3>委託與待審核的照片</h3>
+    <h3>出過的委託</h3>
     <button class="btn btn--quiet" type="button" id="mission-refresh">重新整理</button>
     <ul class="list" id="mission-list"></ul>
   </section>
 
-  <section class="card" id="sec-date">
-    <h2>6. 約會 QR Code · 給<span data-player-name>玩家</span></h2>
+  <section class="card" id="sec-date" data-panel="make" hidden>
+    <h2>約會 QR Code · 給<span data-player-name>玩家</span></h2>
     <p class="hint">見面時產生，讓他用手機相機掃描（或輸入 6 碼約會碼）。10 分鐘內有效、只能用一次，會送他一顆約會蛋，並把今天收進記憶檔案。</p>
     <form id="date-form" class="form">
       <label>今天的約會（會寫進記憶檔案）<input id="date-title" maxlength="40" placeholder="例如：高美濕地看夕陽"></label>
@@ -158,13 +185,6 @@
     </form>
     <div class="date-qr" id="date-qr" hidden><div id="date-qr-svg"></div><p class="date-code" id="date-code"></p><p class="hint" id="date-expire"></p></div>
     <p class="status" id="date-status" role="status"></p>
-  </section>
-  <section class="card" id="sec-postcard">
-    <h2>7. <span data-player-name>玩家</span>寄來的照片</h2>
-    <p class="hint">他在遊戲「寄照片給湘」寄來的照片。回覆的話會蓋章送回，出現在他的記憶檔案裡。</p>
-    <button class="btn btn--quiet" type="button" id="postcard-refresh">重新整理</button>
-    <ul class="list" id="postcard-list"></ul>
-    <p class="status" id="postcard-status" role="status"></p>
   </section>
 </main>
 <script type="module" src="js/review.js"></script>

@@ -4,7 +4,7 @@ require('./_legacy-cloud.cjs');const {chromium}=require('playwright'),assert=req
 const errs=[];const opts={viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce'};
 const rc=await b.newContext(opts);await rc.route('https://api.github.com/**',fake.handler);const r=await rc.newPage();r.on('pageerror',e=>errs.push('review: '+e.message));
 await r.goto('http://127.0.0.1:8000/review.html');await r.fill('#cloud-repo',fake.repo);await r.fill('#cloud-token','good-token');await r.click('#cloud-save');await r.waitForFunction(()=>/連線成功/.test(document.querySelector('#cloud-status').textContent));
-await r.click('#key-generate');await r.waitForFunction(()=>document.querySelector('#key-public').value.length>20);const pub=JSON.parse(await r.inputValue('#key-public'));
+await r.click('#key-generate');await r.waitForFunction(()=>document.querySelector('#key-public').value.length>20);const pub=JSON.parse(await r.inputValue('#key-public'));await r.click('#tab-make');
 await r.fill('#letter-title','今天好想你');await r.fill('#letter-body','致親愛的飼養員：\n\n今天也辛苦了。\n\n—— 小湘 ♡');await r.click('#letter-send');await r.waitForFunction(()=>/寄出了/.test(document.querySelector('#letter-status').textContent));
 await r.waitForFunction(()=>document.querySelectorAll('#letter-list li').length===1);
 // forged letter

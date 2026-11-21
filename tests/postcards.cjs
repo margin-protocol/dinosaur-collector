@@ -24,8 +24,8 @@ const forged=await g.evaluate(async(pid)=>{const {generateKeys,signPayload}=awai
 fake.write(`postcard-replies/${pid}.json`,JSON.stringify(forged));await g.reload();await g.waitForTimeout(1500);s=await save();assert.equal(s.memories[0].note,'');
 fake.files.delete(`postcard-replies/${pid}.json`);
 // reviewer replies
-await r.click('#postcard-refresh');await r.locator('#postcard-list .review-photo').waitFor();assert.match(await r.textContent('#postcard-list'),/好可愛的貓/);
-await r.locator('#postcard-list textarea').fill('好可愛！下次帶我去看～');await r.locator('#postcard-list .btn',{hasText:'蓋章回覆'}).click();await r.waitForFunction(()=>/回覆了/.test(document.querySelector('#postcard-status').textContent));
+await r.click('#tab-inbox');await r.click('#inbox-refresh');await r.locator('#inbox-list .review-photo').waitFor();assert.match(await r.textContent('#inbox-list'),/好可愛的貓/);
+await r.locator('#inbox-list textarea').fill('好可愛！下次帶我去看～');await r.locator('#inbox-list .btn',{hasText:'蓋章回覆'}).click();await r.waitForFunction(()=>/回覆了/.test(document.querySelector('#inbox-status').textContent));await r.click('#postcard-history summary');await r.waitForFunction(()=>/下次帶我去看/.test(document.querySelector('#postcard-list').textContent));
 await g.reload();await g.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).memories[0].note!=='',key,{timeout:10000});
 await g.click('#open-center');await g.click('#open-memories');await g.locator('.memory').click();await g.locator('#memory-view[open]').waitFor();
 assert.match(await g.textContent('#memory-view-note'),/下次帶我去看/);assert.equal(await g.getAttribute('#memory-view-note','data-label'),'湘的回覆');assert.match(await g.textContent('#memory-view-title'),/好可愛的貓/);

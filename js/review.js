@@ -78,7 +78,7 @@ function entries() {
 }
 const current = () => entries().find(e => e.key === activeKey()) || entries()[0] || null;
 const config = () => current()?.config || null;
-const cloud = () => { const c = config(); if (!c) throw new Error('請先在第 1 步選一位玩家'); return createCloud(c); };
+const cloud = () => { const c = config(); if (!c) throw new Error('請先到「設定」選一位玩家'); return createCloud(c); };
 const admin = () => createCloud({ kind: 'siang', token: reviewerToken });
 // 寄給所有玩家（湘 11/20）：同一份蓋章的檔案寫進每一位小湘雲端玩家的資料夾（停用的不寄）
 const everyoneStores = () => cloudPlayers.filter(p => !p.revoked).map(p => ({ name: p.name, store: createCloud({ kind: 'siang', token: reviewerToken, player: p.id }) }));
@@ -97,6 +97,10 @@ function renderCloud(message = '') {
   const sel = $('player-select');
   sel.replaceChildren(...entries().map(e => Object.assign(document.createElement('option'), { value: e.key, textContent: e.label })));
   if (cur) sel.value = cur.key;
+  const mk = $('make-player');
+  mk.replaceChildren(...entries().map(e => Object.assign(document.createElement('option'), { value: e.key, textContent: e.label })));
+  if (cur) mk.value = cur.key;
+  mk.disabled = entries().length < 2;
   $('rv-setup').hidden = Boolean(reviewerToken);
   $('player-row').hidden = !reviewerToken && !players.list.length;
   $('player-add').hidden = !reviewerToken;
@@ -115,10 +119,10 @@ function renderCloud(message = '') {
   $('cloud-status').textContent = message || (cur ? `目前：${cur.name}` : reviewerToken ? '還沒有玩家，按「＋ 新增玩家」產生第一組邀請碼。' : '');
   document.querySelectorAll('[data-player-name]').forEach(el => { el.textContent = cur ? cur.name : '玩家'; });
 }
-function switched() { void refreshCodes(); void refreshLetters(); void refreshMissions(); void refreshPostcards(); $('date-qr').hidden = true; $('rv-invite').hidden = true; }
+function switched() { void refreshCodes(); void refreshLetters(); void refreshMissions(); if ($('postcard-history').open) void refreshPostcards(); maybeRefreshInbox(); $('date-qr').hidden = true; $('rv-invite').hidden = true; }
 async function loadCloudPlayers(message) {
   if (!reviewerToken) { cloudPlayers = []; renderCloud(message); return; }
-  try { cloudPlayers = await admin().players(); renderCloud(message); }
+  try { cloudPlayers = await admin().players(); renderCloud(message); maybeRefreshInbox(); }
   catch (err) { cloudPlayers = []; renderCloud(err.status === 401 ? '審核員通行碼不對，請重新登入。' : `讀不到玩家名單：${err.message}`); if (err.status === 401) { reviewerToken = ''; localStorage.removeItem(REVIEWER_KEY); renderCloud('審核員通行碼不對，請重新登入。'); } }
 }
 function useReviewer(token) { reviewerToken = token; try { localStorage.setItem(REVIEWER_KEY, token); } catch {} }
@@ -148,6 +152,7 @@ function showInvite(name, invite) {
   $('rv-invite-text').value = invite; $('rv-invite').hidden = false;
 }
 $('rv-invite-copy').addEventListener('click', () => copyTo($('rv-invite-text').value, '邀請碼已複製，傳給玩家就好。'));
+$('make-player').addEventListener('change', () => { $('player-select').value = $('make-player').value; $('player-select').dispatchEvent(new Event('change')); });
 $('player-select').addEventListener('change', () => { $('rv-rename').hidden = true; players.active = $('player-select').value; adding = false; savePlayers(); renderCloud(); switched(); });
 $('player-add').addEventListener('click', () => { $('rv-new').hidden = false; $('rv-new-name').focus(); });
 $('rv-new-cancel').addEventListener('click', () => { $('rv-new').hidden = true; });
@@ -265,7 +270,7 @@ $('code-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const phrase = normalizeCode($('code-phrase').value);
   if (phrase.length < 2) { $('code-status').textContent = '暗號至少要兩個字。'; return; }
-  if (!privateKey) { $('code-status').textContent = '請先在第 2 步準備好印章。'; return; }
+  if (!privateKey) { $('code-status').textContent = '請先到「設定」準備好印章。'; return; }
   $('code-create').disabled = true; $('code-status').textContent = '蓋章中…';
   try {
     const everyone = Boolean(reviewerToken) && $('code-everyone').checked;
@@ -320,7 +325,7 @@ $('letter-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = $('letter-body').value.trim();
   if (!body) { $('letter-status').textContent = '先寫點什麼吧。'; return; }
-  if (!privateKey) { $('letter-status').textContent = '請先在第 2 步準備好印章。'; return; }
+  if (!privateKey) { $('letter-status').textContent = '請先到「設定」準備好印章。'; return; }
   $('letter-send').disabled = true; $('letter-status').textContent = '蓋章中…';
   try {
     const id = `${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`;
@@ -366,7 +371,7 @@ $('mission-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const title = $('mission-title').value.trim();
   if (!title) { $('mission-status').textContent = '先寫題目吧。'; return; }
-  if (!privateKey) { $('mission-status').textContent = '請先在第 2 步準備好印章。'; return; }
+  if (!privateKey) { $('mission-status').textContent = '請先到「設定」準備好印章。'; return; }
   $('mission-create').disabled = true; $('mission-status').textContent = '蓋章中…';
   try {
     const id = `${new Date().toISOString().slice(0, 10).replace(/-/g, '')}-${Math.random().toString(36).slice(2, 7)}`;
@@ -383,60 +388,27 @@ $('mission-form').addEventListener('submit', async (e) => {
 const photoUrls = [];
 async function refreshMissions() {
   if (!config()) return;
-  photoUrls.splice(0).forEach((u) => URL.revokeObjectURL(u));
   try {
     const c = cloud();
     const [missions, reviews] = await Promise.all([c.list('missions'), c.list('reviews')]);
     const reviewed = new Set(reviews.map((f) => f.name));
-    const items = await Promise.all(missions.filter((f) => f.name.endsWith('.json')).map(async (f) => ({ id: f.name.slice(0, -5), p: (await c.getJSON(f.path))?.data?.payload })));
+    const items = await Promise.all(missions.filter((f) => f.name.endsWith('.json')).map(async (f) => {
+      const id = f.name.slice(0, -5);
+      const [p, subs] = await Promise.all([c.getJSON(f.path).then((r) => r?.data?.payload), c.list(`submissions/${id}`)]);
+      return { id, p, subs: subs.filter((x) => x.name.endsWith('.jpg')) };
+    }));
     items.sort((a, b) => String(b.p?.createdAt).localeCompare(String(a.p?.createdAt)));
-    const lis = [];
-    for (const { id, p } of items) {
+    const lis = items.map(({ id, p, subs }) => {
       const li = document.createElement('li');
       const b = document.createElement('b'); b.textContent = p?.title || id;
-      const subs = (await c.list(`submissions/${id}`)).filter((f) => f.name.endsWith('.jpg'));
-      const waiting = subs.filter((f) => !reviewed.has(`${id}__${f.name.slice(0, -4)}.json`));
-      const info = document.createElement('small'); info.textContent = `${describeReward(p?.reward || {}, CHARACTERS, EGGS)} · 提交 ${subs.length} 次 · ${waiting.length ? `${waiting.length} 張待審核` : '沒有待審核的照片'}`;
-      li.append(b, info);
-      for (const f of waiting) {
-        const sid = f.name.slice(0, -4);
-        const bytes = await c.getBytes(f.path);
-        const img = document.createElement('img'); img.className = 'review-photo'; img.alt = `${p?.title} 的照片`;
-        if (bytes) { const url = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })); photoUrls.push(url); img.src = url; }
-        const note = document.createElement('textarea'); note.rows = 2; note.maxLength = 600; note.placeholder = '首席研究員的批註（會收進他的記憶檔案）';
-        const row = document.createElement('div'); row.className = 'row';
-        const ok = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: '通過' });
-        const no = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '退回' });
-        const decide = async (approvedFlag) => {
-          if (!privateKey) { $('mission-status').textContent = '請先準備好印章。'; return; }
-          ok.disabled = no.disabled = true;
-          const payload = { v: 1, type: 'review', mission: id, submission: sid, approved: approvedFlag, note: note.value.trim(), createdAt: new Date().toISOString() };
-          await c.putJSON(`reviews/${id}__${sid}.json`, await signPayload(privateKey, payload), approvedFlag ? 'approve submission' : 'reject submission');
-          $('mission-status').textContent = approvedFlag ? '已通過！他下次打開遊戲就會收到獎勵。' : '已退回，他可以再拍一次。';
-          void refreshMissions();
-        };
-        ok.addEventListener('click', () => decide(true)); no.addEventListener('click', () => decide(false));
-        row.append(ok, no); li.append(img, note, row);
-      }
+      const waiting = subs.filter((f) => !reviewed.has(`${id}__${f.name.slice(0, -4)}.json`)).length;
+      const info = document.createElement('small'); info.textContent = `${describeReward(p?.reward || {}, CHARACTERS, EGGS)} · 提交 ${subs.length} 次${waiting ? ` · ${waiting} 張在「審核」等妳` : ''}`;
       const row = document.createElement('div'); row.className = 'row';
       const del = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '撤回題目' });
-      del.addEventListener('click', async () => { del.disabled = true; await c.remove(`missions/${id}.json`, 'remove mission'); void refreshMissions(); });
-      row.append(del); li.append(row); lis.push(li);
-    }
+      del.addEventListener('click', async () => { del.disabled = true; await c.remove(`missions/${id}.json`, 'remove mission'); void refreshMissions(); maybeRefreshInbox(true); });
+      row.append(del); li.append(b, info, row); return li;
+    });
     $('mission-list').replaceChildren(...(lis.length ? lis : [Object.assign(document.createElement('li'), { textContent: '還沒有委託。' })]));
-    // 出給所有玩家之後，照片散在每位玩家那邊：列出其他玩家還有幾張待審核
-    if (reviewerToken) {
-      const current = config()?.player;
-      const others = await Promise.all(cloudPlayers.filter(pl => !pl.revoked && pl.id !== current).map(async pl => {
-        const s = createCloud({ kind: 'siang', token: reviewerToken, player: pl.id });
-        const [ms, rs] = await Promise.all([s.list('missions'), s.list('reviews')]);
-        const done = new Set(rs.map(f => f.name)); let n = 0;
-        for (const m of ms.filter(f => f.name.endsWith('.json'))) { const id = m.name.slice(0, -5); n += (await s.list(`submissions/${id}`)).filter(f => f.name.endsWith('.jpg') && !done.has(`${id}__${f.name.slice(0, -4)}.json`)).length; }
-        return { name: pl.name, n };
-      })).catch(() => []);
-      const waiting = others.filter(o => o.n);
-      if (waiting.length) $('mission-list').prepend(Object.assign(document.createElement('li'), { className: 'mission-others', textContent: `其他玩家還有照片等你審核：${waiting.map(o => `${o.name} ${o.n} 張`).join('、')}（到第 1 步切換玩家）` }));
-    }
   } catch (err) { $('mission-status').textContent = `讀取委託失敗：${err.message}`; }
 }
 $('mission-refresh').addEventListener('click', refreshMissions);
@@ -446,7 +418,7 @@ const URL_KEY = 'siang-collector:review-game-url:v1';
 $('date-url').value = localStorage.getItem(URL_KEY) || new URL('./', location.href).href;
 $('date-form').addEventListener('submit', async (e) => {
   e.preventDefault();
-  if (!privateKey) { $('date-status').textContent = '請先在第 2 步準備好印章。'; return; }
+  if (!privateKey) { $('date-status').textContent = '請先到「設定」準備好印章。'; return; }
   $('date-create').disabled = true; $('date-status').textContent = '蓋章中…';
   try {
     const gameUrl = $('date-url').value.trim(); localStorage.setItem(URL_KEY, gameUrl);
@@ -464,51 +436,219 @@ $('date-form').addEventListener('submit', async (e) => {
   finally { $('date-create').disabled = !privateKey; }
 });
 
-/* ---------- 他寄來的照片 ---------- */
+/* ---------- 已回覆過的照片（目前玩家，打開才載入） ---------- */
 const postcardUrls = [];
 async function refreshPostcards() {
   if (!config()) return;
   postcardUrls.splice(0).forEach((u) => URL.revokeObjectURL(u));
   try {
     const c = cloud();
-    const [cards, replies] = await Promise.all([c.list('postcards'), c.list('postcard-replies')]);
-    const replied = new Set(replies.map((f) => f.name));
-    const metas = cards.filter((f) => f.name.endsWith('.json')).sort((a, b) => b.name.localeCompare(a.name)).slice(0, 30);
-    const lis = [];
-    for (const f of metas) {
+    const replies = (await c.list('postcard-replies')).filter((f) => f.name.endsWith('.json')).sort((a, b) => b.name.localeCompare(a.name)).slice(0, 20);
+    const lis = await Promise.all(replies.map(async (f) => {
       const id = f.name.slice(0, -5);
-      const meta = (await c.getJSON(f.path))?.data || {};
+      const [meta, r, bytes] = await Promise.all([c.getJSON(`postcards/${id}.json`).then((x) => x?.data || {}), c.getJSON(f.path).then((x) => x?.data?.payload), c.getBytes(`postcards/${id}.jpg`)]);
       const li = document.createElement('li');
       const b = document.createElement('b'); b.textContent = meta.at ? new Date(meta.at).toLocaleString('zh-TW') : id;
-      const bytes = await c.getBytes(`postcards/${id}.jpg`);
-      const img = document.createElement('img'); img.className = 'review-photo'; img.alt = '他寄來的照片';
+      const img = document.createElement('img'); img.className = 'review-photo review-photo--small'; img.alt = '他寄來的照片';
       if (bytes) { const url = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })); postcardUrls.push(url); img.src = url; }
       li.append(b, img);
       if (meta.text) { const pre = document.createElement('pre'); pre.textContent = meta.text; li.append(pre); }
-      if (replied.has(`${id}.json`)) {
-        const r = (await c.getJSON(`postcard-replies/${id}.json`))?.data?.payload;
-        const sm = document.createElement('small'); sm.textContent = `妳回覆了：${r?.note || ''}`; li.append(sm);
-      } else {
-        const note = document.createElement('textarea'); note.rows = 2; note.maxLength = 600; note.placeholder = '回他一句話';
-        const row = document.createElement('div'); row.className = 'row';
-        const send = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: '蓋章回覆' });
-        send.addEventListener('click', async () => {
-          if (!privateKey) { $('postcard-status').textContent = '請先在第 2 步準備好印章。'; return; }
-          if (!note.value.trim()) { $('postcard-status').textContent = '先寫一句話吧。'; return; }
-          send.disabled = true;
-          const payload = { v: 1, type: 'postcard-reply', id, note: note.value.trim(), createdAt: new Date().toISOString() };
-          await c.putJSON(`postcard-replies/${id}.json`, await signPayload(privateKey, payload), 'reply postcard');
-          $('postcard-status').textContent = '回覆了！他下次打開遊戲就會看到。';
-          void refreshPostcards();
-        });
-        row.append(send); li.append(note, row);
-      }
-      lis.push(li);
-    }
-    $('postcard-list').replaceChildren(...(lis.length ? lis : [Object.assign(document.createElement('li'), { textContent: '還沒有收到照片。' })]));
+      const sm = document.createElement('small'); sm.textContent = `妳回覆了：${r?.note || ''}`; li.append(sm);
+      return li;
+    }));
+    $('postcard-list').replaceChildren(...(lis.length ? lis : [Object.assign(document.createElement('li'), { textContent: '還沒有回覆過的照片。' })]));
+    $('postcard-status').textContent = '';
   } catch (err) { $('postcard-status').textContent = `讀取照片失敗：${err.message}`; }
 }
-$('postcard-refresh').addEventListener('click', refreshPostcards);
+$('postcard-history').addEventListener('toggle', () => { if ($('postcard-history').open) void refreshPostcards(); });
+
+/* ---------- 分頁（湘 11/21：審核｜出題｜設定，打開先停在審核） ---------- */
+function showTab(name) {
+  document.querySelectorAll('[data-tab]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
+  document.querySelectorAll('[data-panel]').forEach((el) => { el.hidden = el.dataset.panel !== name; });
+  $('batch-bar').hidden = name !== 'inbox' || !selected.size;
+  document.body.classList.toggle('has-batch', !$('batch-bar').hidden);
+}
+document.querySelectorAll('[data-tab]').forEach((t) => t.addEventListener('click', () => { showTab(t.dataset.tab); window.scrollTo({ top: 0 }); }));
+const currentTab = () => document.querySelector('[data-tab][aria-selected=true]')?.dataset.tab;
+
+/* ---------- 待審核收件匣（所有玩家合在一起，按完只收掉那一張） ---------- */
+let inboxItems = [];
+let inboxFilter = 'all';
+let inboxSig = null;
+let inboxRun = 0;
+const selected = new Set();
+const inboxUrls = [];
+const inboxSources = () => entries().filter((e) => !e.cloud?.revoked);
+const timeOf = (kind, id, at) => { const t = at ? Date.parse(at) : kind === 'mission' ? parseInt(id.slice(0, -4), 36) : NaN; return Number.isFinite(t) ? t : 0; };
+function maybeRefreshInbox(force = false) {
+  const sig = inboxSources().map((e) => e.key).join('|');
+  if (!force && sig === inboxSig) return;
+  inboxSig = sig; void refreshInbox();
+}
+async function pendingFor(e) {
+  const s = createCloud(e.config);
+  const [missions, reviews, cards, replies] = await Promise.all([s.list('missions'), s.list('reviews'), s.list('postcards'), s.list('postcard-replies')]);
+  const done = new Set(reviews.map((f) => f.name)); const replied = new Set(replies.map((f) => f.name));
+  const out = [];
+  await Promise.all(missions.filter((f) => f.name.endsWith('.json')).map(async (f) => {
+    const id = f.name.slice(0, -5);
+    const subs = (await s.list(`submissions/${id}`)).filter((x) => x.name.endsWith('.jpg') && !done.has(`${id}__${x.name.slice(0, -4)}.json`));
+    if (!subs.length) return;
+    const p = (await s.getJSON(f.path))?.data?.payload;
+    for (const x of subs) { const sid = x.name.slice(0, -4); out.push({ kind: 'mission', key: `${e.key}/m/${id}/${sid}`, entry: e, store: s, id, sid, photo: `submissions/${id}/${sid}.jpg`, title: p?.title || id, reward: p?.reward, time: timeOf('mission', sid) }); }
+  }));
+  await Promise.all(cards.filter((f) => f.name.endsWith('.json') && !replied.has(f.name)).map(async (f) => {
+    const id = f.name.slice(0, -5);
+    const meta = (await s.getJSON(f.path))?.data || {};
+    out.push({ kind: 'postcard', key: `${e.key}/p/${id}`, entry: e, store: s, id, photo: `postcards/${id}.jpg`, text: meta.text || '', time: timeOf('postcard', id, meta.at) });
+  }));
+  return out;
+}
+async function refreshInbox() {
+  const run = ++inboxRun;
+  const sources = inboxSources();
+  if (!sources.length) { inboxItems = []; selected.clear(); renderInbox(); $('inbox-status').textContent = '還沒有玩家：到「設定」新增或登入。'; return; }
+  $('inbox-status').textContent = '整理中…';
+  const results = await Promise.allSettled(sources.map(pendingFor));
+  if (run !== inboxRun) return;
+  const failed = sources.filter((_, i) => results[i].status === 'rejected').map((e) => e.name);
+  inboxItems = results.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])).sort((a, b) => a.time - b.time);
+  for (const k of [...selected]) if (!inboxItems.some((i) => i.key === k)) selected.delete(k);
+  inboxUrls.splice(0).forEach((u) => URL.revokeObjectURL(u));
+  renderInbox();
+  $('inbox-status').textContent = failed.length ? `${failed.join('、')} 讀取失敗，等一下再按重新整理。` : '';
+  void loadInboxPhotos(run);
+}
+const fmtTime = (t) => (t ? new Date(t).toLocaleString('zh-TW', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '');
+function inboxCard(item) {
+  const li = document.createElement('li'); li.className = 'inbox-item'; li.dataset.kind = item.kind; item.li = li;
+  const head = document.createElement('div'); head.className = 'inbox-head';
+  if (item.kind === 'mission') {
+    const pick = document.createElement('label'); pick.className = 'pick';
+    const box = Object.assign(document.createElement('input'), { type: 'checkbox', checked: selected.has(item.key) });
+    box.setAttribute('aria-label', `選取 ${item.entry.name}「${item.title}」`);
+    box.addEventListener('change', () => { if (box.checked) selected.add(item.key); else selected.delete(item.key); li.classList.toggle('is-picked', box.checked); renderBatch(); });
+    pick.append(box); head.append(pick); li.classList.toggle('is-picked', box.checked);
+  }
+  const txt = document.createElement('div'); txt.className = 'inbox-title';
+  const who = document.createElement('span'); who.className = 'who'; who.textContent = item.entry.name;
+  const b = document.createElement('b'); b.textContent = item.kind === 'mission' ? `委託：${item.title}` : '寄來的照片';
+  const sm = document.createElement('small'); sm.textContent = [fmtTime(item.time), item.kind === 'mission' ? describeReward(item.reward || {}, CHARACTERS, EGGS) : ''].filter(Boolean).join(' · ');
+  txt.append(who, b, sm); head.append(txt);
+  const img = document.createElement('img'); img.className = 'review-photo is-loading'; img.alt = item.kind === 'mission' ? `${item.title} 的照片` : '他寄來的照片'; item.img = img;
+  li.append(head, img);
+  if (item.text) { const pre = document.createElement('pre'); pre.textContent = item.text; li.append(pre); }
+  const note = document.createElement('textarea'); note.rows = 1; note.maxLength = 600; item.note = note;
+  note.placeholder = item.kind === 'mission' ? '批註（可不填，會收進他的記憶檔案）' : '回他一句話';
+  const row = document.createElement('div'); row.className = 'row';
+  if (item.kind === 'mission') {
+    const ok = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: '通過' });
+    const no = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '退回' });
+    const one = async (approved) => {
+      ok.disabled = no.disabled = true;
+      try { await decide(item, approved, note.value.trim()); $('inbox-status').textContent = approved ? `已通過 ${item.entry.name} 的照片！他下次打開遊戲就會收到獎勵。` : `已退回 ${item.entry.name} 的照片，他可以再拍一次。`; }
+      catch (err) { $('inbox-status').textContent = err.message; ok.disabled = no.disabled = false; }
+    };
+    ok.addEventListener('click', () => one(true)); no.addEventListener('click', () => one(false));
+    row.append(ok, no);
+  } else {
+    const send = Object.assign(document.createElement('button'), { className: 'btn', type: 'button', textContent: '蓋章回覆' });
+    send.addEventListener('click', async () => {
+      if (!note.value.trim()) { $('inbox-status').textContent = '先寫一句話吧。'; note.focus(); return; }
+      send.disabled = true;
+      try { await reply(item, note.value.trim()); $('inbox-status').textContent = `回覆了！${item.entry.name}下次打開遊戲就會看到。`; }
+      catch (err) { $('inbox-status').textContent = err.message; send.disabled = false; }
+    });
+    row.append(send);
+  }
+  li.append(note, row);
+  return li;
+}
+function renderInbox() {
+  const n = { all: inboxItems.length, mission: inboxItems.filter((i) => i.kind === 'mission').length, postcard: inboxItems.filter((i) => i.kind === 'postcard').length };
+  document.querySelectorAll('#inbox-filter [data-n]').forEach((el) => { el.textContent = n[el.dataset.n]; });
+  document.querySelectorAll('#inbox-filter [data-filter]').forEach((el) => el.setAttribute('aria-pressed', String(el.dataset.filter === inboxFilter)));
+  $('inbox-count').textContent = n.all; $('inbox-count').hidden = !n.all;
+  const shown = inboxItems.filter((i) => inboxFilter === 'all' || i.kind === inboxFilter);
+  $('inbox-list').replaceChildren(...(shown.length ? shown.map((i) => i.li || inboxCard(i)) : [Object.assign(document.createElement('li'), { className: 'inbox-empty', textContent: inboxItems.length ? '這一類都審完了。' : '都審完了，沒有等妳的照片 ♡' })]));
+  renderBatch();
+}
+async function loadInboxPhotos(run) {
+  const queue = inboxItems.filter((i) => !i.img.src);
+  const worker = async () => {
+    while (queue.length && run === inboxRun) {
+      const item = queue.shift();
+      try { const bytes = await item.store.getBytes(item.photo); if (bytes && run === inboxRun) { const url = URL.createObjectURL(new Blob([bytes], { type: 'image/jpeg' })); inboxUrls.push(url); item.img.src = url; } } catch {}
+      item.img.classList.remove('is-loading');
+    }
+  };
+  await Promise.all([worker(), worker(), worker(), worker()]);
+}
+function removeItem(item) {
+  inboxItems = inboxItems.filter((i) => i !== item); selected.delete(item.key);
+  item.li?.remove();
+  renderInbox();
+}
+async function decide(item, approved, note) {
+  if (!privateKey) throw new Error('請先到「設定」準備好印章。');
+  const payload = { v: 1, type: 'review', mission: item.id, submission: item.sid, approved, note, createdAt: new Date().toISOString() };
+  try { await item.store.putJSON(`reviews/${item.id}__${item.sid}.json`, await signPayload(privateKey, payload), approved ? 'approve submission' : 'reject submission'); }
+  catch (err) { throw new Error(`${item.entry.name}「${item.title}」沒有送出：${err.message}`); }
+  removeItem(item);
+  if (item.entry.key === current()?.key) void refreshMissions();
+}
+async function reply(item, note) {
+  if (!privateKey) throw new Error('請先到「設定」準備好印章。');
+  const payload = { v: 1, type: 'postcard-reply', id: item.id, note, createdAt: new Date().toISOString() };
+  try { await item.store.putJSON(`postcard-replies/${item.id}.json`, await signPayload(privateKey, payload), 'reply postcard'); }
+  catch (err) { throw new Error(`回覆失敗：${err.message}`); }
+  removeItem(item);
+  if ($('postcard-history').open && item.entry.key === current()?.key) void refreshPostcards();
+}
+document.querySelectorAll('#inbox-filter [data-filter]').forEach((el) => el.addEventListener('click', () => { inboxFilter = el.dataset.filter; renderInbox(); }));
+$('inbox-refresh').addEventListener('click', () => maybeRefreshInbox(true));
+
+/* 批次：勾選的委託照片一次通過／退回。沒寫個別批註的用共用批註。退回要按兩次確認。 */
+const pickedItems = () => inboxItems.filter((i) => selected.has(i.key));
+function renderBatch() {
+  const n = pickedItems().length;
+  $('batch-count').textContent = `已選 ${n} 張`;
+  $('batch-bar').hidden = !n || currentTab() !== 'inbox';
+  document.body.classList.toggle('has-batch', !$('batch-bar').hidden);
+  delete $('batch-reject').dataset.confirm; $('batch-reject').textContent = '退回';
+}
+function setPicked(on) {
+  for (const i of inboxItems) if (i.kind === 'mission' && (inboxFilter === 'all' || inboxFilter === 'mission')) {
+    if (on) selected.add(i.key); else selected.delete(i.key);
+    const box = i.li?.querySelector('.pick input'); if (box) box.checked = on; i.li?.classList.toggle('is-picked', on);
+  }
+  renderBatch();
+}
+$('batch-all').addEventListener('click', () => setPicked(true));
+$('batch-clear').addEventListener('click', () => setPicked(false));
+async function runBatch(approved) {
+  const items = pickedItems(); if (!items.length) return;
+  if (!privateKey) { $('inbox-status').textContent = '請先到「設定」準備好印章。'; return; }
+  const shared = $('batch-note').value.trim();
+  $('batch-approve').disabled = $('batch-reject').disabled = true;
+  let ok = 0; const errors = [];
+  for (const [i, item] of items.entries()) {
+    $('inbox-status').textContent = `${approved ? '通過' : '退回'}中 ${i + 1}/${items.length}…`;
+    try { await decide(item, approved, item.note?.value.trim() || shared); ok += 1; } catch (err) { errors.push(err.message); }
+  }
+  $('batch-approve').disabled = $('batch-reject').disabled = false;
+  if (!errors.length) $('batch-note').value = '';
+  $('inbox-status').textContent = `已${approved ? '通過' : '退回'} ${ok} 張${approved ? '！他們下次打開遊戲就會收到獎勵。' : '，他們可以再拍一次。'}${errors.length ? `\n${errors.join('\n')}` : ''}`;
+}
+$('batch-approve').addEventListener('click', () => runBatch(true));
+$('batch-reject').addEventListener('click', () => {
+  const btn = $('batch-reject');
+  if (!btn.dataset.confirm) { btn.dataset.confirm = '1'; btn.textContent = `確定退回 ${pickedItems().length} 張？`; setTimeout(() => { if (btn.dataset.confirm) { delete btn.dataset.confirm; btn.textContent = '退回'; } }, 4000); return; }
+  delete btn.dataset.confirm; btn.textContent = '退回';
+  void runBatch(false);
+});
+
 
 /* ---------- 啟動 ---------- */
 renderCloud();
@@ -516,7 +656,8 @@ await loadCloudPlayers();
 if (!reviewerToken) reviewerClaimed().then(c => { if (c) { $('rv-claim').hidden = true; $('rv-setup-hint').textContent = '審核員通行碼已經設定過了：請貼上妳存起來的那組登入。'; } }).catch(() => {});
 await setKey((await loadJwk()) || null);
 renderKey();
+showTab(privateKey && (reviewerToken || players.list.length) ? 'inbox' : 'setup');
 void refreshCodes();
 void refreshLetters();
 void refreshMissions();
-void refreshPostcards();
+maybeRefreshInbox();

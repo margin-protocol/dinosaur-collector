@@ -41,7 +41,7 @@ await g.locator('#cloud-backup-now').click();await g.waitForFunction(()=>/備份
 const kept=await g.evaluate(async([a,inv])=>(await (await fetch(a+'/ls/backups',{headers:{Authorization:'Bearer '+inv}})).json()).map(f=>f.name).sort(),[API,invite]);
 assert.equal(kept.length,8,'latest＋最近 7 份：'+kept.join(','));assert.ok(kept.includes('latest.json'));assert.ok(!kept.includes('2026-10-01.json'));assert.ok(kept.includes('2026-10-10.json'));
 // 審核室：做印章、發全體暗號；玩家讀得到
-await r.locator('#key-generate').click();await r.waitForFunction(()=>!document.getElementById('code-create').disabled);
+await r.locator('#key-generate').click();await r.waitForFunction(()=>!document.getElementById('code-create').disabled);await r.locator('#tab-make').click();
 await r.locator('#code-everyone').check();await r.locator('#code-phrase').fill('研究所上榜');await r.locator('#code-reusable').check();await r.locator('#code-create').click();
 await r.waitForFunction(()=>/完成/.test(document.getElementById('code-status').textContent));
 await r.waitForFunction(()=>/全體玩家/.test(document.getElementById('code-list').textContent));
@@ -55,7 +55,7 @@ await r.waitForFunction(()=>/出題給 2 位玩家/.test(document.getElementById
 const fan=await g.evaluate(async([a,i1,i2])=>{const ls=async(t,d)=>(await (await fetch(`${a}/ls/${d}`,{headers:{Authorization:'Bearer '+t}})).json()).length;return [await ls(i1,'letters'),await ls(i2,'letters'),await ls(i1,'missions'),await ls(i2,'missions')];},[API,invite,invite2]);
 assert.deepEqual(fan,[1,1,1,1],'兩位玩家都收到紙條和委託');
 // 改名字
-await r.locator('#player-select').selectOption({label:'男友'});
+await r.locator('#tab-setup').click();await r.locator('#player-select').selectOption({label:'男友'});
 await r.locator('#rv-rename-open').click();await r.locator('#rv-rename-name').fill('寶貝男友');await r.locator('#rv-rename button[type=submit]').click();
 await r.waitForFunction(()=>/已改成/.test(document.getElementById('cloud-status').textContent));
 assert.equal(await r.locator('#player-select option:checked').textContent(),'寶貝男友');
