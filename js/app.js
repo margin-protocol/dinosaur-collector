@@ -3234,9 +3234,13 @@ function showNextBondUp(tries = 0) {
   const { no, level, reward, unlock, text } = bondQueue.shift();
   const c = CHARACTERS[no];
   loadWithFallback($('bond-up-img'), characterSources(c.image)); $('bond-up-img').alt = c.name;
-  $('bond-up-title').textContent = `${c.name}的好感度升到 Lv.${level}！`;
-  $('bond-up-unlock').textContent = `解鎖：${unlock}`;
+  // 「好感度升到 Lv.3！」黏在一起，名字太長時從名字後面換行，不會只剩等級孤單一行（11/21）
+  const lv = document.createElement('span'); lv.className = 'bond-up__lv'; lv.textContent = `好感度升到 Lv.${level}！`;
+  $('bond-up-title').replaceChildren(`${c.name}的`, lv);
+  $('bond-up-unlock').textContent = level === 3 ? unlock : `解鎖：${unlock}`;
   $('bond-up-text').textContent = level === 3 ? text : `「${text}」`;
+  // Lv.3 小故事用靠左的故事卡片呈現；台詞維持置中引號
+  $('bond-up').classList.toggle('is-story', level === 3);
   const r = describeLevelReward(reward);
   $('bond-up-reward').textContent = r ? `禮物：${r}` : '';
   $('bond-up').classList.toggle('is-shiny', level >= MAX_LEVEL);
