@@ -3556,8 +3556,7 @@ function renderBattle() {
       return btn;
     }));
     wildSec.append(wh, wnote, wgrid);
-    const giftLegend = el('p', 'star-gift-legend', '🎁 ＝ 還沒三星，打到三星會自動送小禮物');
-    $('battle-map').replaceChildren(wildSec, giftLegend, ...battle.CHAPTERS.map(ch => {
+    $('battle-map').replaceChildren(wildSec, ...battle.CHAPTERS.map(ch => {
       const sec = document.createElement('section'); sec.className = 'battle-chapter';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = `第 ${ch.id} 章 · ${ch.name}`;
       const chScene = sceneOf(ch); if (chScene) { sec.classList.add('has-scene'); sec.style.setProperty('--scene', `url("${chScene}")`); }
@@ -3571,7 +3570,6 @@ function renderBattle() {
         info.querySelector('b').textContent = open ? e.name : '？？？';
         info.querySelector('span').textContent = !open ? '🔒 先打贏前一關' : st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
         btn.append(info);
-        if (open && (st?.stars || 0) < 3) btn.append(Object.assign(document.createElement('i'), { className: 'battle-stage-card__gift', title: '第一次三星有小禮物', textContent: '🎁' }));
         btn.addEventListener('click', () => { battleEnemy = id; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
         return btn;
       }));
