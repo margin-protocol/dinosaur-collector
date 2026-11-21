@@ -1,7 +1,11 @@
 // 外出合照：選一位已收集的小湘 → 打開相機 → 把小湘放在畫面裡（拖曳移動、雙指或滑桿縮放、左右翻轉）→ 拍下合成照片
+// 拍照前可以選濾鏡（photo-filters.js），預覽即時套用，存下來的照片也有同樣的濾鏡（署名不套）。
 // 照片只在手機上合成，不上傳；拍好後可以分享或存到手機。
 // 相機打不開（沒權限、沒有相機）時，可以改用拍照／相簿選一張照片當背景。
 import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
+import { PHOTO_FILTERS, filterById, cssFilter, overlayCss, applyPhotoFilter } from './photo-filters.js';
+
+const FILTER_KEY = 'siang-collector:photo-filter:v1';
 
 const RATIO = 3 / 4; // 畫面寬：高
 const MAX_W = 1440;
@@ -13,6 +17,27 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
   const size = $('.photo-size'), status = $('.photo-status'), fileInput = $('.photo-file');
   let stream = null, facing = 'environment', no = null, blob = null, url = null, mirrored = false;
   const pos = { x: 0.5, y: 0.97, h: 0.62, flip: false };
+  const fx = $('.photo-fx'), fxOverlay = $('.photo-fx-overlay'), filterRow = $('.photo-filters');
+  let filter = PHOTO_FILTERS[0];
+  try { filter = filterById(localStorage.getItem(FILTER_KEY)); } catch { /* 無痕模式 */ }
+
+  // 濾鏡按鈕：小圓圈用同一個濾鏡預覽一塊樣本色
+  filterRow.replaceChildren(...PHOTO_FILTERS.map((f) => {
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'photo-filter'; b.dataset.filter = f.id;
+    b.setAttribute('role', 'radio');
+    const sw = document.createElement('span'); sw.className = 'photo-filter__swatch'; sw.style.filter = cssFilter(f);
+    const ov = document.createElement('span'); ov.className = 'photo-filter__tint'; ov.style.background = overlayCss(f);
+    sw.append(ov);
+    const name = document.createElement('span'); name.className = 'photo-filter__name'; name.textContent = f.name;
+    b.append(sw, name); return b;
+  }));
+  function setFilter(f) {
+    filter = f;
+    fx.style.filter = cssFilter(f); fxOverlay.style.background = overlayCss(f);
+    filterRow.querySelectorAll('.photo-filter').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.filter === f.id)));
+    try { localStorage.setItem(FILTER_KEY, f.id); } catch { /* 存不了也沒關係 */ }
+  }
+  setFilter(filter);
 
   function step(name) {
     pick.hidden = name !== 'pick'; cam.hidden = name !== 'cam'; result.hidden = name !== 'result';
@@ -118,6 +143,7 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
       g.shadowColor = 'rgba(0,0,0,.25)'; g.shadowBlur = Math.round(W * 0.01); g.shadowOffsetY = Math.round(W * 0.004);
       g.drawImage(sprite, -dw / 2, 0, dw, dh); g.restore();
     }
+    applyPhotoFilter(g, W, H, filter);
     // 小小的署名
     const fs = Math.round(W * 0.026);
     g.font = `${fs}px "Cormorant Garamond", "Noto Serif TC", serif`; g.textAlign = 'right'; g.textBaseline = 'bottom';
@@ -147,6 +173,7 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
   dialog.addEventListener('click', (e) => {
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.pick) choose(b.dataset.pick);
+    else if (b.dataset.filter) setFilter(filterById(b.dataset.filter));
     else if (b.matches('.photo-close')) close();
     else if (b.matches('.photo-back')) { stopStream(); renderPick(); }
     else if (b.matches('.photo-shutter')) capture();
