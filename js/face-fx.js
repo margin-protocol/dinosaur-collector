@@ -130,18 +130,39 @@ function smoothSkin(g, source, pts, m, amount, pose) {
   g.save(); g.globalAlpha = 0.1 + amount / 100 * 0.55; g.drawImage(layer, 0, 0, bw, bh, x0, y0, bw, bh); g.restore();
 }
 
-// 口紅：嘴唇外框減掉內框（張嘴時牙齒不會被塗到），用 multiply 疊色保留唇紋，邊緣略柔
-function paintLips(g, pts, color, amount) {
-  const box = bbox(pts, LIP_OUT, 0.15);
-  if (box.w < 4) return;
-  const k = Math.min(1, 90 / box.w);
-  const layer = scratch('lip', box.w * k, box.h * k), lg = layer.getContext('2d');
-  lg.fillStyle = color; lg.beginPath(); polygon(lg, pts, LIP_OUT, box.x, box.y, k); polygon(lg, pts, LIP_IN, box.x, box.y, k, 1.05); lg.fill('evenodd');
-  const a = amount / 100;
-  g.save(); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
-  g.globalCompositeOperation = 'multiply'; g.globalAlpha = 0.25 + a * 0.55; g.drawImage(layer, box.x, box.y, box.w, box.h);
-  g.globalCompositeOperation = 'source-over'; g.globalAlpha = a * 0.28; g.drawImage(layer, box.x, box.y, box.w, box.h);
-  g.restore();
+// 口紅：逐點算顏色，保留原本嘴唇的明暗和唇紋（只換色相、飽和度），邊緣一圈圈淡出（11/21 湘 iPhone 實測：舊版是一塊平平的貼紙）
+// 預覽畫在透明畫布上，multiply 之類的混色沒有底圖可以混，所以這裡自己把嘴唇那塊的原圖讀進來算。
+const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
+const lum = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
+function paintLips(g, source, pts, m, color, amount) {
+  const box = bbox(pts, LIP_OUT, 0.12);
+  if (box.w < 6 || box.h < 3) return;
+  const k = Math.min(1, 220 / box.w);
+  const w = Math.max(2, Math.round(box.w * k)), h = Math.max(2, Math.round(box.h * k));
+  const work = scratch('lip', w, h), wg = work.getContext('2d', { willReadFrequently: true });
+  wg.drawImage(source, m.sx + box.x * m.sw / m.W, m.sy + box.y * m.sh / m.H, box.w * m.sw / m.W, box.h * m.sh / m.H, 0, 0, w, h);
+  const mask = scratch('lipmask', w, h), mg = mask.getContext('2d', { willReadFrequently: true });
+  const rings = (idx, from, to, n, alpha) => { for (let i = 0; i < n; i++) { mg.globalAlpha = alpha; mg.beginPath(); polygon(mg, pts, idx, box.x, box.y, k, from + (to - from) * i / (n - 1)); mg.fill(); } };
+  mg.fillStyle = '#000'; rings(LIP_OUT, 1.0, 0.86, 6, 0.32);
+  mg.globalCompositeOperation = 'destination-out'; rings(LIP_IN, 1.22, 1.0, 5, 0.4);
+  mg.globalCompositeOperation = 'source-over'; mg.globalAlpha = 1;
+  let img, mk;
+  try { img = wg.getImageData(0, 0, w, h); mk = mg.getImageData(0, 0, w, h).data; } catch { return; }
+  const d = img.data, [cr, cg, cb] = hex(color), cl = Math.max(1, lum(cr, cg, cb));
+  // 嘴唇本身的平均亮度當基準：比平均亮的地方（反光）保持亮、暗的地方（唇紋、嘴角）保持暗
+  let sum = 0, n = 0;
+  for (let i = 0; i < d.length; i += 4) if (mk[i + 3] > 200) { sum += lum(d[i], d[i + 1], d[i + 2]); n++; }
+  const avg = n ? sum / n : 128, a = 0.12 + amount / 100 * 0.58;
+  for (let i = 0; i < d.length; i += 4) {
+    const t = mk[i + 3] / 255 * a; if (!t) { d[i + 3] = 0; continue; }
+    const L = lum(d[i], d[i + 1], d[i + 2]);
+    const f = Math.pow(L / avg, 1.1) * Math.min(1.15, Math.max(0.75, avg / cl));
+    // 顏色直接換成口紅色（帶原本明暗），透明度 = 遮罩 × 濃淡：疊在原圖上就是兩者混合，邊緣自然淡出
+    d[i] = Math.min(255, cr * f); d[i + 1] = Math.min(255, cg * f); d[i + 2] = Math.min(255, cb * f);
+    d[i + 3] = Math.round(t * 255);
+  }
+  wg.putImageData(img, 0, 0);
+  g.save(); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(work, 0, 0, w, h, box.x, box.y, box.w, box.h); g.restore();
 }
 
 // 頭飾：跟著頭轉、歪頭，轉頭時往那邊偏一點、寬度稍微收
@@ -176,7 +197,7 @@ export function drawFaceFx(g, source, faces, fx, m) {
     const pts = project(lm, m); const pose = headPose(pts);
     if (pose.faceW < 12) continue;
     if (fx.smooth > 0) smoothSkin(g, source, pts, m, fx.smooth, pose);
-    if (lip.color && fx.lipAmt > 0) paintLips(g, pts, lip.color, fx.lipAmt);
+    if (lip.color && fx.lipAmt > 0) paintLips(g, source, pts, m, lip.color, fx.lipAmt);
     if (img) drawHeadpiece(g, img, { place: hp.dx ? 'side' : 'crown', ...hp }, pose);
     n += 1;
   }

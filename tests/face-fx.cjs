@@ -40,14 +40,20 @@ const r=await p.evaluate(async fx=>{const m=await import('./js/face-fx.js');
   const prof=[];{const y=Math.round(pts[50].y),xs=Math.round((pts[1].x+pts[50].x)/2),xe=Math.round(pts[234].x-pose.faceW*0.08);
     for(let x=xs;x>xe;x-=3){let s=0,n=0;for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const i=((y+dy)*W+x+dx)*4;s+=Math.abs(sm[i]-base[i]);n++;}prof.push(s/n);}}
   const peak=Math.max(...prof);let jump=0;for(let k=1;k<prof.length;k++)jump=Math.max(jump,Math.abs(prof[k]-prof[k-1]));
+  // 預覽是畫在透明畫布上再疊到影片上：口紅疊上去後嘴唇的紋理（明暗變化）要還在，不能是一塊平平的貼紙（11/21 iPhone 實測）
+  const ov=document.createElement('canvas');ov.width=W;ov.height=H;m.drawFaceFx(ov.getContext('2d'),src,[lm],m.normalizeFx({lip:'peach',lipAmt:100}),map);
+  const comp=document.createElement('canvas');comp.width=W;comp.height=H;const cg=comp.getContext('2d');cg.drawImage(src,0,0);cg.drawImage(ov,0,0);const cd=cg.getImageData(0,0,W,H).data;
+  const lipVar=(d)=>{let s=0,s2=0,n=0;const lo={x:(pts[14].x+pts[17].x)/2,y:(pts[14].y+pts[17].y)/2};for(let y=lo.y-2;y<=lo.y+2;y++)for(let x=lo.x-12;x<lo.x+12;x++){const i=(Math.round(y)*W+Math.round(x))*4;const L=d[i]*.3+d[i+1]*.59+d[i+2]*.11;s+=L;s2+=L*L;n++;}return s2/n-(s/n)**2;};
+  const lipTex=[lipVar(base),lipVar(cd)];
   // 歪頭：把點位轉 20 度，算出來的角度也要是 20 度
   const rot=20*Math.PI/180,cx=0.5,cy=0.5;const turned=lm.map(q=>({x:cx+(q.x-cx)*Math.cos(rot)-(q.y-cy)*Math.sin(rot)*H/W,y:cy+((q.x-cx)*Math.sin(rot)*W/H+(q.y-cy)*Math.cos(rot))}));
   const angle=m.headPose(m.project(turned,map)).angle*180/Math.PI;
-  return {peak,jump,tail:prof[prof.length-1],none:draw({}).n,lipN:lips.n,lipBase:at(base,lipPt),lipNow:at(lips.d,lipPt),cheekSame:at(lips.d,cheek).join()===at(base,cheek).join(),changedAbove,changedChin,varBase:vari(base),varSm:vari(sm),angle,base0:pose.angle*180/Math.PI,
+  return {lipTex,peak,jump,tail:prof[prof.length-1],none:draw({}).n,lipN:lips.n,lipBase:at(base,lipPt),lipNow:at(lips.d,lipPt),cheekSame:at(lips.d,cheek).join()===at(base,cheek).join(),changedAbove,changedChin,varBase:vari(base),varSm:vari(sm),angle,base0:pose.angle*180/Math.PI,
     norm:m.normalizeFx({smooth:'250',lip:'xx',crown:'dino',lipAmt:-3}),active:[m.fxActive(m.normalizeFx({})),m.fxActive(m.normalizeFx({crown:'egg'}))]};
 },fixture);
 assert.equal(r.none,0,'沒選特效不畫');assert.equal(r.lipN,1);
 assert(r.lipNow[1]<r.lipBase[1]-25&&r.lipNow[0]-r.lipNow[1]>r.lipBase[0]-r.lipBase[1]+20,'嘴唇變紅 '+JSON.stringify([r.lipBase,r.lipNow]));
+assert(r.lipTex[1]>r.lipTex[0]*0.3,'口紅保留唇紋 '+JSON.stringify(r.lipTex));
 assert(r.cheekSame,'口紅不會塗到臉頰');
 assert(r.changedAbove>150,'頭頂上方有頭飾 '+r.changedAbove);assert.equal(r.changedChin,0,'下巴底下沒有頭飾');
 assert(r.jump<r.peak*0.25&&r.tail<r.peak*0.15,'磨皮邊緣漸層 '+JSON.stringify([r.peak,r.jump,r.tail]));
