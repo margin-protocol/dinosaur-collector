@@ -1114,6 +1114,7 @@ function storyText(c, entry) {
     : st.from?.startsWith('devteam:') ? '開發團隊悄悄送來的紀念蛋'
     : st.from === 'taiwan' ? '走遍臺灣時收到的紀念蛋'
     : st.from === 'code' ? '湘藏在暗號裡的蛋'
+    : st.from === 'letter' ? '湘夾在紙條裡的蛋'
     : st.from && HOLIDAYS.some(h => st.from.startsWith(h.id)) ? `${HOLIDAYS.find(h => st.from.startsWith(h.id)).name}收到的紀念蛋`
     : EGGS[st.egg]?.name || '一顆蛋';
   const mood = [st.night && '深夜裡', st.rain && '下著雨的日子'].filter(Boolean).join('、');
@@ -2114,6 +2115,7 @@ function renderLetterList() {
     text.append(sub);
     const badge = document.createElement('span'); badge.className = 'letter-new';
     if (star) badge.append(Object.assign(document.createElement('b'), { className: 'letter-star', textContent: '★', title: '重要紙條' }));
+    if (state.letters.mail.some(m => m.id === letter.id && m.gift && !m.giftAt)) badge.append(Object.assign(document.createElement('b'), { className: 'letter-gift-dot', textContent: '🎁', title: '附了禮物' }));
     if (unread) badge.append('未讀');
     item.append(text, badge);
     if (star) item.setAttribute('aria-label', `${letter.title || '湘寄來的紙條'}（重要紙條）`);
@@ -2130,13 +2132,31 @@ function renderLetterStar() {
   $('letter-read-star').setAttribute('aria-pressed', String(on));
   $('letter-read-star').textContent = on ? '★ 已是重要紙條' : '☆ 收藏成重要紙條';
 }
+// 湘隨紙條附的禮物（11/21）：第一次拆開紙條時收下，只會收一次
+function renderLetterGift(letter) {
+  const mail = state.letters.mail.find(m => m.id === letter.id);
+  const gift = mail?.gift;
+  $('letter-read-gift').hidden = !gift;
+  if (gift) $('letter-read-gift').textContent = `🎁 隨信附上：${describeReward(gift, CHARACTERS, EGGS)}${mail.giftAt ? '（已收下）' : ''}`;
+}
+function claimLetterGift(letter) {
+  const mail = state.letters.mail.find(m => m.id === letter.id);
+  if (!mail?.gift || mail.giftAt) return;
+  void updateState(current => {
+    const m = current.letters.mail.find(x => x.id === letter.id);
+    if (!m?.gift || m.giftAt || !validReward(m.gift, CHARACTERS)) return false;
+    applyReward(current, m.gift, 'letter'); m.giftAt = new Date().toISOString(); return true;
+  }).then(t => { state = t.state; if (!t.result) return; renderAll(); if (readingLetter?.id === letter.id) renderLetterGift(letter); toast(`收下湘附的禮物：${describeReward(mail.gift, CHARACTERS, EGGS)}！`); });
+}
 function readLetter(letter) {
   readingLetter = letter;
   $('letter-read-title').textContent = letter.kind === 'intro' ? '' : letter.title || '湘寄來的紙條';
   $('letter-read-title').hidden = letter.kind === 'intro';
   $('letter-read-body').textContent = letter.body;
+  renderLetterGift(letter);
   renderLetterStar();
   $('letter-read').showModal();
+  claimLetterGift(letter);
   if (letter.kind !== 'intro' && !state.letters.read.includes(letter.id)) {
     void updateState(current => { if (!current.letters.read.includes(letter.id)) current.letters.read.push(letter.id); }).then(t => { state = t.state; renderLetterBadge(); });
   }
@@ -2169,12 +2189,13 @@ async function fetchMail() {
     const p = file?.data?.payload;
     if (!file || p?.type !== 'letter' || p.id !== id || typeof p.body !== 'string' || p.body.length > 3000) continue;
     if (!(await verifySigned(REVIEWER_PUBLIC_JWK, file.data))) continue;
-    fresh.push({ id, title: typeof p.title === 'string' ? p.title.slice(0, 40) : '', body: p.body, at: p.createdAt || new Date().toISOString() });
+    fresh.push({ id, title: typeof p.title === 'string' ? p.title.slice(0, 40) : '', body: p.body, at: p.createdAt || new Date().toISOString(), ...(p.reward && validReward(p.reward, CHARACTERS) ? { gift: p.reward } : {}) });
   }
   if (!fresh.length) return 0;
   const t = await updateState(current => { const ids = new Set(current.letters.mail.map(m => m.id)); for (const m of fresh) if (!ids.has(m.id)) current.letters.mail.push(m); });
   state = t.state; renderAll();
-  toast(fresh.length > 1 ? `湘寄來 ${fresh.length} 張新紙條！` : '湘寄來一張新紙條！到首頁的紙條看看吧。');
+  const gifts = fresh.filter(m => m.gift).length;
+  toast(fresh.length > 1 ? `湘寄來 ${fresh.length} 張新紙條！${gifts ? '裡面還附了禮物🎁' : ''}` : `湘寄來一張新紙條！${gifts ? '還附了禮物🎁 ' : ''}到首頁的紙條看看吧。`);
   say('有一張新紙條送到了！', 'happy', 3000);
   return fresh.length;
 }

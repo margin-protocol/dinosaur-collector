@@ -31,5 +31,18 @@ if(process.env.SHOT) await g.screenshot({path:process.env.SHOT});
 await g.click('#letter-read-ok');await g.waitForTimeout(200);
 // reload: no duplicate
 await g.reload();await g.waitForTimeout(1500);s=await save();assert.equal(s.letters.mail.length,1);
+// 紙條附禮物（11/21）：拆開時收下一次；委託題目可以按隨機
+await r.click('#mission-random');assert.ok((await r.inputValue('#mission-title')).length>0);assert.ok((await r.inputValue('#mission-body')).length>0);
+await r.fill('#letter-title','送你能量');await r.fill('#letter-body','今天也要加油喔');await r.selectOption('#letter-reward','energy:100');await r.click('#letter-send');await r.waitForFunction(()=>/附上100 能量/.test(document.querySelector('#letter-status').textContent));
+await r.waitForFunction(()=>/附上100 能量/.test(document.querySelector('#letter-list').textContent));
+await g.reload();await g.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).letters.mail.length===2,key,{timeout:10000});await g.waitForTimeout(400);
+s=await save();const before=s.energy;assert.deepEqual(s.letters.mail.find(m=>m.title==='送你能量').gift,{type:'energy',amount:100});
+await g.click('#home-letter');await g.locator('#letter-box[open]').waitFor();assert.equal(await g.locator('.letter-item',{hasText:'送你能量'}).locator('.letter-gift-dot').count(),1);
+await g.locator('.letter-item',{hasText:'送你能量'}).click();await g.locator('#letter-read[open]').waitFor();
+await g.waitForFunction(()=>/隨信附上：100 能量（已收下）/.test(document.querySelector('#letter-read-gift').textContent));
+if(process.env.SHOT_GIFT) await g.screenshot({path:process.env.SHOT_GIFT});
+s=await save();assert.equal(s.energy,before+100);
+await g.click('#letter-read-ok');await g.waitForTimeout(200);await g.locator('.letter-item',{hasText:'送你能量'}).click();await g.waitForTimeout(400);await g.click('#letter-read-ok');
+await g.reload();await g.waitForTimeout(1500);s=await save();assert.equal(s.energy,before+100,'gift only once');
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('letters: milestone unlock+unread badge, reviewer letter sign/send/receive, forged ignored, no duplicates PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

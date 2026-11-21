@@ -320,7 +320,16 @@ async function refreshCodes() {
 }
 $('code-refresh').addEventListener('click', refreshCodes);
 
-/* ---------- 寄紙條 ---------- */
+/* ---------- 寄紙條（湘 11/21：可以附禮物） ---------- */
+$('letter-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `No.${c.no} ${c.name}` })));
+$('letter-reward').addEventListener('change', () => { $('letter-character-row').hidden = $('letter-reward').value !== 'character'; });
+function letterReward() {
+  const v = $('letter-reward').value;
+  if (!v) return null;
+  if (v === 'character') return { type: 'character', no: $('letter-character').value };
+  const [type, x] = v.split(':');
+  return type === 'energy' ? { type, amount: Number(x) } : { type, egg: x };
+}
 $('letter-form').addEventListener('submit', async (e) => {
   e.preventDefault();
   const body = $('letter-body').value.trim();
@@ -329,11 +338,12 @@ $('letter-form').addEventListener('submit', async (e) => {
   $('letter-send').disabled = true; $('letter-status').textContent = '蓋章中…';
   try {
     const id = `${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`;
-    const payload = { v: 1, type: 'letter', id, title: $('letter-title').value.trim(), body, createdAt: new Date().toISOString() };
+    const reward = letterReward();
+    const payload = { v: 1, type: 'letter', id, title: $('letter-title').value.trim(), body, ...(reward ? { reward } : {}), createdAt: new Date().toISOString() };
     const signed = await signPayload(privateKey, payload);
     if (reviewerToken && $('letter-everyone').checked) $('letter-status').textContent = everyoneText(await putForEveryone(`letters/${id}.json`, signed, 'send letter'), '寄');
-    else { await cloud().putJSON(`letters/${id}.json`, signed, 'send letter'); $('letter-status').textContent = '寄出了！他下次打開遊戲就會收到。'; }
-    $('letter-title').value = ''; $('letter-body').value = '';
+    else { await cloud().putJSON(`letters/${id}.json`, signed, 'send letter'); $('letter-status').textContent = `寄出了！${reward ? `附上${describeReward(reward, CHARACTERS, EGGS)}，` : ''}他下次打開遊戲就會收到。`; }
+    $('letter-title').value = ''; $('letter-body').value = ''; $('letter-reward').value = ''; $('letter-character-row').hidden = true;
     void refreshLetters();
   } catch (err) { $('letter-status').textContent = `寄送失敗：${err.message}`; }
   finally { $('letter-send').disabled = !privateKey; }
@@ -347,7 +357,7 @@ async function refreshLetters() {
     $('letter-list').replaceChildren(...items.map(({ f, data }) => {
       const li = document.createElement('li');
       const b = document.createElement('b'); b.textContent = data?.title || '（無標題）';
-      const small = document.createElement('small'); small.textContent = data?.createdAt ? new Date(data.createdAt).toLocaleString('zh-TW') : '';
+      const small = document.createElement('small'); small.textContent = [data?.createdAt ? new Date(data.createdAt).toLocaleString('zh-TW') : '', data?.reward ? `附上${describeReward(data.reward, CHARACTERS, EGGS)}` : ''].filter(Boolean).join(' · ');
       const pre = document.createElement('pre'); pre.textContent = data?.body || '';
       const row = document.createElement('div'); row.className = 'row';
       const del = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '收回（他已收到的不會消失）' });
@@ -360,6 +370,36 @@ async function refreshLetters() {
 
 /* ---------- 照片委託 ---------- */
 $('mission-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `No.${c.no} ${c.name}` })));
+// 隨機題目（湘 11/21）：題目和說明一起換，按一次換一個
+const MISSION_IDEAS = [
+  ['今天晚餐吃什麼', '拍下你今天的晚餐，要有飲料喔！'],
+  ['今天的天空', '抬頭拍一張現在的天空，什麼天氣都可以。'],
+  ['你的桌面', '拍下你現在的桌面，不用整理，我想看真實的樣子。'],
+  ['路上遇到的貓狗', '今天遇到的貓咪或狗狗，偷偷拍一張就好。'],
+  ['今天穿什麼', '拍一張今天的穿搭，鏡子自拍也可以。'],
+  ['手上的飲料', '今天喝的第一杯飲料，杯子要入鏡。'],
+  ['窗外的風景', '從你現在待的地方往窗外拍一張。'],
+  ['最近在看的東西', '書、劇、漫畫或影片都可以，拍下封面或畫面。'],
+  ['今天最開心的一刻', '拍下讓你今天笑出來的東西。'],
+  ['你的鞋子', '低頭拍一下今天穿的鞋子，跟地板一起入鏡。'],
+  ['找一個愛心', '在路上找一個愛心形狀的東西拍下來 ♡'],
+  ['找一隻小恐龍', '玩具、圖案、招牌都算，找到就拍下來！'],
+  ['粉紅色的東西', '找一個粉紅色的東西拍給我。'],
+  ['今天的早餐', '早餐吃了什麼？沒吃也拍一下空空的桌子。'],
+  ['睡前的樣子', '睡前拍一張你的枕頭或被窩。'],
+  ['回家的路', '拍一張回家路上的街景。'],
+  ['你的手', '拍一張你的手，比個 YA 也可以。'],
+  ['今天的月亮', '晚上找找看月亮，拍不到就拍夜空。'],
+  ['一朵花', '路邊的小花、盆栽或花店都可以。'],
+  ['最想帶我去的地方', '拍一個你想帶我一起去的地方。'],
+  ['你的手機桌布', '截圖或拍下你現在的手機桌布。'],
+  ['今天的小確幸', '一件讓你覺得幸福的小事，拍下來給我看。'],
+];
+let lastIdea = -1;
+$('mission-random').addEventListener('click', () => {
+  let i; do { i = Math.floor(Math.random() * MISSION_IDEAS.length); } while (i === lastIdea && MISSION_IDEAS.length > 1);
+  lastIdea = i; [$('mission-title').value, $('mission-body').value] = MISSION_IDEAS[i];
+});
 $('mission-reward').addEventListener('change', () => { $('mission-character-row').hidden = $('mission-reward').value !== 'character'; });
 function missionReward() {
   const v = $('mission-reward').value;
