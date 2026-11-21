@@ -1256,6 +1256,17 @@
         "moon",
         "pudding"
       ]
+    },
+    {
+      "no": "108",
+      "name": "柴郡貓小湘",
+      "like": "果香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "moon",
+        "strawberry"
+      ]
     }
   ]
 }

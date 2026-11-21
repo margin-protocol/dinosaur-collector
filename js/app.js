@@ -431,6 +431,7 @@ function renderWishCompanion(wish) {
   if (image.dataset.presenter !== (id || 'egg')) {
     image.dataset.presenter = id || 'egg';
     image.classList.toggle('is-egg', !id);
+    image.classList.toggle('is-cheshire', Boolean(id && CHARACTERS[id].cheshire));
     image.alt = id ? CHARACTERS[id].name : '蛋裡的小湘';
     loadWithFallback(image, id ? characterSources(CHARACTERS[id].image) : eggLayerSources('origin', 'shell'));
   }
@@ -2042,7 +2043,7 @@ function openDexDetail(no) {
   const c = CHARACTERS[no];
   const owned = Boolean(state.dex[no]);
   const img = $('dex-detail-img');
-  img.className = `dex-detail__img${owned ? '' : ' is-locked'}`; img.alt = owned ? c.name : '尚未收集的小湘';
+  img.className = `dex-detail__img${owned ? '' : ' is-locked'}${owned && c.cheshire ? ' is-cheshire' : ''}`; img.alt = owned ? c.name : '尚未收集的小湘'; // is-cheshire：柴郡貓小湘慢慢隱身只剩笑容（純視覺）
   loadWithFallback(img, characterSources(c.image));
   $('dex-photo').hidden = !owned; $('dex-photo').dataset.no = no;
   $('dex-detail-no').textContent = `No.${c.no} · ${owned ? c.rarity : '?'} · ${SERIES[c.series]?.name || ''}`;

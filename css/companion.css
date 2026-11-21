@@ -996,3 +996,20 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .photo-fx-retry { padding:2px 10px; border:1px solid currentColor; border-radius:999px; background:none; color:var(--t-accent, #f3c3d2); font:11px/1.6 var(--font-display); cursor:pointer; }
 #photo-dialog:is([data-fx="old"],[data-fx="slow"]) :is([data-panel="beauty"],[data-panel="crown"]) { opacity:.45; }
 @media (max-width:374px) { .photo-chip { font-size:10px; } .photo-crown .photo-chip__swatch { width:min(38px,100%); } }
+
+/* 柴郡貓小湘（No.108）隱身：從尾巴那一側慢慢變透明，最後只剩右上角的彎月笑容，再慢慢浮現（純視覺，不影響戰鬥） */
+.is-cheshire {
+  --grin: radial-gradient(ellipse 12% 8% at 75% 16%, #000 65%, transparent 100%);
+  --fade: linear-gradient(45deg, rgba(0,0,0,.05) 0 42%, #000 58% 100%);
+  -webkit-mask-image: var(--grin), var(--fade); mask-image: var(--grin), var(--fade);
+  -webkit-mask-size: 100% 100%, 300% 300%; mask-size: 100% 100%, 300% 300%;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat;
+  -webkit-mask-position: 0 0, 100% 0%; mask-position: 0 0, 100% 0%;
+  animation: cheshire-vanish 11s ease-in-out 1.2s infinite;
+}
+@keyframes cheshire-vanish {
+  0%, 45% { -webkit-mask-position: 0 0, 100% 0%; mask-position: 0 0, 100% 0%; }
+  60%, 76% { -webkit-mask-position: 0 0, 0% 100%; mask-position: 0 0, 0% 100%; }
+  90%, 100% { -webkit-mask-position: 0 0, 100% 0%; mask-position: 0 0, 100% 0%; }
+}
+@media (prefers-reduced-motion: reduce) { .is-cheshire { animation: none; -webkit-mask-image: none; mask-image: none; } }
