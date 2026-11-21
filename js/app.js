@@ -936,6 +936,7 @@ function renderResidents() {
     const slot = document.createElement('button'); slot.type = 'button'; slot.className = `residents-slot${no ? '' : ' is-empty'}`;
     if (no) {
       slot.dataset.current = no; slot.setAttribute('aria-label', `${CHARACTERS[no].name}，點一下讓她休息`);
+      slot.classList.toggle('is-shiny', bondInfo(state, no, today).max);
       const img = document.createElement('img'); img.alt = ''; loadWithFallback(img, characterSources(CHARACTERS[no].image));
       slot.append(img, Object.assign(document.createElement('span'), { textContent: CHARACTERS[no].name }), Object.assign(document.createElement('i'), { textContent: away.has(no) ? away.get(no) : '×', className: 'residents-slot__x' }));
     } else { slot.disabled = true; slot.append(Object.assign(document.createElement('span'), { textContent: '空位' })); }
@@ -951,13 +952,15 @@ function renderResidents() {
       const button = document.createElement('button'); button.type = 'button';
       button.className = `resident-choice${why ? ' is-away' : ''}`; button.dataset.no = character.no;
       button.setAttribute('aria-pressed', String(inRoom));
-      const left = bondInfo(state, character.no, today).left;
+      const bond = bondInfo(state, character.no, today);
+      const left = bond.left;
       const earned = DAILY_CAP - left;
+      button.classList.toggle('is-shiny', bond.max);
       const daily = document.createElement('span'); daily.className = 'resident-choice__bond';
       daily.dataset.status = !earned ? 'new' : left ? 'partial' : 'full';
       const label = !earned ? '未互動' : left ? `今日 ${earned}/${DAILY_CAP}` : '今日已滿';
       daily.append(featureIcon('bond'), document.createTextNode(label));
-      button.setAttribute('aria-label', `${character.name}${inRoom ? '，入住中' : ''}${why ? `，${why}` : ''}，今日首頁互動 ${earned} / ${DAILY_CAP} 點，${label}`);
+      button.setAttribute('aria-label', `${character.name}${inRoom ? '，入住中' : ''}${why ? `，${why}` : ''}${bond.max ? '，好感度滿級' : ''}，今日首頁互動 ${earned} / ${DAILY_CAP} 點，${label}`);
       if (why && !inRoom) button.disabled = true;
       const image = document.createElement('img'); image.alt = ''; loadWithFallback(image, characterSources(character.image));
       const name = document.createElement('span'); name.className = 'resident-choice__name'; name.textContent = character.name.replace(/小湘$/, '') || character.name;
