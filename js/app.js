@@ -1,5 +1,6 @@
 import { renderBattleLog } from './battle-log.js';
 import { createBattleTheater } from './battle-theater.js';
+import { createEpilogueTheater } from './chapter-epilogue.js';
 import { renderAtlas, renderTeamTools } from './team-ui.js';
 import { savePreset, ensureTeamBonds, effectText } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
@@ -3890,6 +3891,11 @@ $('battle-go').addEventListener('click', async () => {
   toast(`出發討伐${battle.enemyFor(state, id).name}！${battle.fmtMinutes(Date.parse(t.result.battle.until) - Date.now())}後回來。`);
 });
 const battleTheater = createBattleTheater({root:$('battle-theater'),details:$('battle-result-details'),dialog:$('battle-result'),replay:$('battle-replay'),onActivity:syncRoomActivity});
+// 章節尾聲劇場：第一次打倒章節 Boss，收下戰報後自動播；故事檔案館可以重看（只演出，不動存檔）
+const epilogue = createEpilogueTheater({dialog:$('chapter-epilogue'),onActivity:syncRoomActivity});
+let pendingEpilogue = null;
+$('battle-result').addEventListener('close', () => { const id = pendingEpilogue; pendingEpilogue = null; if (id) epilogue.play(id); });
+function epilogueButton(id, label, before) { const btn = el('button', 'epilogue-cta', label); btn.type = 'button'; btn.addEventListener('click', () => { before?.(); epilogue.play(id); }); return btn; }
 async function collectBattle(id) {
   const t = await updateState(current => battle.collectBattle(current, id));
   state = t.state; renderAll(); renderBattle();
@@ -3913,7 +3919,10 @@ async function collectBattle(id) {
   if (r.review) { guguAvatar(document.querySelector('#battle-result-review .gugu-review__avatar')); $('battle-review-label').textContent = `咕咕書評 · ${REVIEW_LABEL[r.review.kind] || ''}`; setParas($('battle-review-text'), r.review.text, 0); setParas($('battle-review-note'), r.review.note || '', 0); $('battle-review-note').hidden = !r.review.note; }
   $('battle-result-advice').hidden = !rep.advice; if (rep.advice) setParas($('battle-result-advice'), `💡 ${rep.advice.text}`, 0);
   const storyLines = [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), ...(r.story ? storyParas(`📖 ${r.story}`) : [])];
-  $('battle-result-story').hidden = !storyLines.length; $('battle-result-story').replaceChildren(...storyLines.map(t => el('span', 'para', t)));
+  const epi = r.story && !r.snapshot && epilogue.has(r.enemy) ? r.enemy : null; pendingEpilogue = epi;
+  const epiLines = epi ? [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), '📖 這一章的故事迎來了尾聲。收下戰報後，會播放尾聲劇場。'] : storyLines;
+  $('battle-result-story').hidden = !epiLines.length; $('battle-result-story').replaceChildren(...epiLines.map(t => el('span', 'para', t)));
+  if (epi) $('battle-result-story').append(epilogueButton(epi, '▶ 現在觀看尾聲', () => { pendingEpilogue = null; $('battle-result').close(); }));
   $('battle-result-gains').replaceChildren(...r.gains.map(g => Object.assign(document.createElement('li'), { textContent: g })));
   $('battle-result').showModal();
   battleTheater.play({report:r.report,nos:r.nos,enemy:e,scene:chapterScene(r.enemy),bondUnlocked:Boolean(r.report.bond && state.teamBonds?.unlocked?.[r.report.bond])});
@@ -4035,6 +4044,7 @@ function renderArchive() {
           if (!text) { sec.append(lockedCard(key === 'before' ? '挑戰這一章的 Boss 時解鎖。' : '打倒 Boss 後解鎖。')); continue; }
           const det = el('details', 'archive-card archive-story'); const sum = el('summary');
           sum.append(el('b', '', `📖 ${label}${ch.bossStory.bossName ? ` · ${ch.bossStory.bossName}` : ''}`)); det.append(sum, storyBox(text)); sec.append(det);
+          if (key === 'after' && ch.bossId && epilogue.has(ch.bossId)) det.append(epilogueButton(ch.bossId, '▶ 重看尾聲劇場'));
         }
       }
       if (ch.clueTotal) {

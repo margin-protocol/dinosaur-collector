@@ -36,7 +36,7 @@ export function battleArchive(state) {
     const seenAfter = Boolean(story[`${bossId}:after`]) || Boolean(state.battle?.stages?.[bossId]?.clears);
     const open = stages.some((s) => !s.locked);
     return {
-      id: ch.id, name: open ? ch.name : null, locked: !open, stages,
+      id: ch.id, name: open ? ch.name : null, locked: !open, stages, bossId,
       bossStory: boss?.story ? { before: seenBefore ? boss.story.before : null, after: seenAfter ? boss.story.after : null, bossName: seenBefore ? boss.name : null } : null,
       clues: stages.filter((s) => s.clue).map((s) => ({ stage: s.stage, text: s.clue })),
       clueTotal: ch.stages.filter((id) => ENEMIES[id].clue).length,
