@@ -3224,7 +3224,7 @@ function renderBond(no, owned) {
     const li = document.createElement('li'); const open = b.level >= lv;
     li.className = open ? 'is-open' : '';
     const tag = document.createElement('b'); tag.textContent = `Lv.${lv} ${UNLOCK_LABEL[lv]}`;
-    const body = document.createElement('span'); body.textContent = open ? (lv === 3 ? texts[lv] : `「${texts[lv]}」`) : '🔒 再親近一點就能看到';
+    const body = document.createElement('span'); if (open && lv === 3) { body.className = 'bond-unlocks__story'; setParas(body, texts[lv], 50); } else body.textContent = open ? `「${texts[lv]}」` : '🔒 再親近一點就能看到';
     li.append(tag, body); return li;
   }));
 }
@@ -3243,13 +3243,14 @@ function showNextBondUp(tries = 0) {
   const lv = document.createElement('span'); lv.className = 'bond-up__lv'; lv.textContent = `好感度升到 Lv.${level}！`;
   $('bond-up-title').replaceChildren(`${c.name}的`, lv);
   $('bond-up-unlock').textContent = level === 3 ? unlock : `解鎖：${unlock}`;
-  $('bond-up-text').textContent = level === 3 ? text : `「${text}」`;
+  // 小故事照句子分段（約 50 字一段），台詞維持一句（11/21）
+  if (level === 3) setParas($('bond-up-text'), text, 50); else $('bond-up-text').textContent = `「${text}」`;
   // Lv.3 小故事用靠左的故事卡片呈現；台詞維持置中引號
   $('bond-up').classList.toggle('is-story', level === 3);
   const r = describeLevelReward(reward);
   $('bond-up-reward').textContent = r ? `禮物：${r}` : '';
   $('bond-up').classList.toggle('is-shiny', level >= MAX_LEVEL);
-  $('bond-up').showModal(); syncRoomActivity(); buzz([20, 40, 20]);
+  $('bond-up').showModal(); $('bond-up').scrollTop = 0; syncRoomActivity(); buzz([20, 40, 20]); // 長故事從頭讀，不要被按鈕的焦點捲到底
   renderResources();
 }
 $('bond-up-ok').addEventListener('click', () => $('bond-up').close());
