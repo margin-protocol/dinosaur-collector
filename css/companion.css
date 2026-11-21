@@ -762,6 +762,8 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .room-snack .snack-icon { font-size:23px; filter:none; }
 .room-snack small { position:absolute; top:-5px; right:-5px; min-width:17px; height:17px; padding:0 4px; border-radius:999px; background:var(--t-light, #ffd9a8); color:var(--t-ink, #2a2333); border:1px solid var(--t-accent, #b0405e); font:600 10px/15px var(--font-body); text-align:center; }
 .room-left .explore-pill.is-compact svg { width:21px; height:21px; }
+/* 小恐龍委託的數字跟布丁同款：淺底、深字、描邊，放右上角（湘 11/21） */
+.room-left .dino-task.is-mini .dino-task__icon i { top:-5px; right:-5px; bottom:auto; min-width:17px; height:17px; padding:0 4px; border-radius:999px; background:var(--t-light, #ffd9a8); color:var(--t-ink, #2a2333); border:1px solid var(--t-accent, #b0405e); font:600 10px/15px var(--font-body); text-align:center; white-space:nowrap; box-sizing:border-box; }
 /* 布丁搬走後，右邊一排往上補 */
 .room-errand { top:114px; } .room-gift:not([hidden]) ~ .room-errand { top:160px; }
 .room-wheel { top:160px; } .room-gift:not([hidden]) ~ .room-wheel { top:206px; }
