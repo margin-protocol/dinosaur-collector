@@ -3,7 +3,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox','--use-fake-device-for-media-stream','--use-fake-ui-for-media-stream']});
 const ctx=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,permissions:['camera']});const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 const key='siang-collector:v1';const save=()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key);
-await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');
+await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');await p.waitForFunction(k=>JSON.parse(localStorage.getItem(k)||'{}').seenIntro,key);
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=3;s.dex={'001':{at:'x'},'005':{at:'x'},'071':{at:'x'}};localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:residents:v1',JSON.stringify(['001','005']));},key);
 await p.reload();await p.waitForTimeout(500);
 await p.locator('#open-center').click();await p.locator('#open-photo').click();await p.locator('#photo-dialog[open]').waitFor();
@@ -33,7 +33,7 @@ await p.locator('.photo-cam .photo-back').click();await p.locator('.photo-pick:n
 // 沒有相機：改用照片
 const ctx2=await b.newContext({viewport:{width:390,height:844}});const q=await ctx2.newPage();
 await q.addInitScript(()=>{navigator.mediaDevices.getUserMedia=()=>Promise.reject(Object.assign(new Error('no'),{name:'NotAllowedError'}));});
-await q.goto('http://127.0.0.1:8000');await q.click('#intro-ok');
+await q.goto('http://127.0.0.1:8000');await q.click('#intro-ok');await q.waitForFunction(k=>JSON.parse(localStorage.getItem(k)||'{}').seenIntro,key);
 await q.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=1;s.dex={'001':{at:'x'}};localStorage.setItem(k,JSON.stringify(s));},key);await q.reload();await q.waitForTimeout(400);
 await q.locator('#open-center').click();await q.locator('#open-photo').click();await q.locator('.photo-pick-item').first().click();
 await q.locator('.photo-fallback:not([hidden])').waitFor();assert.match(await q.locator('.photo-status').textContent(),/權限/);
