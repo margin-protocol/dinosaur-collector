@@ -14,7 +14,7 @@ assert.deepEqual(solo,[1,1]);
 await p.click('#home-errand');await p.click('#tab-battle');
 assert(await p.locator('.battle-chapter:not(.battle-wild) .battle-stage-card').nth(1).isDisabled());
 await p.locator('.battle-chapter:not(.battle-wild) .battle-stage-card').first().click();await p.click('.errand-siang:has(img[alt="原味小湘"])');
-assert.match(await p.textContent('#battle-forecast'),/13 vs 8 · 輕鬆勝利/);assert.match(await p.textContent('#battle-forecast'),/剋制/);
+assert.match(await p.textContent('#battle-forecast'),/13 vs 8 · 輕鬆勝利/);assert.match(await p.textContent('#battle-gift-hint'),/第一次打到三星.*徽章 \+1/);assert.match(await p.textContent('#battle-forecast'),/剋制/);
 if(process.env.SHOT) await p.screenshot({path:process.env.SHOT});
 await p.click('#battle-go');await p.waitForTimeout(300);
 let s=await save();assert.equal(s.battle.active.length,1);

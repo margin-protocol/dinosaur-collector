@@ -3556,7 +3556,8 @@ function renderBattle() {
       return btn;
     }));
     wildSec.append(wh, wnote, wgrid);
-    $('battle-map').replaceChildren(wildSec, ...battle.CHAPTERS.map(ch => {
+    const giftLegend = el('p', 'star-gift-legend', '🎁 ＝ 還沒三星，打到三星會自動送小禮物');
+    $('battle-map').replaceChildren(wildSec, giftLegend, ...battle.CHAPTERS.map(ch => {
       const sec = document.createElement('section'); sec.className = 'battle-chapter';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = `第 ${ch.id} 章 · ${ch.name}`;
       const chScene = sceneOf(ch); if (chScene) { sec.classList.add('has-scene'); sec.style.setProperty('--scene', `url("${chScene}")`); }
@@ -3612,6 +3613,7 @@ function renderBattleStage() {
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;
   $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.story.before);
   $('battle-enemy-intro').textContent = e.intro;
+  $('battle-gift-hint').hidden = Boolean(e.wild); if (!e.wild) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
   const busy = allBusy(); const now = Date.now();
   const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
   owned.sort((a, b2) => battle.siangPower(state, b2).power - battle.siangPower(state, a).power);
