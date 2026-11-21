@@ -981,7 +981,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .photo-fx-row input { width:100%; accent-color:#d9a3b5; }
 .photo-fx-row output { text-align:right; font-variant-numeric:tabular-nums; opacity:.75; }
 .photo-fx-row.is-off { opacity:.4; }
-.photo-lips { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:4px; margin:6px 0 0; }
+.photo-fx-hint { margin:6px 4px 0; font:11px/1.6 var(--font-display); color:var(--pearl); opacity:.75; text-align:center; }
 .photo-crowns { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:2px; margin:10px 0 4px; }
 .photo-chip { display:grid; justify-items:center; gap:4px; min-width:0; padding:4px 0 2px; border:0; border-radius:10px; background:none; color:var(--t-muted, var(--pearl)); font:11px/1.3 var(--font-display); cursor:pointer; }
 .photo-chip__swatch { position:relative; display:grid; place-items:center; width:min(34px,100%); aspect-ratio:1; border-radius:50%; overflow:hidden; box-shadow:0 0 0 1px #0002; }

@@ -1,4 +1,4 @@
-// 外出合照臉部特效：畫圖函式（用固定的臉部點位）、分頁與選項、記住設定、MediaPipe 真的載得起來、
+// 外出合照臉部特效：畫圖函式（用固定的臉部點位；磨皮不碰頭髮）、分頁與選項、記住設定、MediaPipe 真的載得起來、
 // 跑太慢自動關掉＋再試一次、不支援的手機只留濾鏡、拍照有帶特效、按鈕不超出畫面。
 // 有真人臉的影片可以用 FACE_Y4M=xxx.y4m 再多驗一次「真的追到臉、存下的照片有頭飾」。
 const {chromium}=require('playwright'),assert=require('node:assert/strict'),fs=require('node:fs');
@@ -29,7 +29,6 @@ const r=await p.evaluate(async fx=>{const m=await import('./js/face-fx.js');
   const draw=(opts)=>{const c=document.createElement('canvas');c.width=W;c.height=H;const g=c.getContext('2d');g.drawImage(src,0,0);const n=m.drawFaceFx(g,src,[lm],m.normalizeFx(opts),map);return {n,d:g.getImageData(0,0,W,H).data};};
   const at=(d,p)=>{const i=(Math.round(p.y)*W+Math.round(p.x))*4;return [d[i],d[i+1],d[i+2]];};
   const base=draw({}).d;
-  const lips=draw({lip:'maple',lipAmt:100});const lipPt={x:(pts[0].x+pts[13].x)/2,y:(pts[0].y+pts[13].y)/2};
   const cheek=pts[50];
   const pose=m.headPose(pts);
   const crown=draw({crown:'tiara'});
@@ -40,38 +39,42 @@ const r=await p.evaluate(async fx=>{const m=await import('./js/face-fx.js');
   const prof=[];{const y=Math.round(pts[50].y),xs=Math.round((pts[1].x+pts[50].x)/2),xe=Math.round(pts[234].x-pose.faceW*0.08);
     for(let x=xs;x>xe;x-=3){let s=0,n=0;for(let dy=-4;dy<=4;dy++)for(let dx=-4;dx<=4;dx++){const i=((y+dy)*W+x+dx)*4;s+=Math.abs(sm[i]-base[i]);n++;}prof.push(s/n);}}
   const peak=Math.max(...prof);let jump=0;for(let k=1;k<prof.length;k++)jump=Math.max(jump,Math.abs(prof[k]-prof[k-1]));
-  // 預覽是畫在透明畫布上再疊到影片上：口紅疊上去後嘴唇的紋理（明暗變化）要還在，不能是一塊平平的貼紙（11/21 iPhone 實測）
-  const ov=document.createElement('canvas');ov.width=W;ov.height=H;m.drawFaceFx(ov.getContext('2d'),src,[lm],m.normalizeFx({lip:'peach',lipAmt:100}),map);
-  const comp=document.createElement('canvas');comp.width=W;comp.height=H;const cg=comp.getContext('2d');cg.drawImage(src,0,0);cg.drawImage(ov,0,0);const cd=cg.getImageData(0,0,W,H).data;
-  const lipVar=(d)=>{let s=0,s2=0,n=0;const lo={x:(pts[14].x+pts[17].x)/2,y:(pts[14].y+pts[17].y)/2};for(let y=lo.y-2;y<=lo.y+2;y++)for(let x=lo.x-12;x<lo.x+12;x++){const i=(Math.round(y)*W+Math.round(x))*4;const L=d[i]*.3+d[i+1]*.59+d[i+2]*.11;s+=L;s2+=L*L;n++;}return s2/n-(s/n)**2;};
-  const lipTex=[lipVar(base),lipVar(cd)];
+  // 頭髮：在額頭和臉頰畫幾條深色髮絲，磨皮 100 時髮絲不能被抹掉，旁邊的皮膚也不能被髮色暈黑（11/21 湘實測）
+  const hs=document.createElement('canvas');hs.width=W;hs.height=H;const hg=hs.getContext('2d');hg.drawImage(src,0,0);
+  hg.strokeStyle='rgb(38,28,26)';hg.lineWidth=4;const strands=[[pts[10],pts[50]],[pts[109],pts[205]],[pts[338],pts[425]]];
+  for(const[a,b]of strands){hg.beginPath();hg.moveTo(a.x,a.y);hg.lineTo(b.x,b.y);hg.stroke();}
+  const hairBase=hg.getImageData(0,0,W,H).data;const hc=document.createElement('canvas');hc.width=W;hc.height=H;const hcg=hc.getContext('2d');hcg.drawImage(hs,0,0);
+  m.drawFaceFx(hcg,hs,[lm],m.normalizeFx({smooth:100}),map);const hairSm=hcg.getImageData(0,0,W,H).data;
+  let strandMax=0,nearDark=0,nearN=0;
+  for(const[a,b]of strands){const len=Math.hypot(b.x-a.x,b.y-a.y),nx=-(b.y-a.y)/len,ny=(b.x-a.x)/len;
+    for(let t=0.2;t<=0.8;t+=0.02){const cx=a.x+(b.x-a.x)*t,cy=a.y+(b.y-a.y)*t;const i=(Math.round(cy)*W+Math.round(cx))*4;
+      strandMax=Math.max(strandMax,Math.abs(hairSm[i]-hairBase[i])+Math.abs(hairSm[i+1]-hairBase[i+1])+Math.abs(hairSm[i+2]-hairBase[i+2]));
+      for(const o of[-7,-6,6,7]){const j=(Math.round(cy+ny*o)*W+Math.round(cx+nx*o))*4;nearDark+=(hairBase[j]+hairBase[j+1]+hairBase[j+2])-(hairSm[j]+hairSm[j+1]+hairSm[j+2]);nearN++;}}}
+  const hair={strandMax,nearDark:nearDark/nearN/3};
   // 歪頭：把點位轉 20 度，算出來的角度也要是 20 度
   const rot=20*Math.PI/180,cx=0.5,cy=0.5;const turned=lm.map(q=>({x:cx+(q.x-cx)*Math.cos(rot)-(q.y-cy)*Math.sin(rot)*H/W,y:cy+((q.x-cx)*Math.sin(rot)*W/H+(q.y-cy)*Math.cos(rot))}));
   const angle=m.headPose(m.project(turned,map)).angle*180/Math.PI;
-  return {lipTex,peak,jump,tail:prof[prof.length-1],none:draw({}).n,lipN:lips.n,lipBase:at(base,lipPt),lipNow:at(lips.d,lipPt),cheekSame:at(lips.d,cheek).join()===at(base,cheek).join(),changedAbove,changedChin,varBase:vari(base),varSm:vari(sm),angle,base0:pose.angle*180/Math.PI,
+  return {hair,peak,jump,tail:prof[prof.length-1],none:draw({}).n,changedAbove,changedChin,varBase:vari(base),varSm:vari(sm),angle,base0:pose.angle*180/Math.PI,
     norm:m.normalizeFx({smooth:'250',lip:'xx',crown:'dino',lipAmt:-3}),active:[m.fxActive(m.normalizeFx({})),m.fxActive(m.normalizeFx({crown:'egg'}))]};
 },fixture);
-assert.equal(r.none,0,'沒選特效不畫');assert.equal(r.lipN,1);
-assert(r.lipNow[1]<r.lipBase[1]-25&&r.lipNow[0]-r.lipNow[1]>r.lipBase[0]-r.lipBase[1]+20,'嘴唇變紅 '+JSON.stringify([r.lipBase,r.lipNow]));
-assert(r.lipTex[1]>r.lipTex[0]*0.3,'口紅保留唇紋 '+JSON.stringify(r.lipTex));
-assert(r.cheekSame,'口紅不會塗到臉頰');
+assert.equal(r.none,0,'沒選特效不畫');
+assert(r.hair.strandMax<30,'髮絲沒被抹掉 '+JSON.stringify(r.hair));assert(r.hair.nearDark<6,'髮絲旁的皮膚沒被暈黑 '+JSON.stringify(r.hair));
 assert(r.changedAbove>150,'頭頂上方有頭飾 '+r.changedAbove);assert.equal(r.changedChin,0,'下巴底下沒有頭飾');
 assert(r.jump<r.peak*0.25&&r.tail<r.peak*0.15,'磨皮邊緣漸層 '+JSON.stringify([r.peak,r.jump,r.tail]));
 assert(r.varSm<r.varBase*0.6,'磨皮讓雜點變少 '+JSON.stringify([r.varBase,r.varSm]));
 assert(Math.abs(r.angle-r.base0-20)<2,'歪頭角度 '+JSON.stringify([r.base0,r.angle]));
-assert.deepEqual(r.norm,{smooth:100,lip:'none',lipAmt:0,crown:'dino'});assert.deepEqual(r.active,[false,true]);
+assert.deepEqual(r.norm,{smooth:100,crown:'dino'});assert.deepEqual(r.active,[false,true]);
 // 2) 介面：三個分頁、口紅五色、頭飾六款，都在畫面內；選了會記住
 await openCam(p);
 assert.equal(await p.locator('.photo-tab').count(),3);assert.equal(await p.locator('.photo-panel[data-panel="filter"]').isVisible(),true);
 assert.equal(await fxState(p),'idle','沒選特效不載入');
 await p.locator('.photo-tab[data-tab="beauty"]').click();
 assert.equal(await p.locator('.photo-panel[data-panel="filter"]').isVisible(),false);
-assert.equal(await p.locator('.photo-lip').count(),5);assert.equal(await p.locator('.photo-lip-amt').isDisabled(),true,'沒擦口紅時濃淡不能調');
-await p.locator('.photo-lip[data-lip="sakura"]').click();assert.equal(await p.locator('.photo-lip-amt').isDisabled(),false);
+assert.equal(await p.locator('.photo-lip').count(),0,'口紅拿掉了');
 await p.locator('.photo-smooth').fill('60');
 await p.waitForFunction(()=>['loading','ready'].includes(document.querySelector('#photo-dialog').dataset.fx));
 const inView=async sel=>{const rs=await p.locator(sel).evaluateAll(bs=>bs.map(x=>x.getBoundingClientRect()).map(r=>[r.left,r.right]));assert(rs.every(([l,r])=>l>=0&&r<=W),sel+JSON.stringify(rs));};
-await inView('.photo-lip');await inView('.photo-tab');await inView('.photo-fx-row');
+await inView('.photo-tab');await inView('.photo-fx-row');
 if(process.env.SHOT)await p.locator('#photo-dialog').screenshot({path:process.env.SHOT.replace('.png','-beauty.png')});
 await p.locator('.photo-tab[data-tab="crown"]').click();assert.equal(await p.locator('.photo-crown').count(),6);await inView('.photo-crown');
 await p.locator('.photo-crown[data-crown="lantern"]').click();
@@ -83,7 +86,7 @@ if(!process.env.FACE_Y4M){await p.waitForFunction(()=>/把臉放進畫面/.test(
 else{await p.waitForFunction(()=>document.querySelector('.photo-fx-note__text').textContent==='',null,{timeout:8000});}
 if(process.env.SHOT)await p.locator('#photo-dialog').screenshot({path:process.env.SHOT});
 const saved=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:face-fx:v1')));
-assert.deepEqual(saved,{smooth:60,lip:'sakura',lipAmt:55,crown:'lantern'});
+assert.deepEqual(saved,{smooth:60,crown:'lantern'});
 // 4) 拍照：有特效時照片照樣 3:4，拍完關鏡頭
 await p.locator('.photo-shutter').click();await p.locator('.photo-result:not([hidden])').waitFor();
 const res=await p.locator('.photo-result-img').evaluate(i=>new Promise(r=>{const ok=()=>r({w:i.naturalWidth,h:i.naturalHeight});i.complete?ok():i.onload=ok;}));
@@ -93,7 +96,7 @@ if(process.env.FACE_Y4M){
   const grab=async()=>p.locator('.photo-result-img').evaluate(i=>{const c=document.createElement('canvas');c.width=i.naturalWidth;c.height=i.naturalHeight;const g=c.getContext('2d');g.drawImage(i,0,0);return Array.from(g.getImageData(0,0,c.width,Math.round(c.height*0.4)).data.filter((_,k)=>k%16===0));});
   const withFx=await grab();
   await p.locator('.photo-again').click();await p.locator('.photo-tab[data-tab="crown"]').click();await p.locator('.photo-crown[data-crown="none"]').click();
-  await p.locator('.photo-tab[data-tab="beauty"]').click();await p.locator('.photo-lip[data-lip="none"]').click();await p.locator('.photo-smooth').fill('0');
+  await p.locator('.photo-tab[data-tab="beauty"]').click();await p.locator('.photo-smooth').fill('0');
   await p.waitForFunction(()=>document.querySelector('.photo-video').videoWidth>0);await p.waitForTimeout(500);
   await p.locator('.photo-shutter').click();await p.locator('.photo-result:not([hidden])').waitFor();await p.waitForTimeout(200);
   const plain=await grab();let diff=0;for(let k=0;k<plain.length;k++)if(Math.abs(plain[k]-withFx[k])>30)diff++;
@@ -103,7 +106,7 @@ assert.equal(errs.length,0,errs.join('\n'));await ctx.close();}
 
 // 5) 跑太慢 → 自動關掉、記住、可以再試一次
 {const {p,errs,ctx}=await setup({},()=>{globalThis.SIANG_FACE_FX_SLOW_MS=0.0001;});
-await p.evaluate(()=>localStorage.setItem('siang-collector:face-fx:v1',JSON.stringify({smooth:40,lip:'none',lipAmt:55,crown:'dino'})));
+await p.evaluate(()=>localStorage.setItem('siang-collector:face-fx:v1',JSON.stringify({smooth:40,crown:'dino'})));
 await p.reload();await p.waitForTimeout(400);
 await openCam(p);
 await p.waitForFunction(()=>document.querySelector('#photo-dialog').dataset.fx==='slow',null,{timeout:60000});
@@ -132,5 +135,5 @@ assert.equal(await p.locator('.photo-fx-retry').isVisible(),false);
 await p.locator('.photo-shutter').click();await p.locator('.photo-result:not([hidden])').waitFor();
 assert.equal(errs.length,0,errs.join('\n'));await ctx.close();}
 
-console.log('face fx: draw (lips/crown/smooth/tilt), tabs & chips in view, settings saved, MediaPipe loads, capture 3:4, slow auto-off + retry, unsupported keeps filters PASS');
+console.log('face fx: draw (crown/smooth skips hair/tilt), no lipstick, tabs & chips in view, settings saved, MediaPipe loads, capture 3:4, slow auto-off + retry, unsupported keeps filters PASS');
 await b.close();})().catch(e=>{console.error(e);process.exit(1)});

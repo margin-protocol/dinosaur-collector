@@ -2,10 +2,10 @@
 // 拍照前可以選濾鏡（photo-filters.js），預覽即時套用，存下來的照片也有同樣的濾鏡（署名不套）。
 // 照片只在手機上合成，不上傳；拍好後可以分享或存到手機。
 // 相機打不開（沒權限、沒有相機）時，可以改用拍照／相簿選一張照片當背景。
-// 臉部特效（美顏磨皮、口紅、小湘頭飾，face-fx.js）：預覽畫在影片上面的 .photo-face 畫布，拍照時用同一套畫進照片（11/21）。
+// 臉部特效（美顏磨皮、小湘頭飾，face-fx.js）：預覽畫在影片上面的 .photo-face 畫布，拍照時用同一套畫進照片（11/21）。
 import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
 import { PHOTO_FILTERS, filterById, cssFilter, overlayCss, applyPhotoFilter } from './photo-filters.js';
-import { LIP_COLORS, HEADPIECES, normalizeFx, fxActive, coverMap, drawFaceFx, headpieceImage, faceFxSupport, rememberSlow, loadTracker } from './face-fx.js';
+import { HEADPIECES, normalizeFx, fxActive, coverMap, drawFaceFx, headpieceImage, faceFxSupport, rememberSlow, loadTracker } from './face-fx.js';
 
 const FILTER_KEY = 'siang-collector:photo-filter:v1';
 const FACE_FX_KEY = 'siang-collector:face-fx:v1';
@@ -46,7 +46,7 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
   // ---------- 臉部特效 ----------
   const face = $('.photo-face'), faceCtx = face.getContext('2d');
   const badge = $('.photo-fx-badge'), note = $('.photo-fx-note__text'), retry = $('.photo-fx-retry');
-  const smoothIn = $('.photo-smooth'), lipAmtIn = $('.photo-lip-amt');
+  const smoothIn = $('.photo-smooth');
   let fx = normalizeFx(null);
   try { fx = normalizeFx(JSON.parse(localStorage.getItem(FACE_FX_KEY) || 'null')); } catch { /* */ }
   let tracker = null, fxState = 'idle', faces = [], stillFaces = null, loopId = 0, lastFrame = -1, lastFaceAt = 0, perf = [];
@@ -57,16 +57,12 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
     const name = document.createElement('span'); name.className = 'photo-chip__name'; name.textContent = label;
     b.append(sw, name); return b;
   };
-  $('.photo-lips').replaceChildren(...LIP_COLORS.map((c) => chip('photo-lip', { lip: c.id }, c.name, (sw) => { if (c.color) sw.style.background = `radial-gradient(circle at 35% 30%, #fff8 0 12%, transparent 30%), ${c.color}`; else sw.classList.add('is-none'); })));
   $('.photo-crowns').replaceChildren(...HEADPIECES.map((h) => chip('photo-crown', { crown: h.id }, h.name, (sw) => {
     if (!h.src) { sw.classList.add('is-none'); return; }
     const img = document.createElement('img'); img.alt = ''; img.src = h.src; img.decoding = 'async'; sw.append(img);
   })));
   function syncFxUi() {
     smoothIn.value = String(fx.smooth); $('.photo-smooth-val').textContent = String(fx.smooth);
-    lipAmtIn.value = String(fx.lipAmt); $('.photo-lip-val').textContent = String(fx.lipAmt);
-    $('.photo-lip-row').classList.toggle('is-off', fx.lip === 'none'); lipAmtIn.disabled = fx.lip === 'none';
-    dialog.querySelectorAll('.photo-lip').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.lip === fx.lip)));
     dialog.querySelectorAll('.photo-crown').forEach((b) => b.setAttribute('aria-checked', String(b.dataset.crown === fx.crown)));
   }
   function setFx(patch) {
@@ -159,7 +155,6 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
   }
   function startLoop() { if (!loopId && dialog.open && dialog.dataset.step === 'cam') loopId = requestAnimationFrame(frame); }
   smoothIn.addEventListener('input', () => setFx({ smooth: Number(smoothIn.value) }));
-  lipAmtIn.addEventListener('input', () => setFx({ lipAmt: Number(lipAmtIn.value) }));
 
   function step(name) {
     pick.hidden = name !== 'pick'; cam.hidden = name !== 'cam'; result.hidden = name !== 'result';
@@ -303,7 +298,6 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
     if (b.dataset.pick) choose(b.dataset.pick);
     else if (b.dataset.filter) setFilter(filterById(b.dataset.filter));
     else if (b.dataset.tab) setTab(b.dataset.tab);
-    else if (b.dataset.lip) setFx({ lip: b.dataset.lip });
     else if (b.dataset.crown) setFx({ crown: b.dataset.crown });
     else if (b.matches('.photo-fx-retry')) { rememberSlow(false); perf = []; fxState = tracker ? 'ready' : 'idle'; lastFaceAt = performance.now(); ensureTracker(); updateNote(); startLoop(); }
     else if (b.matches('.photo-close')) close();

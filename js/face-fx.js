@@ -1,15 +1,7 @@
-// 外出合照的臉部特效：美顏磨皮、口紅、小湘頭飾（11/21）
+// 外出合照的臉部特效：美顏磨皮、小湘頭飾（11/21；口紅試過三版湘覺得不好看，拿掉了）
 // 臉部追蹤用 MediaPipe Face Landmarker，程式和模型都放在 vendor/mediapipe/，在手機上跑，畫面不會上傳。
 // 第一次選特效時才載入（約 13 MB，之後有快取）；舊手機跑不動（太慢、不支援）就自動關掉，只留一般濾鏡。
 // 這個檔案的畫圖函式不碰 DOM 以外的東西，預覽（疊在影片上的畫布）和存檔（合成畫布）用同一套。
-
-export const LIP_COLORS = [
-  { id: 'none', name: '不擦' },
-  { id: 'sakura', name: '櫻花粉', color: '#c46a7c' },
-  { id: 'peach', name: '蜜桃', color: '#c97866' },
-  { id: 'maple', name: '楓紅', color: '#9a3542' },
-  { id: 'rosewood', name: '豆沙', color: '#a0636a' },
-];
 
 // 頭飾：place 'crown' 以頭頂為準，'side' 以頭頂往旁邊移；dx/dy 以臉寬為單位（dx 往畫面右、dy 往下）
 // w = 寬度（臉寬的幾倍），ax/ay = 圖上對準定位點的位置（0–1），rot = 額外轉的角度
@@ -21,16 +13,15 @@ export const HEADPIECES = [
   { id: 'egg', name: '蛋殼帽', src: 'assets/photo-fx/egg-shell.svg', dx: 0.03, dy: 0.07, w: 0.95, ax: 0.5, ay: 0.82, rot: -8 },
   { id: 'tiara', name: '星光皇冠', src: 'assets/photo-fx/star-tiara.svg', dx: 0, dy: 0.12, w: 0.8, ax: 0.5, ay: 0.9, rot: 0 },
 ];
-export const lipById = (id) => LIP_COLORS.find((c) => c.id === id) || LIP_COLORS[0];
 export const headpieceById = (id) => HEADPIECES.find((h) => h.id === id) || HEADPIECES[0];
 
-export const DEFAULT_FX = { smooth: 0, lip: 'none', lipAmt: 55, crown: 'none' };
+export const DEFAULT_FX = { smooth: 0, crown: 'none' };
 export function normalizeFx(raw) {
   const o = { ...DEFAULT_FX, ...(raw && typeof raw === 'object' ? raw : {}) };
   const num = (v, d) => (Number.isFinite(Number(v)) ? Math.min(100, Math.max(0, Math.round(Number(v)))) : d);
-  return { smooth: num(o.smooth, 0), lip: lipById(o.lip).id, lipAmt: num(o.lipAmt, 55), crown: headpieceById(o.crown).id };
+  return { smooth: num(o.smooth, 0), crown: headpieceById(o.crown).id };
 }
-export const fxActive = (fx) => fx.smooth > 0 || fx.lip !== 'none' || fx.crown !== 'none';
+export const fxActive = (fx) => fx.smooth > 0 || fx.crown !== 'none';
 
 // Face Mesh 的點位編號
 const OVAL = [10, 338, 297, 332, 284, 251, 389, 356, 454, 323, 361, 288, 397, 365, 379, 378, 400, 377, 152, 148, 176, 149, 150, 136, 172, 58, 132, 93, 234, 127, 162, 21, 54, 103, 67, 109];
@@ -110,11 +101,18 @@ function smoothSkin(g, source, pts, m, amount, pose) {
   }
   const small = scratch('small', sw, sh), sg = small.getContext('2d'); sg.imageSmoothingEnabled = true; sg.imageSmoothingQuality = 'high';
   if (cur) sg.drawImage(cur, 0, 0, cur.width, cur.height, 0, 0, small.width, small.height); else sg.drawImage(source, srcX, srcY, srcW, srcH, 0, 0, small.width, small.height);
-  // 遮罩要漸層，不能有分界線：臉從中間往外一圈一圈淡掉（到髮際、下巴前就沒了），
-  // 眼睛眉毛嘴巴也是一圈一圈挖掉，所以五官清楚、周圍慢慢過渡。不靠瀏覽器放大來柔邊（iPhone 放大很銳利）。
-  const mk = Math.min(1, 160 / Math.max(bw, bh));
-  const mask = scratch('mask', bw * mk, bh * mk), mg = mask.getContext('2d');
-  const rings = (idx, from, to, n, alpha) => { for (let i = 0; i < n; i++) { mg.globalAlpha = alpha; mg.beginPath(); polygon(mg, pts, idx, x0, y0, mk, from + (to - from) * i / (n - 1)); mg.fill(); } };
+  // 只磨皮膚（11/21 湘：美顏會被頭髮影響）：在較小的解析度逐點算透明度
+  //  1) 臉形漸層遮罩（一圈圈淡出，五官挖空）
+  //  2) 像不像皮膚：跟臉頰、額頭取樣的膚色差太多（頭髮、眉毛、陰影裡的髮絲）就不磨
+  //  3) 邊緣：原圖和模糊後差很多的地方（髮絲、髮際線、輪廓）就不磨，所以頭髮的顏色不會被暈進皮膚
+  const pk = Math.min(1, 300 / Math.max(bw, bh));
+  const pw = Math.max(2, Math.round(bw * pk)), ph = Math.max(2, Math.round(bh * pk));
+  const orig = scratch('orig', pw, ph), og = orig.getContext('2d', { willReadFrequently: true });
+  og.drawImage(source, srcX, srcY, srcW, srcH, 0, 0, pw, ph);
+  const blur = scratch('blur', pw, ph), bg = blur.getContext('2d', { willReadFrequently: true }); bg.imageSmoothingEnabled = true; bg.imageSmoothingQuality = 'high';
+  bg.drawImage(small, 0, 0, small.width, small.height, 0, 0, pw, ph);
+  const mask = scratch('mask', pw, ph), mg = mask.getContext('2d', { willReadFrequently: true });
+  const rings = (idx, from, to, n, alpha) => { for (let i = 0; i < n; i++) { mg.globalAlpha = alpha; mg.beginPath(); polygon(mg, pts, idx, x0, y0, pk, from + (to - from) * i / (n - 1)); mg.fill(); } };
   mg.fillStyle = '#000';
   rings(OVAL, 0.9, 0.5, 10, 0.2);
   mg.globalCompositeOperation = 'destination-out';
@@ -122,50 +120,40 @@ function smoothSkin(g, source, pts, m, amount, pose) {
   for (const brow of [BROW_R, BROW_L]) rings(brow, 1.7, 1.0, 6, 0.3);
   rings(LIP_OUT, 1.5, 1.0, 6, 0.3);
   mg.globalCompositeOperation = 'source-over'; mg.globalAlpha = 1;
-  const layer = scratch('layer', bw, bh), lg = layer.getContext('2d'); lg.imageSmoothingEnabled = true; lg.imageSmoothingQuality = 'high';
-  lg.drawImage(small, 0, 0, small.width, small.height, 0, 0, bw, bh);
-  lg.globalCompositeOperation = 'source-atop'; lg.fillStyle = `rgba(255,238,236,${amount / 100 * 0.04})`; lg.fillRect(0, 0, bw, bh);
-  lg.globalCompositeOperation = 'destination-in'; lg.drawImage(mask, 0, 0, mask.width, mask.height, 0, 0, bw, bh);
-  lg.globalCompositeOperation = 'source-over';
-  g.save(); g.globalAlpha = 0.1 + amount / 100 * 0.55; g.drawImage(layer, 0, 0, bw, bh, x0, y0, bw, bh); g.restore();
-}
-
-// 口紅（霧面）：逐點算顏色，保留原本嘴唇的明暗和唇紋（只換色相、飽和度），邊緣一圈圈淡出（11/21 湘 iPhone 實測：舊版是一塊平平的貼紙）
-// 預覽畫在透明畫布上，multiply 之類的混色沒有底圖可以混，所以這裡自己把嘴唇那塊的原圖讀進來算。
-const hex = (c) => [1, 3, 5].map((i) => parseInt(c.slice(i, i + 2), 16));
-const lum = (r, g, b) => 0.299 * r + 0.587 * g + 0.114 * b;
-function paintLips(g, source, pts, m, color, amount) {
-  const box = bbox(pts, LIP_OUT, 0.12);
-  if (box.w < 6 || box.h < 3) return;
-  const k = Math.min(1, 220 / box.w);
-  const w = Math.max(2, Math.round(box.w * k)), h = Math.max(2, Math.round(box.h * k));
-  const work = scratch('lip', w, h), wg = work.getContext('2d', { willReadFrequently: true });
-  wg.drawImage(source, m.sx + box.x * m.sw / m.W, m.sy + box.y * m.sh / m.H, box.w * m.sw / m.W, box.h * m.sh / m.H, 0, 0, w, h);
-  const mask = scratch('lipmask', w, h), mg = mask.getContext('2d', { willReadFrequently: true });
-  const rings = (idx, from, to, n, alpha) => { for (let i = 0; i < n; i++) { mg.globalAlpha = alpha; mg.beginPath(); polygon(mg, pts, idx, box.x, box.y, k, from + (to - from) * i / (n - 1)); mg.fill(); } };
-  mg.fillStyle = '#000'; rings(LIP_OUT, 1.0, 0.86, 6, 0.32);
-  mg.globalCompositeOperation = 'destination-out'; rings(LIP_IN, 1.22, 1.0, 5, 0.4);
-  mg.globalCompositeOperation = 'source-over'; mg.globalAlpha = 1;
-  let img, mk;
-  try { img = wg.getImageData(0, 0, w, h); mk = mg.getImageData(0, 0, w, h).data; } catch { return; }
-  const d = img.data, [cr, cg, cb] = hex(color), cl = Math.max(1, lum(cr, cg, cb));
-  // 嘴唇本身的平均亮度當基準：比平均亮的地方（反光）保持亮、暗的地方（唇紋、嘴角）保持暗
-  let sum = 0, n = 0;
-  for (let i = 0; i < d.length; i += 4) if (mk[i + 3] > 200) { sum += lum(d[i], d[i + 1], d[i + 2]); n++; }
-  const avg = n ? sum / n : 128, a = 0.12 + amount / 100 * 0.56;
-  // 霧面（11/21 湘：太亮了要霧一點）：不比原本唇色亮、反光壓平、顏色帶一點原本的灰
-  const tone = Math.min(1, Math.max(0.74, avg / cl));
-  for (let i = 0; i < d.length; i += 4) {
-    const t = mk[i + 3] / 255 * a; if (!t) { d[i + 3] = 0; continue; }
-    const L = lum(d[i], d[i + 1], d[i + 2]);
-    const r = L / avg, f = (r > 1 ? 1 + (r - 1) * 0.2 : Math.pow(r, 0.85)) * tone;
-    // 顏色直接換成口紅色（帶原本明暗），透明度 = 遮罩 × 濃淡：疊在原圖上就是兩者混合，邊緣自然淡出
-    const gray = L * 0.85;
-    d[i] = Math.min(255, cr * f * 0.92 + gray * 0.08); d[i + 1] = Math.min(255, cg * f * 0.92 + gray * 0.08); d[i + 2] = Math.min(255, cb * f * 0.92 + gray * 0.08);
-    d[i + 3] = Math.round(t * 255);
+  let od, bd, md;
+  try { od = og.getImageData(0, 0, pw, ph).data; bd = bg.getImageData(0, 0, pw, ph); md = mg.getImageData(0, 0, pw, ph).data; } catch { return; }
+  const out = bd.data;
+  // 膚色取樣：兩邊臉頰和額頭中間，各取一小塊取中位數（避開剛好有髮絲的那塊）
+  const samples = [];
+  for (const i of [50, 280, 151, 101, 330]) {
+    const cx = Math.round((pts[i].x - x0) * pk), cy = Math.round((pts[i].y - y0) * pk), r = Math.max(1, Math.round(pose.faceW * pk * 0.03));
+    let sr = 0, sg2 = 0, sb = 0, n = 0;
+    for (let y = cy - r; y <= cy + r; y++) for (let x = cx - r; x <= cx + r; x++) {
+      if (x < 0 || y < 0 || x >= pw || y >= ph) continue; const k = (y * pw + x) * 4; sr += od[k]; sg2 += od[k + 1]; sb += od[k + 2]; n++;
+    }
+    if (n) samples.push([sr / n, sg2 / n, sb / n]);
   }
-  wg.putImageData(img, 0, 0);
-  g.save(); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high'; g.drawImage(work, 0, 0, w, h, box.x, box.y, box.w, box.h); g.restore();
+  if (!samples.length) return;
+  const med = (c) => samples.map((v) => v[c]).sort((p, q) => p - q)[samples.length >> 1];
+  const ref = [med(0), med(1), med(2)];
+  const refL = 0.299 * ref[0] + 0.587 * ref[1] + 0.114 * ref[2] || 1;
+  const tint = amount / 100 * 0.04;
+  for (let k = 0; k < out.length; k += 4) {
+    const mv = md[k + 3]; if (!mv) { out[k + 3] = 0; continue; }
+    const r = od[k], gg = od[k + 1], b = od[k + 2];
+    // 膚色距離：亮度用比例看（臉上有光影），色度用差值看
+    const L = 0.299 * r + 0.587 * gg + 0.114 * b, ratio = L / refL;
+    const chroma = Math.hypot(r / (L || 1) - ref[0] / refL, b / (L || 1) - ref[2] / refL) * 100;
+    const ws = (ratio < 0.45 || ratio > 1.8) ? 0 : Math.max(0, Math.min(1, 1 - (chroma - 14) / 22)) * Math.min(1, (ratio - 0.45) / 0.2);
+    const de = Math.abs(r - out[k]) + Math.abs(gg - out[k + 1]) + Math.abs(b - out[k + 2]);
+    const we = Math.max(0, Math.min(1, 1 - (de - 70) / 80));
+    const t = mv / 255 * ws * we;
+    out[k] = out[k] + (255 - out[k]) * tint; out[k + 1] = out[k + 1] + (238 - out[k + 1]) * tint; out[k + 2] = out[k + 2] + (236 - out[k + 2]) * tint;
+    out[k + 3] = Math.round(t * 255);
+  }
+  bg.putImageData(bd, 0, 0);
+  g.save(); g.imageSmoothingEnabled = true; g.imageSmoothingQuality = 'high';
+  g.globalAlpha = 0.15 + amount / 100 * 0.6; g.drawImage(blur, 0, 0, pw, ph, x0, y0, bw, bh); g.restore();
 }
 
 // 頭飾：跟著頭轉、歪頭，轉頭時往那邊偏一點、寬度稍微收
@@ -193,14 +181,13 @@ export function headpieceImage(id) {
 // 在 g 上（座標 = m.W × m.H 的裁切畫面）畫所有臉的特效
 export function drawFaceFx(g, source, faces, fx, m) {
   if (!faces?.length || !fxActive(fx)) return 0;
-  const lip = lipById(fx.lip), hp = headpieceById(fx.crown), img = headpieceImage(hp.id);
+  const hp = headpieceById(fx.crown), img = headpieceImage(hp.id);
   let n = 0;
   for (const lm of faces) {
     if (!lm || lm.length < 468) continue;
     const pts = project(lm, m); const pose = headPose(pts);
     if (pose.faceW < 12) continue;
     if (fx.smooth > 0) smoothSkin(g, source, pts, m, fx.smooth, pose);
-    if (lip.color && fx.lipAmt > 0) paintLips(g, source, pts, m, lip.color, fx.lipAmt);
     if (img) drawHeadpiece(g, img, { place: hp.dx ? 'side' : 'crown', ...hp }, pose);
     n += 1;
   }
