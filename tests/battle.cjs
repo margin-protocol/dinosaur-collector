@@ -30,7 +30,7 @@ await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.affection={'0
 await p.click('#home-errand');await p.click('#tab-battle');await p.locator('.battle-chapter:not(.battle-wild) .battle-stage-card').first().click();await p.click('.errand-siang:has(img[alt="原味小湘"])');await p.click('#battle-go');await p.waitForTimeout(300);
 await fastForward();await p.reload();await p.waitForTimeout(400);
 await p.click('#home-errand');await p.click('#tab-battle');await p.click('#battle-active .btn');await p.locator('#battle-result[open]').waitFor();await p.locator('.battle-theater__skip').click();
-assert(await p.isHidden('#battle-result-gift'),'gift only on first 3-star');const scoreText=await p.textContent('#battle-result-score');assert.match(scoreText,/比上次 \+\d+/);assert.match(scoreText,/新紀錄/);
+assert(await p.isHidden('#battle-result-gift'),'gift only on first 3-star');assert.match(await p.textContent('#battle-result-gains'),/再次三星 ⭐ \+1 化石/);assert.equal((await save()).fossils,3,'repeat 3-star +1 fossil');const scoreText=await p.textContent('#battle-result-score');assert.match(scoreText,/比上次 \+\d+/);assert.match(scoreText,/新紀錄/);
 if(process.env.SHOT2){await p.waitForTimeout(200);await p.screenshot({path:process.env.SHOT2});}
 await p.click('#battle-result-ok');
 // diagnosis: losing to 1-3 alone with strong friends available → "換隊"; with nobody else → grow advice naming 好感度

@@ -195,6 +195,7 @@ export function forecast(state, nos, enemyId) {
 export const scoreOf = (ratio, weakHit, win) => (win ? Math.round(ratio * 1000) + (weakHit ? 150 : 0) : Math.round(ratio * 400));
 // 三星小禮物：每一關第一次拿到三星送一份（野生小怪不算）
 export const STAR_GIFT = { badges: 1, fossils: 2 };
+export const STAR_BONUS = { fossils: 1 }; // 之後每次再打到三星的小小獎勵
 export function starGiftFor(chapter, rand = Math.random) {
   const pool = INGREDIENTS.filter((i) => i.chapter === chapter);
   return { ...STAR_GIFT, ingredients: pool.length ? [pool[Math.floor(rand() * pool.length) % pool.length].id] : [] };
@@ -297,7 +298,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
       : { badges: 0, energy: 5, fossils: 0 };
   const chapterNo = enemy.wild ? Math.max(...CHAPTERS.filter((c) => unlocked(state, c.stages[0])).map((c) => c.id), 1) : (CHAPTERS.find((c) => c.stages.includes(enemyId))?.id || 1);
   loot.ingredients = dropsFor(chapterNo, { win, boss: Boolean(enemy.boss), gather: f.food?.kind === 'gather' ? 1 : 0 }, rand);
-  if (!enemy.wild && win && stars === 3 && prev.stars < 3) loot.starGift = starGiftFor(chapterNo, rand);
+  if (!enemy.wild && win && stars === 3) { if (prev.stars < 3) loot.starGift = starGiftFor(chapterNo, rand); else loot.starBonus = { ...STAR_BONUS }; }
   const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries };
   if (enemy.story && !enemy.wild && !b.story[`${enemyId}:before`]) b.story[`${enemyId}:before`] = iso(now); // 看過 Boss 開場故事
   const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + minutes * 60e3)), report, ...(wildEntry ? { snapshot: wildEntry } : {}) };
@@ -336,11 +337,12 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   if (r.loot.firstBoss) state.wishEgg.stock += 1;
   if (r.loot.ingredients?.length) addIngredients(state, r.loot.ingredients);
   const gift = r.loot.starGift || null;
+  if (r.loot.starBonus) state.fossils = (state.fossils || 0) + (r.loot.starBonus.fossils || 0);
   if (gift) { b.badges += gift.badges || 0; state.fossils = (state.fossils || 0) + (gift.fossils || 0); addIngredients(state, gift.ingredients); if (st) st.starGiftAt = now.toISOString(); }
   const restUntil = iso(new Date(now.getTime() + REST_MINUTES * 60e3));
   for (const no of battle.nos) b.rest[no] = restUntil;
   b.total += 1; if (r.win) b.wins += 1;
-  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`].filter(Boolean);
+  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`].filter(Boolean);
   const firstClear = r.win && st.clears === 1;
   const story = enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
   const clue = firstClear && enemy.clue ? enemy.clue : null;
