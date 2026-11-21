@@ -109,6 +109,14 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .letter-item .letter-new { font:10px var(--font-body); color:#ffb3c4; }
 .letter-item svg { width:22px; height:22px; stroke:#e8c9d4; fill:none; stroke-width:1.3; }
 .letter-item.is-mail.is-unread { border-color:#c9a8ff88; background:#2f2640; }
+.letter-item .letter-new { display:flex; flex-direction:column; align-items:flex-end; gap:2px; }
+.letter-item .letter-star { font-size:15px; line-height:1; color:#ffd27a; }
+.letter-tabs { margin:0 0 10px; }
+.letter-tabs small { display:inline-block; min-width:18px; margin-left:6px; padding:0 5px; border-radius:999px; background:#ffffff1f; font:11px/18px var(--font-mono); vertical-align:1px; }
+.letter-tabs small:empty { display:none; }
+.letter-empty { margin:18px 4px; white-space:pre-line; text-align:center; font:13px/1.8 var(--font-display); color:var(--pearl); }
+.letter-star-toggle { display:block; margin:-8px auto 14px; min-height:40px; padding:0 16px; border:1px solid color-mix(in srgb, currentColor 45%, transparent); border-radius:999px; background:none; color:inherit; font:13px var(--font-display); letter-spacing:.06em; }
+.letter-star-toggle[aria-pressed="true"] { background:#f2c25a2e; border-color:#d9a94a; }
 .letter-read__title { margin:0 0 6px; font:400 18px var(--font-display); letter-spacing:.1em; text-align:center; }
 
 .explore-pill.is-compact { padding:0; width:40px; height:40px; min-height:40px; justify-content:center; border-radius:50%; box-shadow:none; opacity:.75; }

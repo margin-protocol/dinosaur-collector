@@ -9,7 +9,7 @@ import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRand
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
-import { unlockedMilestones, allLetters, unreadCount, lockedMilestones, stampLetters } from './letters.js';
+import { unlockedMilestones, allLetters, unreadCount, lockedMilestones, stampLetters, starredLetters, isStarred, toggleStar } from './letters.js';
 import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
 import { activeHolidays, HOLIDAYS, TAIWAN_NO, EVENTS, activeEvents, VOTE_DAYS } from './holidays.js';
 import { INTROS, MYSTERY_INTROS } from './intros.js';
@@ -2087,32 +2087,69 @@ function openLetterBox() {
   renderLetterList();
   $('letter-box').showModal(); syncRoomActivity();
 }
+let letterTab = 'all';
+function setLetterTab(tab) {
+  letterTab = tab;
+  $('letter-tab-all').setAttribute('aria-selected', String(tab === 'all'));
+  $('letter-tab-starred').setAttribute('aria-selected', String(tab === 'starred'));
+  renderLetterList();
+}
+const letterSub = (letter) => letter.kind === 'mail' ? `湘寄來的 · ${new Date(letter.at).toLocaleDateString('zh-TW')}`
+  : letter.kind === 'note' ? `小湘寫的 · ${new Date(letter.at).toLocaleDateString('zh-TW')}`
+  : letter.kind === 'intro' ? '最初的紙條' : `里程碑 · ${letter.hint}`;
 function renderLetterList() {
   const read = state.letters.read;
-  $('letter-list').replaceChildren(...allLetters(state, CHARACTERS).map(letter => {
+  const starred = starredLetters(state, CHARACTERS);
+  $('letter-starred-count').textContent = starred.length ? String(starred.length) : '';
+  const list = letterTab === 'starred' ? starred : allLetters(state, CHARACTERS);
+  if (!list.length) {
+    $('letter-list').replaceChildren(Object.assign(document.createElement('p'), { className: 'letter-empty', textContent: '還沒有重要紙條。\n讀紙條時按「☆ 收藏成重要紙條」，就會放到這裡。' }));
+  } else $('letter-list').replaceChildren(...list.map(letter => {
     const unread = letter.kind !== 'intro' && !read.includes(letter.id);
-    const item = document.createElement('button'); item.type = 'button'; item.className = `letter-item${letter.kind === 'mail' ? ' is-mail' : ''}${unread ? ' is-unread' : ''}`;
+    const star = isStarred(state, letter.id);
+    const item = document.createElement('button'); item.type = 'button'; item.className = `letter-item${letter.kind === 'mail' || letter.kind === 'note' ? ' is-mail' : ''}${unread ? ' is-unread' : ''}${star ? ' is-starred' : ''}`;
     item.innerHTML = LETTER_ICON;
     const text = document.createElement('span'); text.textContent = letter.title || '湘寄來的紙條';
-    const sub = document.createElement('small'); sub.textContent = letter.kind === 'mail' ? `湘寄來的 · ${new Date(letter.at).toLocaleDateString('zh-TW')}` : letter.kind === 'intro' ? '最初的紙條' : `里程碑 · ${letter.hint}`;
+    const sub = document.createElement('small'); sub.textContent = letterSub(letter);
     text.append(sub);
-    const badge = document.createElement('span'); badge.className = 'letter-new'; badge.textContent = letter.kind !== 'intro' && !read.includes(letter.id) ? '未讀' : '';
+    const badge = document.createElement('span'); badge.className = 'letter-new';
+    if (star) badge.append(Object.assign(document.createElement('b'), { className: 'letter-star', textContent: '★', title: '重要紙條' }));
+    if (unread) badge.append('未讀');
     item.append(text, badge);
+    if (star) item.setAttribute('aria-label', `${letter.title || '湘寄來的紙條'}（重要紙條）`);
     item.addEventListener('click', () => readLetter(letter));
     return item;
   }));
   const locked = lockedMilestones(state, CHARACTERS).length;
+  $('letter-locked').hidden = letterTab === 'starred';
   $('letter-locked').textContent = locked ? `還有 ${locked} 張紙條等你發現。` : '所有里程碑紙條都收齊了！';
 }
+let readingLetter = null;
+function renderLetterStar() {
+  const on = Boolean(readingLetter && isStarred(state, readingLetter.id));
+  $('letter-read-star').setAttribute('aria-pressed', String(on));
+  $('letter-read-star').textContent = on ? '★ 已是重要紙條' : '☆ 收藏成重要紙條';
+}
 function readLetter(letter) {
+  readingLetter = letter;
   $('letter-read-title').textContent = letter.kind === 'intro' ? '' : letter.title || '湘寄來的紙條';
   $('letter-read-title').hidden = letter.kind === 'intro';
   $('letter-read-body').textContent = letter.body;
+  renderLetterStar();
   $('letter-read').showModal();
   if (letter.kind !== 'intro' && !state.letters.read.includes(letter.id)) {
     void updateState(current => { if (!current.letters.read.includes(letter.id)) current.letters.read.push(letter.id); }).then(t => { state = t.state; renderLetterBadge(); });
   }
 }
+$('letter-read-star').addEventListener('click', async () => {
+  if (!readingLetter) return;
+  const id = readingLetter.id;
+  const t = await updateState(current => { toggleStar(current, id); });
+  state = t.state; renderLetterStar();
+  if ($('letter-box').open) renderLetterList();
+});
+$('letter-tab-all').addEventListener('click', () => setLetterTab('all'));
+$('letter-tab-starred').addEventListener('click', () => setLetterTab('starred'));
 $('close-letter-box').addEventListener('click', () => $('letter-box').close());
 $('letter-box').addEventListener('close', syncRoomActivity);
 $('letter-read-ok').addEventListener('click', () => { $('letter-read').close(); if ($('letter-box').open) renderLetterList(); });

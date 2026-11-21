@@ -73,6 +73,7 @@ export function ensureLetters(state) {
     read: Array.isArray(old.read) ? [...new Set(old.read.filter(str))] : [],
     mail: Array.isArray(old.mail) ? old.mail.filter((m) => m && str(m.id) && str(m.body)) : [], // 湘寄來、已驗證的紙條
     seen: old.seen && typeof old.seen === 'object' ? Object.fromEntries(Object.entries(old.seen).filter(([k, v]) => str(k) && str(v))) : {}, // 里程碑紙條第一次出現的時間（排序用）
+    starred: old.starred && typeof old.starred === 'object' ? Object.fromEntries(Object.entries(old.starred).filter(([k, v]) => str(k) && str(v))) : {}, // 按星星的重要紙條：id → 按星星的時間
   };
   return state.letters;
 }
@@ -80,11 +81,15 @@ export function ensureLetters(state) {
 // 里程碑紙條由目前進度直接推算（不另外寫進存檔），已達成就算解鎖
 export const unlockedMilestones = (state, chars) => MILESTONE_LETTERS.filter((m) => m.when(state, chars));
 
+// 委託「寫紙條」帶回來的紙條（id 是 siang-<委託 id>），跟湘從審核室寄來的分開顯示
+export const isNote = (m) => str(m?.id) && m.id.startsWith('siang-');
+export const siangMailCount = (state) => (state.letters?.mail || []).filter((m) => !isNote(m)).length;
+
 // 排序：沒讀過的在最上面，其他依時間新到舊（湘寄的紙條不再永遠置頂）；最初的紙條固定在最後
 export function allLetters(state, chars) {
   const seen = state.letters.seen || {};
   const read = new Set(state.letters.read);
-  const mail = state.letters.mail.map((m) => ({ ...m, kind: 'mail', time: String(m.at || '') }));
+  const mail = state.letters.mail.map((m) => ({ ...m, kind: isNote(m) ? 'note' : 'mail', time: String(m.at || '') }));
   const ms = unlockedMilestones(state, chars).map((m, i) => ({ ...m, kind: 'milestone', time: seen[m.id] || '', order: i }));
   const list = [...mail, ...ms].sort((a, b) => (read.has(a.id) - read.has(b.id)) || b.time.localeCompare(a.time) || ((b.order ?? -1) - (a.order ?? -1)));
   return [...list, { ...INTRO_LETTER, kind: 'intro' }];
@@ -98,3 +103,17 @@ export function stampLetters(state, chars, now = new Date()) {
 }
 export const unreadCount = (state, chars) => allLetters(state, chars).filter((x) => x.kind !== 'intro' && !state.letters.read.includes(x.id)).length;
 export const lockedMilestones = (state, chars) => MILESTONE_LETTERS.filter((m) => !m.when(state, chars));
+
+// 重要紙條：按星星的紙條，依按星星的時間新到舊；沒有上限，也不會被清掉
+export const isStarred = (state, id) => Boolean(state.letters?.starred?.[id]);
+export function starredLetters(state, chars) {
+  const starred = state.letters.starred || {};
+  return allLetters(state, chars).filter((x) => starred[x.id]).sort((a, b) => starred[b.id].localeCompare(starred[a.id]));
+}
+// 按一次加星星、再按一次取消（在存檔交易裡呼叫），回傳加完是不是重要紙條
+export function toggleStar(state, id, now = new Date()) {
+  ensureLetters(state);
+  if (state.letters.starred[id]) { delete state.letters.starred[id]; return false; }
+  state.letters.starred[id] = now.toISOString();
+  return true;
+}

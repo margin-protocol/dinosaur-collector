@@ -1,3 +1,4 @@
+import { siangMailCount } from './letters.js';
 import { MAIN_ISLAND } from './geo.js';
 import { dishById, recipesFound, secretsFound } from './kitchen.js';
 const darkDish = (id) => dishById(id)?.dark;
@@ -50,7 +51,7 @@ export const ACHIEVEMENTS = [
   { id: 'lucky-50', group: '收藏', title: '歐氣爆發', hint: '一般的蛋累計孵到新朋友 30 次（中級歐皇小湘會來找你）', goal: 30, value: (s) => s.newTotal || 0, reward: 60 },
   { id: 'lucky-100', group: '收藏', title: '天選之湘', hint: '一般的蛋累計孵到新朋友 50 次（究級歐皇小湘會來找你）', goal: 50, value: (s) => s.newTotal || 0, reward: 100 },
   { id: 'night', group: '隱藏', title: '夜行性', hint: '？？？', reveal: '在深夜孵出一顆蛋', goal: 1, value: (s) => t(s, 'nightHatch'), reward: 30, secret: true },
-  { id: 'letter', group: '隱藏', title: '收到一封信', hint: '？？？', reveal: '收到湘寄來的紙條', goal: 1, value: (s) => s.letters?.mail?.length || 0, reward: 30, secret: true },
+  { id: 'letter', group: '隱藏', title: '收到一封信', hint: '？？？', reveal: '收到湘寄來的紙條', goal: 1, value: (s) => siangMailCount(s), reward: 30, secret: true },
   { id: 'code', group: '隱藏', title: '解開暗號', hint: '？？？', reveal: '兌換一個暗號', goal: 1, value: (s) => s.gifts?.redeemed?.length || 0, reward: 30, secret: true },
   { id: 'dev-pibao', group: '隱藏', title: '再畫一隻就好！', hint: '？？？', reveal: '迎接加班皮寶', goal: 1, value: (s) => (s.dex?.['086'] ? 1 : 0), reward: 50, secret: true },
   { id: 'dev-debao', group: '隱藏', title: '這個也要做嗎？！', hint: '？？？', reveal: '迎接崩潰德寶', goal: 1, value: (s) => (s.dex?.['087'] ? 1 : 0), reward: 50, secret: true },

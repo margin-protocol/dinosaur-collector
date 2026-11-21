@@ -137,3 +137,6 @@ html { background:var(--t-bg); }
   --font-mono: var(--font-serif-mix);
 }
 body, button, input, select, textarea { font-variant-numeric: lining-nums tabular-nums; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .letter-item .letter-star { color:#c0841a; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .letter-empty { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .letter-tabs small { background:#00000012; }
