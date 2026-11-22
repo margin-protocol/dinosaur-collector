@@ -3,7 +3,10 @@
 import { CHARACTERS, COUNTY_CHARACTER } from './eggs.js';
 import { PLACE_REPORTS, SERIES_REPORTS, CHARACTER_REPORTS, HOME_REPORTS, HOME_SERIES_REPORTS, NOTE_TEXTS, PAIR_STORY_VARIANTS } from './errand-copy.js';
 
-export const ERRAND_SLOTS = 2; // 同時最多兩趟
+export const ERRAND_SLOTS = 3; // 同時最多三趟（第 3 趟要收集 ERRAND_SLOT_DEX 位）
+export const ERRAND_SLOT_DEX = 30; // 湘 11/22：收集 30 位開第 3 趟
+export const errandSlots = (state) => (Object.keys(state.dex || {}).length >= ERRAND_SLOT_DEX ? 3 : 2);
+export const errandSlotHint = (state) => (errandSlots(state) < ERRAND_SLOTS ? `收集 ${ERRAND_SLOT_DEX} 位小湘可以多派一趟。` : '');
 export const STORY_BONUS = 3; // 第一次發現故事 +3 化石
 export const CARD_BONUS = 3; // 第一次收到某縣市的家鄉明信片 +3 化石
 export const CARD_RECYCLE = 1; // 丟掉一張重複的明信片 +1 化石
@@ -161,7 +164,7 @@ export function depart(state, { place, task, nos }, now = new Date(), rand = Mat
   if (nos.some((no) => !state.dex?.[no])) return '還沒遇見的小湘不能派出去。';
   const busy = busyNos(state);
   if (nos.some((no) => busy.has(no))) return '她已經在忙了。';
-  if (er.active.length >= ERRAND_SLOTS) return `同時最多 ${ERRAND_SLOTS} 趟，等她們回來吧。`;
+  if (er.active.length >= errandSlots(state)) return `同時最多 ${errandSlots(state)} 趟，等她們回來吧。${errandSlotHint(state)}`;
 
   const hours = (spot || job).hours;
   const loot = {};

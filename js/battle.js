@@ -176,7 +176,10 @@ export const unlocked = (state, enemy) => {
   const i = ORDER.indexOf(enemy);
   return i === 0 || Boolean(state.battle?.stages?.[ORDER[i - 1]]?.clears);
 };
-export const teamSlots = (state) => { const n = Object.keys(state.dex || {}).length; return n >= 25 ? 3 : n >= 10 ? 2 : 1; };
+export const TEAM_SLOT_DEX = [10, 25, 50, 80]; // 收集幾位開第 2／3／4／5 隊（湘 11/22：照收集數解鎖）
+export const teamSlots = (state) => { const n = Object.keys(state.dex || {}).length; return 1 + TEAM_SLOT_DEX.filter((x) => n >= x).length; };
+// 下一隊的解鎖條件；已經全開就回 null
+export const nextTeamSlot = (state) => { const need = TEAM_SLOT_DEX[teamSlots(state) - 1]; return need ? { slots: teamSlots(state) + 1, need, left: need - Object.keys(state.dex || {}).length } : null; };
 
 // 一位小湘的戰力與組成
 export function siangPower(state, no) {
@@ -293,7 +296,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   nos = [...new Set(nos || [])];
   if (!nos.length) return '先選一位小湘。';
   if (nos.length > TEAM_MAX) return `一隊最多 ${TEAM_MAX} 位。`;
-  if (b.active.length >= teamSlots(state)) return `同時最多 ${teamSlots(state)} 隊，等她們回來吧。`;
+  if (b.active.length >= teamSlots(state)) { const nx = nextTeamSlot(state); return `同時最多 ${teamSlots(state)} 隊，等她們回來吧。${nx ? `收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊。` : ''}`; }
   const free = available(state, now.getTime(), busy);
   if (nos.some((no) => !free.includes(no))) return '有小湘正在忙或休息中。';
   const f = forecast(state, nos, enemyId);

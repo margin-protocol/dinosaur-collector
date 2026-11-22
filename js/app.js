@@ -48,7 +48,7 @@ import { studyPair } from './research-notes.js';
 import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitle, ensureDaily, completeDaily, growthGoals, goalProgress, claimGrowth, describeChapterReward, todaysWishList, swapTodayWish } from './progression.js';
 import * as install from './install.js';
 import { CHARACTER_REPORTS, SERIES_REPORTS } from './errand-copy.js';
-import { PLACES, HOME_TASKS, STORIES, ERRAND_SLOTS, depart, collect, recall, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
+import { PLACES, HOME_TASKS, STORIES, errandSlots, errandSlotHint, depart, collect, recall, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
 import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP } from './affection.js';
@@ -3143,7 +3143,7 @@ function renderErrands() {
     }
     return row;
   }));
-  const full = er.active.length >= ERRAND_SLOTS;
+  const slots = errandSlots(state); const full = er.active.length >= slots;
   const placeBtn = (key, info, kind) => {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-place';
     btn.setAttribute('aria-pressed', String(errandChoice?.[kind] === key)); btn.disabled = full;
@@ -3157,7 +3157,7 @@ function renderErrands() {
   };
   $('errand-places').replaceChildren(...Object.entries(PLACES).map(([k, v]) => placeBtn(k, v, 'place')));
   $('errand-tasks').replaceChildren(...Object.entries(HOME_TASKS).map(([k, v]) => placeBtn(k, v, 'task')));
-  $('errand-status').textContent = full && !$('errand-status').textContent ? `同時最多 ${ERRAND_SLOTS} 趟，等她們回來再派吧。` : $('errand-status').textContent;
+  $('errand-status').textContent = full && !$('errand-status').textContent ? `同時最多 ${slots} 趟，等她們回來再派吧。${errandSlotHint(state)}` : $('errand-status').textContent;
   // 選小湘
   const pick = $('errand-pick'); pick.hidden = !errandChoice || full;
   if (errandChoice && !full) {
@@ -3781,6 +3781,8 @@ function renderBattle() {
   const b = state.battle; const now = Date.now();
   $('battle-badges').textContent = b.badges;
   $('battle-slots').textContent = `隊伍 ${b.active.length} / ${battle.teamSlots(state)}`;
+  { const nx = battle.nextTeamSlot(state); const hint = $('battle-slot-hint'); hint.hidden = !nx || b.active.length < battle.teamSlots(state); hint.textContent = nx ? `隊伍都派出去了。收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊（還差 ${nx.left} 位）。` : ''; }
+  $('battle-active').classList.toggle('is-compact', b.active.length >= 4); // 4 隊以上改精簡列，手機上不把關卡地圖擠下去
   $('battle-active').replaceChildren(...b.active.map(a => {
     const row = document.createElement('div'); const back = battle.isBack(a, now); row.className = `errand-trip${back ? ' is-back' : ''}`;
     const who = document.createElement('div'); who.className = 'errand-trip__who'; who.append(enemyArt(a.enemy, 'is-mini'));
@@ -4284,7 +4286,7 @@ function todayItems() {
   if (guide.isUnlocked(state, 'errand') && owned) {
     const back = returned(state).length;
     if (back) add('errand-back', `${back} 趟出門回來了`, '收下她們帶回來的東西', () => { $('today-dialog').close(); openErrands(); });
-    else if ((state.errands?.active?.length || 0) < ERRAND_SLOTS) add('errand', '派小湘出門', `還可以再派 ${ERRAND_SLOTS - (state.errands?.active?.length || 0)} 趟`, () => { $('today-dialog').close(); openErrands(); });
+    else if ((state.errands?.active?.length || 0) < errandSlots(state)) add('errand', '派小湘出門', `還可以再派 ${errandSlots(state) - (state.errands?.active?.length || 0)} 趟`, () => { $('today-dialog').close(); openErrands(); });
   }
   if (guide.isUnlocked(state, 'battle') && owned) {
     const backs = (state.battle?.active || []).filter(a => battle.isBack(a)).length;
