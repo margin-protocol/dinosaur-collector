@@ -1051,3 +1051,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .errand-active.is-compact .errand-trip small { font-size:11px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .errand-active.is-compact .errand-trip .btn { min-height:32px; padding:4px 12px; }
 #kitchen-siangs .errand-siang span { white-space:pre-line; text-align:center; }
+.siang-roster__series { margin:8px 2px 4px; font:11px/1.3 var(--font-body); color:var(--t-muted); letter-spacing:.04em; }
+.siang-roster__group + .siang-roster__series { margin-top:0; }
+/* 圖鑑依戰力：多一行戰力，下方留位置給 ♥／★ 小標，不會蓋到字 */
+.dex__grid.is-power .dex__card.is-owned { padding-bottom:28px; }

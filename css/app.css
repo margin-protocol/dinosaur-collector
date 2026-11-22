@@ -109,9 +109,10 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex__img { width: 100%; aspect-ratio: 1; object-fit: contain; }
 .dex__img.is-locked { filter: brightness(0); opacity: 0.75; }
 .dex__no { font-family: var(--font-mono); font-size: 11px; color: var(--rose-metal); letter-spacing: 0.14em; }
+.dex__power { margin-top: 2px; font-size: 11px; font-weight: 700; color: var(--t-accent, var(--rose-metal)); }
 .dex__name { font-family: var(--font-display); font-size: clamp(12px, 3.5vw, 14px); line-height: 1.35; letter-spacing: -0.02em; overflow-wrap: anywhere; }
 .dex__modes { display: flex; justify-content: center; gap: 0; margin: 10px auto 14px; border: 1px solid #ad96b14d; border-radius: 999px; width: max-content; padding: 3px; }
-.dex__modes button { min-height: 36px; min-width: 88px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: var(--silver); font: 13px var(--font-display); letter-spacing: 0.12em; }
+.dex__modes button { min-height: 36px; min-width: 72px; padding: 0 10px; border: 0; border-radius: 999px; background: none; color: var(--silver); font: 13px var(--font-display); letter-spacing: 0.06em; }
 .dex__modes button[aria-pressed="true"] { background: #e9e2ee; color: #2a2333; }
 .dex__section + .dex__section { margin-top: 22px; }
 .dex__section-title { display: flex; align-items: baseline; justify-content: space-between; margin: 0 2px 10px; padding-bottom: 6px; border-bottom: 1px solid #ad96b13d; font: 400 15px var(--font-display); letter-spacing: 0.14em; color: var(--ivory); }

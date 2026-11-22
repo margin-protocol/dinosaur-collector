@@ -910,7 +910,7 @@ function announceLevel(result) {
 
 const DEX_MODE_KEY = 'siang-collector:dex-mode:v1';
 function dexMode() {
-  try { const m = localStorage.getItem(DEX_MODE_KEY); return ['series', 'rarity'].includes(m) ? m : 'all'; } catch { return 'all'; }
+  try { const m = localStorage.getItem(DEX_MODE_KEY); return ['series', 'rarity', 'power'].includes(m) ? m : 'all'; } catch { return 'all'; }
 }
 document.querySelectorAll('[data-dex-mode]').forEach((button) => button.addEventListener('click', () => {
   try { localStorage.setItem(DEX_MODE_KEY, button.dataset.dexMode); } catch {}
@@ -965,6 +965,16 @@ function renderDex() {
   const mode = dexMode();
   document.querySelectorAll('[data-dex-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.dexMode === mode)));
   if (mode === 'all') { $('dex-grid').replaceChildren(dexList(all)); return; }
+  if (mode === 'power') {
+    // 依戰力：已收集的照戰力高到低（同分照編號），還沒收集的放後面照編號（湘 11/22）
+    const power = new Map(owned.map((c) => [c.no, battle.siangPower(state, c.no).power]));
+    const sorted = [...owned].sort((a, b) => power.get(b.no) - power.get(a.no) || a.no.localeCompare(b.no));
+    const rest = all.filter((c) => !state.dex[c.no]).sort((a, b) => a.no.localeCompare(b.no));
+    const ul = dexList([...sorted, ...rest]);
+    ul.classList.add('is-power');
+    ul.querySelectorAll('[data-dex-no]').forEach((li) => { if (power.has(li.dataset.dexNo)) li.querySelector('.dex__name').after(Object.assign(document.createElement('div'), { className: 'dex__power', textContent: `戰力 ${power.get(li.dataset.dexNo)}` })); });
+    $('dex-grid').replaceChildren(ul); return;
+  }
   const groups = mode === 'rarity'
     ? RARITY_ORDER.map((r) => [r, { name: r }])
     : Object.entries(SERIES);
@@ -3920,6 +3930,17 @@ function siangRoster() {
   for (const [kind, label, hint] of groups) {
     const items = list.filter(s => s.kind === kind); if (!items.length) continue;
     const h = el('h4', 'siang-roster__group'); h.append(el('span', null, `${label} ${items.length}`), el('small', null, hint));
+    body.append(h);
+    // 同一個狀態裡再依系列分組（湘 11/22），組內維持原本的排序（可出戰照戰力、其他照誰先回來）
+    for (const sid of Object.keys(SERIES)) {
+      const part = items.filter(s => CHARACTERS[s.no].series === sid); if (!part.length) continue;
+      body.append(el('p', 'siang-roster__series', `${SERIES[sid].name} · ${part.length}`), rosterGrid(part));
+    }
+  }
+  if (!list.length) body.append(el('p', 'residents-intro', '還沒有小湘，先去孵蛋吧。'));
+  sec.append(body); return sec;
+}
+function rosterGrid(items) {
     const grid = document.createElement('div'); grid.className = 'siang-roster__grid';
     grid.append(...items.map(s => {
       const tile = document.createElement('div'); tile.className = `siang-roster__tile is-${s.kind}`; tile.dataset.siang = s.no;
@@ -3929,10 +3950,7 @@ function siangRoster() {
       if (s.kind === 'busy' && s.left) tile.append(el('small', 'siang-roster__state', shortLeft(s.left)));
       return tile;
     }));
-    body.append(h, grid);
-  }
-  if (!list.length) body.append(el('p', 'residents-intro', '還沒有小湘，先去孵蛋吧。'));
-  sec.append(body); return sec;
+    return grid;
 }
 // 討伐場景：章節的 bg 剛好是出門地點（conv 便利商店、mountain 山上）時，借用那張地點背景；沒有圖的章節維持原樣
 // 注意：CSS 變數裡的 url() 會以 css/ 資料夾為起點解析，所以要給完整網址
