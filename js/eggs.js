@@ -159,7 +159,7 @@ export function rollHatch(egg) {
   return entries[0][0];
 }
 
-export const CHARACTERS = {
+const CHARACTER_TABLE = {
   '001': {
     no: '001',
     name: '原味小湘',
@@ -315,6 +315,14 @@ export const CHARACTERS = {
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
   '091': { no: '091', name: '未完待續小湘', rarity: 'SSR', line: "「考上了也好，沒考上也好……嘿嘿，我的故事又還沒寫完！」", image: 'siang-091-to-be-continued', series: 'recipe', special: true },
 };
+
+// 101 以後的編號是「整數樣子」的 key，JS 列舉物件時會把它們排到 001 前面，
+// 圖鑑、入住、許願對象等列表就會讓 101+ 跑到最前面。這裡讓 Object.keys／values／entries
+// 一律照編號由小到大列出，以後新增 117、118… 也不用再處理。
+const byNo = (a, b) => (typeof a === 'string' && typeof b === 'string' ? Number(a) - Number(b) || a.localeCompare(b) : 0);
+export const CHARACTERS = new Proxy(CHARACTER_TABLE, {
+  ownKeys: (t) => Reflect.ownKeys(t).sort(byNo),
+});
 
 // 圖鑑系列：顯示順序就是這裡的順序
 // 星光蛋的池子：一般蛋池裡所有 SR 以上的小湘
