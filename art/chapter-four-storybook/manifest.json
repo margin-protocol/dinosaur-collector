@@ -2,12 +2,12 @@
   "chapter": 4,
   "title": "請記得我的名字",
   "afterStoryTitle": "天亮以後",
-  "status": "partial_art_delivery",
+  "status": "required_art_delivered",
   "sourceCommit": "fae13f9",
   "required": {
     "total": 10,
-    "ready": 7,
-    "pending": 3
+    "ready": 10,
+    "pending": 0
   },
   "playerDepiction": "花魁＋玩家本人；第一人稱或不固定性別、不露臉的背影。",
   "assets": [
@@ -182,42 +182,75 @@
       "title": "熱呼呼的紅豆湯圓",
       "label": "後日談 01",
       "kind": "illustration",
-      "status": "pending_image_generation_quota",
+      "status": "ready",
       "width": 1122,
       "height": 1402,
       "transparent": false,
-      "png": null,
-      "web": null,
-      "promptFile": "art/chapter-four-storybook/pending/after-story-prompts.json",
-      "priority": "required"
+      "png": "art/chapter-four-storybook/prepared/red-bean-tangyuan.png",
+      "web": "assets/storybooks/chapter-four/red-bean-tangyuan.webp",
+      "promptFile": "art/chapter-four-storybook/prompts/after-story-prompts.json",
+      "priority": "required",
+      "alt": "花魁雙手捧著熱紅豆湯圓，隔著蒸氣向玩家微笑；前景是玩家自己的湯碗與淺灰袖子。",
+      "description": "第一人稱早餐：兩碗熱湯、兩個人的清晨。",
+      "original": "art/chapter-four-storybook/originals/red-bean-tangyuan.png",
+      "sourceWidth": 1072,
+      "sourceHeight": 1467,
+      "preparation": "proportional-resize-and-center-crop-to-user-spec",
+      "bytes": 459766,
+      "references": [
+        "art/chapter-four-storybook/references/oiran-original.jpg",
+        "art/chapter-four-storybook/originals/return-name.png"
+      ]
     },
     {
       "id": "beyond-town-sea",
       "title": "走出月見町，看見海",
       "label": "後日談 02",
       "kind": "illustration",
-      "status": "pending_image_generation_quota",
+      "status": "ready",
       "width": 1122,
       "height": 1402,
       "transparent": false,
-      "png": null,
-      "web": null,
-      "promptFile": "art/chapter-four-storybook/pending/after-story-prompts.json",
-      "priority": "required"
+      "png": "art/chapter-four-storybook/prepared/beyond-town-sea.png",
+      "web": "assets/storybooks/chapter-four/beyond-town-sea.webp",
+      "promptFile": "art/chapter-four-storybook/prompts/after-story-prompts.json",
+      "priority": "required",
+      "alt": "花魁從月見町木門走向海邊，回頭望向身旁穿淺灰衣的玩家；晨光照亮前方海岸小徑。",
+      "description": "街道走到盡頭，這次前面真的有海。",
+      "original": "art/chapter-four-storybook/originals/beyond-town-sea.png",
+      "sourceWidth": 1072,
+      "sourceHeight": 1467,
+      "preparation": "proportional-resize-and-center-crop-to-user-spec",
+      "bytes": 430470,
+      "references": [
+        "art/chapter-four-storybook/references/oiran-original.jpg",
+        "art/chapter-four-storybook/originals/return-name.png"
+      ]
     },
     {
       "id": "sunrise-together",
       "title": "兩人一起看日出｜主視覺",
       "label": "後日談 03",
       "kind": "illustration",
-      "status": "pending_image_generation_quota",
+      "status": "ready",
       "width": 1122,
       "height": 1402,
       "transparent": false,
-      "png": null,
-      "web": null,
-      "promptFile": "art/chapter-four-storybook/pending/after-story-prompts.json",
-      "priority": "highest"
+      "png": "art/chapter-four-storybook/originals/sunrise-together.png",
+      "web": "assets/storybooks/chapter-four/sunrise-together.webp",
+      "promptFile": "art/chapter-four-storybook/prompts/after-story-prompts.json",
+      "priority": "highest",
+      "alt": "花魁與不露臉、不固定性別的玩家並肩坐在木椅上，從背影看向海面升起的太陽，手指輕輕碰在一起。",
+      "description": "後日談主視覺：終於一起看見天亮。",
+      "original": "art/chapter-four-storybook/originals/sunrise-together.png",
+      "sourceWidth": 1122,
+      "sourceHeight": 1402,
+      "preparation": "native-size",
+      "bytes": 463808,
+      "references": [
+        "art/chapter-four-storybook/references/oiran-original.jpg",
+        "art/chapter-four-storybook/originals/return-name.png"
+      ]
     }
   ],
   "titleOverlay": "assets/storybooks/chapter-four/chapter-end-title.svg",
@@ -237,9 +270,9 @@
     "PNG為合成圖，非可獨立移動角色的PSD；只有戰敗名簿是透明獨立素材。",
     "原稿無五官的無名之簿不新增臉，以紙頁／金鎖／紅繩的姿態呈現戰敗。",
     "名字與章末文字由字幕／DOM／SVG排字；不自行編造花魁真名。",
-    "後日談3張因繪圖服務額度用完而尚未生成，沒有用其他圖片冒充完成；已保存各張提示與參考圖。",
     "過場中的小禿造型使用No.110；角色與討伐4-2既有敵人亂奏太鼓分開，不替換戰鬥敵人。",
-    "本次只交付美術與驗收頁，不更動第四章劇本、戰鬥、獎勵與存檔。"
+    "本次只交付美術與驗收頁，不更動第四章劇本、戰鬥、獎勵與存檔。",
+    "2026-11-22 補齊後日談3張，均交付1122×1402不透明PNG／WebP；紅豆湯圓與出海口原圖1072×1467，等比縮放居中裁切，日出為原生指定尺寸。名簿房劇本對齊仍見continuityReview。"
   ],
   "continuityReview": [
     {
@@ -248,5 +281,6 @@
       "note": "生成期間新增的第四章文字：Boss開場房間無燈籠、結尾紙落在榻榻米。現圖是戰敗後有燈、木地板的美術版本；正式劇場接入前需選定文字或圖的對齊方式，本次不改動劇本。",
       "promptFile": "art/chapter-four-storybook/pending/register-room-alignment.txt"
     }
-  ]
+  ],
+  "afterStoryCompletedDate": "2026-11-22"
 }
