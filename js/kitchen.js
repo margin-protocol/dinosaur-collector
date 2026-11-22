@@ -19,8 +19,14 @@ export const INGREDIENTS = [
   { id: 'rainbow', name: '彩虹果凍', short: '彩虹', tag: '果凍', icon: '🌈', chapter: 3 },
   { id: 'gear', name: '齒輪餅乾', short: '齒輪', tag: '酥脆', icon: '⚙️', chapter: 3 },
   { id: 'glitch', name: '故障糖漿', short: '故障', tag: '怪味', icon: '👾', chapter: 3 },
+  { id: 'redbean', name: '蜜紅豆', short: '紅豆', tag: '濃甜', icon: '🫘', chapter: 4 },
+  { id: 'tangyuan', name: '白玉湯圓', short: '湯圓', tag: '滑順', icon: '🍡', chapter: 4 },
+  { id: 'sakura', name: '櫻花蜜', short: '櫻花', tag: '果香', icon: '🌸', chapter: 4 },
+  { id: 'matcha', name: '抹茶粉', short: '抹茶', tag: '清涼', icon: '🍵', chapter: 4 },
 ];
 export const ING = Object.fromEntries(INGREDIENTS.map((i) => [i.id, i]));
+// 能煮出的料理種類＝任選 2 或 3 種食材的組合數（12 種時 286、16 種時 680）
+export const COMBO_TOTAL = ((n) => n * (n - 1) / 2 + n * (n - 1) * (n - 2) / 6)(INGREDIENTS.length);
 
 // 8 道特色料理。effect：power 戰力、speed 討伐時間、gather 打贏多 1 份食材；沒有 effect 的是好感度專用
 export const RECIPES = [

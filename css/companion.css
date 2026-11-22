@@ -402,6 +402,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .battle-chapter.has-scene > .egg-choices__heading { display:flex; align-items:flex-end; min-height:72px; margin-bottom:8px; padding:10px 12px; border-radius:12px; background:linear-gradient(180deg,#0000 20%,#000000a6), var(--scene) center/cover #3a2f3a; color:#fff8f2; text-shadow:0 1px 6px #000a; }
 .enemy-art.is-big { width:120px; } .enemy-art.is-big .enemy-art__emoji { font-size:64px; }
 .battle-stages { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:6px; }
+.battle-stages > .battle-stage-card.is-boss:last-child:nth-child(odd) { grid-column:1 / -1; } /* 第四章 5 關：落單的 Boss 卡占滿一整列 */
 .battle-stage-card { display:grid; grid-template-columns:52px 1fr; align-items:center; gap:8px; padding:8px; border-radius:14px; border:1px solid #ffffff1f; background:#ffffff0a; color:inherit; text-align:left; }
 .battle-stage-card .enemy-art { width:52px; }
 .battle-stage-card.is-boss { border-color:#f0a8c066; background:#f0a8c010; }

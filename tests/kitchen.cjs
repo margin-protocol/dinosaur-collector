@@ -1,4 +1,4 @@
-// 小湘廚房：286 種組合固定、開煮扣料、餵食評價與好感上限、秘密最愛、料理加成只用一份、討伐撿食材；UI 開煮＋餵食
+// 小湘廚房：680 種組合固定（16 種食材）、開煮扣料、餵食評價與好感上限、秘密最愛、料理加成只用一份、討伐撿食材；UI 開煮＋餵食
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const key='siang-collector:v1';
@@ -7,7 +7,7 @@ const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message)
 await p.goto('http://127.0.0.1:8000');await p.locator('#intro-ok').click();
 const r=await p.evaluate(async()=>{
   const k=await import('/js/kitchen.js'),bt=await import('/js/battle.js'),ac=await import('/js/achievements.js'),eg=await import('/js/eggs.js'),tp=await import('/js/taste-profiles.js');
-  const I=k.INGREDIENTS.map(i=>i.id);const combos=[];for(let a=0;a<12;a++)for(let b2=a+1;b2<12;b2++){combos.push([I[a],I[b2]]);for(let c2=b2+1;c2<12;c2++)combos.push([I[a],I[b2],I[c2]]);}
+  const I=k.INGREDIENTS.map(i=>i.id);const combos=[];const N=I.length;for(let a=0;a<N;a++)for(let b2=a+1;b2<N;b2++){combos.push([I[a],I[b2]]);for(let c2=b2+1;c2<N;c2++)combos.push([I[a],I[b2],I[c2]]);}
   const stable=combos.every(x=>{const d=k.dishOf(x),e=k.dishOf([...x].reverse());return d&&e&&d.id===e.id&&d.name===e.name;});
   const names=new Set(combos.map(x=>k.dishOf(x).name)).size;
   const bad=[k.dishOf(['milk']),k.dishOf(['milk','milk']),k.dishOf(['milk','star','moon','cloud'])];
@@ -30,9 +30,9 @@ const r=await p.evaluate(async()=>{
   const back=bt.collectBattle(s,trip.id,new Date(Date.now()+3*3600e3),()=>0);
   ac.ensureAchievements(s);const ach=ac.achievementStatus(s,eg.CHARACTERS).filter(a=>a.group==='廚房').map(a=>[a.id,a.value]);
   const profiles=Object.keys(eg.CHARACTERS).filter(n=>!tp.TASTES[n]);const kl=await import('/js/kitchen-lines.js');const noLines=Object.keys(eg.CHARACTERS).filter(n=>!kl.KITCHEN_LINES[n]?.[3]||!kl.KITCHEN_LINES[n]?.[0]);const hateLine=f3.line;
-  return {combos:combos.length,stable,names,bad,starter,c1:c1.dish.name,c2first:c2.first,c3:c3.dish.dark,c4:c4.dish.name,no,left,f1:[f1.rating,f1.points,f1.added,f1.secretFound,f1.buff],f2:[f2.rating,f2.dish.dark],f3:[f3.rating,f3.added,f3.buff?.value],f4:[f4.rating,f4.secretFound],none,f5:f5.added,f6:[f6.added,f6.capped],plain,fed:[fed.food?.no,fed.food?.kind],after,drops,gains:back.gains.join('|'),ings:s.kitchen.ingredients,ach,profiles,noLines,hateLine,dark:s.kitchen.darkFed};
+  return {total:k.COMBO_TOTAL,combos:combos.length,stable,names,bad,starter,c1:c1.dish.name,c2first:c2.first,c3:c3.dish.dark,c4:c4.dish.name,no,left,f1:[f1.rating,f1.points,f1.added,f1.secretFound,f1.buff],f2:[f2.rating,f2.dish.dark],f3:[f3.rating,f3.added,f3.buff?.value],f4:[f4.rating,f4.secretFound],none,f5:f5.added,f6:[f6.added,f6.capped],plain,fed:[fed.food?.no,fed.food?.kind],after,drops,gains:back.gains.join('|'),ings:s.kitchen.ingredients,ach,profiles,noLines,hateLine,dark:s.kitchen.darkFed};
 });
-assert.equal(r.combos,286);assert.ok(r.stable);assert.equal(r.names,286);assert.deepEqual(r.bad,[null,null,null]);
+assert.equal(r.combos,680);assert.equal(r.combos,r.total);assert.ok(r.stable);assert.equal(r.names,680);assert.deepEqual(r.bad,[null,null,null]);
 assert.deepEqual(r.starter,{strawberry:2,milk:2,caramel:2,pudding:2});
 assert.equal(r.c1,'焦糖奶布丁');assert.equal(r.c2first,false);assert.ok(r.c3);assert.equal(r.c4,'草莓蘑菇湯');assert.match(r.no,/不夠/);
 assert.deepEqual(r.left,{caramel:2,milk:2,pudding:2,gear:1,glitch:1});
@@ -51,7 +51,7 @@ await p.evaluate(()=>document.querySelectorAll('dialog[open]').forEach(d=>d.clos
 await p.evaluate(()=>document.getElementById('open-errands').click());await p.locator('#errand-dialog[open]').waitFor();
 await p.locator('#tab-kitchen').click();
 assert.equal(await p.locator('#errand-title').textContent(),'小湘廚房');
-assert.equal(await p.locator('.kitchen-ing').count(),12);
+assert.equal(await p.locator('.kitchen-ing').count(),16);
 await p.locator('[data-ing="strawberry"]').click();await p.locator('[data-ing="milk"]').click();
 assert.match(await p.locator('#kitchen-preview').textContent(),/？？？/);if(process.env.SHOT)await p.screenshot({path:process.env.SHOT.replace('.png','-a.png')});
 await p.locator('#kitchen-cook').click();await p.waitForTimeout(300);
@@ -65,4 +65,4 @@ assert.equal(s.kitchen.ingredients.strawberry,1);assert.ok(s.affection['002'].pt
 if(process.env.SHOT)await p.screenshot({path:process.env.SHOT,fullPage:false});
 for(const w of [360,430]){await p.setViewportSize({width:w,height:800});assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no overflow '+w);}
 assert.equal(errs.length,0,errs.join('\n'));
-console.log('kitchen: 286 stable dishes, cook/feed/cap/secret, one food buff per team, chapter drops, achievements, UI cook+feed PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
+console.log('kitchen: 680 stable dishes, cook/feed/cap/secret, one food buff per team, chapter drops, achievements, UI cook+feed PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

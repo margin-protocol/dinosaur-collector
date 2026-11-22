@@ -114,6 +114,46 @@
         "ratio": 0.6242424242424243
       },
       {
+        "id": "welcome-lantern",
+        "power": 79.2,
+        "minutes": 90,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.528
+      },
+      {
+        "id": "wild-taiko",
+        "power": 79.2,
+        "minutes": 90,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.495
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 79.2,
+        "minutes": 105,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.45257142857142857
+      },
+      {
+        "id": "faceless-float",
+        "power": 103,
+        "minutes": 79,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5421052631578948
+      },
+      {
+        "id": "nameless-book",
+        "power": 103,
+        "minutes": 113,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5024390243902439
+      },
+      {
         "id": "gugu",
         "power": 103,
         "minutes": 45,
@@ -236,6 +276,46 @@
         "chance": 0,
         "stars": 0,
         "ratio": 0.5393939393939394
+      },
+      {
+        "id": "welcome-lantern",
+        "power": 89,
+        "minutes": 72,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5933333333333334
+      },
+      {
+        "id": "wild-taiko",
+        "power": 89,
+        "minutes": 72,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.55625
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 115.7,
+        "minutes": 63,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6611428571428571
+      },
+      {
+        "id": "faceless-float",
+        "power": 89,
+        "minutes": 84,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.46842105263157896
+      },
+      {
+        "id": "nameless-book",
+        "power": 89,
+        "minutes": 120,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.43414634146341463
       },
       {
         "id": "gugu",
@@ -362,6 +442,46 @@
         "ratio": 0.7309090909090908
       },
       {
+        "id": "welcome-lantern",
+        "power": 92.7,
+        "minutes": 81,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.618
+      },
+      {
+        "id": "wild-taiko",
+        "power": 92.7,
+        "minutes": 81,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.579375
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 120.6,
+        "minutes": 71,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6891428571428571
+      },
+      {
+        "id": "faceless-float",
+        "power": 120.6,
+        "minutes": 71,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6347368421052632
+      },
+      {
+        "id": "nameless-book",
+        "power": 120.6,
+        "minutes": 101,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5882926829268292
+      },
+      {
         "id": "gugu",
         "power": 120.6,
         "minutes": 41,
@@ -484,6 +604,46 @@
         "chance": 0,
         "stars": 0,
         "ratio": 0.6690909090909092
+      },
+      {
+        "id": "welcome-lantern",
+        "power": 85,
+        "minutes": 86,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5666666666666667
+      },
+      {
+        "id": "wild-taiko",
+        "power": 85,
+        "minutes": 86,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.53125
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 85,
+        "minutes": 100,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.4857142857142857
+      },
+      {
+        "id": "faceless-float",
+        "power": 110.4,
+        "minutes": 75,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5810526315789474
+      },
+      {
+        "id": "nameless-book",
+        "power": 110.4,
+        "minutes": 107,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5385365853658537
       },
       {
         "id": "gugu",
@@ -610,6 +770,46 @@
         "ratio": 0.7551515151515151
       },
       {
+        "id": "welcome-lantern",
+        "power": 124.6,
+        "minutes": 90,
+        "chance": 0.4355555555555557,
+        "stars": 0,
+        "ratio": 0.8306666666666667
+      },
+      {
+        "id": "wild-taiko",
+        "power": 161.9,
+        "minutes": 68,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.011875
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 124.6,
+        "minutes": 105,
+        "chance": 0.040000000000000036,
+        "stars": 0,
+        "ratio": 0.712
+      },
+      {
+        "id": "faceless-float",
+        "power": 124.6,
+        "minutes": 105,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6557894736842105
+      },
+      {
+        "id": "nameless-book",
+        "power": 124.6,
+        "minutes": 150,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6078048780487805
+      },
+      {
         "id": "gugu",
         "power": 124.6,
         "minutes": 60,
@@ -732,6 +932,46 @@
         "chance": 0,
         "stars": 0,
         "ratio": 0.48303030303030303
+      },
+      {
+        "id": "welcome-lantern",
+        "power": 79.7,
+        "minutes": 77,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5313333333333333
+      },
+      {
+        "id": "wild-taiko",
+        "power": 79.7,
+        "minutes": 77,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.49812500000000004
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 79.7,
+        "minutes": 89,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.45542857142857146
+      },
+      {
+        "id": "faceless-float",
+        "power": 79.7,
+        "minutes": 89,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.41947368421052633
+      },
+      {
+        "id": "nameless-book",
+        "power": 79.7,
+        "minutes": 128,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.38878048780487806
       },
       {
         "id": "gugu",
@@ -858,6 +1098,46 @@
         "ratio": 0.5624242424242424
       },
       {
+        "id": "welcome-lantern",
+        "power": 92.8,
+        "minutes": 86,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6186666666666667
+      },
+      {
+        "id": "wild-taiko",
+        "power": 92.8,
+        "minutes": 86,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.58
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 92.8,
+        "minutes": 100,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5302857142857142
+      },
+      {
+        "id": "faceless-float",
+        "power": 92.8,
+        "minutes": 100,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.4884210526315789
+      },
+      {
+        "id": "nameless-book",
+        "power": 92.8,
+        "minutes": 143,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.4526829268292683
+      },
+      {
         "id": "gugu",
         "power": 92.8,
         "minutes": 57,
@@ -982,6 +1262,46 @@
         "ratio": 0.5284848484848486
       },
       {
+        "id": "welcome-lantern",
+        "power": 113.3,
+        "minutes": 59,
+        "chance": 0.1844444444444445,
+        "stars": 0,
+        "ratio": 0.7553333333333333
+      },
+      {
+        "id": "wild-taiko",
+        "power": 87.2,
+        "minutes": 79,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.545
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 87.2,
+        "minutes": 92,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.4982857142857143
+      },
+      {
+        "id": "faceless-float",
+        "power": 87.2,
+        "minutes": 92,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.45894736842105266
+      },
+      {
+        "id": "nameless-book",
+        "power": 87.2,
+        "minutes": 132,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.4253658536585366
+      },
+      {
         "id": "gugu",
         "power": 87.2,
         "minutes": 53,
@@ -1104,6 +1424,46 @@
         "chance": 0,
         "stars": 0,
         "ratio": 0.5139393939393939
+      },
+      {
+        "id": "welcome-lantern",
+        "power": 110.2,
+        "minutes": 57,
+        "chance": 0.11555555555555579,
+        "stars": 0,
+        "ratio": 0.7346666666666667
+      },
+      {
+        "id": "wild-taiko",
+        "power": 84.8,
+        "minutes": 77,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.53
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 84.8,
+        "minutes": 89,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.48457142857142854
+      },
+      {
+        "id": "faceless-float",
+        "power": 84.8,
+        "minutes": 89,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.4463157894736842
+      },
+      {
+        "id": "nameless-book",
+        "power": 84.8,
+        "minutes": 128,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.41365853658536583
       },
       {
         "id": "gugu",
@@ -1231,6 +1591,46 @@
         "ratio": 1.4612121212121212
       },
       {
+        "id": "welcome-lantern",
+        "power": 185.5,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.2366666666666666
+      },
+      {
+        "id": "wild-taiko",
+        "power": 185.5,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.159375
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 185.5,
+        "minutes": 105,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.06
+      },
+      {
+        "id": "faceless-float",
+        "power": 185.5,
+        "minutes": 105,
+        "chance": 0.9210526315789477,
+        "stars": 0,
+        "ratio": 0.9763157894736842
+      },
+      {
+        "id": "nameless-book",
+        "power": 185.5,
+        "minutes": 150,
+        "chance": 0.682926829268293,
+        "stars": 0,
+        "ratio": 0.9048780487804878
+      },
+      {
         "id": "gugu",
         "power": 185.5,
         "minutes": 60,
@@ -1353,6 +1753,46 @@
         "chance": 0.9777777777777782,
         "stars": 0,
         "ratio": 0.9933333333333334
+      },
+      {
+        "id": "welcome-lantern",
+        "power": 163.9,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.0926666666666667
+      },
+      {
+        "id": "wild-taiko",
+        "power": 163.9,
+        "minutes": 90,
+        "chance": 1,
+        "stars": 1,
+        "ratio": 1.024375
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 213.1,
+        "minutes": 79,
+        "chance": 1,
+        "stars": 2,
+        "ratio": 1.2177142857142857
+      },
+      {
+        "id": "faceless-float",
+        "power": 163.9,
+        "minutes": 105,
+        "chance": 0.5421052631578949,
+        "stars": 0,
+        "ratio": 0.8626315789473684
+      },
+      {
+        "id": "nameless-book",
+        "power": 163.9,
+        "minutes": 150,
+        "chance": 0.331707317073171,
+        "stars": 0,
+        "ratio": 0.7995121951219513
       },
       {
         "id": "gugu",
@@ -1479,6 +1919,46 @@
         "ratio": 0.6715151515151515
       },
       {
+        "id": "welcome-lantern",
+        "power": 144.1,
+        "minutes": 57,
+        "chance": 0.868888888888889,
+        "stars": 0,
+        "ratio": 0.9606666666666667
+      },
+      {
+        "id": "wild-taiko",
+        "power": 110.8,
+        "minutes": 77,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6925
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 110.8,
+        "minutes": 89,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6331428571428571
+      },
+      {
+        "id": "faceless-float",
+        "power": 110.8,
+        "minutes": 89,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5831578947368421
+      },
+      {
+        "id": "nameless-book",
+        "power": 110.8,
+        "minutes": 128,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.5404878048780488
+      },
+      {
         "id": "gugu",
         "power": 110.8,
         "minutes": 51,
@@ -1601,6 +2081,46 @@
         "chance": 0.2888888888888893,
         "stars": 0,
         "ratio": 0.7866666666666667
+      },
+      {
+        "id": "welcome-lantern",
+        "power": 129.8,
+        "minutes": 83,
+        "chance": 0.5511111111111116,
+        "stars": 0,
+        "ratio": 0.8653333333333334
+      },
+      {
+        "id": "wild-taiko",
+        "power": 129.8,
+        "minutes": 83,
+        "chance": 0.37083333333333357,
+        "stars": 0,
+        "ratio": 0.81125
+      },
+      {
+        "id": "faceless-mirror",
+        "power": 129.8,
+        "minutes": 97,
+        "chance": 0.1390476190476194,
+        "stars": 0,
+        "ratio": 0.7417142857142858
+      },
+      {
+        "id": "faceless-float",
+        "power": 129.8,
+        "minutes": 97,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6831578947368422
+      },
+      {
+        "id": "nameless-book",
+        "power": 129.8,
+        "minutes": 138,
+        "chance": 0,
+        "stars": 0,
+        "ratio": 0.6331707317073171
       },
       {
         "id": "gugu",

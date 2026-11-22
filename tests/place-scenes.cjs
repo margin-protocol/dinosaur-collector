@@ -14,7 +14,7 @@ const scenes=await p.$$eval('.battle-chapter',secs=>secs.map(s=>s.style.getPrope
 assert.match(scenes.join('|'),/places\/conv\.webp/);assert.match(scenes.join('|'),/places\/mountain\.webp/);
 const loaded=await p.evaluate(async()=>Promise.all([...document.querySelectorAll('.battle-chapter.has-scene')].map(s=>new Promise(r=>{const u=s.style.getPropertyValue('--scene').match(/url\("(.+)"\)/)[1];const i=new Image();i.onload=()=>r(true);i.onerror=()=>r(false);i.src=u;}))));
 assert.match(scenes.join('|'),/scene\/ch3-toy-planet-battle\.webp/);
-assert(loaded.length===3&&loaded.every(Boolean),'chapter scene urls resolve');
+assert(loaded.length===4&&loaded.every(Boolean),'chapter scene urls resolve');
 await p.locator('.battle-chapter.has-scene .battle-stage-card').first().click();await p.waitForTimeout(300);
 assert.equal(await p.locator('#battle-enemy-art .enemy-art.has-scene').count(),1);
 assert.deepEqual(errs,[]);console.log('place thumbnails and chapter scenes PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1);});

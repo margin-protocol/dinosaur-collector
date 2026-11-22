@@ -140,7 +140,7 @@ export const EPILOGUES = {
     ],
   },
   'director-giggle': {
-    chapter: 3, title: '故障的玩具星球', subtitle: '尾聲・今天，可以不用笑', next: '',
+    chapter: 3, title: '故障的玩具星球', subtitle: '尾聲・今天，可以不用笑', next: '第四章《花街無名帖》',
     beats: [
       { act: '笑臉停下來了', bg: 'controlRoom', tone: 'alarm', cam: [50, 50, 1], cast: [], screen: { lines: ['今日歡笑指數', '100%'] }, text: '控制室裡，最後一聲警報熄滅。' },
       { tone: '', cam: [80, 22, 1.7], screen: { lines: ['今日歡笑指數', '{n}%'], count: [100, 80, 60, 30, 0] }, text: '牆上的歡笑指數從百分之百，慢慢降到八十、六十、三十……' },

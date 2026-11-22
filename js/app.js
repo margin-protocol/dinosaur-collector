@@ -3612,7 +3612,7 @@ function renderKitchen() {
   }
   // 圖鑑
   const known = Object.keys(k.known).length;
-  $('kitchen-stats').replaceChildren(...[`做過 ${known} / 286 道`, `特色料理 ${kitchen.recipesFound(state)} / 8`, `秘密最愛 ${kitchen.secretsFound(state)} 個`].flatMap((t, i) => [...(i ? [' '] : []), Object.assign(document.createElement('span'), { textContent: i ? `· ${t}` : t })])); // 「·」跟著後一段，換行時不會落單在行首
+  $('kitchen-stats').replaceChildren(...[`做過 ${known} / ${kitchen.COMBO_TOTAL} 道`, `特色料理 ${kitchen.recipesFound(state)} / 8`, `秘密最愛 ${kitchen.secretsFound(state)} 個`].flatMap((t, i) => [...(i ? [' '] : []), Object.assign(document.createElement('span'), { textContent: i ? `· ${t}` : t })])); // 「·」跟著後一段，換行時不會落單在行首
   renderCookbook();
   $('kitchen-book').replaceChildren(...kitchen.RECIPES.map(rc => {
     const id = [...rc.ings].sort().join('+'); const got = Boolean(k.known[id]);
