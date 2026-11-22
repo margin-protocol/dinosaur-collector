@@ -1,6 +1,8 @@
 // 章節尾聲劇場：第一次打倒章節 Boss 後播放的純故事演出（湘 11/21 選 A 劇場對話版）。
 // 只負責演出：不讀寫存檔、不發獎勵。什麼時候播由 app.js 決定（第一次通關自動播，檔案館可重看）。
 // 劇本照湘 11/21 給的第一～三章六幕＋片尾彩蛋；素材在 assets/storybooks/chapter-one/、chapter-two/、chapter-three/。
+// 第四章《請記得我的名字》＋後日談《天亮以後》（11/22，德寶依美術交付與 Boss 故事先寫，湘／皮寶有正式稿就換）：素材在 chapter-four/。
+// sequel：結尾卡多一顆按鈕接著播下一齣（第四章 → 後日談）；endSmall / endTitle 可覆寫結尾卡標題。
 // 每一句（beat）沒寫的 bg / cam / cast / tone 會沿用上一句。
 // cam: [x%, y%, 放大倍數]，以該點為中心放大；pan: 這句播放時慢慢移到的位置。
 // cast: [[角色, 站位], …]；fx: { 角色: 動作 }；prop: 'cards'（黏成一串的邀請卡）／'sign'（蘑菇的木牌，sign: 牌子上的字）。
@@ -8,7 +10,7 @@
 // card: 全黑轉場字卡（over: 疊在畫面上；boom: 白光大字）；flash: 'soft' | 'big' 打雷閃光。
 import { characterSources, loadWithFallback, CHARACTERS } from './eggs.js';
 
-const STORY = 'assets/storybooks/chapter-one/', STORY2 = 'assets/storybooks/chapter-two/', STORY3 = 'assets/storybooks/chapter-three/';
+const STORY = 'assets/storybooks/chapter-one/', STORY2 = 'assets/storybooks/chapter-two/', STORY3 = 'assets/storybooks/chapter-three/', STORY4 = 'assets/storybooks/chapter-four/';
 const ACTORS = {
   siang: { name: '原味小湘', src: characterSources(CHARACTERS['001'].image) },
   king: { name: '焦糖大王', src: ['assets/enemies/chapter-01/ch1-boss-caramel-king.webp'] },
@@ -27,6 +29,13 @@ const ACTORS = {
   bunny: { name: '發條兔', src: ['assets/enemies/chapter-03/ch3-01-tick-tock-bunny.webp'] },
   gummy: { name: '軟糖熊', src: ['assets/enemies/chapter-03/ch3-02-glitch-gummy.webp'] },
   guard: { name: '八音盒衛兵', src: ['assets/enemies/chapter-03/ch3-03-melody-guard.webp'] },
+  book: { name: '無名之簿', src: ['assets/enemies/chapter-04/ch4-boss-nameless-book.webp'] },
+  bookDown: { name: '無名之簿', src: [`${STORY4}nameless-defeated.webp`] },
+  kamuro: { name: '禿小湘', src: characterSources(CHARACTERS['110'].image) },
+  banto: { name: '番頭新造小湘', src: characterSources(CHARACTERS['111'].image) },
+  taiko: { name: '太鼓新造小湘', src: characterSources(CHARACTERS['112'].image) },
+  furisode: { name: '振袖新造小湘', src: characterSources(CHARACTERS['113'].image) },
+  oiran: { name: '花魁小湘', src: characterSources(CHARACTERS['114'].image) },
 };
 const BG = {
   hall: `${STORY}hall.webp`, banquet: `${STORY}banquet.webp`, afterparty: `${STORY}afterparty.webp`,
@@ -34,6 +43,9 @@ const BG = {
   seeYou: `${STORY2}see-you.webp`, welcomeHome: `${STORY2}welcome-home.webp`, aftermath: `${STORY2}bonus-aftermath.webp`,
   controlRoom: `${STORY3}control-room.webp`, oldSong: `${STORY3}old-song.webp`, listening: `${STORY3}listening.webp`, pudding: `${STORY3}pudding.webp`,
   party: `${STORY3}no-grades-party.webp`, happyTears: `${STORY3}happy-tears.webp`, laugh: `${STORY3}bonus-laugh.webp`,
+  tsukimi: 'assets/scene/ch4-tsukimi-battle.webp', registerRoom: `${STORY4}register-room.webp`, firstMorning: `${STORY4}first-morning.webp`,
+  gratitude: `${STORY4}gratitude-slips.webp`, returnName: `${STORY4}return-name.webp`, rememberName: `${STORY4}remember-name.webp`, townFinale: `${STORY4}town-finale.webp`,
+  redBean: `${STORY4}red-bean-tangyuan.webp`, sea: `${STORY4}beyond-town-sea.webp`, sunrise: `${STORY4}sunrise-together.webp`,
 };
 
 export const EPILOGUES = {
@@ -221,6 +233,94 @@ export const EPILOGUES = {
       { cam: [50, 45, 1.12], pan: [50, 50, 1], stamp: '第三章・完' },
     ],
   },
+  'nameless-book': {
+    chapter: 4, title: '花街無名帖', subtitle: '尾聲・請記得我的名字', next: '', sequel: 'nameless-book~after',
+    beats: [
+      { act: '最後一頁', bg: 'tsukimi', tone: 'hush', cam: [50, 50, 1], cast: [['book', 'C']], text: '無名之簿的金鎖，喀啦一聲鬆開了。', fx: { book: 'flicker' } },
+      { cast: [['bookDown', 'C']], text: '厚厚的書身慢慢傾倒，紅繩一圈一圈垂了下來。', fx: { bookDown: 'droop' } },
+      { who: 'bookDown', text: '「……墨水，回到了該回去的地方。」' },
+      { who: 'bookDown', text: '「原來名字，要有人一起記得，才留得下來。」' },
+      { act: '紙頁像雪一樣', bg: 'registerRoom', tone: '', cast: [], cam: [50, 22, 1.6], pan: [50, 40, 1.15], text: '書頁一張一張飛起來，在名簿房間裡慢慢飄落。' },
+      { cam: [22, 30, 1.8], text: '每一張紙上，都已經沒有字了。' },
+      { cam: [50, 30, 1.3], text: '被收走一百年的名字，從紙上浮起來，像螢火蟲一樣，一盞一盞飛出窗外。' },
+      { cam: [55, 62, 1.5], text: '最後一張紙，輕輕落了下來。' },
+      { cam: [50, 50, 1], text: '房間裡，終於安靜了。', hold: 900 },
+      { act: '第一個清晨', bg: 'firstMorning', cam: [55, 22, 1.6], pan: [50, 40, 1.1], text: '窗外的天空，一點一點亮了起來。' },
+      { cam: [50, 45, 1.15], text: '燈籠還亮著，可是天空已經比燈籠更亮了。' },
+      { cam: [26, 66, 1.8], text: '禿小湘抱著一疊手巾跑到街上，忽然停下腳步。' },
+      { who: 'kamuro', text: '「……天亮了？」' },
+      { who: 'kamuro', text: '「月見町……天亮了耶！！」', shake: true },
+      { who: 'kamuro', text: '「等一下，我、我好像想起什麼了——」' },
+      { who: 'kamuro', voice: true, text: '「花魁大人！！我想起來了啦啊啊啊！！」', shake: true },
+      { act: '換我們記得妳', bg: 'gratitude', cam: [50, 45, 1.1], pan: [50, 50, 1], text: '番頭新造、太鼓新造、振袖新造，一個接一個趕了過來，圍著矮桌坐下。' },
+      { who: 'banto', cam: [28, 30, 1.8], text: '「花魁大人教我記帳的時候說過：『寫錯了，就再寫一次。』……我記得。」' },
+      { who: 'taiko', cam: [64, 68, 1.8], text: '「她每次都嫌我的鼓太吵，可是每次都留到最後一個才走！咚！」' },
+      { who: 'furisode', cam: [70, 30, 1.8], text: '「我、我才沒有一直記著。只是……她說舞跳錯一步不要緊，抬頭就好。」' },
+      { who: 'kamuro', cam: [20, 64, 1.8], text: '「還有偷偷塞給我的點心！三次！……不對，是五次！」' },
+      { cam: [50, 52, 1.4], text: '大家把記得的事情，一筆一筆寫進名帖。教琴的夜晚、留到最後的宴席、偷偷塞來的點心……' },
+      { cam: [50, 50, 1], text: '名帖越疊越高，堆滿了整張矮桌。' },
+      { who: 'banto', cam: [28, 30, 1.8], text: '「可是……名字那一格，要寫什麼？」' },
+      { cam: [50, 55, 1.3], text: '每一張名帖的中央，都留著一格空白。' },
+      { who: 'furisode', cam: [70, 30, 1.8], text: '「……那一格，要她自己寫。」' },
+      { who: 'kamuro', cam: [20, 64, 1.8], text: '「拜託您了！請您幫我們交給花魁大人！」' },
+      { act: '把名帖交還給妳', bg: 'returnName', cam: [55, 30, 1.3], pan: [50, 40, 1.1], text: '花魁站在廊下，望著天亮的方向。' },
+      { cam: [42, 72, 1.6], text: '您把那疊名帖，遞到她面前。' },
+      { who: 'oiran', cam: [58, 24, 1.7], text: '「……這是？」' },
+      { cam: [44, 58, 1.7], text: '第一張寫著：「謝謝花魁大人教我彈三味線。」' },
+      { text: '下一張寫著：「謝謝您總是留到最後一個走。」' },
+      { text: '再下一張，字歪歪的：「點心很好吃。下次還要。」' },
+      { who: 'oiran', cam: [58, 24, 1.7], text: '「哎呀……妾身明明，把這些都收走了。」' },
+      { who: 'oiran', text: '「妾身只是……不想再有人被忘記。」' },
+      { who: 'kamuro', voice: true, cam: [50, 50, 1], text: '「所以這次，換我們記得花魁大人！」' },
+      { act: '她自己的名字', bg: 'rememberName', cam: [55, 26, 1.6], pan: [55, 40, 1.2], text: '花魁把名帖按在心口，看了很久很久。' },
+      { who: 'oiran', text: '「……」', hold: 1400 },
+      { cam: [58, 62, 1.6], text: '然後，她拿起筆，在那一格空白裡，寫下一個名字。' },
+      { cam: [55, 30, 1.4], text: '不是「花魁」，也不是「妾身」。' },
+      { text: '是她自己的名字。' },
+      { who: 'oiran', cam: [55, 26, 1.7], text: '「原來……被人記得，是這麼暖和的事。」' },
+      { who: 'oiran', text: '「謝謝大家。……也謝謝您。」' },
+      { act: '大家都在', bg: 'townFinale', cam: [50, 40, 1.15], pan: [50, 50, 1], text: '那天早上，月見町第一次沒有宴會，也沒有人急著收拾。' },
+      { text: '大家只是站在街上，一起看著太陽升起來。' },
+      { who: 'dino', cam: [50, 45, 1.1], cast: [['dino', 'L']], text: '「我也要寫名帖！我的名字是……小恐龍！」', fx: { dino: 'hop' } },
+      { who: 'taiko', cast: [], cam: [33, 62, 1.8], text: '「那個大家都知道啦！咚咚！」' },
+      { who: 'oiran', cam: [58, 50, 1.6], text: '「那就寫上去吧。這一次，誰都不會被忘記了。」' },
+      { card: '請記得我的名字。', sub: '因為，有人一直記得妳。', over: true },
+      { cam: [50, 45, 1.12], pan: [50, 50, 1], stamp: '第四章・完' },
+    ],
+  },
+  'nameless-book~after': {
+    chapter: 4, title: '天亮以後', subtitle: '後日談・天亮以後', next: '', endSmall: 'AFTER STORY', endTitle: '後日談《天亮以後》・完',
+    beats: [
+      { card: '後日談', sub: '天亮以後' },
+      { act: '紅豆湯圓', bg: 'redBean', cam: [55, 30, 1.4], pan: [50, 42, 1.1], text: '隔天早上，花魁約您一起吃早餐。' },
+      { cam: [25, 80, 1.7], text: '桌上擺著兩碗熱呼呼的紅豆湯圓。' },
+      { who: 'oiran', cam: [55, 30, 1.6], text: '「第一張願望紙條，妾身寫的就是這個。」' },
+      { who: 'oiran', text: '「一百年來，宴席上什麼山珍海味都有……卻沒有一碗，是為自己點的。」' },
+      { cam: [48, 52, 1.6], text: '她小心地吹了吹湯匙。' },
+      { who: 'oiran', text: '「……好燙。」' },
+      { who: 'oiran', cam: [55, 30, 1.6], text: '「可是，好好吃。」' },
+      { cam: [50, 50, 1], text: '蒸氣後面，她笑得一點也不像花魁。' },
+      { act: '街道的盡頭', bg: 'sea', cam: [30, 35, 1.5], pan: [45, 45, 1.15], text: '吃完早餐，你們沿著月見町的大街，一直走、一直走。' },
+      { text: '以前，這條街走到盡頭，又會回到起點。' },
+      { cam: [70, 40, 1.5], text: '可是今天，木門的另一邊，吹來了鹹鹹的風。' },
+      { who: 'oiran', cam: [38, 30, 1.7], text: '「……是海。」' },
+      { who: 'oiran', text: '「第二張紙條，妾身寫著想看看花街外面的海。」' },
+      { who: 'oiran', cam: [60, 45, 1.3], text: '「原來海是這個顏色。比畫上的……還要大好多呢。」' },
+      { cam: [70, 60, 1.4], text: '她回頭看您，像是在確認您還在。' },
+      { who: 'oiran', cam: [38, 30, 1.7], text: '「您……會陪妾身走到那裡嗎？」' },
+      { card: '幾天後，', sub: '天還沒亮。' },
+      { act: '一起等天亮', bg: 'sunrise', tone: 'hush', cam: [55, 72, 1.3], pan: [50, 60, 1.1], text: '天還沒亮，你們已經坐在海邊的長椅上。' },
+      { tone: '', cam: [78, 28, 1.6], text: '海的那一頭，慢慢透出一點粉紅色的光。' },
+      { who: 'oiran', cam: [30, 50, 1.6], text: '「第三張紙條……妾身一直不敢說出口。」' },
+      { who: 'oiran', text: '「『想和喜歡的人，一起等天亮。』」', hold: 600 },
+      { cam: [78, 32, 1.4], text: '太陽，從海面升了起來。' },
+      { cam: [50, 52, 1], pan: [50, 62, 1.25], text: '她的手指，輕輕碰到了您的手指。' },
+      { who: 'oiran', cam: [50, 55, 1.2], text: '「三張紙條，都實現了呢。」' },
+      { who: 'oiran', text: '「那麼……明天，妾身可以再寫一張新的嗎？」' },
+      { card: '天亮以後，', sub: '還有好多個明天。', over: true },
+      { cam: [50, 45, 1.12], pan: [50, 50, 1], stamp: '後日談・完' },
+    ],
+  },
 };
 export const epilogueFor = (enemyId) => EPILOGUES[enemyId] || null;
 
@@ -251,7 +351,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     <div class="epi__card"><b></b><small></small></div>
     <div class="epi__stamp"></div>
     <div class="epi__log" hidden><button type="button" class="epi__btn epi__close" data-a="log-close">關閉</button><h3 id="epilogue-log-title">對話紀錄</h3><div class="epi__log-list"></div></div>
-    <div class="epi__end" hidden><div class="epi__end-card"><small></small><h2 id="epilogue-title"></h2><p>這段故事收進「咕咕的故事檔案館」的討伐故事，隨時可以重看。</p><div class="epi__unlock"></div><div class="epi__end-row"><button type="button" class="btn btn--quiet" data-a="again">再看一次</button><button type="button" class="btn" data-a="close">收下</button></div></div></div>
+    <div class="epi__end" hidden><div class="epi__end-card"><small></small><h2 id="epilogue-title"></h2><p>這段故事收進「咕咕的故事檔案館」的討伐故事，隨時可以重看。</p><div class="epi__unlock"></div><div class="epi__end-row"><button type="button" class="btn epi__sequel" data-a="sequel" hidden></button><button type="button" class="btn btn--quiet" data-a="again">再看一次</button><button type="button" class="btn" data-a="close">收下</button></div></div></div>
   </div>`;
   dialog.setAttribute('aria-labelledby', 'epilogue-title');
   const q = (s) => dialog.querySelector(s);
@@ -337,10 +437,13 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     stopTimers(); const b = beats[beats.length - 1];
     if (beats[index] !== b) { index = beats.length - 1; render(); stopTimers(); }
     stage.dataset.kind = 'end'; q('.epi__end').hidden = false;
-    q('.epi__end small').textContent = `CHAPTER ${ep.chapter} CLEAR`;
-    q('#epilogue-title').textContent = `第${'一二三四五六七八九十'[ep.chapter - 1] || ep.chapter}章《${ep.title}》・完`;
+    q('.epi__end small').textContent = ep.endSmall || `CHAPTER ${ep.chapter} CLEAR`;
+    q('#epilogue-title').textContent = ep.endTitle || `第${'一二三四五六七八九十'[ep.chapter - 1] || ep.chapter}章《${ep.title}》・完`;
+    const seq = ep.sequel && EPILOGUES[ep.sequel], seqBtn = q('[data-a="sequel"]');
+    seqBtn.hidden = !seq; seqBtn.textContent = seq ? `▶ 接著看${seq.subtitle.split('・')[0]}《${seq.title}》` : '';
+    q('.epi__end-row').classList.toggle('has-sequel', Boolean(seq));
     q('.epi__unlock').textContent = ep.next ? `下一章：${ep.next}` : ''; q('.epi__unlock').hidden = !ep.next;
-    q('.epi__end .btn:not(.btn--quiet)').focus({ preventScroll: true });
+    q(seq ? '.epi__end [data-a="sequel"]' : '.epi__end [data-a="close"]').focus({ preventScroll: true });
   }
   function openLog() {
     stopTimers();
@@ -361,6 +464,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     if (act === 'log') return openLog();
     if (act === 'log-close') { q('.epi__log').hidden = true; stage.focus({ preventScroll: true }); return finishLine(); }
     if (act === 'skip') return showEnd();
+    if (act === 'sequel') return play(ep.sequel);
     if (act === 'again') return play(Object.keys(EPILOGUES).find((k) => EPILOGUES[k] === ep));
     if (act === 'close') return dialog.close();
     if (e.target.closest('button,.epi__log,.epi__end')) return;
@@ -369,5 +473,5 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
   stage.addEventListener('keydown', (e) => { if (e.target === stage && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight')) { e.preventDefault(); next(); } });
   dialog.addEventListener('close', () => { stopTimers(); onActivity(); });
   document.addEventListener('visibilitychange', () => { if (!dialog.open) return; if (document.hidden) clearTimeout(autoTimer); else if (!typing) finishLine(); });
-  return { play, has: (id) => Boolean(epilogueFor(id)) };
+  return { play, has: (id) => Boolean(epilogueFor(id)), sequelOf: (id) => epilogueFor(id)?.sequel || null };
 }

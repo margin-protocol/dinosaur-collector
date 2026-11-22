@@ -4165,6 +4165,7 @@ function renderArchive() {
           const det = el('details', 'archive-card archive-story'); const sum = el('summary');
           sum.append(el('b', '', `📖 ${label}${ch.bossStory.bossName ? ` · ${ch.bossStory.bossName}` : ''}`)); det.append(sum, storyBox(text)); sec.append(det);
           if (key === 'after' && ch.bossId && epilogue.has(ch.bossId)) det.append(epilogueButton(ch.bossId, '▶ 重看尾聲劇場'));
+          if (key === 'after' && ch.bossId && epilogue.sequelOf(ch.bossId)) det.append(epilogueButton(epilogue.sequelOf(ch.bossId), '▶ 重看後日談'));
         }
       }
       if (ch.clueTotal) {

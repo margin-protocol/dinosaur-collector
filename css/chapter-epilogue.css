@@ -153,6 +153,8 @@
 .epi__unlock { padding:8px; border-radius:10px; background:var(--t-raised); font-size:13px; }
 .epi__end-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:4px; }
 .epi__end-row .btn { min-height:44px; margin:0; font-family:var(--font-display); }
+.epi__end-row .epi__sequel { grid-column:1 / -1; }
+.epi__end-row .epi__sequel[hidden] { display:none; }
 @keyframes epi-fade { from { opacity:0; } }
 
 /* 戰報與檔案館裡的入口 */
