@@ -1,0 +1,31 @@
+{
+  "chapter": 4,
+  "section": "天亮以後",
+  "status": "pending_image_generation_quota",
+  "playerDepiction": "花魁小湘與玩家本人；第一人稱或不固定性別、不露臉的背影。玩家穿無標誌的淺暖灰寬鬆長袖，不設定身分或臉。",
+  "output": {"width":1122,"height":1402,"transparent":false},
+  "referencePaths": [
+    "art/chapter-four-storybook/references/oiran-original.jpg",
+    "assets/characters/siang-114-oiran.webp",
+    "art/chapter-four-storybook/originals/first-morning.png",
+    "art/chapter-four-storybook/originals/return-name.png"
+  ],
+  "images": [
+    {
+      "id":"red-bean-tangyuan",
+      "title":"熱呼呼的紅豆湯圓",
+      "prompt":"One opaque portrait1122x1402 illustration, same No114 Oiran identity and ukiyo-e Tsukimi art direction as referencePaths. First-person player seated across from her on quiet wooden breakfast veranda at soft dawn. She keeps burgundy-red hair over one eye/elaborate updo, rose-violet eyes, gold radiating pins/central red gem/peonies/cherry blossoms/tassels, red-black-gold crane/floral kimono and shoulder jewelry. Pipe put aside out of frame. Her TWO hands cradle one ceramic bowl while she smiles gently over steam. A SECOND larger bowl on table in lower foreground belongs to viewer. Exactly TWO bowls total containing Chinese-style ADZUKI RED-BEAN SOUP with smooth WHITE GLUTINOUS RICE BALLS floating in reddish-brown broth and visible whole beans, NOT dango sticks/rice/pudding/buns. One viewer hand in plain light warm-grey sleeve holds wooden spoon at lower edge, no face/body/gender/rings; heroine's spoon rests on rim, no third hand. Exactly three human hands total. Large appetizing foreground bowl, readable heroine face and all key ornaments safely8% inside edges. Soft steam and morning peach light, washi grain/fine ink contours/premium anime detail. No writing/UI/border."
+    },
+    {
+      "id":"beyond-town-sea",
+      "title":"走出月見町，看見海",
+      "prompt":"One opaque portrait1122x1402 scene, same exact No114 Oiran outfit/face/ornate gold hairpins and ukiyo-e matte pigment style as references. At a quiet coastal exit of Tsukimi Town, wooden lattice gateway and dim plum lantern at LEFT lead from recognizable navy/red/gold Edo lane toward OPEN SEA at RIGHT/background. Pale lavender/peach dawn sky, calm indigo sea with delicate woodblock wave lines, one brightening horizon, no extra sun. Oiran stands left/middle in three-quarter back view and turns her rose-violet eyes toward sea in small amazed smile, long burgundy hair and red-black-gold crane kimono move in light breeze, headdress intact. Beside her at lower-right is only a partial neutral player back/shoulder or forearm in plain light warm-grey loose sleeve; NO player face, fixed gender, uniform or jewelry. Exactly two people including player, no No001 stand-in or extra guests. Strong path-to-ocean composition, emotional sense of finally leaving the endless night street. Faces/hands if visible natural, key subjects8% safe. No pipe smoking action, no words/UI/frame. Full bleed."
+    },
+    {
+      "id":"sunrise-together",
+      "title":"兩人一起看日出｜主視覺",
+      "priority":"highest",
+      "prompt":"One beautiful opaque portrait1122x1402 premium storybook KEY VISUAL, exact No114 Oiran costume/hairpins/kimono and ukiyo-e-inspired fine ink/washi texture as supplied references. Wide quiet ocean overlook at dawn, one SINGLE rising sun touching far horizon, pale peach-gold light reflected in calm indigo waves, airy lavender sky and subtle cherry petals at edge, no decorative frame. TWO ADULT people sit close on a low seaside wooden bench or flat stone in lower-middle, seen entirely FROM BEHIND: Oiran LEFT unmistakable burgundy-red elaborate updo with exact radiating gold pins/red gem/peonies/tassels, long burgundy curls, red-black-gold crane floral kimono/ivory lining; PLAYER RIGHT in plain light warm-grey loose unisex long-sleeved outerwear and neutral trousers, face completely hidden, simple medium dark hair silhouette with no gender cues or identifying features. Similar adult chibi scale; no visible player face, no second Siang instead of player. They lean very slightly toward each other, TWO hands naturally resting side by side on bench between them or gently touching, no extra limbs. Keep both entire heads/headdress/shoulders inside generous10% safe area. Sea and luminous horizon occupy generous upper-half space for gentle camera pan, pair clearly readable, tender companionship, no sexual framing. A small folded blank name slip may rest on Oiran's lap, no writing. No other people, no dinosaur here, no pipe smoke, no UI/title/text/border. This is most important illustration: the two are finally seeing daylight together."
+    }
+  ]
+}

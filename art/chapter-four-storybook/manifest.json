@@ -1,0 +1,252 @@
+{
+  "chapter": 4,
+  "title": "請記得我的名字",
+  "afterStoryTitle": "天亮以後",
+  "status": "partial_art_delivery",
+  "sourceCommit": "fae13f9",
+  "required": {
+    "total": 10,
+    "ready": 7,
+    "pending": 3
+  },
+  "playerDepiction": "花魁＋玩家本人；第一人稱或不固定性別、不露臉的背影。",
+  "assets": [
+    {
+      "id": "register-room",
+      "title": "名簿房間，紙頁落下",
+      "label": "尾聲 01 · 名簿房間",
+      "kind": "illustration",
+      "alt": "無名之簿安靜地倒在木地板上，金鎖鬆開，空白紙頁在名簿房間緩緩飄落。",
+      "description": "留給紙頁落下與慢慢推近的鏡頭。",
+      "references": [
+        "art/chapter-four-storybook/references/tsukimi-night.jpg",
+        "art/chapter-four-storybook/references/ch4-boss-nameless-book.webp"
+      ],
+      "status": "ready",
+      "original": "art/chapter-four-storybook/originals/register-room.png",
+      "sourceWidth": 1122,
+      "sourceHeight": 1402,
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": "art/chapter-four-storybook/originals/register-room.png",
+      "preparation": "native-size",
+      "web": "assets/storybooks/chapter-four/register-room.webp",
+      "bytes": 434950
+    },
+    {
+      "id": "first-morning",
+      "title": "月見町的第一個清晨",
+      "label": "尾聲 02 · 第一個清晨",
+      "kind": "illustration",
+      "alt": "月見町的燈籠街迎來桃金色晨光，小禿抱著手巾停下腳步，抬頭望向天亮的方向。",
+      "description": "小禿沿用 No.110，保留街道與燈籠的造型。",
+      "references": [
+        "art/chapter-four-storybook/references/tsukimi-night.jpg",
+        "assets/characters/siang-110-kamuro.webp"
+      ],
+      "status": "ready",
+      "original": "art/chapter-four-storybook/originals/first-morning.png",
+      "sourceWidth": 1122,
+      "sourceHeight": 1402,
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": "art/chapter-four-storybook/originals/first-morning.png",
+      "preparation": "native-size",
+      "web": "assets/storybooks/chapter-four/first-morning.webp",
+      "bytes": 545786
+    },
+    {
+      "id": "gratitude-slips",
+      "title": "想起來了，寫下感謝",
+      "label": "尾聲 03 · 感謝的名帖",
+      "kind": "illustration",
+      "alt": "禿、番頭新造、太鼓新造與振袖新造四位小湘圍著木桌，準備寫下帶著感謝的名帖。",
+      "description": "四位小湘各有自己的衣袖、髮飾與工作配件；名字由繪本另外排字。",
+      "references": [
+        "assets/characters/siang-110-kamuro.webp",
+        "assets/characters/siang-111-banto.webp",
+        "assets/characters/siang-112-taiko.webp",
+        "assets/characters/siang-113-furisode.webp"
+      ],
+      "status": "ready",
+      "original": "art/chapter-four-storybook/originals/gratitude-slips.png",
+      "sourceWidth": 1122,
+      "sourceHeight": 1402,
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": "art/chapter-four-storybook/originals/gratitude-slips.png",
+      "preparation": "native-size",
+      "web": "assets/storybooks/chapter-four/gratitude-slips.webp",
+      "bytes": 616404
+    },
+    {
+      "id": "return-name",
+      "title": "把名帖交還給妳",
+      "label": "尾聲 04 · 玩家第一人稱",
+      "kind": "illustration",
+      "alt": "玩家伸出穿淺暖灰袖子的手，把名帖交向花魁；花魁用雙手接住，驚訝地望向玩家。",
+      "description": "玩家不固定性別與長相，花魁造型對齊 No.114。",
+      "references": [
+        "assets/characters/siang-114-oiran.webp",
+        "art/chapter-four-storybook/references/oiran-original.jpg"
+      ],
+      "status": "ready",
+      "original": "art/chapter-four-storybook/originals/return-name.png",
+      "sourceWidth": 1122,
+      "sourceHeight": 1402,
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": "art/chapter-four-storybook/originals/return-name.png",
+      "preparation": "native-size",
+      "web": "assets/storybooks/chapter-four/return-name.webp",
+      "bytes": 542752
+    },
+    {
+      "id": "remember-name",
+      "title": "她想起了自己的名字",
+      "label": "尾聲 05 · 花魁特寫",
+      "kind": "illustration",
+      "alt": "花魁把名帖按在心口，眼裡閃著淚光，露出想起自己名字後的微笑。",
+      "description": "同一套髮飾、白鶴衣紋與配色，接住交還名帖後的情緒。",
+      "references": [
+        "assets/characters/siang-114-oiran.webp",
+        "art/chapter-four-storybook/originals/return-name.png"
+      ],
+      "status": "ready",
+      "original": "art/chapter-four-storybook/originals/remember-name.png",
+      "sourceWidth": 1072,
+      "sourceHeight": 1467,
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": "art/chapter-four-storybook/prepared/remember-name.png",
+      "preparation": "proportional-resize-and-center-crop-to-user-spec",
+      "web": "assets/storybooks/chapter-four/remember-name.webp",
+      "bytes": 470748
+    },
+    {
+      "id": "town-finale",
+      "title": "清晨裡，大家都在",
+      "label": "尾聲 06 · 收尾全景",
+      "kind": "illustration",
+      "alt": "晨光中的月見町街道上，花魁與四位小湘、小恐龍聚在一起，花魁捧著回到手中的名帖。",
+      "description": "下緣保留收尾空間；「第四章・完」另附透明 SVG 字卡。",
+      "references": [
+        "assets/characters/siang-114-oiran.webp",
+        "assets/characters/siang-110-kamuro.webp",
+        "assets/characters/siang-111-banto.webp",
+        "assets/characters/siang-112-taiko.webp",
+        "assets/characters/siang-113-furisode.webp",
+        "assets/mascot/dinosaur-idle.webp"
+      ],
+      "status": "ready",
+      "original": "art/chapter-four-storybook/originals/town-finale.png",
+      "sourceWidth": 1072,
+      "sourceHeight": 1467,
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": "art/chapter-four-storybook/prepared/town-finale.png",
+      "preparation": "proportional-resize-and-center-crop-to-user-spec",
+      "web": "assets/storybooks/chapter-four/town-finale.webp",
+      "bytes": 559818
+    },
+    {
+      "id": "nameless-defeated",
+      "title": "無名之簿・戰敗姿態",
+      "label": "戰敗立繪 · 1254 × 1254 透明",
+      "kind": "character",
+      "alt": "無名之簿的金鎖打開，紅繩與紙頁鬆鬆垂下，沒有增加原稿不存在的五官。",
+      "description": "以姿態表現戰敗與安靜，保留浮世繪紙紋、封面和繩結。",
+      "references": [
+        "art/chapter-four-storybook/references/ch4-boss-nameless-book.webp"
+      ],
+      "status": "ready",
+      "original": "art/chapter-four-storybook/originals/nameless-defeated.png",
+      "sourceWidth": 1254,
+      "sourceHeight": 1254,
+      "width": 1254,
+      "height": 1254,
+      "transparent": true,
+      "png": "art/chapter-four-storybook/originals/nameless-defeated.png",
+      "preparation": "native-size",
+      "web": "assets/storybooks/chapter-four/nameless-defeated.webp",
+      "bytes": 421690
+    },
+    {
+      "id": "red-bean-tangyuan",
+      "title": "熱呼呼的紅豆湯圓",
+      "label": "後日談 01",
+      "kind": "illustration",
+      "status": "pending_image_generation_quota",
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": null,
+      "web": null,
+      "promptFile": "art/chapter-four-storybook/pending/after-story-prompts.json",
+      "priority": "required"
+    },
+    {
+      "id": "beyond-town-sea",
+      "title": "走出月見町，看見海",
+      "label": "後日談 02",
+      "kind": "illustration",
+      "status": "pending_image_generation_quota",
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": null,
+      "web": null,
+      "promptFile": "art/chapter-four-storybook/pending/after-story-prompts.json",
+      "priority": "required"
+    },
+    {
+      "id": "sunrise-together",
+      "title": "兩人一起看日出｜主視覺",
+      "label": "後日談 03",
+      "kind": "illustration",
+      "status": "pending_image_generation_quota",
+      "width": 1122,
+      "height": 1402,
+      "transparent": false,
+      "png": null,
+      "web": null,
+      "promptFile": "art/chapter-four-storybook/pending/after-story-prompts.json",
+      "priority": "highest"
+    }
+  ],
+  "titleOverlay": "assets/storybooks/chapter-four/chapter-end-title.svg",
+  "optional": {
+    "wishNoteIllustrations": "not-created",
+    "specialDexStoryCard": "not-created",
+    "afterStoryBonus": "not-created"
+  },
+  "stageReference": {
+    "chapter4Kamuro": "assets/characters/siang-110-kamuro.webp",
+    "oiran": "assets/characters/siang-114-oiran.webp",
+    "battleStage4-2Enemy": "assets/enemies/chapter-04/ch4-02-wild-taiko.webp"
+  },
+  "notes": [
+    "六張尾聲不透明交付圖1122×1402，無名之簿透明1254×1254。",
+    "remember-name 和 town-finale 的生成原圖1072×1467；交付圖等比縮放後居中裁切到1122×1402，未裁切原圖另留存。",
+    "PNG為合成圖，非可獨立移動角色的PSD；只有戰敗名簿是透明獨立素材。",
+    "原稿無五官的無名之簿不新增臉，以紙頁／金鎖／紅繩的姿態呈現戰敗。",
+    "名字與章末文字由字幕／DOM／SVG排字；不自行編造花魁真名。",
+    "後日談3張因繪圖服務額度用完而尚未生成，沒有用其他圖片冒充完成；已保存各張提示與參考圖。",
+    "過場中的小禿造型使用No.110；角色與討伐4-2既有敵人亂奏太鼓分開，不替換戰鬥敵人。",
+    "本次只交付美術與驗收頁，不更動第四章劇本、戰鬥、獎勵與存檔。"
+  ],
+  "continuityReview": [
+    {
+      "asset": "register-room",
+      "sourceCommit": "00a5fa5",
+      "note": "生成期間新增的第四章文字：Boss開場房間無燈籠、結尾紙落在榻榻米。現圖是戰敗後有燈、木地板的美術版本；正式劇場接入前需選定文字或圖的對齊方式，本次不改動劇本。",
+      "promptFile": "art/chapter-four-storybook/pending/register-room-alignment.txt"
+    }
+  ]
+}
