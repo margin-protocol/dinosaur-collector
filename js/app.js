@@ -563,7 +563,58 @@ function canChooseEgg(current, id) {
 const EGG_CATEGORIES = ['ordinary', 'wish', 'weather', 'county', 'cipher', 'keepsake', 'date', 'star'];
 let eggCategory = null;
 const eggArt = (egg, pct = 0) => { const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true'); const v = createEggView(egg); v.setProgress(pct); art.append(v.el); return art; };
-const swapLabel = () => shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
+const swapLabel = () => sideTarget !== null ? (pickBlocked() ? '暫放架滿了，先孵完一顆' : state.shelf[sideTarget] ? '換進這一格副架' : '放進這一格副架') : shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
+
+// 副架換蛋（湘 11/22）：點副架某一格 → 打開選蛋清單，選的蛋放進「那一格副架」，主架的蛋不動；
+// 原本那顆回暫放架（還沒孵過的庫存蛋收回蛋庫），保溫進度都跟著蛋走
+let sideTarget = null;
+const sideSlots = (s) => Math.max(0, (s.cradle?.slots || 1) - 1);
+const sideKeepsOld = (s, i) => { const old = s.shelf[i]; return Boolean(old) && !(old.warmth === 0 && EGGS[old.id]?.stocked); };
+const sideRoom = (s, i) => !sideKeepsOld(s, i) || s.shelf.length < SHELF_MAX;
+const pickBlocked = () => sideTarget === null ? shelfFull(state) : !sideRoom(state, sideTarget);
+function canSideEgg(s, id) {
+  if (!EGGS[id] || id === 'origin' || !(s.hatched > 0 || s.dex['001'])) return false;
+  if (EGGS[id].stocked && eggStock(s, id) <= 0) return false;
+  return sideRoom(s, sideTarget);
+}
+function placeOnSide(current, i, ds) {
+  if (i === null || i >= sideSlots(current)) return false;
+  const here = state.shelf[i];
+  const sameHere = () => current.shelf[i] && current.shelf[i].id === here?.id && current.shelf[i].since === here?.since;
+  if (ds.sideMain !== undefined) { // 跟主架互換
+    if (!sameHere()) return false;
+    const next = current.shelf[i]; current.shelf[i] = current.egg; current.egg = next; return 'main';
+  }
+  if (ds.shelf !== undefined) { // 暫放架上的蛋換進這一格，原本這格的蛋去它的位置
+    const saved = state.shelf[Number(ds.shelf)];
+    const j = current.shelf.findIndex(e => e.id === saved?.id && e.since === saved?.since);
+    if (j < sideSlots(current) || !sameHere()) return false;
+    [current.shelf[i], current.shelf[j]] = [current.shelf[j], current.shelf[i]];
+    return 'shelf';
+  }
+  if (here && !sameHere()) return false;
+  if (!sideRoom(current, i)) return false;
+  const { egg: id, county, character } = ds;
+  let next;
+  if (county) {
+    if (!current.travel?.eggs?.includes(county)) return false;
+    next = newEgg('county'); takeEgg(current, next, county);
+  } else {
+    if (!canSideEgg(current, id)) return false;
+    if (character && !current.gifts.eggs.some(g => giftMatch(g, id, character))) return false;
+    next = newEgg(id); if (EGGS[id].stocked) takeEgg(current, next, null, character);
+  }
+  const old = i < current.shelf.length ? current.shelf.splice(i, 1)[0] : null;
+  current.shelf.splice(Math.min(i, current.shelf.length), 0, next);
+  if (!old) return 'placed';
+  if (old.warmth === 0 && EGGS[old.id]?.stocked) { returnEgg(current, old); return 'stock'; }
+  const at = Math.min(sideSlots(current), current.shelf.length);
+  current.shelf.splice(at, 0, old);
+  return at < sideSlots(current) ? 'side' : 'back';
+}
+function openSidePicker(i) {
+  state = loadState(); sideTarget = i; eggCategory = null; renderEggChoices(); $('egg-picker-feedback').textContent = ''; $('egg-picker').showModal(); syncRoomActivity();
+}
 
 // 副架：用化石擴充後，培養架旁邊多出來的保溫位置（放暫放架最前面的蛋）
 function renderSideCradles() {
@@ -571,7 +622,7 @@ function renderSideCradles() {
   const extra = Math.max(0, (state.cradle?.slots || 1) - 1);
   host.hidden = !extra;
   if (!extra) { host.replaceChildren(); return; }
-  const head = document.createElement('p'); head.className = 'side-cradles__head'; head.textContent = `副架 · ${extra} 格（放在這裡的蛋也會自動保溫）`;
+  const head = document.createElement('p'); head.className = 'side-cradles__head'; head.textContent = `副架 · ${extra} 格（點一下換蛋，放這裡也會自動保溫）`;
   const row = document.createElement('div'); row.className = 'side-cradles__row';
   for (let i = 0; i < extra; i++) {
     const saved = state.shelf[i];
@@ -581,12 +632,13 @@ function renderSideCradles() {
       b.dataset.sideShelf = String(i); b.disabled = busy;
       const t = document.createElement('span'); t.className = 'side-cradle__name'; t.textContent = saved.county ? `${egg.name}·${saved.county}` : eggLabel(saved, egg.name);
       const s = document.createElement('span'); s.className = 'side-cradle__pct'; s.textContent = `保溫中 ${pct}%`;
-      b.setAttribute('aria-label', `副架上的${t.textContent}，孵化進度 ${pct}%，點一下換到主架`);
-      b.append(eggArt(egg, pct), t, s);
+      b.setAttribute('aria-label', `副架上的${t.textContent}，孵化進度 ${pct}%，點一下換這一格的蛋`);
+      const go = document.createElement('span'); go.className = 'side-cradle__swap'; go.setAttribute('aria-hidden', 'true'); go.textContent = '換這格的蛋';
+      b.append(eggArt(egg, pct), t, s, go);
     } else {
-      b.dataset.sideEmpty = '1';
+      b.dataset.sideEmpty = String(i);
       const t = document.createElement('span'); t.className = 'side-cradle__name'; t.textContent = '空的副架';
-      const s = document.createElement('span'); s.className = 'side-cradle__pct'; s.textContent = '換一顆蛋時，現在這顆會放上來繼續保溫';
+      const s = document.createElement('span'); s.className = 'side-cradle__pct'; s.textContent = '點一下，選一顆蛋放上來保溫';
       b.append(t, s);
     }
     row.append(b);
@@ -595,17 +647,18 @@ function renderSideCradles() {
 }
 function shelfCard(saved, index) {
   const egg = EGGS[saved.id];
-  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice egg-choice--shelf'; card.dataset.shelf = String(index); card.disabled = busy || shelfFull(state);
+  const onSide = sideTarget !== null && index < sideSlots(state);
+  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice egg-choice--shelf'; card.dataset.shelf = String(index); card.disabled = busy || (sideTarget !== null ? onSide || !state.shelf[sideTarget] : shelfFull(state));
   const pct = Math.min(100, Math.round(100 * saved.warmth / egg.warmthNeeded));
   const content = document.createElement('div');
   const title = document.createElement('h3'); title.textContent = CHARACTERS[saved.character]?.badge ? `${CHARACTERS[saved.character].name}專屬蛋` : saved.county ? `${egg.name} · ${saved.county}` : eggLabel(saved, egg.name);
   const detail = document.createElement('p'); detail.textContent = `${index < (state.cradle?.slots || 1) - 1 ? '副架保溫中' : '暫放中'} · 孵化進度 ${pct}%（${saved.warmth} / ${egg.warmthNeeded}）`;
-  const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = shelfFull(state) ? '暫放架滿了，先孵完一顆' : '繼續培育這顆';
+  const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = sideTarget !== null ? (index === sideTarget ? '就是這一格' : onSide ? '已經在副架上' : state.shelf[sideTarget] ? '換進這一格副架' : '已經在暫放架') : shelfFull(state) ? '暫放架滿了，先孵完一顆' : '繼續培育這顆';
   content.append(title, detail, label); card.append(eggArt(egg, pct), content); return card;
 }
 function countyCard(county) {
   const egg = EGGS.county;
-  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = 'county'; card.dataset.county = county; card.disabled = busy || shelfFull(state);
+  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = 'county'; card.dataset.county = county; card.disabled = busy || pickBlocked();
   const content = document.createElement('div');
   const title = document.createElement('h3'); title.textContent = `${egg.name} · ${county}`;
   const detail = document.createElement('p'); detail.textContent = `固定遇見${CHARACTERS[COUNTY_CHARACTER[county]]?.name || '這裡的小湘'}`;
@@ -623,7 +676,7 @@ function giftCards(id) {
 }
 function giftCard(id, key, n = 1) {
   const egg = EGGS[id]; const c = CHARACTERS[key];
-  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = id; card.dataset.character = key; card.disabled = busy || shelfFull(state);
+  const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = id; card.dataset.character = key; card.disabled = busy || pickBlocked();
   const content = document.createElement('div');
   const title = document.createElement('h3'); title.textContent = c?.badge ? `${c.name}專屬蛋` : egg.name;
   const detail = document.createElement('p'); detail.textContent = c ? `裡面是${c.name}` : '隨機遇見一位約會小湘';
@@ -643,31 +696,50 @@ function renderEggChoices() {
   const firstHatched = state.hatched > 0 || Boolean(state.dex['001']);
   const heading = (text) => Object.assign(document.createElement('h3'), { className: 'egg-choices__heading', textContent: text });
   if (!firstHatched) eggCategory = null;
+  const side = sideTarget !== null ? state.shelf[sideTarget] : null;
+  const sideName = side ? (side.county ? `${EGGS[side.id].name}·${side.county}` : eggLabel(side, EGGS[side.id].name)) : '';
   if (!eggCategory) {
+   if (sideTarget !== null) {
+    $('egg-picker-title').textContent = `換副架第 ${sideTarget + 1} 格的蛋`;
+    $('egg-picker-note').textContent = side ? `選一顆蛋放進這一格，主架的蛋不會動。原本的「${sideName}」會回到暫放架，進度都還在。` : '選一顆蛋放進這一格副架，主架的蛋不會動；放在副架的蛋也會自動保溫。';
+   } else {
     $('egg-picker-title').textContent = '選擇培育的蛋';
     $('egg-picker-note').textContent = firstHatched ? `先選一個分類。換蛋時，已經注入能量的蛋會放上暫放架（最多 ${SHELF_MAX} 顆），進度不會消失。` : '本源蛋是首次相遇的禮物；完成第一次孵化後，就能培育其他的蛋。';
+   }
     const tiles = EGG_CATEGORIES.map(id => {
       const egg = EGGS[id]; const info = categoryInfo(id);
       const tile = document.createElement('button'); tile.type = 'button'; tile.className = 'egg-cat'; tile.dataset.cat = id; tile.disabled = !firstHatched;
-      tile.setAttribute('aria-pressed', String(info.current));
+      tile.setAttribute('aria-pressed', String(info.current && sideTarget === null));
       const name = document.createElement('b'); name.textContent = egg.name;
       const sub = document.createElement('small');
-      sub.textContent = !firstHatched ? '首次孵化後解鎖' : [info.current && '培育中', info.shelved && `暫放 ${info.shelved}`, info.stock !== null && `持有 ${info.stock}`].filter(Boolean).join(' · ') || (id === 'ordinary' ? '隨時都有' : '還沒有');
+      sub.textContent = !firstHatched ? '首次孵化後解鎖' : [info.current && sideTarget === null && '培育中', info.shelved && `暫放 ${info.shelved}`, info.stock !== null && `持有 ${info.stock}`].filter(Boolean).join(' · ') || (id === 'ordinary' ? '隨時都有' : '還沒有');
       tile.append(eggArt(egg), name, sub);
       if (info.stock || info.shelved) tile.classList.add('has-eggs');
       return tile;
     });
     const grid = document.createElement('div'); grid.className = 'egg-cats'; grid.append(...tiles);
-    $('egg-choices').replaceChildren(...(firstHatched ? [] : [eggCard(EGGS.origin)]), grid);
+    const extras = [];
+    if (sideTarget !== null && side) { // 想要的話也可以直接跟主架互換
+      const mainEgg = EGGS[state.egg.id]; const pct = Math.min(100, Math.round(100 * side.warmth / EGGS[side.id].warmthNeeded));
+      const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice egg-choice--shelf'; card.dataset.sideMain = '1'; card.disabled = busy || Boolean(state.eggOffer);
+      const content = document.createElement('div');
+      const title = document.createElement('h3'); title.textContent = `⇄ 跟主架互換`;
+      const detail = document.createElement('p'); detail.textContent = `「${sideName}」（${pct}%）換到主架，主架的「${state.egg.county ? `${mainEgg.name}·${state.egg.county}` : eggLabel(state.egg, mainEgg.name)}」放到這一格`;
+      const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = '互換';
+      content.append(title, detail, label); card.append(eggArt(EGGS[side.id], pct), content); extras.push(card);
+    }
+    if (sideTarget !== null && !sideRoom(state, sideTarget)) $('egg-picker-note').textContent += `（暫放架滿了，最多 ${SHELF_MAX} 顆，只能跟暫放中的蛋或主架互換）`;
+    $('egg-choices').replaceChildren(...(firstHatched ? [] : [eggCard(EGGS.origin)]), ...extras, grid);
     return;
   }
   const egg = EGGS[eggCategory];
-  $('egg-picker-title').textContent = egg.name;
+  $('egg-picker-title').textContent = sideTarget !== null ? `副架第 ${sideTarget + 1} 格 · ${egg.name}` : egg.name;
   const back = document.createElement('button'); back.type = 'button'; back.className = 'egg-back'; back.dataset.back = '1'; back.textContent = '‹ 所有分類';
   const shelved = state.shelf.map((saved, index) => [saved, index]).filter(([saved]) => saved.id === eggCategory).map(([saved, index]) => shelfCard(saved, index));
   let fresh;
-  if (eggCategory === 'county') fresh = [...(state.egg.id === 'county' ? [eggCard(egg)] : []), ...(state.travel?.eggs || []).map(countyCard)];
-  else if (['keepsake', 'date'].includes(eggCategory) && state.gifts.eggs.some(g => g.egg === eggCategory)) fresh = [...(state.egg.id === eggCategory ? [eggCard(egg)] : []), ...giftCards(eggCategory)];
+  const mainHere = (id) => sideTarget === null && state.egg.id === id;
+  if (eggCategory === 'county') fresh = [...(mainHere('county') ? [eggCard(egg)] : []), ...(state.travel?.eggs || []).map(countyCard)];
+  else if (['keepsake', 'date'].includes(eggCategory) && state.gifts.eggs.some(g => g.egg === eggCategory)) fresh = [...(mainHere(eggCategory) ? [eggCard(egg)] : []), ...giftCards(eggCategory)];
   else fresh = [eggCard(egg)];
   if (!fresh.length) fresh = [eggCard(egg)];
   const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣或徽章兌換時收到，固定孵出蛋裡指定的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。', star: '月簽到同一個月累積 28 天就會收到，裡面一定是 SR 以上的小湘。' }[eggCategory];
@@ -706,8 +778,8 @@ function openEggOdds(id) {
   }).filter(Boolean);
   body.replaceChildren(intro, luck, ...sections);
   $('egg-odds-title').textContent = `${egg.name}的機率表`;
-  const back = $('egg-picker').open; if (back) $('egg-picker').close(); // 不疊在選蛋視窗上（半透明會透出底下的字），關掉再回去
-  $('egg-odds').dataset.back = back ? '1' : '';
+  const back = $('egg-picker').open; $('egg-odds').dataset.back = back ? '1' : '';
+  if (back) $('egg-picker').close(); // 不疊在選蛋視窗上（半透明會透出底下的字），關掉再回去
   $('egg-odds').showModal(); $('egg-odds').scrollTop = 0;
 }
 $('close-egg-odds').addEventListener('click', () => $('egg-odds').close());
@@ -717,8 +789,8 @@ $('egg-choices').addEventListener('click', (e) => { const b = e.target.closest('
 function eggCard(egg) {
   const firstHatched = state.hatched > 0 || Boolean(state.dex['001']);
   {
-    const current = state.egg.id === egg.id;
-    const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = egg.id; card.setAttribute('aria-pressed', String(current)); card.disabled = busy || !canChooseEgg(state, egg.id);
+    const current = sideTarget === null && state.egg.id === egg.id;
+    const card = document.createElement('button'); card.type = 'button'; card.className = 'egg-choice'; card.dataset.egg = egg.id; card.setAttribute('aria-pressed', String(current)); card.disabled = busy || !(sideTarget !== null ? canSideEgg(state, egg.id) : canChooseEgg(state, egg.id));
     const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true');
     const preview = createEggView(egg); preview.setProgress(0); art.append(preview.el);
     const content = document.createElement('div');
@@ -726,7 +798,7 @@ function eggCard(egg) {
     const detail = document.createElement('p'); detail.textContent = egg.id === 'origin' ? '固定遇見原味小湘' : egg.id === 'keepsake' ? '紀念特別日子的蛋，固定遇見那一天的小湘' : egg.id === 'cipher' ? '湘準備的驚喜，裡面也許是她指定的小湘' : egg.id === 'star' ? `月簽到的獎勵，一定是 SR 以上（${Object.keys(activePool(egg, new Date(), state.dex)).length} 種）` : egg.id === 'weather' ? `天氣的蛋，今天的天氣決定誰比較容易出現（${Object.keys(activePool(egg, new Date(), state.dex)).length} 種）` : egg.byCounty ? `固定遇見打卡縣市的小湘${current && state.egg.county ? `（${state.egg.county}）` : ''}` : `隨機遇見 ${Object.keys(activePool(egg, new Date(), state.dex)).length} 種小湘${egg.id === 'wish' ? '，R 與 SR 機率較高' : '，可能重複'}`;
     const cost = document.createElement('p'); cost.textContent = `孵化需要 ${egg.warmthNeeded} 能量`;
     const stock = eggStock(state, egg.id);
-    const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
+    const label = document.createElement('span'); label.className = 'egg-choice__state'; label.textContent = current ? '✓ 正在培育' : egg.id === 'origin' && firstHatched ? '首次相遇限定 · 已完成' : !firstHatched && egg.id !== 'origin' ? '首次孵化後解鎖' : egg.stocked && !stock ? '尚未持有' : swapLabel();
     content.append(title, detail, cost);
     if (egg.stocked) {
       const own = document.createElement('p'); own.className = 'egg-choice__stock';
@@ -1463,15 +1535,27 @@ $('presenter-list').addEventListener('click', event => {
 
 eggButton.addEventListener('click', onEggTap);
 $('open-eggs').addEventListener('click', () => {
-  state = loadState(); eggCategory = null; renderEggChoices(); $('egg-picker-feedback').textContent = ''; $('egg-picker').showModal(); syncRoomActivity();
+  state = loadState(); sideTarget = null; eggCategory = null; renderEggChoices(); $('egg-picker-feedback').textContent = ''; $('egg-picker').showModal(); syncRoomActivity();
 });
+$('egg-picker').addEventListener('close', () => { if (!$('egg-odds').dataset.back) sideTarget = null; });
 $('close-eggs').addEventListener('click', () => $('egg-picker').close());
 $('egg-choices').addEventListener('click', async event => {
   const nav = event.target.closest('[data-cat], [data-back]');
   if (nav && !nav.disabled) { eggCategory = nav.dataset.cat || null; renderEggChoices(); $('egg-picker-feedback').textContent = ''; return; }
-  const choice = event.target.closest('[data-egg], [data-shelf]');
+  const choice = event.target.closest('[data-egg], [data-shelf], [data-side-main]');
   if (!choice || choice.disabled || busy) return;
   busy = true;
+  if (sideTarget !== null) {
+    try {
+      const { state: latest, result } = await updateState(current => placeOnSide(current, sideTarget, choice.dataset));
+      state = latest;
+      if (result) {
+        $('egg-picker').close();
+        toast({ main: '換好了！副架的蛋換到主架，主架那顆放上副架繼續保溫。', shelf: '換好了！原本那顆回到暫放架，進度都還在。', back: '換好了！原本那顆回到暫放架，進度都還在。', side: '換好了！原本那顆移到另一格副架，一樣會保溫。', stock: '換好了！原本那顆還沒開始孵，先收回蛋庫了。', placed: '放好了！這顆蛋在副架上也會自動保溫。' }[result]);
+      } else { renderEggChoices(); $('egg-picker-feedback').textContent = '培育進度已更新，請再選一次。'; }
+    } finally { busy = false; state = loadState(); renderAll(); }
+    return;
+  }
   try {
     const shelved = state.egg.warmth > 0;
     const { state: latest, result } = await updateState(current => {
@@ -1508,28 +1592,10 @@ $('egg-choices').addEventListener('click', async event => {
   } finally { busy = false; state = loadState(); renderAll(); }
 });
 $('cultivate').addEventListener('click', onEggTap);
-$('side-cradles')?.addEventListener('click', async event => {
+$('side-cradles')?.addEventListener('click', event => {
   const b = event.target.closest('[data-side-shelf], [data-side-empty]'); if (!b || busy) return;
-  if (b.dataset.sideEmpty) { $('open-eggs').click(); return; }
-  // 點副架上的蛋：和主架交換
-  busy = true;
-  try {
-    const saved = state.shelf[Number(b.dataset.sideShelf)];
-    const { state: latest, result } = await updateState(current => {
-      const index = current.shelf.findIndex(e => e.id === saved?.id && e.since === saved?.since);
-      if (index < 0) return false;
-      const [next] = current.shelf.splice(index, 1);
-      const prev = current.egg; const kept = prev.warmth > 0;
-      if (kept) current.shelf.splice(index, 0, prev); else if (EGGS[prev.id]?.stocked) returnEgg(current, prev);
-      current.egg = next;
-      return kept ? 'shelf' : EGGS[prev.id]?.stocked ? 'stock' : 'away';
-    });
-    state = latest;
-    // 剛才的蛋還沒餵過能量就不會上副架，提示要跟畫面一致
-    if (result === 'shelf') toast('換好了！剛才的蛋換到副架上，一樣會保溫。');
-    else if (result === 'stock') toast('換好了！剛才那顆還沒開始孵，先收回蛋庫了。');
-    else if (result) toast('換好了！剛才那顆還沒開始孵，先收起來了，想孵隨時再選。');
-  } finally { busy = false; state = loadState(); renderAll(); }
+  // 點副架哪一格，就換那一格的蛋（湘 11/22）
+  openSidePicker(Number(b.dataset.sideShelf ?? b.dataset.sideEmpty));
 });
 $('feed-all').addEventListener('click', () => void onFeedAll());
 $('home-wishes').addEventListener('click', () => showView('wish'));

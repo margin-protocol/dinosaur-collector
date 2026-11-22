@@ -621,6 +621,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .side-cradle .egg-choice__art { width:56px; height:64px; }
 .side-cradle .egg-choice__art .egg { width:116px; height:116px; }
 .side-cradle__pct { font-size:11px; color:var(--pearl); }
+.side-cradle { cursor:pointer; touch-action:manipulation; -webkit-tap-highlight-color:transparent; transition:transform .12s ease; }
+.side-cradle:active { transform:scale(.97); }
+.side-cradle__swap { margin-top:4px; padding:1px 10px; border-radius:999px; border:1px solid #f0d6c866; font-size:11px; letter-spacing:.04em; }
 .side-cradle.is-empty { border-style:dashed; padding:14px 8px; }
 .side-cradle.is-empty .side-cradle__pct { max-width:16em; text-align:center; }
 

@@ -43,8 +43,9 @@ s=await save();assert.equal(s.shelf[0].warmth,25);
 await p.evaluate(()=>location.hash='incubate');await p.waitForTimeout(300);
 assert(await p.locator('#side-cradles').isVisible(),'培育室看得到副架');assert.match(await p.textContent('#side-cradles'),/副架 · 1 格/);assert.match(await p.textContent('#side-cradles'),/保溫中 \d+%/);
 if(process.env.SHOT)await p.locator('#side-cradles').scrollIntoViewIfNeeded().then(()=>p.screenshot({path:process.env.SHOT}));
-// 點副架上的蛋：和主架交換，原本的蛋換到副架
-const mainBefore=(await save()).egg;await p.locator('[data-side-shelf="0"]').click();await p.waitForTimeout(400);s=await save();
+// 點副架上的蛋：打開「換這一格的蛋」選單（主架不動）；選「跟主架互換」才和主架交換
+const mainBefore=(await save()).egg;await p.locator('[data-side-shelf="0"]').click();await p.locator('#egg-picker[open]').waitFor();assert.match(await p.textContent('#egg-picker-title'),/換副架第 1 格的蛋/);assert.deepEqual((await save()).egg,mainBefore);
+await p.locator('[data-side-main]').click();await p.waitForTimeout(400);s=await save();
 assert.equal(s.egg.id,'wish');if(mainBefore.warmth>0)assert.equal(s.shelf[0].since,mainBefore.since);
 assert.equal(errs.length,0,errs.join('\n'));
 console.log('egg traits: offer after hatch, pick naughty, pet+colour requests, shiny boost, cradle slot warms shelf PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});
