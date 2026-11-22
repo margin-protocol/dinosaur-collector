@@ -369,6 +369,22 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .dex-bond__unlocks li { display:grid; gap:2px; padding:7px 10px; border-radius:10px; background:#00000022; font-size:12.5px; line-height:1.55; opacity:.6; }
 .dex-bond__unlocks li.is-open { opacity:1; background:#f0a8c014; }
 .dex-bond__unlocks b { font-size:11px; color:#f0a8c0; font-weight:600; }
+/* 口味筆記（11/22）：試吃後自動推理的喜歡／討厭口味＋秘密最愛 */
+.dex-taste { margin:12px 0 4px; padding:12px 14px; border-radius:16px; background:#ffffff0b; border:1px solid #f0a8c033; text-align:left; }
+.dex-taste__head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; margin:0 0 4px; font-size:14px; }
+.dex-taste__head small { font-size:11px; font-weight:400; opacity:.7; white-space:nowrap; }
+.dex-taste__row { display:grid; grid-template-columns:52px 1fr; gap:8px; align-items:center; padding:7px 0; border-top:1px dashed #f0a8c033; font-size:12.5px; line-height:1.5; }
+.dex-taste__row:first-child { border-top:0; }
+.dex-taste__row > b { font-size:12px; font-weight:500; opacity:.85; white-space:nowrap; }
+.dex-taste__row > span { display:flex; flex-wrap:wrap; gap:5px; align-items:center; min-width:0; }
+.dex-taste__chip { display:inline-flex; align-items:center; padding:2px 9px; border-radius:999px; background:#f0a8c022; border:1px solid #f0a8c044; font-size:12px; white-space:nowrap; }
+.dex-taste__chip.is-maybe { opacity:.65; border-style:dashed; }
+.dex-taste__chip.is-on { background:#ffd9a830; border-color:#ffd9a8aa; font-weight:600; }
+.dex-taste__ings { font-size:12px; opacity:.85; }
+.dex-taste__unknown { font-size:12px; opacity:.6; }
+.dex-taste__hint { margin:6px 0 0; font-size:11.5px; line-height:1.5; opacity:.7; }
+.dex-taste__hint:empty { display:none; }
+.kitchen-result .kitchen-learned { display:block; margin-top:6px; padding:5px 8px; border-radius:10px; background:#f0a8c022; font-size:12px; line-height:1.5; opacity:1; }
 .dex-detail.is-shiny .dex-detail__img { filter:drop-shadow(0 0 14px #ffe7a6) drop-shadow(0 0 4px #fff); }
 .dex-detail.is-shiny { box-shadow:0 0 0 2px #ffd9a8aa, 0 0 40px #ffd9a855; }
 .bond-up { text-align:center; }
@@ -1034,3 +1050,4 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .errand-active.is-compact .errand-trip b { font-size:13px; }
 .errand-active.is-compact .errand-trip small { font-size:11px; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .errand-active.is-compact .errand-trip .btn { min-height:32px; padding:4px 12px; }
+#kitchen-siangs .errand-siang span { white-space:pre-line; text-align:center; }

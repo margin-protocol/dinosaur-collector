@@ -10,7 +10,7 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.whats-new__entry small,.wheel-total,.wheel-left,.dex-bond__today,.bond-up__reward,.battle-stage-card__info small,.battle-enemy small,.battle-enemy p,.battle-score small,.battle-log .is-power,.train-row small) { color:var(--t-muted); opacity:1; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.wheel-stake,.errand-tabs button,.battle-stage-card,.train-row) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); opacity:1; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.wheel-stake[aria-checked="true"],.errand-tabs button[aria-selected="true"],.battle-stage-card.is-boss,.battle-stage-card.is-shiny,.battle-score .is-record) { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.errand-tabs,.battle-forecast,.battle-log,.battle-intro,.battle-story,.battle-advice,.star-gift-hint,.battle-score>div,.dex-bond,.dex-bond__unlocks li) { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.errand-tabs,.battle-forecast,.battle-log,.battle-intro,.battle-story,.battle-advice,.star-gift-hint,.battle-score>div,.dex-bond,.dex-bond__unlocks li,.dex-taste) { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-bond__unlocks li { opacity:1; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-bond__unlocks li.is-open { background:var(--t-selected); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__bond { background:var(--t-selected); color:var(--t-accent); box-shadow:inset 0 0 0 1px var(--t-line); }
@@ -89,3 +89,9 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-filter button[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-locked-chip b { color:var(--t-text); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-locked-chip small { color:var(--t-muted); }
+
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"])  .dex-taste__chip { background:var(--t-selected); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-taste__chip.is-on { border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.dex-taste__row) { border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .kitchen-result .kitchen-learned { background:var(--t-raised); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.dex-taste__hint,.dex-taste__unknown,.dex-taste__head small,.dex-taste__ings,.dex-taste__row > b) { color:var(--t-muted); opacity:1; }

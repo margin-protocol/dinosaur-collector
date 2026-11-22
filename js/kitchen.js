@@ -76,6 +76,29 @@ export function rate(no, dish) {
   const like = dish.tags.includes(t.like), hate = dish.tags.includes(t.dislike);
   return like && !hate ? 2 : hate && !like ? 0 : 1;
 }
+export const TAGS = [...new Set(INGREDIENTS.map((i) => i.tag))];
+export const tagIngredients = (tag) => INGREDIENTS.filter((i) => i.tag === tag);
+// 口味筆記（湘 11/22 選 B）：只看玩家餵過的結果，推理出這位小湘可能喜歡／討厭哪個口味（不偷看答案）。
+// 每一組（喜歡, 討厭）都拿去對照吃過的評價，留下說得通的；剩一種就是「確定」。秘密最愛（3）不算線索，只記錄找到了沒。
+export function tasteNotes(state, no) {
+  const list = state.kitchen?.tasted?.[no] || {};
+  const clues = Object.entries(list).filter(([, r]) => r !== 3).map(([id, r]) => ({ tags: dishById(id)?.tags, r })).filter((c) => c.tags);
+  const fits = [];
+  for (const like of TAGS) for (const dislike of TAGS) {
+    if (like === dislike) continue;
+    if (clues.every(({ tags, r }) => { const l = tags.includes(like), h = tags.includes(dislike); return (l && !h ? 2 : h && !l ? 0 : 1) === r; })) fits.push([like, dislike]);
+  }
+  const likes = [...new Set(fits.map((f) => f[0]))], dislikes = [...new Set(fits.map((f) => f[1]))];
+  const secret = Object.entries(list).find(([, r]) => r === 3)?.[0] || null;
+  return { tries: Object.keys(list).length, likes, dislikes, like: likes.length === 1 ? likes[0] : null, dislike: dislikes.length === 1 ? dislikes[0] : null, secret: secret ? dishById(secret) : null, fits };
+}
+// 根據筆記猜這道菜她會不會喜歡（沒吃過的菜才用）；說不準就回傳 null。秘密最愛猜不到，所以只說「應該」
+export function guessRating(state, no, dish) {
+  const n = tasteNotes(state, no);
+  if (!dish || !n.tries) return null;
+  const rs = new Set(n.fits.map(([l, h]) => { const a = dish.tags.includes(l), b = dish.tags.includes(h); return a && !b ? 2 : b && !a ? 0 : 1; }));
+  return rs.size === 1 ? [...rs][0] : null;
+}
 export const isSecret = (no, dish) => Boolean(TASTES[no] && dish && key(TASTES[no].secret) === dish.id);
 
 export const STARTER = { strawberry: 2, milk: 2, caramel: 2, pudding: 2 }; // 第一次打開廚房的見面禮
@@ -128,6 +151,7 @@ export function feed(state, no, dishId, today) {
   if (!CHARACTERS[no] || !state.dex?.[no]) return '還沒遇見這位小湘。';
   const r = rate(no, dish);
   const rating = RATINGS[r];
+  const before = tasteNotes(state, no);
   k.meals[dish.id] -= 1; if (!k.meals[dish.id]) delete k.meals[dish.id];
   const tasted = (k.tasted[no] ||= {});
   const firstTaste = !(dish.id in tasted);
@@ -141,7 +165,9 @@ export function feed(state, no, dishId, today) {
     const value = eff.kind === 'gather' ? (r >= 2 ? 1 : 0) : Math.round(eff.value * rating.effect * 1000) / 1000;
     if (value > 0) { buff = { kind: eff.kind, value, dish: dish.id }; k.buffs[no] = buff; }
   }
-  return { no, dish, rating: r, points: rating.points, added: g.added, up: g.up, capped: g.added < rating.points, buff, secretFound, firstTaste, line: reaction(no, dish, r) };
+  const after = tasteNotes(state, no);
+  const learned = { like: !before.like && after.like ? after.like : null, dislike: !before.dislike && after.dislike ? after.dislike : null };
+  return { no, dish, learned, rating: r, points: rating.points, added: g.added, up: g.up, capped: g.added < rating.points, buff, secretFound, firstTaste, line: reaction(no, dish, r) };
 }
 
 export const buffText = (b) => (!b ? '' : b.kind === 'power' ? `戰力 +${Math.round(b.value * 100)}%` : b.kind === 'speed' ? `討伐時間 −${Math.round(b.value * 100)}%` : '打贏多撿 1 份食材');

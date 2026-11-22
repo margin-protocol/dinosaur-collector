@@ -2137,6 +2137,7 @@ function openDexDetail(no) {
   $('dex-detail-story').hidden = !story;
   $('dex-detail-at').textContent = !story && owned && at && !Number.isNaN(Date.parse(at)) ? `相遇日期：${new Date(at).toLocaleDateString('zh-TW')}` : '';
   renderBond(no, owned);
+  renderTaste(no, owned);
   if (owned) showTip('bond', $('dex-detail-bond'));
   $('dex-detail').classList.toggle('is-shiny', owned && bondInfo(state, no, todayKey()).max);
   $('dex-detail').showModal();
@@ -3538,6 +3539,28 @@ function renderBond(no, owned) {
     li.append(tag, body); return li;
   }));
 }
+// 口味筆記：只顯示玩家餵過推理出來的東西（js/kitchen.js tasteNotes）
+const tasteChip = (text, cls) => Object.assign(document.createElement('span'), { className: `dex-taste__chip ${cls}`, textContent: text });
+const tagIcons = tag => kitchen.tagIngredients(tag).map(i => i.icon).join('');
+function renderTaste(no, owned) {
+  const box = $('dex-detail-taste'); box.hidden = !owned;
+  if (!owned) return;
+  const n = kitchen.tasteNotes(state, no);
+  $('taste-tries').textContent = n.tries ? `吃過 ${n.tries} 道` : '';
+  const row = (label, fill) => { const r = document.createElement('div'); r.className = 'dex-taste__row'; const v = document.createElement('span'); fill(v); r.append(Object.assign(document.createElement('b'), { textContent: label }), v); return r; };
+  const tagRow = (label, sure, list) => row(label, v => {
+    if (sure) v.append(tasteChip(sure, 'is-on'), Object.assign(document.createElement('span'), { className: 'dex-taste__ings', textContent: kitchen.tagIngredients(sure).map(i => i.icon + i.name).join('、') }));
+    else if (list.length <= 4) v.append(...list.map(t => tasteChip(`${tagIcons(t)} ${t}？`, 'is-maybe')));
+    else v.append(Object.assign(document.createElement('span'), { className: 'dex-taste__unknown', textContent: n.tries ? `還在找（${list.length} 種可能）` : '還不知道' }));
+  });
+  $('taste-rows').replaceChildren(
+    tagRow('😋 喜歡', n.like, n.likes),
+    tagRow('🤢 討厭', n.dislike, n.dislikes),
+    row('💖 最愛', v => v.append(n.secret ? tasteChip(n.secret.name, 'is-on') : Object.assign(document.createElement('span'), { className: 'dex-taste__unknown', textContent: '？＋？（吃到才知道）' }))),
+  );
+  $('taste-hint').textContent = !n.tries ? '在小湘廚房餵她吃東西，就會慢慢知道她的口味。'
+    : n.like && n.dislike ? '' : (!n.like && n.likes.length <= 4) || (!n.dislike && n.dislikes.length <= 4) ? '再餵一道只有其中一種口味的料理，就知道是哪個了。' : '多餵幾道不一樣的料理，範圍會越來越小。';
+}
 let bondQueue = [];
 function queueBondUps(list) {
   for (const { no, up } of list) for (const u of up) bondQueue.push({ no, ...u });
@@ -3658,7 +3681,9 @@ function renderKitchen() {
     $('kitchen-siangs').replaceChildren(...owned.map(no => {
       const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang'; btn.dataset.siang = no;
       const r = k.tasted[no]?.[d.id]; const left = cookLeft(state, no, todayKey());
-      btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: r !== undefined ? `${kitchen.RATINGS[r].icon} ${kitchen.RATINGS[r].label}` : left ? `今天還能 +${left}` : '今天料理好感已滿' }));
+      const guess = r === undefined ? kitchen.guessRating(state, no, d) : null; // 口味筆記猜得出來就先提示（秘密最愛猜不到，所以說「應該」）
+      const hint = guess === 2 ? '😋 喜歡？' : guess === 0 ? '🤢 討厭？' : '';
+      btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: r !== undefined ? `${kitchen.RATINGS[r].icon} ${kitchen.RATINGS[r].label}` : [hint, left ? `今天還能 +${left}` : '今天料理好感已滿'].filter(Boolean).join('\n') }));
       if (k.buffs[no]) btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '🍳' }));
       btn.addEventListener('click', () => void feedKitchen(no, d.id));
       return btn;
@@ -3674,6 +3699,8 @@ function renderKitchen() {
     box.querySelector('b').textContent = `${rt.icon} ${rt.label}${r.secretFound ? '　💖 找到秘密最愛！' : ''}`;
     box.querySelector('p').textContent = `「${r.line}」`;
     box.querySelector('span').textContent = [r.added ? `♡ +${r.added}` : '今天的料理好感滿了（明天再來）', r.buff && `下一次討伐：${kitchen.buffText(r.buff)}`].filter(Boolean).join(' · ');
+    const found = [r.learned?.like && `喜歡「${r.learned.like}」${tagIcons(r.learned.like)}`, r.learned?.dislike && `討厭「${r.learned.dislike}」${tagIcons(r.learned.dislike)}`].filter(Boolean);
+    if (found.length) box.append(Object.assign(document.createElement('span'), { className: 'kitchen-learned', textContent: `📒 口味筆記新發現：${CHARACTERS[r.no].name}${found.join('，')}` }));
     res.append(box);
   }
   // 圖鑑
