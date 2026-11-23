@@ -1483,16 +1483,22 @@ for (const tab of ['daily', 'growth']) $(`tab-${tab}`).addEventListener('keydown
   }
 });
 $('chapter-select').addEventListener('change', () => { viewedChapter = Number($('chapter-select').value); renderGrowth(); });
-$('growth-list').addEventListener('click', async event => {
-  const button = event.target.closest('[data-goal]');
-  if (!button || claimBusy) return;
-  claimBusy = true; button.disabled = true;
+// 領取成長願望：ids 可一次多項（「領取已完成的願望」按鈕一次全領）
+async function claimGoals(ids, focusId) {
+  if (claimBusy || !ids.length) return;
+  claimBusy = true;
+  document.querySelectorAll('#growth-list .growth-claim').forEach(b => { b.disabled = true; });
+  $('growth-action').disabled = true;
   const chapter = viewedChapter;
   try {
-    const transaction = await updateState(current => claimGrowth(current, chapter, button.dataset.goal));
+    const transaction = await updateState(current => {
+      const results = ids.map(id => claimGrowth(current, chapter, id)).filter(r => r.awarded);
+      return { awarded: results.length, levelBefore: results[0]?.levelBefore, chapter: results.find(r => r.chapter)?.chapter };
+    });
     state = transaction.state; renderAll();
     if (transaction.result.awarded) {
-      $('growth-feedback').textContent = `心願達成，獲得 ${GROWTH_XP} XP 與 ${GROWTH_ENERGY} 能量。`;
+      const n = transaction.result.awarded;
+      $('growth-feedback').textContent = n > 1 ? `${n} 個心願達成，獲得 ${GROWTH_XP * n} XP 與 ${GROWTH_ENERGY * n} 能量。` : `心願達成，獲得 ${GROWTH_XP} XP 與 ${GROWTH_ENERGY} 能量。`;
       const ch = transaction.result.chapter;
       if (ch) {
         viewedChapter = null;
@@ -1503,7 +1509,14 @@ $('growth-list').addEventListener('click', async event => {
         buzz([20, 40, 30, 40, 40]);
       } else { announceLevel(transaction.result); buzz([15, 30, 25]); }
     }
-  } finally { claimBusy = false; state = loadState(); renderAll(); $('growth-list').querySelector(`[data-goal-row="${button.dataset.goal}"]`)?.focus({ preventScroll: true }); }
+  } finally {
+    claimBusy = false; $('growth-action').disabled = false; state = loadState(); renderAll();
+    if (focusId) $('growth-list').querySelector(`[data-goal-row="${focusId}"]`)?.focus({ preventScroll: true });
+  }
+}
+$('growth-list').addEventListener('click', event => {
+  const button = event.target.closest('[data-goal]');
+  if (button) claimGoals([button.dataset.goal], button.dataset.goal);
 });
 $('growth-action').addEventListener('click', () => {
   const goals = growthGoals(viewedChapter).goals;
@@ -1515,7 +1528,7 @@ $('growth-action').addEventListener('click', () => {
   else if (pending?.destination === 'kitchen') { openErrands(); showErrandTab('kitchen'); }
   else if (pending?.destination === 'battle') { openErrands(); showErrandTab('battle'); }
   else if (pending?.destination === 'achievements') openAchievements();
-  else if (!pending && goals.some(g => !goalProgress(state, g).claimed)) $('growth-list').querySelector('button')?.focus();
+  else if (!pending && goals.some(g => !goalProgress(state, g).claimed)) claimGoals(goals.filter(g => !goalProgress(state, g).claimed).map(g => g.id));
   else showWishTab('daily', true);
 });
 $('open-presenter').addEventListener('click', () => { $('presenter-search').value = ''; renderPresenters(); $('presenter-feedback').textContent = ''; $('presenter').showModal(); $('presenter-list').scrollTop = 0; syncRoomActivity(); });
