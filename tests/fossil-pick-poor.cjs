@@ -12,7 +12,7 @@ await p.click('#chip-fossil');await p.locator('#fossil-dialog[open]').waitFor();
 assert(!(await p.locator('[data-offer="pick"]').isDisabled()),'化石不夠也要點得進去');
 await p.click('[data-offer="pick"]');await p.locator('#fossil-pick').waitFor();
 const txt=await p.locator('#fossil-pick-list').textContent();
-assert.match(txt,/現在最便宜的一位要 50 化石，還差 16 個/);assert.match(txt,/UR · 每位 150 化石（還差 116）/);
+assert.match(txt,/現在最便宜的一位要 50 化石，還差 16 個/);assert.match(txt,/UR · 每位 250 化石（還差 216）/);
 assert(await p.locator('[data-pick="109"]').count(),'UR 109 要列出來');
 assert.equal(await p.locator('[data-pick]:not(:disabled)').count(),0);
 if(process.env.SHOT_DIR){await p.locator('#fossil-dialog').evaluate(d=>d.scrollTop=0);await p.screenshot({path:`${process.env.SHOT_DIR}/pick-${width}-top.png`});await p.locator('#fossil-pick').scrollIntoViewIfNeeded();await p.screenshot({path:`${process.env.SHOT_DIR}/pick-${width}-list.png`});}

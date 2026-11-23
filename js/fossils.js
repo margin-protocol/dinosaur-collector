@@ -16,7 +16,7 @@ export function slotOffer(state) {
 }
 
 // 指定小湘依稀有度分層收費（湘 11/19：25 化石誰都能換太便宜）
-export const PICK_COSTS = { N: 30, R: 50, SR: 90, SSR: 150, UR: 150 }; // UR 先和 SSR 同價（湘 11/23 修 UR 沒列出來）
+export const PICK_COSTS = { N: 30, R: 50, SR: 90, SSR: 150, UR: 250 }; // 湘 11/23：UR 比 SSR 貴，250
 export const PICK_TIERS = ['N', 'R', 'SR', 'SSR', 'UR'];
 export const pickCost = (chars, no) => PICK_COSTS[chars[no]?.rarity] ?? PICK_COSTS.SSR;
 export const cheapestPick = (state, eggs, chars) => Math.min(Infinity, ...pickable(state, eggs, chars).map((no) => pickCost(chars, no)));
