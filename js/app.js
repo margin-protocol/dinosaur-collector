@@ -18,7 +18,7 @@ import { HERO_SHOP } from './badge-heroes.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
-import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS, FOSSIL_ENERGY } from './fossils.js';
+import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS, PICK_TIERS, FOSSIL_ENERGY } from './fossils.js';
 import { FLAVORS, makeOffer, eggLabel, naughtyRequest, NAUGHTY_BONUS } from './egg-traits.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
 import { RECIPES } from './recipes.js';
@@ -2707,8 +2707,10 @@ function openFossils() {
   $('fossil-have').textContent = `你有 ${state.fossils} 個化石碎片。抽到重複的小湘，每次會得到 ${DUPLICATE_FOSSILS} 個。`;
   $('fossil-offers').replaceChildren(...offersFor(state).map(o => {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fossil-offer'; btn.dataset.offer = o.id;
-    btn.disabled = o.id === 'pick' ? state.fossils < cheapestPick(state, EGGS, CHARACTERS) : state.fossils < o.cost;
-    const text = document.createElement('div'); const b = document.createElement('b'); b.textContent = o.name; const sm = document.createElement('small'); sm.textContent = o.desc; text.append(b, sm);
+    // 指定小湘：化石不夠也能點進去看清單（湘 11/23：灰掉卻不知道為什麼）；只有全部收集完才停用
+    const pickMin = o.id === 'pick' ? cheapestPick(state, EGGS, CHARACTERS) : 0;
+    btn.disabled = o.id === 'pick' ? pickMin === Infinity : state.fossils < o.cost;
+    const text = document.createElement('div'); const b = document.createElement('b'); b.textContent = o.name; const sm = document.createElement('small'); sm.textContent = o.id === 'pick' && pickMin === Infinity ? '蛋裡能孵出的小湘你都遇見了！' : o.desc; text.append(b, sm);
     const cost = document.createElement('span'); cost.textContent = o.from ? `${o.cost} 化石起` : `${o.cost} 化石`;
     btn.append(text, cost); return btn;
   }));
@@ -2730,9 +2732,13 @@ $('fossil-offers').addEventListener('click', event => {
   const btn = event.target.closest('[data-offer]'); if (!btn || btn.disabled) return;
   if (btn.dataset.offer !== 'pick') { void doExchange(btn.dataset.offer); return; }
   const list = pickable(state, EGGS, CHARACTERS);
-  $('fossil-pick-list').replaceChildren(...['N', 'R', 'SR', 'SSR'].flatMap(r => {
+  const min = cheapestPick(state, EGGS, CHARACTERS);
+  const note = document.createElement('p'); note.className = 'fossil-pick-note';
+  note.textContent = state.fossils < min ? `現在最便宜的一位要 ${min} 化石，還差 ${min - state.fossils} 個，先存起來吧！` : '';
+  $('fossil-pick-list').replaceChildren(...(note.textContent ? [note] : []), ...PICK_TIERS.flatMap(r => {
     const nos = list.filter(no => CHARACTERS[no].rarity === r); if (!nos.length) return [];
-    const head = document.createElement('p'); head.className = 'fossil-pick-tier'; head.textContent = `${r} · 每位 ${PICK_COSTS[r]} 化石${state.fossils < PICK_COSTS[r] ? `（還差 ${PICK_COSTS[r] - state.fossils}）` : ''}`;
+    const cost = PICK_COSTS[r];
+    const head = document.createElement('p'); head.className = 'fossil-pick-tier'; head.textContent = `${r} · 每位 ${cost} 化石${state.fossils < cost ? `（還差 ${cost - state.fossils}）` : ''}`;
     return [head, ...nos.map(no => {
       const c = CHARACTERS[no]; const b = document.createElement('button'); b.type = 'button'; b.className = 'fossil-pick'; b.dataset.pick = no;
       b.disabled = state.fossils < pickCost(CHARACTERS, no);
