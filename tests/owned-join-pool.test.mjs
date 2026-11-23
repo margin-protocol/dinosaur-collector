@@ -22,6 +22,13 @@ test('once owned they join ordinary and star eggs only, at same-rarity weights',
   const only = { '086': { at: 'x' } };
   assert.deepEqual(Object.keys(activePool(EGGS.ordinary, new Date(), only)).filter((no) => JOIN_WHEN_OWNED.includes(no)), ['086']);
 });
+test('hero squad (062-064) joins after badge redeem', () => {
+  for (const no of ['062', '063', '064']) assert.ok(JOIN_WHEN_OWNED.includes(no), no);
+  const dex = { '062': { at: 'x' }, '064': { at: 'x' } };
+  const ord = activePool(EGGS.ordinary, new Date(), dex), star = activePool(EGGS.star, new Date(), dex);
+  assert.equal(ord['062'], 2); assert.equal(ord['064'], 0.6); assert.equal(ord['063'], undefined);
+  assert.equal(star['062'], 3); assert.equal(star['064'], 1);
+});
 test('rollFor can hatch an owned special from an ordinary egg', () => {
   const dex = { '101': { at: 'x' } };
   const orig = Math.random; let hit = false;

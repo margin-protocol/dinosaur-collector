@@ -2111,7 +2111,7 @@ function howToGet(c) {
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const st = lab.labStatus(state); const brewing = st?.recipe.id === recipe.id; return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
-  if (c.badge) { const h = battle.heroStatus(state, c.no); return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換專屬蛋，培育後固定孵出${h.requireText ? `（${h.requireText}）` : ''}`; }
+  if (c.badge) { const h = battle.heroStatus(state, c.no); const joined = JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no] ? Object.values(EGGS).filter(e => activePool(e, new Date(), state.dex)?.[c.no]).map(e => e.name) : []; return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換專屬蛋，培育後固定孵出${h.requireText ? `（${h.requireText}）` : ''}${joined.length ? `；已經加入收藏，現在${joined.join('、')}也孵得到` : ''}`; }
   if (JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no]) { const eggs = Object.values(EGGS).filter(e => activePool(e, new Date(), state.dex)?.[c.no]).map(e => e.name); if (eggs.length) return `已經加入收藏，現在${eggs.join('、')}也孵得到`; }
   if (c.newNeed) return `一般的蛋累計孵到新朋友 ${c.newNeed} 次，她會自己來找你（目前 ${Math.min(state.newTotal || 0, c.newNeed)} / ${c.newNeed}）`;
   if (c.dupNeed) return `累計孵到重複的小湘 ${c.dupNeed} 次，她會自己來找你（目前 ${Math.min(state.dupTotal || 0, c.dupNeed)} / ${c.dupNeed}）`;
