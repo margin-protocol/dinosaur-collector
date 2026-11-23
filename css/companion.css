@@ -1058,3 +1058,14 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .siang-roster__group + .siang-roster__series { margin-top:0; }
 /* 圖鑑依戰力：多一行戰力，下方留位置給 ♥／★ 小標，不會蓋到字 */
 .dex__grid.is-power .dex__card.is-owned { padding-bottom:28px; }
+/* 今天的探索禮物收過了（湘 11/23 選 C：讓人看得出今天拿過什麼） */
+.explore-pill__badge, .explore-pill__tag { display:none; }
+.county-call__note.is-gift { display:block; padding:6px 12px; border-radius:12px; border:1px solid var(--t-line, #c9a8ff66); background:var(--t-selected, #ffffff10); color:var(--t-text, var(--ivory)); line-height:1.7; }
+/* A：鈕不縮小，副標寫今天收到什麼 */
+.explore-pill[data-gift="a"] { border-color:var(--t-accent, #f4c6db); }
+.explore-pill[data-gift="a"] small { color:var(--t-text, var(--ivory)); }
+/* B：圓鈕右上角一個禮物角標 */
+.explore-pill[data-gift="b"].is-compact .explore-pill__badge { display:grid; place-items:center; position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; background:var(--t-light, #ffd9a8); border:1px solid var(--t-accent, #b0405e); font-size:11px; font-style:normal; line-height:1; }
+/* C：圓鈕旁邊一張小標籤 */
+.explore-pill[data-gift="c"].is-compact .explore-pill__tag { display:block; position:absolute; left:calc(100% + 6px); top:50%; transform:translateY(-50%); padding:3px 9px; border-radius:999px; background:var(--t-panel, #2a2236cc); border:1px solid var(--t-accent, #f4c6db); color:var(--t-text, var(--ivory)); font:11px/1.5 var(--font-body); font-style:normal; white-space:nowrap; }
+.explore-pill[data-gift="c"].is-compact .explore-pill__tag::before { content:'🎁 '; }
