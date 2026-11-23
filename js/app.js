@@ -1248,13 +1248,18 @@ function meetingStory(current) {
     nth: current.hatched + 1,
   };
 }
-function storyText(c, entry) {
+function storyText(c, entry, now = new Date()) {
   const st = entry?.story;
   if (!st) return '';
   const when = new Date(entry.at);
   const date = `${when.getFullYear()} 年 ${when.getMonth() + 1} 月 ${when.getDate()} 日`;
-  if (st.from === 'badge') return `${date}，你用 ${st.cost} 枚討伐徽章，把她迎進了隊伍。`;
-  const days = st.since && !Number.isNaN(Date.parse(st.since)) ? Math.max(0, Math.round((Date.parse(entry.at) - Date.parse(st.since)) / 864e5)) : null;
+  // 相遇：從破殼那天算到今天（照日曆，破殼當天是第 1 天）
+  const midnight = d => new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const metDay = Math.max(1, Math.round((midnight(now) - midnight(when)) / 864e5) + 1);
+  const met = metDay === 1 ? '今天是你們相遇的第一天。' : `今天是你們相遇的第 ${metDay} 天。`;
+  if (st.from === 'badge') return `${date}，你用 ${st.cost} 枚討伐徽章，把她迎進了隊伍。${met}`;
+  // 蛋陪伴：從拿到蛋到破殼（滿 24 小時才算 1 天）
+  const days = st.since && !Number.isNaN(Date.parse(st.since)) ? Math.max(0, Math.floor((Date.parse(entry.at) - Date.parse(st.since)) / 864e5)) : null;
   const source = st.county ? `在${st.county}探索時收到的縣市蛋`
     : st.from?.startsWith('badge:') ? '用討伐徽章換來的勇者小隊專屬蛋'
     : st.from?.startsWith('recipe:') ? '兩位小湘在研究室一起調配出來的紀念蛋'
@@ -1265,7 +1270,7 @@ function storyText(c, entry) {
     : st.from && HOLIDAYS.some(h => st.from.startsWith(h.id)) ? `${HOLIDAYS.find(h => st.from.startsWith(h.id)).name}收到的紀念蛋`
     : EGGS[st.egg]?.name || '一顆蛋';
   const mood = [st.night && '深夜裡', st.rain && '下著雨的日子'].filter(Boolean).join('、');
-  return `${date}${mood ? `，${mood}` : ''}，她從${source}裡孵出來。${days !== null ? `這顆蛋陪了你 ${days ? `${days} 天` : '不到一天'}，` : ''}是你孵化的第 ${st.nth} 顆蛋${st.wishes ? `；那天你完成了 ${st.wishes} 個願望` : ''}。`;
+  return `${date}${mood ? `，${mood}` : ''}，她從${source}裡孵出來。${days !== null ? `這顆蛋陪了你${days ? ` ${days} 天` : '不到一天'}才破殼，` : ''}是你孵化的第 ${st.nth} 顆蛋${st.wishes ? `；那天你完成了 ${st.wishes} 個願望` : ''}。${met}`;
 }
 
 async function hatch(expected) {
