@@ -3694,7 +3694,11 @@ function renderKitchen() {
       const guess = r === undefined ? kitchen.guessRating(state, no, d) : null; // 口味筆記猜得出來就先提示（秘密最愛猜不到，所以說「應該」）
       const hint = guess === 2 ? '😋 喜歡？' : guess === 0 ? '🤢 討厭？' : '';
       btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: r !== undefined ? `${kitchen.RATINGS[r].icon} ${kitchen.RATINGS[r].label}` : [hint, left ? `今天還能 +${left}` : '今天料理好感已滿'].filter(Boolean).join('\n') }));
-      if (k.buffs[no]) btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '🍳' }));
+      if (k.buffs[no]) {
+        btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '🍳' }));
+        const swap = kitchen.replacesBuff(state, no, d); // 餵下去會換掉原本的料理加成就先講
+        btn.append(Object.assign(document.createElement('em'), { className: `errand-siang__food${swap !== false ? ' is-swap' : ''}`, textContent: `${swap === true ? '會換掉' : swap === null ? '可能換掉' : '目前'}\n${kitchen.buffShort(k.buffs[no]).replace('🍳', '')}` }));
+      }
       btn.addEventListener('click', () => void feedKitchen(no, d.id));
       return btn;
     }));
@@ -3708,7 +3712,7 @@ function renderKitchen() {
     box.querySelector('small').textContent = `${CHARACTERS[r.no].name} · ${r.dish.name}`;
     box.querySelector('b').textContent = `${rt.icon} ${rt.label}${r.secretFound ? '　💖 找到秘密最愛！' : ''}`;
     box.querySelector('p').textContent = `「${r.line}」`;
-    box.querySelector('span').textContent = [r.added ? `♡ +${r.added}` : '今天的料理好感滿了（明天再來）', r.buff && `下一次討伐：${kitchen.buffText(r.buff)}`].filter(Boolean).join(' · ');
+    box.querySelector('span').textContent = [r.added ? `♡ +${r.added}` : '今天的料理好感滿了（明天再來）', r.buff && `下一次討伐：${kitchen.buffText(r.buff)}${r.replaced ? `（換掉了原本的${kitchen.buffText(r.replaced)}）` : ''}`].filter(Boolean).join(' · ');
     const found = [r.learned?.like && `喜歡「${r.learned.like}」${tagIcons(r.learned.like)}`, r.learned?.dislike && `討厭「${r.learned.dislike}」${tagIcons(r.learned.dislike)}`].filter(Boolean);
     if (found.length) box.append(Object.assign(document.createElement('span'), { className: 'kitchen-learned', textContent: `📒 口味筆記新發現：${CHARACTERS[r.no].name}${found.join('，')}` }));
     res.append(box);
@@ -3981,6 +3985,8 @@ function renderBattleStage() {
     btn.setAttribute('aria-pressed', String(battlePicked.includes(no)));
     btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: off ? (rest > 0 ? `休息 ${battle.fmtMinutes(rest)}` : '忙碌中') : `戰力 ${p.power}` }));
     if (e.weak.includes(CHARACTERS[no].series)) btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '✦' }));
+    const meal = state.kitchen?.buffs?.[no]; // 吃過料理、下一場有加成
+    if (meal) btn.append(Object.assign(document.createElement('em'), { className: 'errand-siang__food', textContent: kitchen.buffShort(meal) }));
     btn.addEventListener('click', () => {
       battlePicked = battlePicked.includes(no) ? battlePicked.filter(x => x !== no) : [...battlePicked, no].slice(-battle.TEAM_MAX);
       renderBattleStage();
@@ -3990,7 +3996,7 @@ function renderBattleStage() {
   const fc = battlePicked.length ? battle.forecast(state, battlePicked, id) : null;
   $('battle-forecast').innerHTML = '';
   if (fc) {
-    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}`].filter(Boolean).join(' · ');
+    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}${fc.foodPower ? `（+${fc.foodPower}）` : ''}`].filter(Boolean).join(' · ');
     $('battle-forecast').innerHTML = `<b></b><span></span>`;
     $('battle-forecast').querySelector('b').textContent = `隊伍戰力 ${fc.total} vs ${e.power} · ${fc.label}`;
     $('battle-forecast').querySelector('span').textContent = bonus || '沒有加成（帶 ✦ 的小湘有剋制效果）';

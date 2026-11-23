@@ -205,7 +205,10 @@ export function teamPower(state, nos, enemyId) {
   const bond = teamBond(state, nos);
   const food = teamFood(state, nos); // 小湘廚房：一隊最多用一份料理加成
   const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty ? HERO_PARTY_BONUS : 0)) * (1 + (food?.kind === 'power' ? food.value : 0));
-  return { members, raw: Math.round(raw * 10) / 10, total: Math.round(raw * mult * 10) / 10, sameSeries, weakHit, heroParty, bond, food };
+  const total = Math.round(raw * mult * 10) / 10;
+  // 料理多加了幾點戰力（拿掉料理那一層算一次，差多少就是料理的功勞）
+  const foodPower = food?.kind === 'power' ? Math.round((total - Math.round(raw * mult / (1 + food.value) * 10) / 10) * 10) / 10 : 0;
+  return { members, raw: Math.round(raw * 10) / 10, total, sameSeries, weakHit, heroParty, bond, food, foodPower };
 }
 
 // 預估：勝率與評語

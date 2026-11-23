@@ -159,17 +159,27 @@ export function feed(state, no, dishId, today) {
   tasted[dish.id] = r;
   if (dish.dark) k.darkFed += 1;
   const g = gain(state, no, 'cook', today, rating.points);
-  let buff = null;
+  let buff = null, replaced = null;
   const eff = dish.effect;
   if (eff) {
     const value = eff.kind === 'gather' ? (r >= 2 ? 1 : 0) : Math.round(eff.value * rating.effect * 1000) / 1000;
-    if (value > 0) { buff = { kind: eff.kind, value, dish: dish.id }; k.buffs[no] = buff; }
+    if (value > 0) { replaced = k.buffs[no] || null; buff = { kind: eff.kind, value, dish: dish.id }; k.buffs[no] = buff; }
   }
   const after = tasteNotes(state, no);
   const learned = { like: !before.like && after.like ? after.like : null, dislike: !before.dislike && after.dislike ? after.dislike : null };
-  return { no, dish, learned, rating: r, points: rating.points, added: g.added, up: g.up, capped: g.added < rating.points, buff, secretFound, firstTaste, line: reaction(no, dish, r) };
+  return { no, dish, learned, rating: r, points: rating.points, added: g.added, up: g.up, capped: g.added < rating.points, buff, replaced, secretFound, firstTaste, line: reaction(no, dish, r) };
 }
 
+// 小格子用的短字：🍳戰力+5%／🍳減時5%／🍳採集+1
+export const buffShort = (b) => (!b ? '' : b.kind === 'power' ? `🍳戰力+${Math.round(b.value * 100)}%` : b.kind === 'speed' ? `🍳減時${Math.round(b.value * 100)}%` : '🍳採集+1');
+// 這道料理餵下去會不會換掉原本的加成：會換＝true、不會＝false、還不知道她喜不喜歡＝null
+export function replacesBuff(state, no, dish) {
+  const old = state.kitchen?.buffs?.[no]; const eff = dish?.effect;
+  if (!old || !eff) return false;
+  const r = state.kitchen?.tasted?.[no]?.[dish.id];
+  if (r === undefined) return null;
+  return eff.kind === 'gather' ? r >= 2 : RATINGS[r].effect > 0;
+}
 export const buffText = (b) => (!b ? '' : b.kind === 'power' ? `戰力 +${Math.round(b.value * 100)}%` : b.kind === 'speed' ? `討伐時間 −${Math.round(b.value * 100)}%` : '打贏多撿 1 份食材');
 
 // 這一隊會用哪一份料理加成（最多一份）：戰力優先，其次減時、採集；同類取數值大的
