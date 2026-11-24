@@ -2,7 +2,7 @@ import { renderBattleLog } from './battle-log.js';
 import { createBattleTheater } from './battle-theater.js';
 import { createEpilogueTheater } from './chapter-epilogue.js';
 import { renderAtlas, renderTeamTools } from './team-ui.js';
-import { savePreset, ensureTeamBonds, effectText } from './team-bonds.js';
+import { savePreset, ensureTeamBonds, effectText, teamBond } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
 import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
@@ -3842,6 +3842,7 @@ async function feedKitchen(no, dishId) {
   } finally { kitchenBusy = false; renderKitchen(); }
 }
 function renderBattle() {
+  renderPresetGlance();
   renderAtlas($('team-bond-atlas'),state);
   const b = state.battle; const now = Date.now();
   $('battle-badges').textContent = b.badges;
@@ -4098,24 +4099,106 @@ async function collectBattle(id) {
   restart($('chip-energy'), 'is-bump');
 }
 $('battle-result-ok').addEventListener('click', () => $('battle-result').close());
-// 特訓
+// 討伐首頁也看得到常用隊伍，對照隱藏羈絆圖鑑組隊（玩家 11/24）
+const GLANCE_KEY = 'siang-collector:preset-glance:v1';
+const glanceStyle = () => { try { return localStorage.getItem('siang-collector:glance-style:preview') || 'a'; } catch { return 'a'; } };
+function presetBondLine(nos) {
+  const lv = nos.map(no => ({ no, bond: battle.siangPower(state, no).bond }));
+  const low = lv.filter(x => x.bond < 5);
+  if (low.length) return { cls: 'is-wait', text: `還差 ${low.map(x => `${CHARACTERS[x.no].name.replace(/小湘.*/, '') || CHARACTERS[x.no].name} Lv.${x.bond}`).join('、')} → 三位都 LV5 就會發動默契` };
+  const b = teamBond(state, nos);
+  if (!b || b.id === 'general') return { cls: 'is-general', text: `三位都 LV5 · ${effectText(b)}` };
+  return state.teamBonds?.unlocked?.[b.id] ? { cls: 'is-bond', text: `✦ ${b.name} · ${effectText(b)}` } : { cls: 'is-secret', text: '✦ 未知的默契正在共鳴！一起出發就能收藏合照' };
+}
+function renderPresetGlance() {
+  const host = $('team-presets-glance'); if (!host) return;
+  const style = glanceStyle();
+  const presets = (state.teamBonds?.presets || []).map((p, i) => p && { ...p, i }).filter(p => p && p.nos.every(no => state.dex[no]));
+  const status = new Map(siangStatuses(state, Date.now()).map(s => [s.no, s]));
+  const open = (() => { try { return localStorage.getItem(GLANCE_KEY) !== 'closed'; } catch { return true; } })();
+  const box = el('details', `team-glance is-style-${style}`); box.open = open;
+  box.addEventListener('toggle', () => { try { localStorage.setItem(GLANCE_KEY, box.open ? 'open' : 'closed'); } catch {} });
+  box.append(el('summary', null, `常用隊伍 · ${presets.length} / 5`));
+  if (!presets.length) { box.append(el('p', 'team-glance__empty', '還沒有常用隊伍。點進任一關卡選好三位，在「常用隊伍」按儲存，就會出現在這裡。')); host.replaceChildren(box); return; }
+  for (const p of presets) {
+    const row = el('article', 'team-glance__row');
+    const bond = presetBondLine(p.nos);
+    const away = p.nos.filter(no => status.get(no)?.kind !== 'ready');
+    const head = el('div', 'team-glance__head'); head.append(el('b', null, p.name), el('small', away.length ? 'is-away' : 'is-ok', away.length ? `${away.length} 位休息或忙碌` : '都可以出發'));
+    const faces = el('div', 'team-glance__faces');
+    faces.append(...p.nos.map(no => {
+      const s = battle.siangPower(state, no); const f = el('span', `team-glance__face${s.bond >= 5 ? ' is-max' : ''}${status.get(no)?.kind !== 'ready' ? ' is-away' : ''}`);
+      f.append(siangImg(no), el('em', null, `Lv.${s.bond}`));
+      if (style === 'b') f.append(el('small', null, CHARACTERS[no].name.replace(/小湘.*/, '') || CHARACTERS[no].name));
+      return f;
+    }));
+    row.append(head, faces);
+    if (style === 'a') row.append(el('small', 'team-glance__names', p.nos.map(no => CHARACTERS[no].name).join('、')));
+    row.append(el('p', `team-glance__bond ${bond.cls}`, bond.text));
+    box.append(row);
+  }
+  host.replaceChildren(box);
+}
+// 特訓：改成跟出勤狀態一樣的格子，可以依系列或稀有度分組（玩家 11/24：清單太長常找不到小湘）
+const TRAIN_GROUP_KEY = 'siang-collector:train-group:v1';
+let trainGroup = (() => { try { return localStorage.getItem(TRAIN_GROUP_KEY) === 'rarity' ? 'rarity' : 'series'; } catch { return 'series'; } })();
+let trainPicked = null;
+const TRAIN_RARITY = ['UR', 'SSR', 'SR', 'R', 'N'];
+const trainStyle = () => { try { return localStorage.getItem('siang-collector:train-style:preview') || 'a'; } catch { return 'a'; } };
+function trainPips(level) { const pips = el('span', 'train-pips'); pips.setAttribute('aria-label', `特訓 ${level}/${battle.MAX_TRAIN}`); for (let i = 0; i < battle.MAX_TRAIN; i++) pips.append(el('i', i < level ? 'is-on' : '')); return pips; }
+async function trainOne(no) {
+  const t = await updateState(current => battle.train(current, no)); state = t.state;
+  $('train-status').textContent = typeof t.result === 'string' ? t.result : `${CHARACTERS[no].name}特訓到 Lv.${t.result.level}！戰力變成 ${battle.siangPower(state, no).power}。`;
+  $('battle-badges').textContent = state.battle.badges; renderTrain();
+}
+function trainButton(no, cost, short) {
+  const btn = el('button', 'btn btn--quiet train-tile__btn', cost === null ? '滿級' : short ? `🛡️${cost}` : `特訓 🛡️ ${cost}`); btn.type = 'button';
+  btn.disabled = cost === null || state.battle.badges < cost;
+  btn.setAttribute('aria-label', cost === null ? `${CHARACTERS[no].name}特訓滿級` : `用 ${cost} 枚徽章特訓${CHARACTERS[no].name}`);
+  btn.addEventListener('click', e => { e.stopPropagation(); void trainOne(no); }); return btn;
+}
 function renderTrain() {
-  const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]).sort((a, b2) => battle.siangPower(state, b2).power - battle.siangPower(state, a).power);
-  $('train-list').replaceChildren(...owned.map(no => {
-    const p = battle.siangPower(state, no); const cost = battle.trainCost(state, no);
-    const row = document.createElement('div'); row.className = 'train-row';
-    const info = document.createElement('div'); info.innerHTML = '<b></b><small></small>';
-    info.querySelector('b').textContent = `${CHARACTERS[no].name} · 戰力 ${p.power}`;
-    info.querySelector('small').textContent = `${CHARACTERS[no].rarity} · 好感 Lv.${p.bond} · ${p.stars} 星 · 特訓 ${p.train}/${battle.MAX_TRAIN}`;
-    const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn btn--quiet';
-    btn.textContent = cost === null ? '滿級' : `🛡️ ${cost}`; btn.disabled = cost === null || state.battle.badges < cost;
-    btn.addEventListener('click', async () => {
-      const t = await updateState(current => battle.train(current, no)); state = t.state;
-      $('train-status').textContent = typeof t.result === 'string' ? t.result : `${CHARACTERS[no].name}特訓到 Lv.${t.result.level}！戰力變成 ${battle.siangPower(state, no).power}。`;
-      $('battle-badges').textContent = state.battle.badges; renderTrain();
-    });
-    row.append(siangImg(no), info, btn); return row;
-  }));
+  const style = trainStyle();
+  const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]).map(no => ({ no, ...battle.siangPower(state, no), cost: battle.trainCost(state, no) })).sort((a, b) => b.power - a.power || a.no.localeCompare(b.no));
+  if (style === 'b' && !owned.some(s => s.no === trainPicked)) trainPicked = owned.find(s => s.cost !== null && state.battle.badges >= s.cost)?.no || owned[0]?.no || null;
+  const can = owned.filter(s => s.cost !== null && state.battle.badges >= s.cost).length;
+  const bar = el('div', 'train-groups');
+  const seg = el('div', 'train-groups__seg'); seg.setAttribute('role', 'group'); seg.setAttribute('aria-label', '分組方式');
+  for (const [k, label] of [['series', '依系列'], ['rarity', '依稀有度']]) {
+    const b = el('button', null, label); b.type = 'button'; b.setAttribute('aria-pressed', String(trainGroup === k));
+    b.addEventListener('click', () => { trainGroup = k; try { localStorage.setItem(TRAIN_GROUP_KEY, k); } catch {} renderTrain(); }); seg.append(b);
+  }
+  bar.append(seg, el('small', 'train-groups__can', can ? `現在能特訓 ${can} 位` : '徽章還不夠特訓'));
+  const list = $('train-list'); list.className = `train-grid-wrap is-style-${style}`;
+  const out = [bar];
+  if (style === 'b' && trainPicked) {
+    const s = owned.find(x => x.no === trainPicked); const c = CHARACTERS[s.no];
+    const card = el('div', 'train-pick'); const info = el('div', 'train-pick__info');
+    info.append(el('b', null, c.name), el('small', null, `${c.rarity} · ${SERIES[c.series]?.short || ''} · 戰力 ${s.power}`), el('small', null, `好感 Lv.${s.bond} · ${s.stars} 星`), trainPips(s.train));
+    card.append(siangImg(s.no), info, trainButton(s.no, s.cost, false)); out.push(card);
+  }
+  const groups = trainGroup === 'rarity'
+    ? TRAIN_RARITY.map(r => [r, owned.filter(s => CHARACTERS[s.no].rarity === r)])
+    : Object.keys(SERIES).map(sid => [SERIES[sid].name, owned.filter(s => CHARACTERS[s.no].series === sid)]);
+  for (const [label, items] of groups) {
+    if (!items.length) continue;
+    out.push(el('p', 'siang-roster__series train-grid__label', `${label} · ${items.length}`));
+    const grid = el('div', 'train-grid');
+    grid.append(...items.map(s => {
+      const c = CHARACTERS[s.no]; const ready = s.cost !== null && state.battle.badges >= s.cost;
+      const tile = el(style === 'b' ? 'button' : 'div', `train-tile${ready ? ' is-can' : ''}${s.cost === null ? ' is-max' : ''}${s.no === trainPicked && style === 'b' ? ' is-picked' : ''}`);
+      tile.dataset.siang = s.no;
+      const name = c.name.replace(/小湘.*/, '') || c.name;
+      if (style === 'c') tile.append(el('em', 'train-tile__rarity', c.rarity));
+      tile.append(siangImg(s.no), el('span', 'train-tile__name', name), el('small', 'train-tile__power', `戰力 ${s.power}`), trainPips(s.train));
+      if (style === 'b') { tile.type = 'button'; tile.setAttribute('aria-pressed', String(s.no === trainPicked)); tile.addEventListener('click', () => { trainPicked = s.no; renderTrain(); }); }
+      else tile.append(trainButton(s.no, s.cost, true));
+      return tile;
+    }));
+    out.push(grid);
+  }
+  if (!owned.length) out.push(el('p', 'residents-intro', '還沒有小湘，先去孵蛋吧。'));
+  list.replaceChildren(...out);
 }
 // 徽章兌換：勇者小隊
 function renderHeroShop() {
