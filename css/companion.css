@@ -1058,3 +1058,48 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .siang-roster__group + .siang-roster__series { margin-top:0; }
 /* 圖鑑依戰力：多一行戰力，下方留位置給 ♥／★ 小標，不會蓋到字 */
 .dex__grid.is-power .dex__card.is-owned { padding-bottom:28px; }
+/* 特訓格子（11/24 玩家：跟出勤狀態一樣的格子，依系列／稀有度分組） */
+.train-grid-wrap { display:block; }
+.train-groups { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 10px; margin:2px 0 4px; }
+.train-groups__seg { display:inline-flex; padding:3px; border-radius:999px; background:var(--t-raised); border:1px solid var(--t-line); }
+.train-groups__seg button { min-height:34px; padding:4px 14px; border:0; border-radius:999px; background:none; color:var(--t-muted); font:13px/1 var(--font-display); }
+.train-groups__seg button[aria-pressed="true"] { background:var(--t-selected); color:var(--t-accent); font-weight:700; }
+.train-groups__can { font:12px var(--font-body); color:var(--t-accent); }
+.train-grid__label { margin:12px 2px 6px; }
+.train-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+.train-tile { position:relative; display:grid; justify-items:center; align-content:start; gap:2px; min-width:0; padding:6px 3px 5px; border-radius:12px; border:0; background:var(--t-panel); color:var(--t-text); font:11px/1.3 var(--font-body); text-align:center; }
+.train-tile img { width:52px; height:52px; object-fit:contain; }
+.train-tile__name { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.train-tile__power { font-size:10px; color:var(--t-muted); white-space:nowrap; }
+.train-pips { display:inline-flex; gap:2px; margin:1px 0 2px; }
+.train-pips i { width:6px; height:6px; border-radius:50%; background:var(--t-line); }
+.train-pips i.is-on { background:var(--t-accent); }
+.train-tile.is-can .train-tile__btn.btn { background:var(--t-selected); color:var(--t-accent); font-weight:700; }
+.train-tile .train-tile__btn.btn:disabled { opacity:.55; }
+.train-tile.is-max .train-tile__power { color:var(--t-accent); }
+.train-tile__btn.btn { width:100%; min-height:32px; margin-top:auto; padding:2px 0; font-size:12px; border-radius:9px; }
+/* 討伐首頁的常用隊伍 */
+.team-glance { margin:14px 0; padding:12px; background:var(--t-raised); border:1px solid var(--t-line); border-radius:14px; color:var(--t-text); text-align:left; }
+.team-glance summary { cursor:pointer; min-height:36px; font:14px/1.7 var(--font-display); }
+.team-glance__empty { margin:4px 0 0; font:12px/1.8 var(--font-display); color:var(--t-muted); }
+.team-glance__row { display:grid; gap:6px; padding:10px 0; border-top:1px solid var(--t-line); }
+.team-glance__head { display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+.team-glance__head b { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:14px/1.4 var(--font-display); }
+.team-glance__head small { flex:none; font:11px var(--font-body); color:var(--t-muted); }
+.team-glance__head small.is-ok { color:var(--t-accent); }
+.team-glance__faces { display:flex; gap:8px; }
+.team-glance__face { position:relative; display:grid; justify-items:center; }
+.team-glance__face img { width:46px; height:46px; object-fit:contain; border-radius:50%; background:var(--t-panel); }
+.team-glance__face em { position:absolute; right:-4px; bottom:-2px; padding:0 4px; border-radius:6px; background:var(--t-panel); border:1px solid var(--t-line); color:var(--t-muted); font:700 9px/1.5 var(--font-body); font-style:normal; }
+.team-glance__face.is-max em { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }
+.team-glance__face.is-away img { opacity:.5; filter:grayscale(.6); }
+.team-glance__bond { margin:0; font:12px/1.6 var(--font-display); color:var(--t-muted); }
+.team-glance__bond:is(.is-bond,.is-secret) { color:var(--t-accent); font-weight:700; }
+.team-glance__bond.is-general { color:var(--t-text); }
+/* 每隊三格，像出勤狀態 */
+.team-glance .team-glance__faces { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; }
+.team-glance .team-glance__face { gap:2px; padding:6px 2px; border-radius:12px; background:var(--t-panel); }
+.team-glance .team-glance__face img { width:52px; height:52px; border-radius:0; background:none; }
+.team-glance .team-glance__face em { right:6px; bottom:auto; top:4px; }
+.team-glance .team-glance__face small { max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font:11px var(--font-body); }
+.team-glance .team-glance__face.is-max { box-shadow:inset 0 0 0 1.5px var(--t-accent); }
