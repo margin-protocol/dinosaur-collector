@@ -778,7 +778,7 @@ function renderEggChoices() {
 const RARITY_ORDER = ['UR', 'SSR', 'SR', 'R', 'N'];
 function openEggOdds(id) {
   const egg = EGGS[id]; if (!egg?.pool) return;
-  const pool = activePool(egg, new Date(), state.dex); const total = Object.values(pool).reduce((a, b) => a + b, 0);
+  const pool = activePool(egg, new Date(events.eventNow(structuredClone({ clock: state.clock }))), state.dex); const total = Object.values(pool).reduce((a, b) => a + b, 0);
   const mine = Object.fromEntries(Object.entries(pool).map(([no, w]) => [no, state.dex[no] ? w : w * NEW_FACE_TIMES]));
   const mineTotal = Object.values(mine).reduce((a, b) => a + b, 0);
   const pct = (v) => { const x = v * 100; return x >= 10 ? `${x.toFixed(0)}%` : x >= 1 ? `${x.toFixed(1)}%` : `${x.toFixed(2)}%`; };
@@ -1336,7 +1336,7 @@ async function hatch(expected) {
   const transaction = await updateState(current => {
     if (current.egg.id !== expected.id || current.egg.since !== expected.since || current.egg.warmth < EGGS[current.egg.id].warmthNeeded) return null;
     const random = isRandomEgg(current.egg);
-    const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current), random ? { dex: current.dex, dupStreak: current.dupStreak || 0, srStreak: current.srStreak || 0 } : {})];
+    const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current), random ? { dex: current.dex, dupStreak: current.dupStreak || 0, srStreak: current.srStreak || 0, now: new Date(events.eventNow(structuredClone({ clock: current.clock }))) } : {})];
     const duplicate = Boolean(current.dex[character.no]);
     if (random) { current.dupStreak = duplicate ? (current.dupStreak || 0) + 1 : 0; current.srStreak = isHigh(character.no) ? 0 : (current.srStreak || 0) + 1; }
     let bondUp = [];
@@ -3637,13 +3637,16 @@ function renderHomeEvent() {
   const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; }; // renderAll 很早就會跑，不能用檔尾的 el
   document.querySelectorAll('.home-event').forEach(n => n.remove());
   if (!state.seenIntro || !guide.isUnlocked(state, 'battle')) return;
-  const live = events.activeEvents(state, events.eventNow(structuredClone({ clock: state.clock }))).find(x => x.sch.state === 'battle' || x.sch.state === 'shop');
+  const nowMs = events.eventNow(structuredClone({ clock: state.clock })); const list = events.activeEvents(state, nowMs);
+  // 開跑前 7 天內：首頁放預告卡（湘 11/25），寫開始時間（台北時間）
+  const live = list.find(x => x.sch.state === 'battle' || x.sch.state === 'shop') || list.find(x => x.sch.state === 'upcoming' && x.sch.startMs - nowMs <= 7 * 24 * 3600e3);
   if (!live) return;
-  const { def, sch } = live; const name = def.name.replace(/^異世・/, '');
+  const { def, sch } = live; const name = def.name.replace(/^異世・/, ''); const soon = sch.state === 'upcoming';
   const btn = el('button', 'home-event home-event--c'); btn.type = 'button'; btn.dataset.event = def.id; if (def.keyArt) { btn.classList.add('has-art'); btn.style.setProperty('--key-art', `url("${new URL(def.keyArt, document.baseURI).href}")`); } btn.setAttribute('aria-label', `前往活動：${name}`);
   const seal = el('i', 'home-event__seal', '墨'); seal.setAttribute('aria-hidden', 'true');
-  const sub = sch.state === 'shop' ? '墨玉閣開放中' : '活動進行中';
-  const txt = el('span', 'home-event__text'); txt.append(el('small', null, `${name} · ${sub}`), el('b', null, def.subtitle)); btn.append(seal, txt, el('span', 'home-event__go', '⟶')); document.querySelector('.view--home .home-actions').before(btn);
+  const sub = soon ? '活動預告' : sch.state === 'shop' ? '墨玉閣開放中' : '活動進行中';
+  const txt = el('span', 'home-event__text'); txt.append(el('small', null, `${name} · ${sub}`), el('b', null, def.subtitle));
+  if (soon) { btn.classList.add('is-soon'); txt.append(el('small', 'home-event__when', `${new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(sch.startMs)} 開始`)); } btn.append(seal, txt, el('span', 'home-event__go', '⟶')); document.querySelector('.view--home .home-actions').before(btn);
   btn.addEventListener('click', () => openEventHub(def.id));
 }
 function renderWheelBadge() {
@@ -4774,7 +4777,7 @@ function fillToday(items = todayItems()) {
 $('today-pill').addEventListener('click', () => { fillToday(); $('today-dialog').showModal(); syncRoomActivity(); });
 $('close-today').addEventListener('click', () => $('today-dialog').close());
 $('today-dialog').addEventListener('close', syncRoomActivity);
-setInterval(() => { if (!document.hidden) renderToday(); }, 60 * 1000);
+setInterval(() => { if (!document.hidden) { renderToday(); renderHomeEvent(); } }, 60 * 1000); // 首頁活動卡：停在首頁跨過開跑時間也會換成「活動進行中」
 // 玩法指南：各功能說明（還沒解鎖的會寫解鎖條件）
 function renderGuideFeatures() {
   $('guide-features').replaceChildren(...Object.entries(guide.FEATURES).map(([id, f]) => {

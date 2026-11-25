@@ -420,11 +420,12 @@ export function activePool(egg, now = new Date(), dex = null) {
 }
 export const isHigh = (no) => HIGH.has(CHARACTERS[no]?.rarity);
 export const isRandomEgg = (eggState) => Boolean(EGGS[eggState.id]?.pool && !(eggState.character && CHARACTERS[eggState.character]) && !EGGS[eggState.id].byCounty);
-export function rollFor(eggState, boosts = [], { dex = null, dupStreak = 0, srStreak = 0 } = {}) {
+// now：校正過的時間（app 傳 eventNow），手機時間調快也不會提早孵到下卷居民
+export function rollFor(eggState, boosts = [], { dex = null, dupStreak = 0, srStreak = 0, now = new Date() } = {}) {
   const egg = EGGS[eggState.id];
   if (eggState.character && CHARACTERS[eggState.character]) return eggState.character;
   if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
-  const live = activePool(egg, new Date(), dex) || {};
+  const live = activePool(egg, now, dex) || {};
   const base = traitPool(live, eggState, CHARACTERS);
   if (!egg.pool || (!boosts.length && !dex && base === egg.pool)) return rollHatch(egg);
   let pool = { ...base };

@@ -1,0 +1,5 @@
+
+# 影片和原聲原檔不進公開 repo（放專案檔案 /mnt/project-files）（湘 11/25）
+*.mp4
+*.mov
+*.wav

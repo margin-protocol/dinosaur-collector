@@ -1154,6 +1154,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .home-event--c.has-art .home-event__text small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .home-event--c.has-art .home-event__text small { opacity:.85; }
 .home-event--c.has-art .home-event__go { margin-left:auto; opacity:1; background:#fff8f2d9; border-radius:999px; width:30px; height:30px; display:grid; place-items:center; flex:none; }
+.home-event--c.has-art.is-soon .home-event__text .home-event__when { margin-top:2px; font-size:11.5px; letter-spacing:.04em; color:#8a2620; opacity:1; font-variant-numeric:tabular-nums; }
 /* 討伐頁收合（湘 11/25） */
 .fold-head { padding:0 !important; }
 .fold-head.has-minis { flex-wrap:wrap; flex-direction:column; align-items:stretch !important; }
