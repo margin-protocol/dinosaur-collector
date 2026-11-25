@@ -53,7 +53,7 @@ import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer, server
 import * as events from './events.js';
 const { noteServerTime } = events;
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
-import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP } from './affection.js';
+import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP, capLeft, capLeftAll } from './affection.js';
 const GAIN_ERRAND = BOND_GAIN.errand;
 import * as battle from './battle.js';
 import { siangStatuses, statusCounts } from './siang-status.js';
@@ -179,6 +179,7 @@ const room = createRoom($('resident-lanes'), character => {
     else if (pt) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`摸摸頭 +${pt} 能量${heart}`); }
     else if (bond.added) toast(`${character.name} ♡+${bond.added}（好感度 ${bondInfo(state, character.no, todayKey()).pts}）`);
     else bondCapNotice(character.no);
+    syncBondAll();
     if (bond.up.length) queueBondUps([{ no: character.no, up: bond.up }]);
     const task = state.dino.task;
     if (task?.type === 'greet' && task.accepted !== false && task.target === character.no) void finishTask();
@@ -191,6 +192,7 @@ const room = createRoom($('resident-lanes'), character => {
     if (energy) { renderResources(); restart($('chip-energy'), 'is-bump'); toast(`摸摸頭 +${energy} 能量${heart}`); }
     else if (bond.added) toast(`${character.name} ♡+${bond.added}（好感度 ${bondInfo(state, character.no, todayKey()).pts}）`);
     else bondCapNotice(character.no);
+    syncBondAll();
     if (bond.up.length) queueBondUps([{ no: character.no, up: bond.up }]);
   });
 });
@@ -314,6 +316,7 @@ function renderHome() {
   ambience(homeAmbience());
   $('snack').hidden = !ids.length;
   $('snack-left').textContent = Math.max(0, snacksLeft(state, todayKey()));
+  syncBondAll(ids);
   const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
   $('resident-count').textContent = `${ids.length} / ${ROOM_LIMIT}`;
   $('home-subtitle').textContent = !owned.length ? '一起等待，初次相遇。' : ids.length > 1 ? '今天也很熱鬧呢。' : '今日也請多多指教。';
@@ -3713,6 +3716,45 @@ function bondCapNotice(no) {
   bondCapTold.add(key);
   toast(`${CHARACTERS[no].name}今天跟你已經很親了（好感度今天滿了）。換別的小湘入住，或帶她出門吧！`);
 }
+// 一鍵摸摸（湘 11/25）：等於把首頁每位入住小湘點到今天的上限——打招呼、摸頭能量、好感都照原本規則，不會超過每天上限
+function syncBondAll(ids = room.residents()) {
+  const left = capLeftAll(state, ids, todayKey());
+  $('bond-all').hidden = !ids.length || left <= 0;
+  $('bond-all-left').textContent = left;
+}
+async function bondAll() {
+  const nos = room.residents();
+  if (!nos.length) return;
+  const today = todayKey();
+  const t = await updateState(current => {
+    let energy = 0; const per = [];
+    for (const no of nos) {
+      if (!current.dex?.[no]) continue;
+      let added = 0; const up = [];
+      for (let n = capLeft(current, no, today); n > 0; n = capLeft(current, no, today)) {
+        energy += greet(current, no, today) + pet(current, today);
+        const r = gainBond(current, no, 'tap', today);
+        if (!r.added) break;
+        added += r.added; up.push(...r.up);
+      }
+      if (added) per.push({ no, added, up });
+    }
+    return { energy, per };
+  });
+  state = t.state;
+  const { energy, per } = t.result;
+  if (!per.length) { toast('今天大家都跟你很親了，明天再來摸摸吧！'); renderAll(); return; }
+  per.forEach(({ no }, i) => setTimeout(() => { room.happy(no); room.hearts(no, 7); }, i * 180));
+  const total = per.reduce((n, p) => n + p.added, 0);
+  toast(`${per.map(p => CHARACTERS[p.no].name).join('、')} ♡+${total}${energy ? ` · +${energy} 能量` : ''}`);
+  buzz([15, 30, 15]);
+  renderAll();
+  const ups = per.filter(p => p.up.length).map(({ no, up }) => ({ no, up }));
+  if (ups.length) queueBondUps(ups);
+  const task = state.dino.task;
+  if (task?.type === 'greet' && task.accepted !== false && per.some(p => p.no === task.target)) void finishTask();
+}
+$('bond-all').addEventListener('click', () => { void bondAll(); });
 // 住在首頁的小湘每天 ♡+2
 function tickHomeBond() {
   const residents = room.residents();

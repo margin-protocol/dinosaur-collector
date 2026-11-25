@@ -107,6 +107,9 @@ export function capLeft(state, no, today) {
   return Math.max(0, DAILY_CAP - e.today);
 }
 
+// 一鍵摸摸：入住的小湘今天首頁互動還能加幾點（合計）
+export const capLeftAll = (state, nos, today) => nos.filter(no => state.dex?.[no]).reduce((n, no) => n + capLeft(state, no, today), 0);
+
 // 加好感度。回傳 { added, level, up: [{ level, reward, unlock }] }
 export function gain(state, no, kind, today, times = 1) {
   if (!CHARACTERS[no] || !state.dex?.[no]) return { added: 0, level: 1, up: [] };
