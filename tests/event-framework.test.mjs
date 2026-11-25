@@ -160,3 +160,9 @@ test('墨痕蛋: only 117 and MO-001, not in star pool or other eggs, sold in �
     assert.equal(s.gifts.eggs.filter((e) => e.egg === 'mohen').length, 5);
   });
 });
+
+test('all ten stages have story before/after; MO-05 and MO-10 have endings', () => {
+  for (const id of Object.keys(def.stages)) { assert.ok(def.stages[id].story?.before, id); assert.ok(def.stages[id].story?.after, id); }
+  assert.match(def.stages['mo-05'].story.ending, /上卷・完/);
+  assert.match(def.stages['mo-10'].story.ending, /江湖再嫁/);
+});
