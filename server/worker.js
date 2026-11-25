@@ -84,7 +84,7 @@ const PUSH_NOTES = [
   ['postcard-replies/', '湘回覆了你寄的照片', 'postcard'],
   ['missions/', '湘出了一個新的照片委託', 'mission'],
 ];
-export const pushNoteFor = (path) => { const n = PUSH_NOTES.find(([p]) => path.startsWith(p)); return n ? { title: '小湘收集器', body: n[1], tag: n[2] } : null; };
+export const pushNoteFor = (path) => { const n = PUSH_NOTES.find(([p]) => path.startsWith(p)); return n ? { title: '頁間居民', body: n[1], tag: n[2] } : null; };
 const b64u = (bytes) => btoa(String.fromCharCode(...new Uint8Array(bytes))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64u = (s) => Uint8Array.from(atob(String(s).replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((String(s).length + 3) % 4)), (c) => c.charCodeAt(0));
 const cat = (...parts) => { const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0)); let o = 0; for (const p of parts) { out.set(p, o); o += p.length; } return out; };

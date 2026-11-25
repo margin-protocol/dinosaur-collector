@@ -11,8 +11,8 @@ body { background:#151722; }
 .app { padding:calc(var(--safe-top) + 26px) max(26px,env(safe-area-inset-right)) 0 max(26px,env(safe-area-inset-left)); }
 body[data-view="incubate"] .app { min-height:max(760px,100svh); }
 .topbar { min-height:40px; gap:12px; flex-wrap:nowrap; }
-.topbar__brand { font-family:var(--font-body); font-size:20px; font-weight:400; letter-spacing:.32em; }
-.topbar__brand span { color:var(--ivory); font-size:8px; font-weight:400; letter-spacing:.38em; margin-top:6px; }
+.topbar__brand { font-family:var(--font-body); font-size:20px; font-weight:400; letter-spacing:.2em; }
+.topbar__brand span { color:var(--ivory); font-size:8px; font-weight:400; letter-spacing:.32em; margin-top:6px; }
 .chip { height:32px; padding:0; gap:4px; border:0; border-radius:0; background:none; }
 .chip__icon { width:19px; height:24px; }
 .chip__icon svg { width:18px; height:18px; }

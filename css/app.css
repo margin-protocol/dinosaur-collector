@@ -216,3 +216,30 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex-detail__at { font-size: 11px; color: var(--silver); }
 .dex-detail__story { margin: 0 0 10px; padding: 10px 12px; border-left: 2px solid #c9a8ff; border-radius: 4px; background: #c9a8ff12; font: 13px/1.8 var(--font-display); color: var(--ivory); text-align: left; }
 .dex-detail__story::before { content: '相遇的故事'; display: block; margin-bottom: 2px; font: 10px var(--font-mono); letter-spacing: .16em; color: var(--rose-metal); }
+
+/* ---------- 圖鑑：切換世界（頁間居民 2.0，湘 11/25：跟著主題色，世界多了也放得下） ---------- */
+.dex-realms { display: flex; justify-content: center; width: max-content; max-width: 100%; margin: 0 auto 10px; padding: 3px; border: 1px solid var(--t-line, #ad96b14d); border-radius: 999px; }
+.dex-realms[hidden], .dex-worlds[hidden] { display: none; }
+.dex-realm { display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 96px; min-height: 40px; padding: 0 18px; line-height: 1; border: 0; border-radius: 999px; background: none; color: var(--silver); font: 14px var(--font-display); letter-spacing: 0.12em; }
+.dex-realm small { font: 11px var(--font-mono); letter-spacing: 0.04em; color: inherit; }
+.dex-realm[aria-selected="true"] { background: var(--t-light, #e9e2ee); color: var(--t-ink, #2a2333); }
+.dex-realm[aria-selected="true"] small { color: inherit; }
+.dex-worlds { display: flex; gap: 8px; margin: 0 -16px 10px; padding: 2px 16px 4px; overflow-x: auto; scrollbar-width: none; scroll-snap-type: x proximity; }
+.dex-worlds::-webkit-scrollbar { display: none; }
+.dex-worlds:has(> :only-child) { justify-content: center; }
+.dex-world { flex: none; display: flex; align-items: center; justify-content: center; gap: 8px; line-height: 1; min-height: 38px; padding: 0 14px 0 6px; border: 1px solid var(--t-line, #ad96b14d); border-radius: 999px; background: #ffffff0d; color: var(--silver); scroll-snap-align: start; }
+.dex-world__seal { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; border: 1px solid currentColor; font: 700 13px var(--font-display); color: var(--t-accent, var(--rose-metal)); }
+.dex-world b { font: 400 13px var(--font-display); letter-spacing: 0.08em; white-space: nowrap; }
+.dex-world small { font: 11px var(--font-mono); color: inherit; }
+.dex-world[aria-selected="true"] { border-color: var(--t-accent, var(--rose-metal)); background: var(--t-light, #e9e2ee); color: var(--t-ink, #2a2333); }
+.dex__tag--mohen { background: var(--t-light, #e9e2ee); color: var(--t-ink, #2a2333); box-shadow: inset 0 0 0 1px var(--t-accent, var(--rose-metal)); }
+
+/* 圖鑑：居民檔案／原典 */
+.dex-origin { margin: 14px 0 4px; padding: 12px 14px 14px; border: 1px solid var(--t-line, #ad96b14d); border-radius: 14px; background: #ffffff0f; text-align: left; }
+.dex-origin__eyebrow { display: block; margin-bottom: 8px; font: 10px var(--font-mono); letter-spacing: 0.22em; color: var(--t-accent, var(--rose-metal)); }
+.dex-origin__list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 12px; margin: 0; }
+.dex-origin__list div { min-width: 0; }
+.dex-origin__list dt { font-size: 10px; letter-spacing: 0.14em; color: var(--rose-metal); }
+.dex-origin__list dd { margin: 1px 0 0; font: 14px var(--font-display); color: var(--ivory); overflow-wrap: anywhere; }
+.dex-origin__quote { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--t-line, #ad96b13d); font-size: 12px; font-style: italic; line-height: 1.8; color: var(--silver); }.dex-world[aria-selected="true"] .dex-world__seal, .dex-world[aria-selected="true"] small { color: inherit; }
+

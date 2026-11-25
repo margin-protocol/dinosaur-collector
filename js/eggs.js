@@ -311,7 +311,11 @@ const CHARACTER_TABLE = {
   '115': { no: '115', name: '小湘 × 律師ㄊㄧ', rarity: 'SR', line: "「異議！！！！！我才沒有偷吃啦！！！！……ㄊㄧ！！你快幫我辯護！！！」", image: 'siang-115-lawyer-ti', series: 'friends' },
   '116': { no: '116', name: '小湘 × 檢察官ㄊㄧ', rarity: 'SSR', line: "「ㄊㄧ！！！我有重大發現！！！！……欸？你說要先保全證據？好啦！！！」", image: 'siang-116-prosecutor-ti', series: 'friends' },
   // 海棠新娘小湘（湘 11/25 交付文案＋立繪）：SSR，新開「花嫁」系列；普通蛋＋暗號蛋（＋星光蛋）。「嘿嘿」照湘要求只留 3 處（初見、Lv.5、隱藏最愛）。之後 2.0 會和聞止水有跨世界羈絆，這裡先不做。台詞：docs/SIANG_117_HAITANG_BRIDE.md
-  '117': { no: '117', name: '海棠新娘小湘', rarity: 'SSR', line: "「今日海棠正好，春風也溫柔。……你來啦！我等你好久了！……欸？我才沒有一直看門口呢！」", image: 'siang-117-haitang-bride', series: 'bride' },
+  '117': { no: '117', name: '海棠新娘小湘', rarity: 'SSR', line: "「今日海棠正好，春風也溫柔。……你來啦！我等你好久了！……欸？我才沒有一直看門口呢！」", image: 'siang-117-haitang-bride', series: 'bride' , world: 'mo', label: 'MO-002' }, // 湘 11/25：海棠新娘小湘歸墨痕江湖，顯示 MO-002（存檔仍用 117，不用遷移）
+  // 頁間居民 2.0 第一位異世居民（湘 11/25 交付文案＋立繪）：墨痕江湖 MO-001 墨衣護衛・聞止水，SSR。文案：/mnt 專案資料夾 between-pages/wen-zhishui/copy.md
+  'MO-001': { no: 'MO-001', name: '墨衣護衛・聞止水', rarity: 'SSR', line: '「站我身後。其他的，不用管。」', image: 'mo-001-wen-zhishui', series: 'mohen',
+    // 原典（湘 11/25）：origin.id 相同＝同一位角色在不同世界的版本（之後的「同源居民收藏成就」用）
+    origin: { id: 'wen-zhishui', world: '棲川市', role: '紀實攝影師' }, worldRole: '墨衣護衛', quote: '縱使世道更迭、姓名散落於不同書頁，有些人仍會一次又一次，走向同一個人。' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -350,7 +354,21 @@ export const SERIES = {
   lucky: { name: '歐皇三部曲', short: '歐皇' },
   tsukimi: { name: '月見町', short: '月見' },
   bride: { name: '花嫁系列', short: '花嫁' },
+  mohen: { name: '墨痕江湖', short: '墨痕', world: 'mo' },
 };
+
+// 頁間居民 2.0（湘 11/25）：小湘們是「創始系列」，其他世界的居民統稱「異世」，每個世界自己一套編號（MO-001…）。
+// 角色的世界跟著系列走：系列沒寫 world 的都是創始系列。編號只在 1～116 這種純數字時顯示成 No.xxx。
+export const WORLDS = {
+  origin: { name: '創始系列', short: '創始', realm: '' },
+  mo: { name: '墨痕江湖', short: '墨痕', realm: '異世', code: 'MO', seal: '墨' },
+};
+export const worldOf = (c) => (c && (c.world || SERIES[c.series]?.world)) || 'origin';
+export const worldLabel = (id) => { const w = WORLDS[id] || WORLDS.origin; return w.realm ? `${w.realm}・${w.name}` : w.name; };
+// 同源居民：同一個 origin.id 的所有版本
+export const sameOrigin = (id) => Object.values(CHARACTERS).filter((c) => c.origin?.id === id);
+// label：角色在別的世界的顯示編號（No.117 海棠新娘小湘已上線，存檔 key 不換，顯示成 MO-002）
+export const noLabel = (no) => { const l = CHARACTERS[no]?.label; if (l) return l; return /^\d+$/.test(String(no)) ? `No.${no}` : String(no); };
 
 // 縣市 → 縣市小湘編號
 export const COUNTY_CHARACTER = Object.fromEntries(Object.values(CHARACTERS).filter((c) => c.county).map((c) => [c.county, c.no]));

@@ -73,6 +73,11 @@ export const LUCK_TALKS = [
     ["116", "兩隻ㄊㄧ：妳先把事情講清楚。"],
     ["115", "怎麼兩邊都在唸我啦啊啊啊啊！！！！"],
   ] },
+  // 此生護卿（湘 11/25 定名；皮寶原稿〈墨衣與海棠〉）：海棠新娘小湘 × 墨衣護衛・聞止水
+  { pair: ['117', 'MO-001'], lines: [
+    ['117', '護衛大人！可以把新娘也一起帶走嗎？'],
+    ['MO-001', '可以。原本就是來接你的。'],
+  ] },
 ];
 // 同一對有好幾段時隨機挑一段（例如法律ㄊㄧ雙人組有四個彩蛋）
 export const talksFor = (no, residents) => LUCK_TALKS.filter((t) => t.pair.includes(no) && t.pair.every((n) => residents.includes(n)));

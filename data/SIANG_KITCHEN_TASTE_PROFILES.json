@@ -1366,6 +1366,16 @@
         "sakura",
         "strawberry"
       ]
+    },
+    {
+      "no": "MO-001",
+      "name": "墨衣護衛・聞止水",
+      "like": "清涼",
+      "dislike": "刺激",
+      "secret_combo": [
+        "caramel",
+        "pudding"
+      ]
     }
   ]
 }

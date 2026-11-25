@@ -1,7 +1,7 @@
 // 首席研究員審核室：只在湘的手機使用。印章（私鑰）存在這支手機的 IndexedDB。
 import { cloudConfig, saveCloudConfig, createCloud, claimReviewer, reviewerClaimed } from './cloud.js';
 import { generateKeys, exportJwk, importPrivate, publicFromPrivate, signPayload, normalizeCode, sha256Hex } from './sign.js';
-import { CHARACTERS, EGGS } from './eggs.js';
+import { CHARACTERS, EGGS, noLabel } from './eggs.js';
 import { describeReward } from './gifts.js';
 import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
 import qrcode from './vendor/qrcode.mjs';
@@ -256,7 +256,7 @@ $('code-random').addEventListener('click', () => {
   const pick = (a) => a[Math.floor(Math.random() * a.length)];
   $('code-phrase').value = `${pick(WORDS)}${pick(VERBS)}${pick(WORDS)}`;
 });
-$('code-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `No.${c.no} ${c.name}` })));
+$('code-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `${noLabel(c.no)} ${c.name}` })));
 $('code-reward').addEventListener('change', () => { $('code-character-row').hidden = $('code-reward').value !== 'character'; });
 
 function rewardFromForm() {
@@ -321,7 +321,7 @@ async function refreshCodes() {
 $('code-refresh').addEventListener('click', refreshCodes);
 
 /* ---------- 寄紙條（湘 11/21：可以附禮物） ---------- */
-$('letter-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `No.${c.no} ${c.name}` })));
+$('letter-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `${noLabel(c.no)} ${c.name}` })));
 $('letter-reward').addEventListener('change', () => { $('letter-character-row').hidden = $('letter-reward').value !== 'character'; });
 function letterReward() {
   const v = $('letter-reward').value;
@@ -369,7 +369,7 @@ async function refreshLetters() {
 }
 
 /* ---------- 照片委託 ---------- */
-$('mission-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `No.${c.no} ${c.name}` })));
+$('mission-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `${noLabel(c.no)} ${c.name}` })));
 // 隨機題目（湘 11/21）：題目和說明一起換，按一次換一個
 const MISSION_IDEAS = [
   ['今天晚餐吃什麼', '拍下你今天的晚餐，要有飲料喔！'],

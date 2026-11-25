@@ -117,4 +117,5 @@ export const TASTES = {
   '115': { like: '酥脆', dislike: '怪味', secret: ["gear", "mushroom", "strawberry"] }, // 小湘 × 律師ㄊㄧ：友情無罪雙拼飯糰＝齒輪餅乾（烤米香）＋魔法蘑菇（鹹口味）＋草莓（甜口味），兩種口味一人一顆
   '116': { like: '清涼', dislike: '刺激', secret: ["gear", "milk", "moon"] }, // 小湘 × 檢察官ㄊㄧ：真相大白雙人茶泡飯＝齒輪餅乾（米果）＋牛奶（溫暖）＋月光露（清爽茶湯）
   '117': { like: '果香', dislike: '怪味', secret: ["gear", "sakura", "strawberry"] }, // 海棠新娘小湘：海棠同心酥＝齒輪餅乾（酥脆外皮）＋櫻花蜜（海棠花香）＋草莓（淡淡果香、海棠紅）
+  'MO-001': { like: '清涼', dislike: '刺激', secret: ["caramel", "pudding"] }, // 墨衣護衛・聞止水：最愛焦糖布丁；喜歡清淡（清涼）、不喜歡過辣（刺激）
 };

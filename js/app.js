@@ -6,7 +6,7 @@ import { savePreset, ensureTeamBonds, effectText, teamBond } from './team-bonds.
 import { featureIcon } from './ui-icons.js';
 import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
-import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRandomEgg, isHigh, activePool, JOIN_WHEN_OWNED, NEW_FACE_TIMES, DUP_PITY, SR_PITY, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources } from './eggs.js';
+import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRandomEgg, isHigh, activePool, JOIN_WHEN_OWNED, NEW_FACE_TIMES, DUP_PITY, SR_PITY, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources, WORLDS, worldOf, worldLabel, noLabel } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
 import { loadState, updateState, resetState, newEgg } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
@@ -57,6 +57,7 @@ import * as battle from './battle.js';
 import { siangStatuses, statusCounts } from './siang-status.js';
 import * as kitchen from './kitchen.js';
 import { talkFor } from './luck-talk.js';
+import { residentLine } from './resident-lines.js';
 import { SCENES as UNLUCKY_SCENES, unluckyDue, grantUnlucky } from './unlucky.js';
 import { CHECKIN_REWARDS, ensureCheckin, checkIn as monthlyCheckIn, checkedToday, daysInMonth } from './checkin.js';
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
@@ -134,6 +135,7 @@ function tooManyPokes(no, now = Date.now()) {
 }
 // 歐非彩蛋：兩位輪流冒對話框
 const luckTalkAt = new Map(); let luckTalkTimers = [];
+let lastTapAt = Date.now(); // 待機台詞：太久沒點居民，聞止水會說「睡著了？」
 function playLuckTalk(talk) {
   luckTalkAt.set(talk.pair.join(), Date.now());
   luckTalkTimers.forEach(clearTimeout); luckTalkTimers = [];
@@ -163,7 +165,8 @@ const room = createRoom($('resident-lanes'), character => {
   }
   const talk = talkFor(character.no, room.residents());
   if (talk && Date.now() - (luckTalkAt.get(talk.pair.join()) || 0) > 10 * 60 * 1000) playLuckTalk(talk); // 歐非彩蛋：同一對 10 分鐘演一次
-  else say(character.line, 'happy', 4000);
+  else say(residentLine(character.no, { level: bondInfo(state, character.no, todayKey()).level, residents: room.residents(), idleMs: Date.now() - lastTapAt }) || character.line, 'happy', 4000);
+  lastTapAt = Date.now();
   room.peek(character.no, no => openDexDetail(no));
   // 點一下 = 打招呼，也算摸摸頭一次（很多人是用點的，不是用滑的）
   void updateState(current => ({ greet: greet(current, character.no, todayKey()), pet: pet(current, todayKey()), bond: gainBond(current, character.no, 'tap', todayKey()) })).then(t => {
@@ -774,7 +777,7 @@ function openEggOdds(id) {
     for (const no of list.sort((a, b) => pool[b] - pool[a] || a.localeCompare(b))) {
       const met = Boolean(state.dex[no]);
       const li = el('li', met ? '' : 'is-new');
-      li.append(el('span', '', met ? CHARACTERS[no].name : `？？？（No.${no}）`), el('small', '', met ? pct(pool[no] / total) : `${pct(pool[no] / total)} → ${pct(mine[no] / mineTotal)}`));
+      li.append(el('span', '', met ? CHARACTERS[no].name : `？？？（${noLabel(no)}）`), el('small', '', met ? pct(pool[no] / total) : `${pct(pool[no] / total)} → ${pct(mine[no] / mineTotal)}`));
       ul.append(li);
     }
     sec.append(h, ul); return sec;
@@ -851,7 +854,7 @@ function renderPresenterNow(selected, total) {
   text.append(
     Object.assign(document.createElement('small'), { textContent: '現在陪著你' }),
     Object.assign(document.createElement('b'), { textContent: c.name }),
-    Object.assign(document.createElement('span'), { textContent: `No.${c.no} · ${c.rarity} · ${SERIES[c.series]?.name || ''}` }),
+    Object.assign(document.createElement('span'), { textContent: `${noLabel(c.no)} · ${c.rarity} · ${SERIES[c.series]?.name || ''}` }),
   );
   const count = Object.assign(document.createElement('em'), { className: 'presenter-now__count', textContent: `共 ${total} 位` });
   box.replaceChildren(img, text, count);
@@ -920,11 +923,38 @@ document.querySelectorAll('[data-dex-mode]').forEach((button) => button.addEvent
   renderDex();
 }));
 
+// 圖鑑分世界（頁間居民 2.0，湘 11/25）：創始系列＝小湘們，其他是「異世」的各個世界
+const DEX_WORLD_KEY = 'siang-collector:dex-world:v1';
+function dexWorld() {
+  try { const w = localStorage.getItem(DEX_WORLD_KEY); return WORLDS[w] ? w : 'origin'; } catch { return 'origin'; }
+}
+function renderDexWorlds(current) {
+  const all = Object.values(CHARACTERS);
+  const tally = (id) => { const m = all.filter((c) => worldOf(c) === id); return [m.filter((c) => state.dex[c.no]).length, m.length]; };
+  const others = Object.keys(WORLDS).filter((id) => id !== 'origin' && tally(id)[1]);
+  const pick = (id) => { try { localStorage.setItem(DEX_WORLD_KEY, id); } catch {} renderDex(); };
+  const tab = (cls, selected, onClick) => { const b = document.createElement('button'); b.type = 'button'; b.className = cls; b.setAttribute('role', 'tab'); b.setAttribute('aria-selected', String(selected)); b.addEventListener('click', onClick); return b; };
+  // 第一層：創始｜異世（湘 11/25 選兩層）
+  const realms = $('dex-realms'); realms.hidden = !others.length;
+  const inOther = current !== 'origin';
+  const sum = others.reduce((a, id) => { const [g, n] = tally(id); return [a[0] + g, a[1] + n]; }, [0, 0]);
+  const realm = (label, [g, n], sel, go) => { const b = tab('dex-realm', sel, go); b.append(label, Object.assign(document.createElement('small'), { textContent: `${g}/${n}` })); return b; };
+  realms.replaceChildren(realm('創始', tally('origin'), !inOther, () => pick('origin')), realm('異世', sum, inOther, () => pick(inOther ? current : others[0])));
+  // 第二層：異世裡的各個世界，多了可以左右滑
+  const box = $('dex-worlds'); box.hidden = !inOther;
+  box.replaceChildren(...(inOther ? others : []).map((id) => {
+    const w = WORLDS[id], [g, n] = tally(id);
+    const b = tab(`dex-world dex-world--${id}`, id === current, () => pick(id)); b.dataset.dexWorld = id;
+    b.append(Object.assign(document.createElement('span'), { className: 'dex-world__seal', textContent: w.seal || w.name[0] }), Object.assign(document.createElement('b'), { textContent: w.name }), Object.assign(document.createElement('small'), { textContent: `${g}/${n}` }));
+    return b;
+  }));
+}
+
 function dexCard(c) {
   const has = Boolean(state.dex[c.no]);
   const li = document.createElement('li');
   li.className = `dex__card card${has ? ' is-owned' : ''}`;
-  li.dataset.dexNo = c.no; li.tabIndex = 0; li.setAttribute('role', 'button'); li.setAttribute('aria-label', `查看 No.${c.no} ${has ? c.name : '尚未收集的小湘'}`);
+  li.dataset.dexNo = c.no; li.tabIndex = 0; li.setAttribute('role', 'button'); li.setAttribute('aria-label', `查看 ${noLabel(c.no)} ${has ? c.name : '尚未收集的小湘'}`);
   li.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openDexDetail(c.no); } });
   const img = document.createElement('img');
   img.className = `dex__img${has ? '' : ' is-locked'}`;
@@ -939,7 +969,7 @@ function dexCard(c) {
   }
   const no = document.createElement('div');
   no.className = 'dex__no';
-  no.textContent = `No.${c.no}`;
+  no.textContent = noLabel(c.no);
   const name = document.createElement('div');
   name.className = 'dex__name';
   name.textContent = has ? c.name : '???';
@@ -962,7 +992,10 @@ function dexList(characters) {
 }
 
 function renderDex() {
-  const all = Object.values(CHARACTERS);
+  const world = dexWorld();
+  renderDexWorlds(world);
+  const all = Object.values(CHARACTERS).filter((c) => worldOf(c) === world);
+  if (world !== 'origin') all.sort((a, b) => noLabel(a.no).localeCompare(noLabel(b.no))); // 異世照顯示編號排（MO-002 海棠新娘小湘存檔 key 是 117）
   const owned = all.filter((c) => state.dex[c.no]);
   $('dex-count').textContent = `已收集 ${owned.length} / ${all.length}`;
   const mode = dexMode();
@@ -980,11 +1013,11 @@ function renderDex() {
   }
   const groups = mode === 'rarity'
     ? RARITY_ORDER.map((r) => [r, { name: r }])
-    : Object.entries(SERIES);
+    : Object.entries(SERIES).filter(([id]) => all.some((c) => c.series === id));
   const key = mode === 'rarity' ? 'rarity' : 'series';
   $('dex-grid').replaceChildren(...groups.map(([id, series]) => {
     const members = all.filter((c) => c[key] === id);
-    if (mode === 'rarity') members.sort((a, b) => a.no.localeCompare(b.no));
+    if (mode === 'rarity' && world === 'origin') members.sort((a, b) => a.no.localeCompare(b.no));
     if (!members.length) return '';
     const section = document.createElement('section');
     section.className = 'dex__section';
@@ -1351,7 +1384,7 @@ function showReveal(c, duplicate) {
   $('reveal').dataset.duplicate = String(duplicate);
   $('reveal-en').textContent = duplicate ? 'HELLO AGAIN' : 'A NEW COMPANION';
   $('reveal-greeting').textContent = duplicate ? '是你呀，我們又見面了。' : '初次見面，請多指教。';
-  $('reveal-no').textContent = `No.${c.no} ｜ ${c.rarity}`;
+  $('reveal-no').textContent = `${noLabel(c.no)} ｜ ${c.rarity}`;
   $('reveal-name').textContent = c.name;
   const hatchLine = WEATHER_LINES[c.no]?.hatch || RECIPE_LINES[c.no]?.hatch || FRIEND_LINES[c.no]?.hatch || NAP_LINES[c.no]?.hatch || DEVTEAM_LINES[c.no]?.hatch || EXTRA_LINES[c.no]?.hatch;
   $('reveal-line').textContent = hatchLine ? `「${hatchLine}」` : c.line;
@@ -2153,7 +2186,7 @@ function howToGet(c) {
     return state.dex[c.no] ? '開發團隊限定：達成條件後收到紀念蛋' : `開發團隊限定：${p}`;
   }
   if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
-  if (c.no === '117') return '異世活動「墨痕江湖」的活動卡池（即將登場）';
+  if (c.no === '117' || c.no === 'MO-001') return '異世活動「墨痕江湖」的活動卡池（即將登場）';
   const eggs = Object.values(EGGS).filter(e => activePool(e)?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
 }
@@ -2164,13 +2197,24 @@ function openDexDetail(no) {
   img.className = `dex-detail__img${owned ? '' : ' is-locked'}${owned && c.cheshire ? ' is-cheshire' : ''}`; img.alt = owned ? c.name : '尚未收集的小湘'; // is-cheshire：柴郡貓小湘慢慢隱身只剩笑容（純視覺）
   loadWithFallback(img, characterSources(c.image));
   $('dex-photo').hidden = !owned; $('dex-photo').dataset.no = no;
-  $('dex-detail-no').textContent = `No.${c.no} · ${owned ? c.rarity : '?'} · ${SERIES[c.series]?.name || ''}`;
+  $('dex-detail-no').textContent = `${noLabel(c.no)} · ${owned ? c.rarity : '?'} · ${worldOf(c) === 'origin' ? (SERIES[c.series]?.name || '') : worldLabel(worldOf(c))}`;
   const stars = owned ? state.dex[no]?.dup || 0 : 0;
   $('dex-detail-stars').hidden = !owned;
   $('dex-detail-stars').replaceChildren(Object.assign(document.createElement('b'), { textContent: starText(stars) }), Object.assign(document.createElement('span'), { textContent: stars >= battle.MAX_STARS ? `星級 ${stars} / ${battle.MAX_STARS} · 已滿星！討伐戰力 +${stars * 10}%` : `星級 ${stars} / ${battle.MAX_STARS} · 再孵到她一次 +1 星${stars ? `（目前討伐戰力 +${stars * 10}%）` : '（每星討伐戰力 +10%）'}` }));
   $('dex-detail-name').textContent = owned ? c.name : '???';
   $('dex-detail-line').textContent = owned ? c.line : '';
   $('dex-detail-line').hidden = !owned;
+  // 居民檔案／原典（湘 11/25）：有原典資料的居民，收集後才看得到
+  $('dex-detail-origin').hidden = !(owned && c.origin);
+  if (owned && c.origin) {
+    $('dex-origin-eyebrow').textContent = `居民檔案 / ${c.no}`;
+    $('dex-origin-world').textContent = c.origin.world || '—';
+    $('dex-origin-role').textContent = c.origin.role || '—';
+    $('dex-origin-series').textContent = worldLabel(worldOf(c));
+    $('dex-origin-now').textContent = c.worldRole || '—';
+    $('dex-origin-quote').textContent = c.quote || '';
+    $('dex-origin-quote').hidden = !c.quote;
+  }
   setParas($('dex-detail-intro'), owned ? (INTROS[no] || '') : (MYSTERY_INTROS[no] || '遠處好像有誰探了一下頭。再靠近一點，下次也許就能打個招呼。'), 90, true); // 長介紹照句子分段（11/21）
   $('dex-detail-how').textContent = `取得方式：${howToGet(c)}`;
   const at = state.dex[no]?.at;
@@ -2775,7 +2819,7 @@ $('fossil-offers').addEventListener('click', event => {
       const c = CHARACTERS[no]; const b = document.createElement('button'); b.type = 'button'; b.className = 'fossil-pick'; b.dataset.pick = no;
       b.disabled = state.fossils < pickCost(CHARACTERS, no);
       const img = document.createElement('img'); img.alt = ''; loadWithFallback(img, characterSources(c.image));
-      b.append(img, `No.${c.no} · ${pickCost(CHARACTERS, no)}`); return b;
+      b.append(img, `${noLabel(c.no)} · ${pickCost(CHARACTERS, no)}`); return b;
     })];
   }));
   $('fossil-pick').hidden = false;
@@ -3092,7 +3136,7 @@ setInterval(() => { if (!document.hidden && state.wishes.date !== todayKey()) vo
 // ── 放到主畫面（Android 跳安裝卡；其他瀏覽器顯示手動步驟）
 const INSTALL_STEPS = {
   ios: ['用 <b>Safari</b> 打開這個網頁', '點下方的<b>分享</b>按鈕（方框加箭頭）', '往下滑，選<b>加入主畫面</b>'],
-  android: ['點右上角的 <b>⋮</b> 選單', '選<b>安裝應用程式</b>或<b>加到主畫面</b>', '按<b>安裝</b>，桌面就會出現小湘收集器'],
+  android: ['點右上角的 <b>⋮</b> 選單', '選<b>安裝應用程式</b>或<b>加到主畫面</b>', '按<b>安裝</b>，桌面就會出現頁間居民'],
   other: ['打開瀏覽器選單', '找<b>安裝</b>或<b>加到主畫面</b>', '照著提示完成就好'],
 };
 function openInstall(auto = false) {
@@ -3106,7 +3150,7 @@ function openInstall(auto = false) {
 }
 $('open-install').addEventListener('click', () => {
   $('function-center').close();
-  if (install.isInstalled()) { toast('小湘收集器已經在主畫面上了！'); return; }
+  if (install.isInstalled()) { toast('頁間居民已經在主畫面上了！'); return; }
   openInstall();
 });
 $('install-go').addEventListener('click', async () => {
@@ -3125,7 +3169,7 @@ function maybeOfferInstall() {
 }
 install.onChange(type => {
   if (type === 'available') setTimeout(maybeOfferInstall, 1500);
-  if (type === 'installed') { if ($('install-dialog').open) $('install-dialog').close(); toast('小湘收集器放到主畫面囉！之後點圖示就能打開～'); }
+  if (type === 'installed') { if ($('install-dialog').open) $('install-dialog').close(); toast('頁間居民放到主畫面囉！之後點圖示就能打開～'); }
 });
 if (install.isInstalled()) $('open-install').hidden = true;
 

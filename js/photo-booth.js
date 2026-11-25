@@ -271,7 +271,7 @@ export function createPhotoBooth({ dialog, getState, onTaken = () => {} }) {
     const fs = Math.round(W * 0.026);
     g.font = `${fs}px "Cormorant Garamond", "Noto Serif TC", serif`; g.textAlign = 'right'; g.textBaseline = 'bottom';
     g.fillStyle = 'rgba(255,255,255,.85)'; g.shadowColor = 'rgba(0,0,0,.45)'; g.shadowBlur = fs * 0.4;
-    g.fillText(`with ${CHARACTERS[no].name} · SIANG COLLECTOR`, W - fs, H - fs * 0.8);
+    g.fillText(`with ${CHARACTERS[no].name} · BETWEEN THE PAGES`, W - fs, H - fs * 0.8);
     canvas.toBlob((b) => {
       if (!b) { status.textContent = '照片合成失敗了，再按一次試試看。'; return; }
       blob = b; if (url) URL.revokeObjectURL(url); url = URL.createObjectURL(b);

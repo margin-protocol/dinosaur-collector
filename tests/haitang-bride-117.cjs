@@ -15,7 +15,7 @@ if(W===(process.env.W?Number(process.env.W):360)){
     const copy=JSON.stringify([I.INTROS[no],I.MYSTERY_INTROS[no],B.BOND_STORIES[no],B.BOND_LINES[no],X.EXTRA_LINES[no],V.WISH_VOICE_LATE[no],K.KITCHEN_LINES[no],R.CHARACTER_REPORTS[no],E.CHARACTERS[no].line]);
     const mine=secrets.find(([n])=>n===no)[1];
     const dish=KI.dishById(mine);
-    return {free100:!E.CHARACTERS['100'],c:E.CHARACTERS[no],series:E.SERIES.bride,lastKey:Object.keys(E.CHARACTERS).at(-1),
+    return {free100:!E.CHARACTERS['100'],c:E.CHARACTERS[no],series:E.SERIES.bride,lastKey:Object.keys(E.CHARACTERS).filter(k=>/^\d+$/.test(k)).at(-1),
       pools:Object.values(E.EGGS).filter(e=>e.pool?.[no]).map(e=>e.id).sort(),w:[E.EGGS.ordinary.pool[no],E.EGGS.cipher.pool[no],E.EGGS.star.pool[no]],
       has:[I.INTROS[no],I.MYSTERY_INTROS[no],B.BOND_STORIES[no],B.BOND_LINES[no]?.[2],B.BOND_LINES[no]?.[4],B.BOND_LINES[no]?.[5],X.EXTRA_LINES[no]?.hatch,X.EXTRA_LINES[no]?.dispatch,X.EXTRA_LINES[no]?.victory,X.EXTRA_LINES[no]?.defeat,K.KITCHEN_LINES[no]?.[3],K.KITCHEN_LINES[no]?.[2],K.KITCHEN_LINES[no]?.[1],K.KITCHEN_LINES[no]?.[0],R.CHARACTER_REPORTS[no]?.conv?.[0],R.CHARACTER_REPORTS[no]?.park?.[0],R.CHARACTER_REPORTS[no]?.market?.[0],R.CHARACTER_REPORTS[no]?.mountain?.[0],R.CHARACTER_REPORTS[no]?.faraway?.[0],V.WISH_VOICE_LATE[no]?.color?.includes('{color}'),V.WISH_VOICE_LATE[no]?.other?.includes('{wish}')].map(Boolean),
       hehe:(copy.match(/嘿嘿/g)||[]).length,heheAt:[X.EXTRA_LINES[no].hatch,B.BOND_LINES[no][5],K.KITCHEN_LINES[no][3]].map(s=>s.includes('嘿嘿')),
@@ -34,11 +34,11 @@ if(W===(process.env.W?Number(process.env.W):360)){
   assert.ok(u.ings.every(Boolean),'secret uses real ingredients');assert.ok(u.isSecret);assert.deepEqual(u.secretShared,[],'secret combo unique');
   assert.deepEqual(u.art.slice(0,2),[1024,1024]);assert.ok(u.art[3]>=936&&u.art[3]<=941,`feet at ${u.art[3]}`);assert.ok(u.art[2]>=25,`head at ${u.art[2]}`);
 }
-await p.evaluate((theme)=>{const k='siang-collector:v1',s=JSON.parse(localStorage.getItem(k));s.dex={'001':{at:'2026-11-10T00:00:00Z'},'117':{at:'2026-11-25T00:00:00Z'}};s.hatched=2;s.tutorial=null;localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:theme:v1',theme);},process.env.THEME||'sakura');
+await p.evaluate((theme)=>{const k='siang-collector:v1',s=JSON.parse(localStorage.getItem(k));s.dex={'001':{at:'2026-11-10T00:00:00Z'},'117':{at:'2026-11-25T00:00:00Z'}};s.hatched=2;s.tutorial=null;localStorage.setItem(k,JSON.stringify(s));localStorage.setItem('siang-collector:theme:v1',theme);localStorage.setItem('siang-collector:dex-world:v1','mo');},process.env.THEME||'sakura');
 await p.reload();await p.waitForTimeout(400);if(await p.locator('#intro-ok').isVisible())await p.click('#intro-ok');
 await p.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());location.hash='dex';});
 await p.locator('[data-dex-no="117"]').click();await p.locator('#dex-detail[open]').waitFor();await p.locator('#dex-detail-img').evaluate(i=>i.decode());
-assert.match(await p.textContent('#dex-detail-no'),/No\.117 · SSR · 花嫁系列/);
+assert.match(await p.textContent('#dex-detail-no'),/MO-002 · SSR · 異世・墨痕江湖/);
 assert.match(await p.textContent('#dex-detail-intro'),/海棠鎮/);
 assert.match(await p.textContent('#dex-detail-how'),/墨痕江湖/);
 assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal scroll');

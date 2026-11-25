@@ -72,7 +72,7 @@ try {
   assert.equal(got.length, 1); assert.equal(got[0].path, '/a');
   assert.equal(got[0].headers['content-encoding'], 'aes128gcm'); assert.equal(got[0].headers.ttl, '86400');
   checkVapid(got[0].headers.authorization, `${base}/a`);
-  assert.deepEqual(decrypt(phoneA, got[0].body), { title: '小湘收集器', body: '湘審完你的委託照片了！', tag: 'review' });
+  assert.deepEqual(decrypt(phoneA, got[0].body), { title: '頁間居民', body: '湘審完你的委託照片了！', tag: 'review' });
   // 照片（.jpg）不推；同一個檔案再寫一次（已存在）也不推
   await call('PUT', '/f/reviews/m1__s1.json', { token: reviewer, player: a.id, body: '{}' }); assert.equal(got.length, 1);
   // 紙條給朋友
