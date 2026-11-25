@@ -148,9 +148,9 @@ export function ensureErrands(state) {
 }
 
 // 研究室調配中的兩位也算忙（不能出門、討伐）
-export const busyNos = (state) => new Set([...(state.errands?.active || []).flatMap((e) => e.nos), ...(state.lab?.members || [])]);
+export const busyNos = (state) => new Set([...(state.errands?.active || []).flatMap((e) => e.nos), ...(state.lab?.members || []), ...(state.lab2?.members || [])]);
 // 出門在外（不在首頁）的小湘；在家幫忙的不算
-export const awayNos = (state, now = Date.now()) => new Set([...(state.errands?.active || []).filter((e) => e.place && Date.parse(e.until) > now).flatMap((e) => e.nos), ...(state.lab?.members || [])]);
+export const awayNos = (state, now = Date.now()) => new Set([...(state.errands?.active || []).filter((e) => e.place && Date.parse(e.until) > now).flatMap((e) => e.nos), ...(state.lab?.members || []), ...(state.lab2?.members || [])]);
 export const isBack = (errand, now = Date.now()) => Date.parse(errand.until) <= now;
 export const returned = (state, now = Date.now()) => (state.errands?.active || []).filter((e) => isBack(e, now));
 

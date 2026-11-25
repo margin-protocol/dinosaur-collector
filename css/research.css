@@ -68,3 +68,17 @@ body[data-view="research"] .game-footer { min-height:70px; padding-top:8px; padd
 .research-brew { margin-bottom:10px; }
 .research-brew-status { margin:0 0 10px; font:12px/1.7 var(--font-display); color:#f2b8c8; }
 .research-brew-status:empty { display:none; }
+
+/* 第二個研究欄位（湘 11/25 選 A：上下兩張卡） */
+.research-labs { margin:0 0 18px; }
+.research-labs .research-lab { margin:0 0 10px; }
+.research-labs__head { display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin:0 0 8px; font:9px var(--font-body); letter-spacing:.16em; color:var(--silver); }
+.research-labs__head b { font:400 11px var(--font-display); letter-spacing:0; color:var(--pearl); }
+.research-lab--empty { border-style:dashed; background:repeating-linear-gradient(135deg,#ffffff06 0 8px,transparent 8px 16px); }
+.research-lab__flask { display:grid; place-items:center; height:96px; border:1px dashed #b296bd66; border-radius:44px 44px 14px 14px; color:#c6b0d1; font:300 26px var(--font-body); }
+.research-lab--empty .research-lab__who { margin-bottom:8px; font-size:11px; }
+.research-lab__buy { display:inline-flex; align-items:center; gap:6px; min-height:40px; padding:6px 14px; border:1px solid #c9a6c9; border-radius:99px; background:linear-gradient(135deg,#5a4462,#3e3247); color:#f6eaf5; font:12px var(--font-display); }
+.research-lab__buy:disabled { opacity:.5; cursor:default; }
+.research-lab__buy:active:not(:disabled) { transform:scale(.97); }
+.research-lab__status:empty { display:none; }
+.research-lab__status { margin:6px 0 0; font:11px/1.6 var(--font-display); color:var(--silver); }

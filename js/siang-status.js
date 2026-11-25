@@ -14,7 +14,7 @@ export function siangStatuses(state, now = Date.now()) {
     const back = Date.parse(e.until) <= now;
     for (const no of e.nos) mark(no, back ? '回來了' : e.place ? '出門中' : '在家幫忙', back ? null : e.until);
   }
-  for (const no of state.lab?.members || []) mark(no, '調配中', state.lab.until);
+  for (const lab of [state.lab, state.lab2]) for (const no of lab?.members || []) mark(no, '調配中', lab.until);
   const list = Object.keys(CHARACTERS).filter((no) => state.dex?.[no]).map((no) => {
     const power = siangPower(state, no).power;
     if (busy.has(no)) return { no, kind: 'busy', power, ...busy.get(no) };

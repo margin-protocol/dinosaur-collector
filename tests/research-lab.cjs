@@ -26,7 +26,7 @@ await p.locator('[data-slot="0"]').click();await p.locator('[data-partner="002"]
 await p.locator('[data-preview]').click();await p.locator('.research-result[open]').waitFor();
 assert.match(await p.textContent('.research-result-copy'),/放進研究室調配 3 天/);
 await p.locator('[data-brew]').click();await p.waitForFunction(()=>!document.querySelector('.research-result').open);
-await p.locator('.research-lab:not([hidden])').waitFor();
+await p.locator('.research-labs:not([hidden])').waitFor();
 assert.match(await p.textContent('.research-lab'),/《甜甜的相遇》/);assert.match(await p.textContent('.research-lab'),/第 1 \/ 3 天/);
 let s=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v1')));assert.deepEqual(s.lab.members,['002','005']);
 // 首頁看不到她們

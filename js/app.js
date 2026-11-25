@@ -232,7 +232,16 @@ const research = createResearch({
     toast(`🧪 ${names}進研究室了！${t.result.recipe.days} 天後見～`);
     return null;
   },
-  onCancelBrew: async () => { const t = await updateState(current => lab.cancelBrew(current)); state = t.state; renderAll(); },
+  onCancelBrew: async (slot = 0) => { const t = await updateState(current => lab.cancelBrew(current, slot)); state = t.state; renderAll(); },
+  // 第二個研究欄位（湘 11/25，500 化石）
+  onBuyLab: async () => {
+    const t = await updateState(current => lab.buyLabSlot(current));
+    state = t.state; renderAll();
+    if (typeof t.result === 'string') return t.result;
+    restart($('chip-fossil'), 'is-bump');
+    toast('🧪 第二個研究欄位開好了！現在可以同時調配兩組配方。');
+    return null;
+  },
 });
 
 const tutorial = createTutorial({
@@ -1998,12 +2007,16 @@ function showDevteamEvent() {
 /* ---------- 隱藏配方：研究室調配（js/lab.js，湘 11/19：放在研究室才有調配的感覺，不再是一起入住首頁） ---------- */
 let recipeBusy = false;
 function checkRecipes() {
-  if (recipeBusy || !state.seenIntro || !lab.labStatus(state)?.ready) return;
+  if (recipeBusy || !state.seenIntro || !lab.anyReady(state)) return;
   recipeBusy = true;
-  void updateState(current => lab.finishBrew(current)).then(t => {
+  void updateState(current => lab.finishBrews(current)).then(t => {
     state = t.state; recipeBusy = false; renderAll(); research.update();
-    const r = t.result;
-    if (r) { toast(`🧪 ${r.members.map(no => CHARACTERS[no].name).join('和')}在研究室調配完成！收到一顆紀念蛋，到「選擇蛋」看看吧。`); say('研究室那邊傳來好香的味道……好像有新的蛋！', 'happy', 5200); }
+    const done = t.result || [];
+    if (done.length) {
+      const names = done.map(r => r.members.map(no => CHARACTERS[no].name).join('和')).join('、');
+      toast(`🧪 ${names}在研究室調配完成！收到${done.length > 1 ? ` ${done.length} 顆` : '一顆'}紀念蛋，到「選擇蛋」看看吧。`);
+      say('研究室那邊傳來好香的味道……好像有新的蛋！', 'happy', 5200);
+    }
   }).catch(() => { recipeBusy = false; });
 }
 setInterval(() => { if (!document.hidden) checkRecipes(); }, 60 * 1000);
@@ -2209,7 +2222,7 @@ function howToGet(c) {
   const h = HOLIDAYS.find(x => x.no === c.no);
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
-  if (recipe) { const st = lab.labStatus(state); const brewing = st?.recipe.id === recipe.id; return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
+  if (recipe) { const st = lab.labStatusFor(state, recipe.id); const brewing = Boolean(st); return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
   if (c.badge) { const h = battle.heroStatus(state, c.no); const joined = JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no] ? Object.values(EGGS).filter(e => activePool(e, new Date(), state.dex)?.[c.no]).map(e => e.name) : []; return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換專屬蛋，培育後固定孵出${h.requireText ? `（${h.requireText}）` : ''}${joined.length ? `；已經加入收藏，現在${joined.join('、')}也孵得到` : ''}`; }
   if (JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no]) { const eggs = Object.values(EGGS).filter(e => activePool(e, new Date(), state.dex)?.[c.no]).map(e => e.name); if (eggs.length) return `已經加入收藏，現在${eggs.join('、')}也孵得到`; }
   if (c.newNeed) return `一般的蛋累計孵到新朋友 ${c.newNeed} 次，她會自己來找你（目前 ${Math.min(state.newTotal || 0, c.newNeed)} / ${c.newNeed}）`;
@@ -2843,7 +2856,7 @@ async function doExchange(offerId, no) {
   state = t.state; renderAll();
   if (!t.result) { $('fossil-status').textContent = '化石不夠喔。'; return; }
   restart($('chip-fossil'), 'is-bump');
-  $('fossil-status').textContent = offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！到培育室就能看到副架：換蛋時，正在孵的那顆會放上去繼續保溫。` : offerId === 'energy' ? `換到 ${FOSSIL_ENERGY} 能量了！` : offerId === 'pick' ? `用 ${t.result.cost} 化石換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
+  $('fossil-status').textContent = offerId === 'lab' ? '第二個研究欄位開好了！到「研究」就能同時調配兩組配方。' : offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！到培育室就能看到副架：換蛋時，正在孵的那顆會放上去繼續保溫。` : offerId === 'energy' ? `換到 ${FOSSIL_ENERGY} 能量了！` : offerId === 'pick' ? `用 ${t.result.cost} 化石換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
   openFossils();
 }
 $('chip-fossil').addEventListener('click', openFossils);
