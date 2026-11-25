@@ -69,7 +69,7 @@ export const EVENT_DEFS = {
     // 墨玉閣：reward.type 由 applyShopReward 處理；soon:true 的商品還沒做好，不顯示、不能買
     shop: [
       { id: 'wen', name: '墨衣護衛・聞止水', cost: 500, limit: 1, reward: { type: 'character', no: 'MO-001' } },
-      { id: 'mohen-egg', name: '墨痕蛋', cost: 80, limit: 5, reward: { type: 'egg', egg: 'mohen' } }, // 墨痕蛋＝活動卡池
+      { id: 'mohen-egg', name: '墨痕蛋', cost: 80, limit: 0, reward: { type: 'egg', egg: 'mohen' } }, // 墨痕蛋＝活動卡池
       { id: 'title', name: '限定稱號「執筆入江湖」', cost: 150, limit: 1, reward: { type: 'title', id: 'mo-pen' } },
       { id: 'theme', name: '限定主題「煙雨渡口」', cost: 200, limit: 1, reward: { type: 'theme', id: 'yanyu' } },
       { id: 'recipe', name: '限定料理食譜', cost: 60, limit: 1, reward: { type: 'recipe', id: 'mo-recipe' }, soon: true },

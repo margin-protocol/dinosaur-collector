@@ -167,9 +167,9 @@ test('墨痕蛋: only MO residents (117, MO-001, MO-005, MO-008), not in star po
   for (const id of Object.keys(EGGS)) if (id !== 'mohen') for (const no of Object.keys(EGGS.mohen.pool)) assert.equal(EGGS[id].pool?.[no], undefined, `${id} ${no}`);
   withStart(() => {
     const s = { dex: {}, gifts: { eggs: [] } }; ensureEvents(s); s.events.mo.tokens = 500;
-    for (let i = 0; i < 5; i++) assert.equal(typeof buy(s, def, 'mohen-egg', h(1)), 'object');
-    assert.match(buy(s, def, 'mohen-egg', h(1)), /換完/);
-    assert.equal(s.gifts.eggs.filter((e) => e.egg === 'mohen').length, 5);
+    for (let i = 0; i < 6; i++) assert.equal(typeof buy(s, def, 'mohen-egg', h(1)), 'object'); // 湘 11/25：不限顆數
+    assert.match(buy(s, def, 'mohen-egg', h(1)), /不夠/);
+    assert.equal(s.gifts.eggs.filter((e) => e.egg === 'mohen').length, 6);
   });
 });
 

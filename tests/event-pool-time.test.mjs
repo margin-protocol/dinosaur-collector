@@ -24,3 +24,9 @@ test('墨痕蛋混池：活動居民合計 30%、其他小湘 70%，比例照原
   assert.ok(Math.abs(up['MO-005'] - 10) < 1e-9 && Math.abs(up['MO-001'] - 5) < 1e-9);
   for (const id of Object.keys(EGGS)) if (id !== 'mohen') assert.equal(activePool(EGGS[id], new Date('2026-11-30T12:00:00+08:00'), {})?.['MO-001'], undefined, id);
 });
+test('墨痕蛋保底：連續 9 顆沒出活動居民，第 10 顆一定出', () => {
+  const now = new Date('2026-11-30T12:00:00+08:00'); const egg = { id: 'mohen' };
+  for (let i = 0; i < 200; i++) assert.ok(EGGS.mohen.pool[rollFor(egg, [], { dex: {}, mixStreak: 9, now })]);
+  const got = new Set(); for (let i = 0; i < 300; i++) got.add(rollFor(egg, [], { dex: {}, mixStreak: 3, now }));
+  assert.ok([...got].some((no) => !EGGS.mohen.pool[no]), '還沒到保底會出其他小湘');
+});

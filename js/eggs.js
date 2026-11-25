@@ -137,7 +137,8 @@ export const EGGS = {
     stocked: true,
     world: 'mo',
     pool: { 'MO-001': 1, '117': 1, 'MO-005': 2, 'MO-008': 2, 'MO-003': 2, 'MO-007': 2, 'MO-004': 1, 'MO-006': 1 },
-    mix: { from: 'ordinary', share: 0.3 }, // 湘 11/25：活動居民合計 30%（比例照上面），另外 70% 照普通蛋的池子出其他小湘 // 湘 11/25：SR 各 2 份、SSR 各 1 份；MO-003/004/006/007 下卷（poolFrom 11/29 12:00）才出現
+    mix: { from: 'ordinary', share: 0.3, pity: 10 }, // pity：連續 9 顆沒出活動居民，第 10 顆一定出（湘 11/25）
+    // 湘 11/25：活動居民合計 30%（比例照上面），另外 70% 照普通蛋的池子出其他小湘 // 湘 11/25：SR 各 2 份、SSR 各 1 份；MO-003/004/006/007 下卷（poolFrom 11/29 12:00）才出現
     // 素材：assets/eggs/mohen/{shell,glow,cracks}.webp（還沒有，先用占位）
   },
   star: {
@@ -428,7 +429,7 @@ export function activePool(egg, now = new Date(), dex = null) {
 export const isHigh = (no) => HIGH.has(CHARACTERS[no]?.rarity);
 export const isRandomEgg = (eggState) => Boolean(EGGS[eggState.id]?.pool && !(eggState.character && CHARACTERS[eggState.character]) && !EGGS[eggState.id].byCounty);
 // now：校正過的時間（app 傳 eventNow），手機時間調快也不會提早孵到下卷居民
-export function rollFor(eggState, boosts = [], { dex = null, dupStreak = 0, srStreak = 0, now = new Date() } = {}) {
+export function rollFor(eggState, boosts = [], { dex = null, dupStreak = 0, srStreak = 0, mixStreak = 0, now = new Date() } = {}) {
   const egg = EGGS[eggState.id];
   if (eggState.character && CHARACTERS[eggState.character]) return eggState.character;
   if (egg.byCounty) return COUNTY_CHARACTER[eggState.county] || '001';
@@ -437,6 +438,10 @@ export function rollFor(eggState, boosts = [], { dex = null, dupStreak = 0, srSt
   if (!egg.pool || (!boosts.length && !dex && base === egg.pool)) return rollHatch(egg);
   let pool = { ...base };
   for (const b of boosts) if (pool[b.no]) pool[b.no] *= b.times;
+  if (egg.mix?.pity && mixStreak >= egg.mix.pity - 1) { // 混池保底：只留活動居民
+    const own = Object.keys(pool).filter((no) => egg.pool[no]);
+    if (own.length) pool = Object.fromEntries(own.map((no) => [no, pool[no]]));
+  }
   if (srStreak >= SR_PITY - 1) {
     const high = Object.keys(pool).filter((no) => HIGH.has(CHARACTERS[no]?.rarity));
     if (high.length) pool = Object.fromEntries(high.map((no) => [no, pool[no]])); // 先保 SR，再在 SR 裡照新面孔規則挑

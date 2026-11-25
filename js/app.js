@@ -796,6 +796,7 @@ function openEggOdds(id) {
   const body = $('egg-odds-body');
   const intro = el('p', 'residents-intro', `${egg.name}裡共有 ${Object.keys(pool).length} 位小湘。${egg.mix ? `其中墨痕江湖的居民合計 ${Math.round(egg.mix.share * 100)}%，其他小湘合計 ${Math.round((1 - egg.mix.share) * 100)}%。` : ''}「你現在」已經算進沒遇過的小湘 ×${NEW_FACE_TIMES}；蛋的個性、天氣和時間的加成另外算。`);
   const luck = el('div', 'egg-odds__luck');
+  if (egg.mix?.pity) luck.append(el('span', '', `沒出墨痕江湖居民 ${Math.min(state.mixStreak?.[egg.id] || 0, egg.mix.pity - 1)} / ${egg.mix.pity - 1}（到了下一顆必定是墨痕江湖居民）`));
   luck.append(el('span', '', `連續重複 ${Math.min(state.dupStreak || 0, DUP_PITY)} / ${DUP_PITY}（到了下一顆必定是新面孔）`), el('span', '', `沒出 SR 以上 ${Math.min(state.srStreak || 0, SR_PITY - 1)} / ${SR_PITY - 1}（到了下一顆必定 SR 以上）`));
   const sections = RARITY_ORDER.map(r => {
     const list = Object.keys(pool).filter(no => CHARACTERS[no]?.rarity === r);
@@ -1347,9 +1348,9 @@ async function hatch(expected) {
   const transaction = await updateState(current => {
     if (current.egg.id !== expected.id || current.egg.since !== expected.since || current.egg.warmth < EGGS[current.egg.id].warmthNeeded) return null;
     const random = isRandomEgg(current.egg);
-    const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current), random ? { dex: current.dex, dupStreak: current.dupStreak || 0, srStreak: current.srStreak || 0, now: new Date(events.eventNow(structuredClone({ clock: current.clock }))) } : {})];
+    const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current), random ? { dex: current.dex, dupStreak: current.dupStreak || 0, srStreak: current.srStreak || 0, mixStreak: current.mixStreak?.[current.egg.id] || 0, now: new Date(events.eventNow(structuredClone({ clock: current.clock }))) } : {})];
     const duplicate = Boolean(current.dex[character.no]);
-    if (random) { current.dupStreak = duplicate ? (current.dupStreak || 0) + 1 : 0; current.srStreak = isHigh(character.no) ? 0 : (current.srStreak || 0) + 1; }
+    if (random) { current.dupStreak = duplicate ? (current.dupStreak || 0) + 1 : 0; current.srStreak = isHigh(character.no) ? 0 : (current.srStreak || 0) + 1;  if (EGGS[current.egg.id]?.mix) { const ms = current.mixStreak && typeof current.mixStreak === 'object' ? current.mixStreak : (current.mixStreak = {}); ms[current.egg.id] = EGGS[current.egg.id].pool[character.no] ? 0 : (ms[current.egg.id] || 0) + 1; } }
     let bondUp = [];
     if (random && duplicate) current.dupTotal = (current.dupTotal || 0) + 1; // 非酋三部曲：一般（隨機）蛋孵到重複才算
     if (random && !duplicate) current.newTotal = (current.newTotal || 0) + 1; // 歐皇三部曲：一般（隨機）蛋孵到新面孔才算
