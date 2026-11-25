@@ -4,7 +4,7 @@
 // - TEA_URL 還沒填（湘的綠界還在申請）時整個入口藏起來，只有測試服（?test）看得到。
 // - 存檔：state.studio = { teaFriend: ISO 時間, wornTitle?: 'tea-friend' }。稱號戴法跟活動稱號同一套（events.js wornTitle）。
 
-export const TEA_URL = ''; // 綠界斗內網址，湘給了再填
+export const TEA_URL = 'https://p.ecpay.com.tw/AB2A07A'; // 綠界實況主收款斗內頁（湘 11/25 給）
 
 export const STUDIO_TITLES = { 'tea-friend': '茶友' };
 
