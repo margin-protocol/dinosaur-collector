@@ -364,7 +364,8 @@ function renderHome() {
   const exploredToday = state.bonus.explored === todayKey();
   $('explore').classList.toggle('is-fresh', firstHatched && !exploredToday);
   const gift = exploredToday ? todayGift(state) : null;
-  $('explore').classList.toggle('is-gifted', Boolean(gift)); // 今天的探索禮物收過了：圓鈕旁邊一張小標籤（湘 11/25 選 C）
+  $('explore').classList.toggle('is-gifted', Boolean(gift)); // 今天的探索禮物收過了（湘 11/25 選 C）
+  $('explore').classList.toggle('is-flash', Boolean(gift) && Date.now() < giftFlashUntil);
   $('explore').classList.toggle('is-compact', exploredToday && !exploring);
   $('explore').setAttribute('aria-label', gift ? `今天的探索禮物已收到：${giftLabel(gift)}，再探索一次附近` : exploredToday ? '再探索一次附近' : '探索附近');
   $('explore-tag').textContent = gift ? `${giftShort(gift)} ✓` : '';
@@ -1814,6 +1815,7 @@ async function checkWeather(pos) {
   return transaction.result;
 }
 // 每日探索禮物（travel.gift）：今天收過什麼、幾點收的
+let giftFlashUntil = 0; // 剛收到禮物時標籤亮 8 秒就收起，不擋畫面（湘 11/25 選 B）
 const todayGift = (s) => (s.travel?.gift?.date === todayKey() ? s.travel.gift : null);
 const giftLabel = (g) => (g.kind === 'county' ? `縣市蛋 · ${g.county}` : g.kind === 'wish' ? '願望蛋' : '天氣蛋');
 const giftShort = (g) => (g.kind === 'county' ? '縣市蛋' : g.kind === 'wish' ? '願望蛋' : '天氣蛋');
@@ -1838,6 +1840,7 @@ async function explore({ silent = false } = {}) {
     const weather = await checkWeather(pos);
     if (!county || !COUNTY_CHARACTER[county]) { if (!silent) showCountyCall({ county: county || null, weather }); else announceWeather(weather); return; } // 還沒有小湘的地方（例如金門）先不送蛋
     const transaction = await updateState(current => { const r = checkIn(current, county, todayKey()); if (silent && r.daily) { current.travel.gift.auto = true; r.auto = true; } return r; });
+    if (transaction.result.daily) giftFlashUntil = Infinity; // 彈窗關掉後才開始算 8 秒
     state = transaction.state; renderAll();
     if (!silent || transaction.result.egg || transaction.result.daily) showCountyCall({ county, result: transaction.result, weather });
     else announceWeather(weather);
@@ -1857,6 +1860,7 @@ $('explore-intro-ok').addEventListener('click', () => { try { localStorage.setIt
 $('explore-intro-later').addEventListener('click', () => $('explore-intro').close());
 $('explore-intro').addEventListener('close', syncRoomActivity);
 $('county-ok').addEventListener('click', () => $('county-call').close());
+$('county-call').addEventListener('close', () => { if (giftFlashUntil === Infinity) { giftFlashUntil = Date.now() + 8000; renderHome(); setTimeout(renderHome, 8100); } });
 $('county-retry').addEventListener('click', () => { $('county-call').close(); void explore(); });
 $('county-go').addEventListener('click', () => { $('county-call').close(); showView('incubate'); });
 $('county-call').addEventListener('close', syncRoomActivity);

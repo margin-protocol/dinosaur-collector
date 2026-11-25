@@ -1105,7 +1105,8 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .team-glance .team-glance__face.is-max { box-shadow:inset 0 0 0 1.5px var(--t-accent); }
 /* 今天的探索禮物收過了：圓鈕旁邊一張小標籤寫收到什麼（湘 11/25 選 C） */
 .explore-pill__tag { display:none; }
-.explore-pill.is-gifted.is-compact .explore-pill__tag { display:block; position:absolute; left:calc(100% + 6px); top:50%; transform:translateY(-50%); padding:3px 9px; border-radius:999px; background:var(--t-panel, #2a2236cc); border:1px solid var(--t-accent, #f4c6db); color:var(--t-text, var(--ivory)); font:11px/1.5 var(--font-body); font-style:normal; white-space:nowrap; }
+/* 標籤只在剛收到禮物時亮 8 秒，之後收起不擋畫面（湘 11/25 選 B） */
+.explore-pill.is-gifted.is-compact.is-flash .explore-pill__tag { display:block; position:absolute; left:calc(100% + 6px); top:50%; transform:translateY(-50%); padding:3px 9px; border-radius:999px; background:var(--t-panel, #2a2236cc); border:1px solid var(--t-accent, #f4c6db); color:var(--t-text, var(--ivory)); font:11px/1.5 var(--font-body); font-style:normal; white-space:nowrap; }
 .explore-pill.is-gifted.is-compact .explore-pill__tag::before { content:'🎁 '; }
 .county-call__note.is-gift { display:block; padding:6px 12px; border-radius:12px; border:1px solid var(--t-line, #c9a8ff66); background:var(--t-selected, #ffffff10); color:var(--t-text, var(--ivory)); line-height:1.7; }
 

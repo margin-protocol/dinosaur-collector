@@ -23,11 +23,14 @@ assert.match(await p.locator('#county-note').textContent(),/願望蛋/);
 const g=(await save()).travel.gift;assert.equal(g.kind,'wish');assert.equal(g.auto,true);
 await p.locator('#county-ok').click();
 const skip=p.getByText('先自己逛逛');if(await skip.count())await skip.first().click();await p.waitForTimeout(300);
-// 首頁：圓鈕旁邊的小標籤
+// 首頁：剛收到時圓鈕旁邊的小標籤
 assert(await p.locator('#explore').evaluate(e=>e.classList.contains('is-compact')&&e.classList.contains('is-gifted')));
 assert(await p.locator('#explore-tag').isVisible());assert.equal(await p.locator('#explore-tag').textContent(),'願望蛋 ✓');
 const tag=await p.locator('#explore-tag').boundingBox();assert(tag.x+tag.width<=W,'標籤不超出畫面');
 assert.match(await p.locator('#explore').getAttribute('aria-label'),/願望蛋/);
+// 標籤亮 8 秒就收起，不擋畫面（湘 11/25 選 B）
+await p.waitForTimeout(8500);assert(await p.locator('#explore-tag').isHidden(),'8 秒後標籤收起');
+assert(await p.locator('#explore').evaluate(e=>e.classList.contains('is-gifted')&&!e.classList.contains('is-flash')));
 // 再按一次：寫清楚今天收過什麼
 await p.locator('#explore').click();await p.locator('#county-call[open]').waitFor();
 const note=await p.locator('#county-note').textContent();
