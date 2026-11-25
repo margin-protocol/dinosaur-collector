@@ -4,6 +4,7 @@
 用法：
   python3 tools/resident-art.py 原圖.png assets/characters/siang-118-xxx.webp
   python3 tools/resident-art.py 原圖.jpg 輸出.webp --white   # 原圖是白底：把跟邊框相連的白色去掉
+  python3 tools/resident-art.py 原圖.jpg 輸出.webp --black   # 原圖是黑底（透明圖存成 JPG）
   python3 tools/resident-art.py 原圖.png 輸出.webp --preview 預覽.png   # 另外輸出一張棋盤格底的預覽
 
 去背要好看還是得人看：頭髮、頭紗、半透明的地方，用 --preview 的圖確認一次。
@@ -14,16 +15,25 @@ from PIL import Image, ImageDraw, ImageFilter
 CANVAS, FEET, TOP_MIN, SIDE_MIN = 1024, 940, 40, 24
 
 
-def remove_white(img, tol=18):
-    """把跟四邊相連、接近白色的像素變透明，邊緣 7px 內做白底反混色（117 的做法）。"""
+def remove_white(img, tol=18, black=False):
+    """把跟四邊相連、接近白色（black=True 時是黑色）的像素變透明，邊緣 7px 內做底色反混色（117 的做法）。"""
     rgb = img.convert('RGB')
     w, h = rgb.size
-    gray = rgb.convert('L').point(lambda v: 255 if v >= 255 - tol else 0)
+    base = 0 if black else 255
+    gray = rgb.convert('L').point((lambda v: 255 if v <= tol else 0) if black else (lambda v: 255 if v >= 255 - tol else 0))
     mask = gray.copy()
     for xy in [(0, 0), (w - 1, 0), (0, h - 1), (w - 1, h - 1)]:
         if mask.getpixel(xy) == 255:
             ImageDraw.floodfill(mask, xy, 128)
-    bg = mask.point(lambda v: 255 if v == 128 else 0)  # 跟邊框相連的白
+    if black:  # 黑底圖：被角色圍起來的大塊純黑（道具縫隙、窗框裡）也是背景；小於 600px 的當成線稿留著
+        mp = mask.load()
+        for y in range(0, h, 3):
+            for x in range(0, w, 3):
+                if mp[x, y] == 255:
+                    ImageDraw.floodfill(mask, (x, y), 64)
+                    n = mask.histogram()[64]
+                    ImageDraw.floodfill(mask, (x, y), 128 if n >= 600 else 200)
+    bg = mask.point(lambda v: 255 if v == 128 else 0)  # 跟邊框相連的底色
     alpha = bg.point(lambda v: 0 if v else 255).filter(ImageFilter.GaussianBlur(1.2))
     out = rgb.convert('RGBA')
     px, ap = out.load(), alpha.load()
@@ -36,7 +46,7 @@ def remove_white(img, tol=18):
             elif near[x, y] and a < 255:
                 r, g, b, _ = px[x, y]
                 f = a / 255
-                px[x, y] = tuple(max(0, min(255, round((c - 255 * (1 - f)) / f))) for c in (r, g, b)) + (a,)
+                px[x, y] = tuple(max(0, min(255, round((c - base * (1 - f)) / f))) for c in (r, g, b)) + (a,)
             else:
                 px[x, y] = px[x, y][:3] + (a,)
     return out
@@ -73,12 +83,15 @@ if __name__ == '__main__':
     ap.add_argument('src')
     ap.add_argument('out')
     ap.add_argument('--white', action='store_true', help='原圖是白底，自動去掉跟邊框相連的白色')
+    ap.add_argument('--black', action='store_true', help='原圖是黑底（例如 JPG 匯出的透明圖），自動去掉跟邊框相連的黑色')
     ap.add_argument('--preview', help='另外輸出棋盤格底預覽（粉紅線是腳底 y=940）')
     a = ap.parse_args()
     src = Image.open(a.src)
     if max(src.size) > 2048:  # 手機原圖太大，先縮到 2048 再處理（最後也只用到 900px 高）
         src.thumbnail((2048, 2048), Image.LANCZOS)
-    if a.white or src.mode not in ('RGBA', 'LA', 'P'):
+    if a.black:
+        src = remove_white(src, tol=10, black=True)
+    elif a.white or src.mode not in ('RGBA', 'LA', 'P'):
         src = remove_white(src)
     out = layout(src)
     out.save(a.out, 'WEBP', quality=88, method=6)

@@ -4,11 +4,12 @@
 // 只演出，不讀寫存檔。key：`${eventId}:${stageId}:${part}`，part＝before／after（after 會接上 ending）。
 import { registerStory } from './chapter-epilogue.js';
 import { MO_STORY } from './event-mo-story.js';
+import { STUDIO_STORY } from './studio-jh.js';
 import { EVENT_DEFS } from './events.js';
 import { characterSources, CHARACTERS } from './eggs.js';
 
 const def = EVENT_DEFS.mo;
-const RESIDENTS = { 小湘: '117', 聞止水: 'MO-001', 杜今朝: 'MO-005', 簡牧陽: 'MO-008', 游未遲: 'MO-003', 徐汀云: 'MO-004', 程不言: 'MO-006', 林晏洄: 'MO-007' };
+const RESIDENTS = { 小湘: '117', 聞止水: 'MO-001', 杜今朝: 'MO-005', 簡牧陽: 'MO-008', 游未遲: 'MO-003', 徐汀云: 'MO-004', 程不言: 'MO-006', 林晏洄: 'MO-007', 皮寶: 'MO-009', 德寶: 'MO-010', 湘寶: 'MO-011' };
 const FOES = { 刀客: 'mo-02', 斷刃使: 'mo-05', 牙商: 'mo-07' };
 const keyOf = (name) => `mo_${name}`;
 // 湘 11/25：小怪出場時放牠的圖。開打前第幾句（從 0 數）登場；登場後固定站右邊，講話的居民輪流站左邊
@@ -75,6 +76,17 @@ export function buildStories(skin = '') {
       }, { actors, bg });
       ids.push(id);
     }
+  }
+  // 頁邊江湖三寶（湘 11/26）：兩寶都到手播〈江湖開業第一日〉、湘寶孵出後播〈不祥的金光〉；在茶肆卡隨時重看
+  for (const [part, st] of Object.entries(STUDIO_STORY)) {
+    const beats = stage(st.lines, { bgKey: 'mo:mo-02', act: st.title, skin });
+    beats.forEach((b, i) => { if (/金光/.test(st.lines[i]) && !b.who) Object.assign(b, { shake: true, tone: 'sunset' }); });
+    const id = `studio:${part}`;
+    registerStory(id, {
+      chapter: 'mo', music: 'mo', skin, title: st.title, subtitle: '頁邊江湖・隱藏劇情',
+      endSmall: '頁邊江湖 · 隱藏劇情', endTitle: `《${st.title}》・完`, endNote: '這段劇情在討伐頁的頁邊茶肆隨時可以重看。', closeLabel: st.close, beats,
+    }, { actors, bg });
+    ids.push(id);
   }
   return ids;
 }

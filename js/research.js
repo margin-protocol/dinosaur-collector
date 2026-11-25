@@ -82,7 +82,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     find('[data-note-no]').textContent = 'NOTE ' + String(noteIndex + 1).padStart(2, '0');
     find('#research-note-title').textContent = note.note.title;
     find('.research-poem').textContent = note.note.poem;
-    root.querySelectorAll('[data-note]').forEach(button => button.setAttribute('aria-pressed', String(Number(button.dataset.note) === noteIndex)));
+    root.querySelectorAll('[data-note]').forEach(button => { button.setAttribute('aria-pressed', String(Number(button.dataset.note) === noteIndex)); const r = RECIPES[Number(button.dataset.note)]; button.hidden = Boolean(r?.secret && !r.members.every(no => getState().dex?.[no])); }); // secret 配方：兩位都到手才出現
     find('.research-pair-status').textContent = slots.every(Boolean) ? '搭檔就位，可以開始研究了。' : '點選兩側，邀請小湘一起研究。';
     find('.research-note-state').textContent = matched ? '線索相合' : slots.some(Boolean) ? '收集線索中' : '等待靈感';
     root.querySelectorAll('[data-clue]').forEach((clue, i) => {

@@ -339,6 +339,10 @@ const CHARACTER_TABLE = {
   'MO-004': { no: 'MO-004', name: '天機閣主・徐汀云', rarity: 'SSR', line: '「天機閣，徐汀云。你想知道什麼？先說好，價錢另議。」', image: 'mo-004-xu-tingyun', series: 'mohen', worldRole: '天機閣主', poolFrom: '2026-11-29T12:00:00+08:00' },
   'MO-006': { no: 'MO-006', name: '無訟先生・程不言', rarity: 'SSR', line: '「程不言，替人說話的。名字是反著取的。」', image: 'mo-006-cheng-buyan', series: 'mohen', worldRole: '無訟先生', poolFrom: '2026-11-29T12:00:00+08:00' },
   'MO-007': { no: 'MO-007', name: '山野隱士・林晏洄', rarity: 'SR', line: '「林晏洄。山裡住慣了，說話慢，你別急。」', image: 'mo-007-lin-yanhui', series: 'mohen', worldRole: '山野隱士', poolFrom: '2026-11-29T12:00:00+08:00' },
+  // 頁邊江湖三寶（湘 11/26 定稿，活動限定隱藏收藏，不進任何蛋池；墨點／修門／研究室配方送紀念蛋（js/studio-jh.js）。原稿 docs/event-001/residents/MO-009-011-studio.md）
+  'MO-009': { no: 'MO-009', name: '江湖百曉・皮寶', rarity: 'SSR', line: '「我只是稍微潤飾了一下事實！真的！」', image: 'mo-009-jianghu-pibao', series: 'studio', worldRole: '江湖百曉', quote: '天下秘聞三千卷，十卷有九卷是自己寫的。', special: true },
+  'MO-010': { no: 'MO-010', name: '千機巧匠・德寶', rarity: 'SSR', line: '「可以做。但今日的內力已經用完了。」', image: 'mo-010-qianji-debao', series: 'studio', worldRole: '千機巧匠', quote: '可解天下千重機關，唯獨解不完掌櫃的需求。', special: true },
+  'MO-011': { no: 'MO-011', name: '頁邊教主・湘寶', rarity: 'UR', line: '「寶寶！我突然有個小小的想法！」', image: 'mo-011-margin-chief', series: 'studio', worldRole: '頁邊教主', quote: '天下萬物皆可創造，唯獨待辦清單不可消滅。', special: true },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -378,6 +382,7 @@ export const SERIES = {
   tsukimi: { name: '月見町', short: '月見' },
   bride: { name: '花嫁系列', short: '花嫁' },
   mohen: { name: '墨痕江湖', short: '墨痕', world: 'mo' },
+  studio: { name: '頁邊江湖', short: '頁邊', world: 'mo' }, // 活動限定・頁邊江湖系列（三寶，湘 11/26）
 };
 
 // 頁間居民 2.0（湘 11/25）：小湘們是「創始系列」，其他世界的居民統稱「異世」，每個世界自己一套編號（MO-001…）。

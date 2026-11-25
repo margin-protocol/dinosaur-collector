@@ -1417,6 +1417,39 @@
       ]
     },
     {
+      "no": "MO-009",
+      "name": "江湖百曉・皮寶",
+      "like": "濃甜",
+      "dislike": "清涼",
+      "secret_combo": [
+        "osmanthus",
+        "tangyuan",
+        "star"
+      ]
+    },
+    {
+      "no": "MO-010",
+      "name": "千機巧匠・德寶",
+      "like": "清涼",
+      "dislike": "刺激",
+      "secret_combo": [
+        "bamboo",
+        "matcha",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "MO-011",
+      "name": "頁邊教主・湘寶",
+      "like": "濃甜",
+      "dislike": "怪味",
+      "secret_combo": [
+        "osmanthus",
+        "sakura",
+        "tangyuan"
+      ]
+    },
+    {
       "no": "MO-003",
       "name": "白衣仵作・游未遲",
       "like": "濃甜",

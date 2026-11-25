@@ -1216,3 +1216,42 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .kitchen-feed__series span { flex:1; }
 .kitchen-feed__series em { font-style:normal; font-size:12px; color:var(--t-accent, #ffd9a8); }
 .kitchen-feed__series i { font-style:normal; font-size:11px; color:var(--t-muted); }
+
+/* ── 頁邊江湖三寶（湘 11/26）：墨點、茶肆小卡、底部對話泡泡 */
+.studio-ink { position:absolute; z-index:2; width:12px; height:12px; border-radius:50% 50% 50% 0; transform:rotate(-45deg); background:var(--t-text, #2a1d22); opacity:.5; cursor:pointer; transition:opacity .4s, transform .4s; }
+.studio-ink::after { content:""; position:absolute; inset:-14px; } /* 點擊範圍放大到 40px */
+.studio-ink:focus-visible { outline:2px solid var(--ink-gold, #b08a4e); outline-offset:4px; }
+.studio-ink.is-wiped { opacity:0; transform:rotate(-45deg) scale(2.4); }
+.studio-ink--banner { right:54px; top:22px; width:9px; height:9px; opacity:.35; }
+.studio-ink--stage { right:10px; bottom:10px; }
+.event-keepsakes { position:relative; }
+.studio-ink--keepsake { right:4px; top:-10px; width:10px; height:10px; opacity:.4; }
+.event-shop__head { position:relative; }
+.studio-ink--shop { position:relative; display:inline-block; margin:0 auto 0 4px; width:9px; height:9px; opacity:.4; }
+.studio-ink--door { right:12px; bottom:10px; width:10px; height:10px; opacity:.4; }
+.studio-card { position:relative; margin:10px 0 4px; padding:12px; border-radius:16px; border:1px solid #c2413a33; background:radial-gradient(90% 80% at 0% 0%, #b08a4e12, transparent 65%), var(--t-raised, #ffffff0d); }
+.studio-card.is-open { border-color:#b08a4e88; box-shadow:0 0 0 3px #b08a4e1f; }
+.studio-card__head { display:flex; gap:12px; align-items:center; }
+.studio-card__door { flex:none; width:62px; height:80px; padding:0; border:0; background:none; cursor:pointer; }
+.studio-card__door svg { width:100%; height:100%; display:block; }
+.studio-card__info { min-width:0; display:grid; gap:6px; justify-items:start; }
+.studio-card__info b { font-family:var(--font-display); font-size:15px; letter-spacing:.06em; }
+.studio-card__info small { color:var(--t-muted, #c9b9bd); font-size:12px; }
+.studio-card__act { padding:6px 14px; font-size:13px; }
+.studio-card__act.is-off { opacity:.55; }
+.studio-pips { display:flex; gap:6px; }
+.studio-pips i { display:grid; place-items:center; width:22px; height:22px; border-radius:50%; border:1.5px solid var(--ink-gold, #b08a4e); color:var(--ink-gold, #b08a4e); font-style:normal; font-size:11px; }
+.studio-pips i.is-on { background:var(--ink-gold, #b08a4e); color:#fff; }
+.studio-card__book { margin-top:10px; padding:6px 12px; border-radius:999px; border:1px solid var(--t-line, #ffffff26); background:none; color:inherit; font-size:12.5px; cursor:pointer; }
+.studio-card__hint { margin:10px 0 0; font-size:12.5px; color:var(--t-muted, #c9b9bd); line-height:1.6; }
+.studio-card__replay { display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
+.studio-card__replay .epilogue-cta { font-size:12.5px; }
+.studio-bubble { position:fixed; inset:auto 12px calc(84px + env(safe-area-inset-bottom, 0px)) 12px; z-index:60; max-width:420px; margin:0 auto; overflow:visible; display:flex; gap:10px; align-items:flex-start; padding:10px 12px; border-radius:16px; background:#fffaf2; color:#2a1d22; box-shadow:0 8px 28px #0003; border:1px solid #b08a4e55; animation:studio-pop .25s ease-out; }
+.studio-bubble__art { flex:none; width:44px; height:44px; border-radius:50%; overflow:hidden; background:#efe4d2; }
+.studio-bubble__face { width:100%; height:100%; object-fit:cover; object-position:50% 22%; transform:scale(1.5); transform-origin:50% 22%; }
+.studio-bubble.is-unknown .studio-bubble__face { filter:brightness(0) opacity(.55); }
+.studio-bubble__body { min-width:0; }
+.studio-bubble__body small { display:block; color:var(--ink-gold, #b08a4e); font-weight:700; font-size:11.5px; }
+.studio-bubble__body p { margin:2px 0 0; font-size:13.5px; line-height:1.6; white-space:pre-line; }
+@keyframes studio-pop { from { transform:translateY(12px); opacity:0; } }
+@media (prefers-reduced-motion: reduce) { .studio-bubble { animation:none; } .studio-ink { transition:none; } }

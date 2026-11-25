@@ -74,6 +74,7 @@ import { CHECKIN_REWARDS, ensureCheckin, checkIn as monthlyCheckIn, checkedToday
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
+import * as studio from './studio-jh.js';
 import { pushState, enablePush, disablePush, refreshPush } from './push.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy, recentPresenters, rememberPresenter } from './wish-presenter.js';
 
@@ -1333,6 +1334,7 @@ function storyText(c, entry, now = new Date()) {
     : st.from?.startsWith('badge:') ? '用討伐徽章換來的勇者小隊專屬蛋'
     : st.from?.startsWith('recipe:') ? '兩位小湘在研究室一起調配出來的紀念蛋'
     : st.from?.startsWith('devteam:') ? '開發團隊悄悄送來的紀念蛋'
+    : st.from?.startsWith('studio:') ? '頁邊茶肆悄悄送來的紀念蛋'
     : st.from === 'taiwan' ? '走遍臺灣時收到的紀念蛋'
     : st.from === 'code' ? '湘藏在暗號裡的蛋'
     : st.from === 'letter' ? '湘夾在紙條裡的蛋'
@@ -4162,6 +4164,7 @@ function eventStageCard(def, stageId, now) {
   info.querySelector('span').textContent = lock ? (/前一關|要先打完/.test(lock) ? '🔒 未解鎖' : '🔒 未開放') : st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
   btn.append(info);
   if (!lock) stageFight(btn, info, key);
+  if (stageId === studio.INK_STAGE && !lock) { const ink = studioInk('stage'); if (ink) btn.append(ink); }
   btn.addEventListener('click', () => { battleEnemy = key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
   return btn;
 }
@@ -4194,7 +4197,91 @@ function keepsakeShelf(ks, prog) {
     b.addEventListener('click', () => { row.querySelectorAll('.is-on').forEach(x => x.classList.remove('is-on')); b.classList.add('is-on'); note.textContent = got ? `${k.name}：${k.text}${k.perk ? `\n加成：${keepsakePerkText(k.perk)}（只在活動關卡）` : ''}` : '還沒拿到。打完上卷後重複討伐，打贏有機會掉落。'; });
     row.append(b);
   }
-  box.append(row, note); return box;
+  box.append(row, note); const ink = studioInk('keepsake'); if (ink) box.append(ink); return box;
+}
+// ── 頁邊江湖三寶（湘 11/26）：墨點、修門、隱藏劇情；邏輯在 studio-jh.js，下卷開放（測試服立刻）才出現
+const STUDIO_TEST_KEY = 'siang-collector:test-studio-open';
+let studioStoryQueued = false;
+function studioOpen() {
+  if (IS_TEST) return true;
+  try { if (navigator.webdriver) { const v = localStorage.getItem(STUDIO_TEST_KEY); if (v) return v === 'open'; } } catch {}
+  const sch = events.schedule(events.EVENT_DEFS[studio.EVENT_ID], events.eventNow(state));
+  return (sch.state === 'battle' || sch.state === 'shop') && studio.isOpen(events.eventNow(state));
+}
+const studioActive = () => events.eventDef(studio.EVENT_ID) && studioOpen();
+const studioPortrait = no => { const img = el('img', 'studio-bubble__face'); img.alt = ''; loadWithFallback(img, characterSources(CHARACTERS[no].image)); return img; };
+// 底部的小對話泡泡：頭像（還沒遇見＝剪影）＋名字＋台詞，點一下或 7 秒後收起
+function studioBubble(no, text, { who = null, sub = '' } = {}) {
+  document.querySelector('.studio-bubble')?.remove();
+  const known = Boolean(state.dex?.[no]);
+  const box = el('div', `studio-bubble${known ? '' : ' is-unknown'}`); box.setAttribute('role', 'status');
+  const face = el('span', 'studio-bubble__art'); face.append(studioPortrait(no));
+  const body = el('div', 'studio-bubble__body'); body.append(el('small', null, `${who || (known ? CHARACTERS[no].name : '？？？')}${sub ? ` · ${sub}` : ''}`), el('p', null, text));
+  box.append(face, body); box.setAttribute('popover', 'manual'); document.body.append(box);
+  try { box.showPopover(); } catch {} // 討伐頁是 modal dialog（最上層），用 popover 才浮得到它上面
+  const close = () => box.remove(); box.addEventListener('click', close); setTimeout(close, 7000);
+}
+function studioGotEgg(no) {
+  const ach = no === studio.PIBAO ? '江湖怎麼都是你的傳聞？' : '江湖也有技術債';
+  setTimeout(() => toast(`隱藏成就《${ach}》！收到一顆紀念蛋：${CHARACTERS[no].name}（放在「選擇蛋」裡）`), 2600);
+}
+function studioInk(id) {
+  if (!studioActive() || state.studioJh?.ink?.[id]) return null;
+  const ink = el('span', `studio-ink studio-ink--${id}`); ink.setAttribute('role', 'button'); ink.tabIndex = 0; ink.setAttribute('aria-label', '一滴墨漬');
+  const tap = e => {
+    e.stopPropagation(); e.preventDefault();
+    void updateState(cur => studio.tapInk(cur, id)).then(t => {
+      state = t.state; const r = t.result; if (!r) return;
+      ink.classList.add('is-wiped'); setTimeout(() => { renderAll(); renderBattle(); }, 450);
+      studioBubble(studio.PIBAO, r.egg ? `${r.rumor}\n\n${studio.PIBAO_REVEAL}` : r.rumor, { who: r.egg ? CHARACTERS[studio.PIBAO].name : '？？？', sub: `江湖傳聞 ${r.count} / ${studio.INKS.length}` });
+      if (r.egg) studioGotEgg(r.egg);
+    });
+  };
+  ink.addEventListener('click', tap); ink.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') tap(e); });
+  return ink;
+}
+const DOOR_TILT = { fix: [-9, 0], today: [-9, 0], wood: [-2, 3], install: [-2, 3], done: [0, 3] };
+function doorSvg(step, n) {
+  const fixed = step === 'done'; const tilt = fixed ? 0 : [-9, -6, -3, -2][Math.min(n, 3)];
+  const planks = Array.from({ length: Math.min(n, 3) }, (_, i) => `<rect x="12" y="${58 + i * 9}" width="44" height="4" rx="1" fill="#d9b680"/>`).join('');
+  return `<svg viewBox="0 0 74 96" aria-hidden="true"><rect x="4" y="4" width="66" height="90" rx="3" fill="#cdb79a" stroke="#6b5240" stroke-width="2"/><g transform="rotate(${tilt} 12 90)"><rect x="12" y="10" width="${fixed ? 50 : 44}" height="82" rx="2" fill="#a77d55" stroke="#5a3b2e" stroke-width="2"/><rect x="18" y="18" width="${fixed ? 38 : 32}" height="24" fill="none" stroke="#5a3b2e" stroke-width="1.5"/>${fixed ? '<text x="37" y="35" font-size="11" text-anchor="middle" fill="#3b2a22">茶</text>' : ''}${planks}<circle cx="${fixed ? 54 : 49}" cy="52" r="2.5" fill="#e9c98a"/></g></svg>`;
+}
+function studioCard() {
+  const today = studio.tpeDay(events.eventNow(state)); const ds = studio.doorState(state, today);
+  const card = el('section', `studio-card${ds.step === 'done' ? ' is-open' : ''}`); card.dataset.studio = ds.step;
+  const door = el('button', 'studio-card__door'); door.type = 'button'; door.innerHTML = doorSvg(ds.step, ds.n); door.setAttribute('aria-label', ds.step === 'done' ? '頁邊茶肆的門' : '歪掉的門');
+  const info = el('div', 'studio-card__info');
+  info.append(el('b', null, ds.step === 'done' ? '頁邊茶肆' : '頁邊茶肆（施工中）'));
+  const pips = el('div', 'studio-pips'); pips.setAttribute('aria-label', `修門 ${ds.n} / ${studio.DOOR_DAYS} 天`);
+  for (let i = 0; i < studio.DOOR_DAYS; i++) pips.append(el('i', i < ds.n || ds.step === 'done' ? 'is-on' : null, i < ds.n || ds.step === 'done' ? '✓' : String(i + 1)));
+  if (ds.n || ds.step === 'done') info.append(pips); else info.append(el('small', null, '門好像還沒裝好……'));
+  const label = { fix: ds.n ? '再扶一把' : '扶一把', today: '明天再來', wood: '還差一塊木料', install: '裝上門板', done: '' }[ds.step];
+  if (label) { const b = el('button', `btn studio-card__act${ds.step === 'today' || ds.step === 'wood' ? ' is-off' : ''}`, label); b.type = 'button'; b.addEventListener('click', fixStudioDoor); info.append(b); }
+  door.addEventListener('click', fixStudioDoor);
+  const head = el('div', 'studio-card__head'); head.append(door, info);
+  card.append(head);
+  const inks = studio.inkCount(state);
+  if (inks) { const book = el('button', 'studio-card__book', `📖 江湖傳聞 ${inks} / ${studio.INKS.length}`); book.type = 'button'; book.addEventListener('click', () => { const got = studio.INKS.filter(id => state.studioJh?.ink?.[id]); studioBubble(studio.PIBAO, got.map(id => studio.RUMORS[id]).join('\n'), { sub: `江湖傳聞 ${got.length} / ${studio.INKS.length}` }); }); card.append(book); }
+  const seen = state.studioJh?.seen || {};
+  if (seen.opening && !state.dex?.[studio.CHIEF]) card.append(el('p', 'studio-card__hint', studio.MERGE_HINT));
+  const replays = el('div', 'studio-card__replay');
+  if (seen.opening) replays.append(epilogueButton('studio:opening', '重看〈江湖開業第一日〉'));
+  if (seen.merge) replays.append(epilogueButton('studio:merge', '重看〈不祥的金光〉'));
+  if (replays.childElementCount) card.append(replays);
+  if (ds.step !== 'done') { const ink = studioInk('door'); if (ink) card.append(ink); }
+  const due = studio.storyDue(state);
+  const busy = () => document.querySelector('dialog.epilogue[open], #battle-result[open]');
+  if (due && !busy() && !studioStoryQueued) { studioStoryQueued = true; setTimeout(() => { if (busy()) { studioStoryQueued = false; return; } epilogue.play(`studio:${due}`); void updateState(cur => studio.markSeen(cur, due)).then(t => { state = t.state; studioStoryQueued = false; renderBattle(); }); }, 300); }
+  return card;
+}
+async function fixStudioDoor() {
+  const today = studio.tpeDay(events.eventNow(state));
+  const t = await updateState(cur => studio.fixDoor(cur, today)); state = t.state;
+  const r = t.result;
+  if (typeof r === 'string') { studioBubble(studio.DEBAO, r); return; }
+  renderAll(); renderBattle();
+  studioBubble(studio.DEBAO, r.line, { who: r.egg ? CHARACTERS[studio.DEBAO].name : '？？？', sub: r.egg ? '門裝好了' : `修門 ${r.n} / ${studio.DOOR_DAYS}` });
+  if (r.egg) studioGotEgg(r.egg);
 }
 function eventHub(def, sch, now) {
   const prog = state.events?.[def.id] || {}; const ks = def.keepsakes;
@@ -4210,8 +4297,9 @@ function eventHub(def, sch, now) {
   bar.append(tokenChip(def, prog.tokens || 0));
   if (ks) bar.append(el('span', 'event-chip', `信物 ${Object.keys(prog.keepsakes || {}).length} / ${ks.list.length}`));
   if (sch.state === 'battle' || sch.state === 'shop') { const shop = el('button', 'text-action event-banner__shop', '墨玉閣 ⟶'); shop.type = 'button'; shop.addEventListener('click', () => { eventView = { id: def.id, view: 'shop' }; renderBattle(); }); bar.append(shop); }
-  ban.append(bar); sec.append(ban);
+  ban.append(bar); { const ink = studioInk('banner'); if (ink) ban.append(ink); } sec.append(ban);
   if (ks && ks.list.some(k => k.art)) sec.append(keepsakeShelf(ks, prog));
+  if (def.id === studio.EVENT_ID && studioOpen()) sec.append(studioCard());
   if (prog.titles?.length && def.titles) sec.append(titleRow(def, prog));
   if (sch.state !== 'battle') return sec;
   for (const ph of def.phases) {
@@ -4230,6 +4318,7 @@ function eventShop(def, now) {
   const sec = el('section', 'battle-chapter event-shop');
   const back = el('button', 'text-action', '⟵ 回關卡列表'); back.type = 'button'; back.addEventListener('click', () => { eventView = null; renderBattle(); });
   const head = el('div', 'event-shop__head'); head.append(el('h3', 'egg-choices__heading', '墨玉閣'), tokenChip(def, prog.tokens || 0));
+  { const ink = studioInk('shop'); if (ink) head.append(ink); }
   const list = el('div', 'event-shop__list');
   list.append(...events.shopList(state, def, now).map(item => {
     const row = el('div', `event-shop__item${item.soldOut ? ' is-sold' : ''}`);

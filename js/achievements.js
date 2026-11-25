@@ -1,4 +1,6 @@
 import { worldOf } from './eggs.js';
+import { levelOf, MAX_LEVEL } from './affection.js';
+import { inkCount, INKS } from './studio-jh.js';
 import { siangMailCount } from './letters.js';
 import { MAIN_ISLAND } from './geo.js';
 import { dishById, recipesFound, secretsFound } from './kitchen.js';
@@ -68,6 +70,11 @@ export const ACHIEVEMENTS = [
   { id: 'dev-debao', group: '隱藏', title: '這個也要做嗎？！', hint: '？？？', reveal: '迎接崩潰德寶', goal: 1, value: (s) => (s.dex?.['087'] ? 1 : 0), reward: 50, secret: true },
   { id: 'dev-idea', group: '隱藏', title: '我又想到一個！', hint: '？？？', reveal: '迎接靈感爆發小湘', goal: 1, value: (s) => (s.dex?.['088'] ? 1 : 0), reward: 80, secret: true },
   { id: 'dev-overtime', group: '隱藏', title: '今天也沒有下班', hint: '？？？', reveal: '看見開發部茶水間的深夜會議', goal: 1, value: (s) => (s.devteam?.eventSeen ? 1 : 0), reward: 50, secret: true },
+  // 頁邊江湖三寶（墨痕江湖活動限定，湘 11/26）
+  { id: 'jh-pibao', group: '隱藏', title: '江湖怎麼都是你的傳聞？', hint: '？？？', reveal: '在墨痕江湖找齊五則江湖傳聞，迎接江湖百曉・皮寶', goal: INKS.length, value: (s) => inkCount(s), reward: 50, secret: true },
+  { id: 'jh-debao', group: '隱藏', title: '江湖也有技術債', hint: '？？？', reveal: '把頁邊茶肆的門修好，迎接千機巧匠・德寶', goal: 1, value: (s) => (s.dex?.['MO-010'] || s.studioJh?.granted?.['MO-010'] ? 1 : 0), reward: 50, secret: true },
+  { id: 'jh-chief', group: '隱藏', title: '教主竟是我老闆', hint: '？？？', reveal: '讓江湖百曉・皮寶和千機巧匠・德寶一起孵出頁邊教主・湘寶', goal: 1, value: (s) => (s.dex?.['MO-011'] ? 1 : 0), reward: 100, secret: true },
+  { id: 'jh-branch', group: '隱藏', title: '頁邊江湖分舵', hint: '？？？', reveal: '皮寶、德寶、湘寶三位的好感都到 Lv.5', goal: 3, value: (s) => ['MO-009', 'MO-010', 'MO-011'].filter((no) => s.dex?.[no] && levelOf(s.affection?.[no]?.pts || 0) >= MAX_LEVEL).length, reward: 100, secret: true },
   { id: 'fossil', group: '隱藏', title: '化石獵人', hint: '？？？', reveal: '收集 30 個化石碎片', goal: 30, value: (s) => s.fossils || 0, reward: 30, secret: true },
 ];
 
