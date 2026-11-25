@@ -42,6 +42,18 @@ test('trusted clock: server offset applies and time never goes backwards', () =>
   assert.equal(eventNow(s, 500_000), 1_000_000); // 手機時間往回撥
 });
 
+test('trusted clock: a fresh server time corrects a clock that was pushed ahead', () => {
+  const s = {};
+  noteServerTime(s, 1_000_000, 1_000_000);
+  const ahead = 1_000_000 + 72 * 3600e3;
+  assert.equal(eventNow(s, ahead), ahead); // 離線把手機時間調快 72 小時
+  assert.equal(eventNow(s, 1_100_000), ahead); // 調回來，離線時還是不倒退
+  assert.equal(noteServerTime(s, 1_200_000, 1_200_000), true); // 上線拿到新的伺服器時間
+  assert.equal(eventNow(s, 1_200_000), 1_200_000); // 回到正確時間
+  assert.equal(noteServerTime(s, 1_100_000, 1_250_000), false); // 比上次採用的還舊的快取回應：不採用
+  assert.equal(eventNow(s, 1_250_000), 1_250_000);
+});
+
 test('token drop: base, first clear, MO bonus capped at +40%', () => {
   const w = (no) => (no.startsWith('MO-') || no === '117' ? 'mo' : 'origin');
   assert.equal(tokenDrop(def, 'mo-01', { win: true }), 6);
