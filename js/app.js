@@ -358,8 +358,11 @@ function renderHome() {
   $('daily-gift').hidden = !(state.seenIntro && giftReady(state, todayKey()));
   const exploredToday = state.bonus.explored === todayKey();
   $('explore').classList.toggle('is-fresh', firstHatched && !exploredToday);
+  const gift = exploredToday ? todayGift(state) : null;
+  $('explore').classList.toggle('is-gifted', Boolean(gift)); // 今天的探索禮物收過了：圓鈕旁邊一張小標籤（湘 11/25 選 C）
   $('explore').classList.toggle('is-compact', exploredToday && !exploring);
-  $('explore').setAttribute('aria-label', exploredToday ? '再探索一次附近' : '探索附近');
+  $('explore').setAttribute('aria-label', gift ? `今天的探索禮物已收到：${giftLabel(gift)}，再探索一次附近` : exploredToday ? '再探索一次附近' : '探索附近');
+  $('explore-tag').textContent = gift ? `${giftShort(gift)} ✓` : '';
   if (!exploring) $('explore-sub').textContent = exploredToday ? '今天探索過了，換個地方再試試' : '看看這裡有沒有小湘的訊號';
   if ($('bubble-text').textContent !== text) {
     $('bubble-text').textContent = text;
@@ -1742,9 +1745,13 @@ function showCountyCall({ county, result, error, weather }) {
   else if (result?.egg) { title = `${c.name}想出現！`; text = c.line; note = `獲得一顆「縣市蛋 · ${county}」，到培育室的「選擇蛋」把它拿出來吧。`; }
   else if (result?.daily === 'county') { title = owned ? `${c.name}：又見面了！` : `${c.name}的蛋又出現了`; text = owned ? `「你又來${county}啦，這顆蛋送你，說不定會孵出新朋友喔。」` : '「快點把我孵出來嘛……」'; note = `今天的探索禮物：一顆「縣市蛋 · ${county}」，到「選擇蛋」把它拿出來吧。${owned ? '（已經有她了的話，孵出來會變成化石）' : ''}`; }
   else if (result?.daily === 'wish' || result?.daily === 'weather') { title = owned ? `${c.name}：又見面了！` : `${county}的訊號`; text = owned ? `「你又來${county}啦，我在路上撿到一顆蛋，給你！」` : '這附近好像有什麼東西在閃閃發光……'; note = `今天的探索禮物：一顆「${result.daily === 'wish' ? '願望蛋' : '天氣蛋'}」，到「選擇蛋」把它拿出來吧。`; }
-  else if (owned) { title = `${c.name}：又見面了！`; text = `「你又來${county}啦，今天也一起走走吧。」明天再來探索，還會有一顆蛋喔。`; }
+  else if (owned) { title = `${c.name}：又見面了！`; text = `「你又來${county}啦，今天也一起走走吧。」${todayGift(state) ? '' : '明天再來探索，還會有一顆蛋喔。'}`; }
   else if (waiting) { title = `${c.name}還在蛋裡等你`; text = '「快點把我孵出來嘛……我已經準備好了！」'; }
   else { title = `${county}的訊號`; text = '這裡的小湘已經和你打過招呼了。'; }
+  // 今天的禮物已經收過（常常是開遊戲時自動探索拿走的）：講清楚收過什麼，湘 11/23
+  const gift = todayGift(state);
+  if (!error && county && c && !result?.egg && !result?.daily && gift) note = `今天的探索禮物已經收過了\n${giftTime(gift) ? `${giftTime(gift)} ` : ''}${gift.auto ? '開遊戲時自動感應到' : '探索時收到'}\n一顆「${giftLabel(gift)}」，在「選擇蛋」裡\n明天再來，還會有一顆喔。`;
+  if (result?.auto && result.daily) $('county-eyebrow').textContent = `打開遊戲時自動感應 · ${county}`;
   $('county-title').textContent = title;
   $('county-text').textContent = text;
   note = [note, weatherNote(weather)].filter(Boolean).join('\n');
@@ -1753,6 +1760,7 @@ function showCountyCall({ county, result, error, weather }) {
   $('county-note').hidden = !note;
   $('county-note').classList.toggle('is-tips', Boolean(error));
   $('county-go').hidden = !(result?.egg || result?.daily || weather?.egg);
+  $('county-note').classList.toggle('is-gift', Boolean(!error && (result?.daily || (gift && county && c))));
   $('county-retry').hidden = !error || error === 'unsupported';
   $('county-call').showModal(); syncRoomActivity();
 }
@@ -1765,6 +1773,11 @@ async function checkWeather(pos) {
   state = transaction.state; renderAll();
   return transaction.result;
 }
+// 每日探索禮物（travel.gift）：今天收過什麼、幾點收的
+const todayGift = (s) => (s.travel?.gift?.date === todayKey() ? s.travel.gift : null);
+const giftLabel = (g) => (g.kind === 'county' ? `縣市蛋 · ${g.county}` : g.kind === 'wish' ? '願望蛋' : '天氣蛋');
+const giftShort = (g) => (g.kind === 'county' ? '縣市蛋' : g.kind === 'wish' ? '願望蛋' : '天氣蛋');
+function giftTime(g) { const d = new Date(g.at); if (!g.at || Number.isNaN(+d)) return ''; const h = d.getHours(); return `${h < 12 ? '上午' : '下午'} ${h % 12 || 12}:${String(d.getMinutes()).padStart(2, '0')} `.trim(); }
 const WEATHER_GIFT = { rain: '外面在下雨，雨裡撿到一顆「天氣蛋」！', thunder: '外面在打雷！雷聲裡滾來一顆「天氣蛋」！', hail: '外面下冰雹了！冰塊堆裡有一顆「天氣蛋」！', snow: '外面在下雪！雪地裡撿到一顆「天氣蛋」！', fog: '外面起霧了，霧裡撿到一顆「天氣蛋」！', windy: '外面風好大，一顆「天氣蛋」被吹到你腳邊！', clear: '今天是晴天，陽光下撿到一顆「天氣蛋」！', cloudy: '今天陰陰的，窗邊多了一顆「天氣蛋」。' };
 const weatherNote = (w) => (w?.egg ? `${w.rainbow ? '雨停了，天空出現彩虹！' : ''}${WEATHER_GIFT[w.kind] || '撿到一顆「天氣蛋」！'}到「選擇蛋」把它拿出來吧。` : '');
 function announceWeather(w) { if (w?.egg) toast(weatherNote(w)); }
@@ -1784,7 +1797,7 @@ async function explore({ silent = false } = {}) {
     state = (await updateState(current => { if (current.bonus.explored !== todayKey()) current.bonus.total.explores += 1; current.bonus.explored = todayKey(); })).state;
     const weather = await checkWeather(pos);
     if (!county || !COUNTY_CHARACTER[county]) { if (!silent) showCountyCall({ county: county || null, weather }); else announceWeather(weather); return; } // 還沒有小湘的地方（例如金門）先不送蛋
-    const transaction = await updateState(current => checkIn(current, county, todayKey()));
+    const transaction = await updateState(current => { const r = checkIn(current, county, todayKey()); if (silent && r.daily) { current.travel.gift.auto = true; r.auto = true; } return r; });
     state = transaction.state; renderAll();
     if (!silent || transaction.result.egg || transaction.result.daily) showCountyCall({ county, result: transaction.result, weather });
     else announceWeather(weather);

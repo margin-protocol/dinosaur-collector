@@ -10,6 +10,8 @@ export function ensureTravel(state) {
     eggs: Array.isArray(old.eggs) ? old.eggs.filter(dateLike) : [], // 尚未拿出來培育的縣市蛋（依取得順序）
     granted: Array.isArray(old.granted) ? [...new Set(old.granted.filter(dateLike))] : [], // 已經送過蛋的縣市
     daily: dateLike(old.daily) ? old.daily : '', // 最後一次領「每日探索蛋」的日期
+    // 那天的探索禮物是什麼（開遊戲自動探索時收到也看得到，湘 11/23）
+    gift: old.gift && dateLike(old.gift.date) && ['county', 'wish', 'weather'].includes(old.gift.kind) ? { date: old.gift.date, kind: old.gift.kind, county: dateLike(old.gift.county) ? old.gift.county : '', at: dateLike(old.gift.at) ? old.gift.at : '', auto: old.gift.auto === true } : null,
   };
   return state.travel;
 }
@@ -34,6 +36,7 @@ export function checkIn(state, county, date, rand = Math.random) {
       if (daily === 'wish') state.wishEgg.stock += 1;
       if (daily === 'weather') state.weather.stock += 1;
     }
+    t.gift = { date, kind: daily, county, at: new Date().toISOString() };
   }
   return { county, first, egg, daily };
 }
