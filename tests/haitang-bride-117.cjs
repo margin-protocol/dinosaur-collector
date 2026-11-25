@@ -26,7 +26,7 @@ if(W===(process.env.W?Number(process.env.W):360)){
   assert.ok(u.free100,'100 stays reserved');
   assert.equal(u.c.rarity,'SSR');assert.equal(u.c.series,'bride');assert.ok(!u.c.special);assert.equal(u.c.name,'海棠新娘小湘');
   assert.equal(u.series.name,'花嫁系列');assert.equal(u.lastKey,'117','117 lists after 116');
-  assert.deepEqual(u.pools,['cipher','ordinary','star']);assert.deepEqual(u.w,[0.6,1.5,1],'SSR weights');
+  assert.deepEqual(u.pools,[],'湘 11/25：移到墨痕江湖活動卡池，一般蛋池都沒有');
   assert.ok(u.has.every(Boolean),`all copy slots filled: ${u.has}`);
   assert.equal(u.hehe,3,`嘿嘿 only 3 times, got ${u.hehe}`);assert.deepEqual(u.heheAt,[true,true,true],'嘿嘿 in hatch, Lv.5, secret dish');
   assert.equal(u.stars,0,'no markdown bold');assert.ok(!u.oiran,'no 花魁 elements');
@@ -40,7 +40,7 @@ await p.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.clo
 await p.locator('[data-dex-no="117"]').click();await p.locator('#dex-detail[open]').waitFor();await p.locator('#dex-detail-img').evaluate(i=>i.decode());
 assert.match(await p.textContent('#dex-detail-no'),/No\.117 · SSR · 花嫁系列/);
 assert.match(await p.textContent('#dex-detail-intro'),/海棠鎮/);
-assert.match(await p.textContent('#dex-detail-how'),/普通蛋/);
+assert.match(await p.textContent('#dex-detail-how'),/墨痕江湖/);
 assert.ok(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'no horizontal scroll');
 if(process.env.SHOT){await p.waitForTimeout(300);await p.screenshot({path:`${process.env.SHOT}-${W}-dex.png`});}
 await c.close();}

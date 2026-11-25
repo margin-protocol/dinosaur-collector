@@ -2153,6 +2153,7 @@ function howToGet(c) {
     return state.dex[c.no] ? '開發團隊限定：達成條件後收到紀念蛋' : `開發團隊限定：${p}`;
   }
   if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
+  if (c.no === '117') return '異世活動「墨痕江湖」的活動卡池（即將登場）';
   const eggs = Object.values(EGGS).filter(e => activePool(e)?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
 }
