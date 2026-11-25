@@ -11,7 +11,7 @@ import { setupThemes, THEME_KEY } from './themes.js';
 import { createTutorial, startTutorial } from './tutorial.js';
 import { EGGS, SHELF_MAX, CHARACTERS, SERIES, DUPLICATE_FOSSILS, rollFor, isRandomEgg, isHigh, activePool, JOIN_WHEN_OWNED, NEW_FACE_TIMES, DUP_PITY, SR_PITY, COUNTY_CHARACTER, characterSources, loadWithFallback, eggLayerSources, WORLDS, worldOf, worldLabel, noLabel } from './eggs.js';
 import { createIncubator, createEggView, stageOf, restart, reducedMotion } from './egg-view.js';
-import { loadState, updateState, resetState, newEgg } from './state.js';
+import { loadState, updateState, resetState, newEgg, onSave } from './state.js';
 import { WISH_STAMPS_PER_EGG } from './wish-egg.js';
 import { unlockedMilestones, allLetters, unreadCount, lockedMilestones, stampLetters, starredLetters, isStarred, toggleStar } from './letters.js';
 import { chatterLine, canOffer, makeTask, taskProgress, completeTask, TASK_REWARD } from './dino.js';
@@ -75,8 +75,10 @@ import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
 import * as studio from './studio-jh.js';
-import { pushState, enablePush, disablePush, refreshPush } from './push.js';
 import { playMoSsrFx } from './mo-ssr-fx.js';
+import { refreshPush } from './push.js';
+import { setupNotify, msgPushOn } from './notify-ui.js';
+import { queueTimerSync, syncTimers } from './push-timers.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy, recentPresenters, rememberPresenter } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -2652,7 +2654,7 @@ $('mission-input').addEventListener('change', async () => {
     const t = await updateState(current => { current.missions.pending[id] = { sid, ...(kept ? {} : { thumb }), at: new Date().toISOString() }; delete current.missions.status[id]; });
     state = t.state; renderAll(); renderMissions();
     $('missions-status').textContent = '上傳好了！等湘審核，通過會收進記憶檔案。';
-    if (cloudConfig()?.kind === 'siang' && (await pushState().catch(() => 'unsupported')) === 'off') $('missions-status').textContent += '\n想在審完時收到通知？到「雲端與備份」開啟手機通知 🔔';
+    if (cloudConfig()?.kind === 'siang' && !(await msgPushOn().catch(() => true))) $('missions-status').textContent += '\n想在審完時收到通知？到「手機通知」打開「湘的消息」🔔';
   } catch (err) { $('missions-status').textContent = `上傳失敗：${err.message}`; }
 });
 
@@ -2966,35 +2968,11 @@ function renderCloud(message = '') {
   $('cloud-status').textContent = message;
   void renderPush();
 }
-// 手機通知（11/21）：只有小湘雲端（邀請碼）的玩家可以開
-const PUSH_HINTS = {
-  on: '已開啟：湘審完委託、寄紙條或回覆照片時，這支手機會跳通知。',
-  off: '打開後，湘審完委託、寄紙條或回覆照片時，就算沒開遊戲也會跳通知。',
-  'need-home-screen': 'iPhone 要先用 Safari 的「分享 → 加入主畫面」，再從主畫面的小湘打開，才能開通知。',
-  denied: '這支手機擋掉了通知。要開的話，到手機的設定裡把這個遊戲的通知打開。',
-  unsupported: '這個瀏覽器不支援通知，可以換成 Chrome 或把遊戲加入主畫面再試試。',
-};
+// 手機通知（11/25 起）：開關都在「手機通知」（js/notify-ui.js），這裡只放一個入口給有邀請碼的玩家
 async function renderPush() {
-  const config = cloudConfig();
-  $('cloud-push').hidden = config?.kind !== 'siang';
-  if ($('cloud-push').hidden) return;
-  const st = await pushState().catch(() => 'unsupported');
-  $('push-hint').textContent = PUSH_HINTS[st];
-  $('push-toggle').hidden = !['on', 'off'].includes(st);
-  $('push-toggle').textContent = st === 'on' ? '關閉手機通知' : '🔔 開啟手機通知';
-  $('push-toggle').className = st === 'on' ? 'btn btn--quiet' : 'btn';
-  $('push-toggle').dataset.state = st;
+  $('cloud-push').hidden = cloudConfig()?.kind !== 'siang';
 }
-$('push-toggle').addEventListener('click', async () => {
-  const config = cloudConfig(); if (config?.kind !== 'siang') return;
-  const on = $('push-toggle').dataset.state === 'on';
-  $('push-toggle').disabled = true;
-  try {
-    if (on) { await disablePush(config.token); $('cloud-status').textContent = '已關閉手機通知。'; }
-    else { await enablePush(config.token); $('cloud-status').textContent = '開好了！湘有新消息時這支手機會跳通知 🔔'; }
-  } catch (err) { $('cloud-status').textContent = `通知沒有開成功：${err.message}`; }
-  finally { $('push-toggle').disabled = false; void renderPush(); }
-});
+$('push-toggle').addEventListener('click', () => { $('cloud-dialog').close(); notifyUI.open(); });
 
 // 進度大小：圖鑑幾位為主，孵化次數次之。用來防止「進度不見的新手機」一連上雲端就把舊備份蓋掉（11/19）
 function progressOf(saveText) {
@@ -3178,12 +3156,16 @@ attachSnackDrag($('snack'), {
 });
 
 setupThemes({ onOpen: syncRoomActivity, owned: () => events.ownedThemes(state) });
+const notifyUI = setupNotify({ getState: loadState, onOpen: syncRoomActivity });
 for (const id of ['home-errand', 'open-errands']) $(id).querySelector('svg')?.replaceWith(featureIcon('errand'));
 renderAll();
 renderExplore();
 setTimeout(showRestoreResult, 900); // 等開場切換畫面（showView 會關掉所有彈窗）跑完再打開
 void autoBackup().catch(() => {}).then(() => syncFromCloud(true));
-if (cloudConfig()?.kind === 'siang') void refreshPush(cloudConfig().token).catch(() => {});
+if (cloudConfig()?.kind === 'siang') void msgPushOn().then((on) => on && refreshPush(cloudConfig().token)).catch(() => {});
+// 回家／討伐提醒：存檔一變就重排（等 1.5 秒、內容一樣不送）；打開遊戲時也送一次
+onSave(() => queueTimerSync(loadState));
+void syncTimers(loadState()).catch(() => {});
 setInterval(() => { if (!document.hidden) void syncFromCloud(); }, 10 * 60 * 1000);
 void handleDateHash();
 addEventListener('hashchange', event => { if (/date=/.test(event.newURL)) void handleDateHash(event.newURL); });

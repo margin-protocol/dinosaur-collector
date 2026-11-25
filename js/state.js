@@ -32,11 +32,15 @@ export function loadState() {
 }
 
 const notify = (type) => { try { globalThis.dispatchEvent?.(new Event(type)); } catch {} };
+// 存檔之後要通知的地方（例如回家／討伐提醒重排）；出錯不影響存檔
+const saveHooks = [];
+export const onSave = (fn) => { saveHooks.push(fn); };
 export function saveState(state) {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
     if (volatileState) notify('siang-save-ok'); // 之前存不進去、現在又可以了
     volatileState = null;
+    for (const fn of saveHooks) { try { fn(state); } catch {} }
   } catch {
     volatileState = JSON.stringify(state);
     // 存不進去（通常是手機空間滿了）：這次先留在記憶體裡不重置進度，但要讓畫面提醒玩家（11/25）

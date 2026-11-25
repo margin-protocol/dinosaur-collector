@@ -29,12 +29,13 @@ export async function enablePush(token) {
   if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: unb64u(VAPID_PUBLIC) });
   await post('/push/subscribe', token, sub.toJSON());
 }
-export async function disablePush(token) {
+// keepSubscription：回家／討伐提醒還開著時（同一個訂閱），只跟後台說不要再推湘的消息
+export async function disablePush(token, { keepSubscription = false } = {}) {
   const reg = await navigator.serviceWorker.getRegistration();
   const sub = await reg?.pushManager.getSubscription();
   if (!sub) return;
   await post('/push/unsubscribe', token, { endpoint: sub.endpoint }).catch(() => {});
-  await sub.unsubscribe();
+  if (!keepSubscription) await sub.unsubscribe();
 }
 // 開著通知的手機，每次打開遊戲重新告訴後台一次（換邀請碼、後台清掉時補回來）
 export async function refreshPush(token) {
