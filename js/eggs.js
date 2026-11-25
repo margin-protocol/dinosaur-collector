@@ -35,6 +35,7 @@ export const EGGS = {
       '109': 0.3, // UR 白虎小湘（湘 11/21 先放摯友），UR 權重同 OWNED_WEIGHT
       '110': 8, '111': 5, '112': 2, '113': 0.6, '114': 0.3, // 月見町花街五階（湘 11/21）：N／R／SR 比照動物小湘，SSR 同恐龍小湘、UR 同白虎小湘
       '115': 2, '116': 0.6, // 十五年友情・法律ㄊㄧ雙人組（湘 11/21）：SR 律師ㄊㄧ比照摯友 SR、SSR 檢察官ㄊㄧ比照柴郡貓
+      '117': 0.6, // SSR 海棠新娘小湘（湘 11/25 選 A：比照其他 SSR）
     },
     // 正式三層素材：assets/eggs/ordinary/{shell,glow,cracks}.webp
   },
@@ -94,6 +95,7 @@ export const EGGS = {
       '109': 0.75, // UR 白虎小湘（SSR 的一半）
       '110': 6, '111': 8, '112': 5, '113': 1.5, '114': 0.75, // 月見町花街五階
       '115': 4, '116': 1.5, // 法律ㄊㄧ雙人組
+      '117': 1.5, // SSR 海棠新娘小湘
     },
     // 正式三層素材：assets/eggs/cipher/{shell,glow,cracks}.webp
   },
@@ -310,6 +312,8 @@ const CHARACTER_TABLE = {
   // 十五年友情・法律ㄊㄧ雙人組（湘 11/21 交付文案＋立繪；原稿「熊貓」湘指定一律寫成「ㄊㄧ」）：摯友系列，普通蛋＋暗號蛋（＋星光蛋）。ㄊㄧ是好友不是寵物，台詞以小湘為主。台詞：docs/SIANG_115-116_LAW_TI.md
   '115': { no: '115', name: '小湘 × 律師ㄊㄧ', rarity: 'SR', line: "「異議！！！！！我才沒有偷吃啦！！！！……ㄊㄧ！！你快幫我辯護！！！」", image: 'siang-115-lawyer-ti', series: 'friends' },
   '116': { no: '116', name: '小湘 × 檢察官ㄊㄧ', rarity: 'SSR', line: "「ㄊㄧ！！！我有重大發現！！！！……欸？你說要先保全證據？好啦！！！」", image: 'siang-116-prosecutor-ti', series: 'friends' },
+  // 海棠新娘小湘（湘 11/25 交付文案＋立繪）：SSR，新開「花嫁」系列；普通蛋＋暗號蛋（＋星光蛋）。「嘿嘿」照湘要求只留 3 處（初見、Lv.5、隱藏最愛）。之後 2.0 會和聞止水有跨世界羈絆，這裡先不做。台詞：docs/SIANG_117_HAITANG_BRIDE.md
+  '117': { no: '117', name: '海棠新娘小湘', rarity: 'SSR', line: "「今日海棠正好，春風也溫柔。……你來啦！我等你好久了！……欸？我才沒有一直看門口呢！」", image: 'siang-117-haitang-bride', series: 'bride' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -347,6 +351,7 @@ export const SERIES = {
   unlucky: { name: '非酋三部曲', short: '非酋' },
   lucky: { name: '歐皇三部曲', short: '歐皇' },
   tsukimi: { name: '月見町', short: '月見' },
+  bride: { name: '花嫁系列', short: '花嫁' },
 };
 
 // 縣市 → 縣市小湘編號

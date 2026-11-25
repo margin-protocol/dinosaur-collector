@@ -1355,6 +1355,17 @@
         "milk",
         "moon"
       ]
+    },
+    {
+      "no": "117",
+      "name": "海棠新娘小湘",
+      "like": "果香",
+      "dislike": "怪味",
+      "secret_combo": [
+        "gear",
+        "sakura",
+        "strawberry"
+      ]
     }
   ]
 }
