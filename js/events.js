@@ -5,6 +5,7 @@
 // 時間：一律用 eventNow()（GitHub Pages 回應的 Date 標頭校正過的時間，而且不會往回撥）。
 
 import { MO_STORY, MO_KEEPSAKE_STORY } from './event-mo-story.js';
+import { STUDIO_TITLES } from './tea.js';
 
 const H = 3600e3;
 const D = 24 * H;
@@ -312,16 +313,25 @@ export function settleLeftover(state, def, nowMs) {
 }
 
 // ───────── 稱號：全遊戲只能戴一個，名字跟著研究者等級顯示 ─────────
+// 工作室稱號（請喝茶的「茶友」）放在 state.studio，eventId 用 'studio'
 export function wornTitle(state) {
+  const st = state?.studio; if (st?.wornTitle && st.teaFriend && STUDIO_TITLES[st.wornTitle]) return { eventId: 'studio', id: st.wornTitle, name: STUDIO_TITLES[st.wornTitle] };
   for (const [id, p] of Object.entries(state.events || {})) if (p?.wornTitle) { const name = EVENT_DEFS[id]?.titles?.[p.wornTitle]; if (name) return { eventId: id, id: p.wornTitle, name }; }
   return null;
 }
 // titleId 為 null＝拿下來；回傳戴上的名字或 null
 export function wearTitle(state, eventId, titleId) {
   ensureEvents(state);
-  const prog = state.events[eventId]; if (titleId && !prog?.titles.includes(titleId)) return null;
+  if (eventId === 'studio') {
+    if (titleId && !(state.studio?.teaFriend && STUDIO_TITLES[titleId])) return null;
+  } else {
+    const prog = state.events[eventId]; if (titleId && !prog?.titles.includes(titleId)) return null;
+  }
   for (const p of Object.values(state.events)) if (p && typeof p === 'object') delete p.wornTitle;
+  if (state.studio && typeof state.studio === 'object') delete state.studio.wornTitle;
   if (!titleId) return null;
+  if (eventId === 'studio') { state.studio.wornTitle = titleId; return STUDIO_TITLES[titleId]; }
+  const prog = state.events[eventId];
   prog.wornTitle = titleId; return EVENT_DEFS[eventId]?.titles?.[titleId] || null;
 }
 // 活動換到的主題（全部活動合起來）

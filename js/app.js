@@ -75,6 +75,7 @@ import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
 import { pushState, enablePush, disablePush, refreshPush } from './push.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy, recentPresenters, rememberPresenter } from './wish-presenter.js';
+import * as tea from './tea.js';
 
 const $ = (id) => document.getElementById(id);
 const TAP_ENERGY = 10; // 每點一下蛋，注入多少能量
@@ -1018,6 +1019,7 @@ function renderDex() {
   if (world !== 'origin') all.sort((a, b) => noLabel(a.no).localeCompare(noLabel(b.no))); // 異世照顯示編號排（MO-002 海棠新娘小湘存檔 key 是 117）
   const owned = all.filter((c) => state.dex[c.no]);
   $('dex-count').textContent = `已收集 ${owned.length} / ${all.length}`;
+  if (tea.isTeaFriend(state)) { const cup = el('span', 'dex__tea', '☕'); cup.title = '寶寶工作室的茶友'; cup.setAttribute('aria-label', '茶友'); $('dex-count').append(cup); }
   const mode = dexMode();
   document.querySelectorAll('[data-dex-mode]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.dexMode === mode)));
   if (mode === 'all') { $('dex-grid').replaceChildren(dexList(all)); return; }
@@ -3106,6 +3108,36 @@ async function redeemCode(text) {
 }
 $('open-code').addEventListener('click', () => { $('function-center').close(); $('code-input').value = ''; $('code-status').textContent = ''; $('code-dialog').showModal(); syncRoomActivity(); });
 $('close-code').addEventListener('click', () => $('code-dialog').close());
+
+// 請寶寶工作室喝杯茶（js/tea.js）：沒有斗內網址時入口藏起來，測試服才看得到
+let lastTea = null;
+function showTeaThanks() {
+  const t = tea.pickThanks(lastTea); lastTea = t;
+  const img = $('tea-img'); img.alt = t.name; loadWithFallback(img, characterSources(CHARACTERS[t.no].image));
+  $('tea-line').textContent = `「${t.line}」`; $('tea-who').textContent = `— ${t.name}`;
+  const stage = $('tea-stage'); stage.classList.remove('is-pop'); void stage.offsetWidth; stage.classList.add('is-pop');
+}
+function renderTeaFriend() {
+  const friend = tea.isTeaFriend(state); $('tea-friend').hidden = !friend;
+  $('tea-done').textContent = friend ? '再請一杯' : '我請過茶了';
+  $('tea-wear').setAttribute('aria-pressed', String(state.studio?.wornTitle === 'tea-friend'));
+}
+{
+  const on = tea.teaEnabled();
+  document.querySelectorAll('[data-tea-open]').forEach((b) => { b.hidden = !on; b.addEventListener('click', () => { $('function-center').close(); renderTeaFriend(); showTeaThanks(); $('tea-dialog').showModal(); syncRoomActivity(); }); });
+  if (tea.TEA_URL) $('tea-pay').href = tea.TEA_URL; else $('tea-pay').removeAttribute('href');
+}
+$('tea-pay').addEventListener('click', (e) => { if (!tea.TEA_URL) { e.preventDefault(); toast('測試服：斗內網址還沒設定'); } showTeaThanks(); });
+$('tea-done').addEventListener('click', () => {
+  if (tea.isTeaFriend(state)) { showTeaThanks(); return; }
+  void updateState((cur) => ({ fresh: tea.claimTeaFriend(cur) })).then((t) => {
+    state = t.state; showTeaThanks(); renderTeaFriend(); renderAll();
+    if (t.result.fresh) toast('拿到稱號「茶友」☕ 謝謝你！');
+  });
+});
+$('tea-wear').addEventListener('click', () => void updateState((cur) => ({ worn: events.wearTitle(cur, 'studio', cur.studio?.wornTitle === 'tea-friend' ? null : 'tea-friend') })).then((t) => { state = t.state; toast(t.result.worn ? `戴上稱號「${t.result.worn}」` : '拿下稱號了'); renderTeaFriend(); renderAll(); }));
+$('close-tea').addEventListener('click', () => $('tea-dialog').close());
+$('tea-dialog').addEventListener('close', syncRoomActivity);
 $('code-dialog').addEventListener('close', syncRoomActivity);
 $('code-form').addEventListener('submit', async (event) => {
   event.preventDefault();
