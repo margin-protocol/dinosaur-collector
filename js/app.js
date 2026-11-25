@@ -4287,6 +4287,12 @@ function renderBattleStage() {
     if (epilogue.has(`${base}:before`)) row.append(epilogueButton(`${base}:before`, '▶ 看開打前劇情'));
     if (st?.clears && epilogue.has(`${base}:after`)) row.append(epilogueButton(`${base}:after`, '▶ 重看打完後'));
     if (row.children.length) $('battle-story').prepend(row);
+    // 湘 11/25：第一次點進這一關就自動播開打前；看過記在 state.events[id].story['mo-01:before']，之後只用按鈕重看
+    const seenKey = `${e.eventStage}:before`;
+    if (epilogue.has(`${base}:before`) && !state.events?.[e.event]?.story?.[seenKey] && !document.querySelector('dialog.epilogue[open]')) {
+      epilogue.play(`${base}:before`);
+      void updateState(cur => { events.progressOf(cur, e.event).story[seenKey] ||= new Date().toISOString(); }).then(t => { state = t.state; });
+    }
   }
   $('battle-enemy-intro').textContent = e.intro;
   $('battle-gift-hint').hidden = Boolean(e.wild || e.event); if (!e.wild && !e.event) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;

@@ -33,7 +33,10 @@ assert.equal(await hub.locator('[data-event-stage="mo-06"]').isDisabled(),true);
 assert.equal(await hub.locator('.event-keepsake').count(),5,'信物櫃五格');assert.equal(await hub.locator('.event-keepsake.is-got').count(),0);
 await shot('hub','.event-hub');
 // 打一場 MO-01，收戰報拿墨玉
-await hub.locator('[data-event-stage="mo-01"]').click();await p.waitForTimeout(200);
+await hub.locator('[data-event-stage="mo-01"]').click();await p.waitForTimeout(300);
+assert.equal(await p.locator('#chapter-epilogue[open]').count(),1,'第一次點進關卡自動播開打前');
+await p.evaluate(()=>document.getElementById('chapter-epilogue').close());
+assert.ok((await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v1')).events.mo.story))['mo-01:before'],'記住看過');
 assert.match(await p.locator('#battle-story').textContent(),/花轎裡，小湘慢慢睜開眼睛/,'開打前劇情');await shot('stage','#battle-stage');
 for(const no of ['001','002','003'])await p.click(`#battle-siangs [data-siang="${no}"]`);
 await p.click('#battle-go');await p.waitForTimeout(300);

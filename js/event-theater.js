@@ -11,11 +11,15 @@ const def = EVENT_DEFS.mo;
 const RESIDENTS = { 小湘: '117', 聞止水: 'MO-001', 杜今朝: 'MO-005', 簡牧陽: 'MO-008', 游未遲: 'MO-003', 徐汀云: 'MO-004', 程不言: 'MO-006', 林晏洄: 'MO-007' };
 const FOES = { 刀客: 'mo-02', 斷刃使: 'mo-05', 牙商: 'mo-07' };
 const keyOf = (name) => `mo_${name}`;
+// 湘 11/25：小怪出場時放牠的圖。開打前第幾句（從 0 數）登場；登場後固定站右邊，講話的居民輪流站左邊
+const FOE_ENTRY = { 'mo-01': 12, 'mo-02': 11, 'mo-03': 15, 'mo-04': 7, 'mo-05': 11, 'mo-06': 11, 'mo-07': 13, 'mo-08': 13, 'mo-09': 12, 'mo-10': 18 };
+const foeKey = (sid) => Object.entries(FOES).find(([, st]) => st === sid)?.[0] ? keyOf(Object.entries(FOES).find(([, st]) => st === sid)[0]) : `mo_foe_${sid}`;
 
 const actors = {};
 for (const [name, no] of Object.entries(RESIDENTS)) actors[keyOf(name)] = { name, src: characterSources(CHARACTERS[no].image) };
 for (const [name, stage] of Object.entries(FOES)) actors[keyOf(name)] = { name, src: [`assets/enemies/${def.stages[stage].art}.webp`] };
 for (const name of ['掌櫃', '青禾', '莊主']) actors[keyOf(name)] = { name, src: [] };
+for (const [sid, st] of Object.entries(def.stages)) if (!Object.values(FOES).includes(sid)) actors[`mo_foe_${sid}`] = { name: st.name, src: [`assets/enemies/${st.art}.webp`] };
 const bg = Object.fromEntries(Object.entries(def.stages).map(([id, s]) => [`mo:${id}`, s.scene]));
 
 // 一行文字 → beat
@@ -27,18 +31,25 @@ export function parseLine(line) {
 }
 
 // 自動站位：兩個位置 L／R
-function stage(lines, { bgKey, act, skin }) {
+function stage(lines, { bgKey, act, skin, foe = null }) {
   const slots = { L: null, R: null }; const lastSpoke = {}; let n = 0;
   return lines.map((line, i) => {
     const b = parseLine(line);
     if (/^尾聲・/.test(b.text)) return { card: b.text.replace(/^尾聲・/, ''), sub: '尾聲' };
-    if (b.who && actors[b.who]?.src.length && !Object.values(slots).includes(b.who)) {
+    let entry = null;
+    if (foe && i === foe.at) { // 小怪登場：佔右邊、跳出來、畫面晃一下
+      if (slots.R && slots.R !== foe.key) slots.L = lastSpoke[slots.R] > (lastSpoke[slots.L] || 0) ? slots.R : slots.L;
+      slots.R = foe.key; entry = { fx: { [foe.key]: 'peek' }, shake: true };
+    }
+    const foeOn = foe && i >= foe.at;
+    if (foeOn && b.who && b.who !== foe.key && actors[b.who]?.src.length) slots.L = b.who;
+    else if (b.who && actors[b.who]?.src.length && !Object.values(slots).includes(b.who)) {
       const side = !slots.L ? 'L' : !slots.R ? 'R' : (lastSpoke[slots.L] || 0) <= (lastSpoke[slots.R] || 0) ? 'L' : 'R';
       slots[side] = b.who;
     }
     if (b.who) lastSpoke[b.who] = ++n;
     const cast = Object.entries(slots).filter(([, k]) => k).map(([side, k]) => [k, side]);
-    return { ...(i === 0 ? { bg: bgKey, act, newAct: true, cam: [50, 50, 1], tone: '' } : {}), cast, ...b, ...(skin === 'c' ? { cast: [] } : {}) };
+    return { ...(i === 0 ? { bg: bgKey, act, newAct: true, cam: [50, 50, 1], tone: '' } : {}), cast, ...b, ...(entry || {}), ...(skin === 'c' ? { cast: [] } : {}) };
   });
 }
 
@@ -49,7 +60,7 @@ export function buildStories(skin = '') {
     for (const part of ['before', 'after']) {
       if (!parts[part]) continue;
       const lines = parts[part].split('\n').filter(Boolean);
-      const beats = stage(lines, { bgKey: `mo:${sid}`, act: s.title, skin });
+      const beats = stage(lines, { bgKey: `mo:${sid}`, act: s.title, skin, foe: part === 'before' && FOE_ENTRY[sid] !== undefined ? { at: FOE_ENTRY[sid], key: foeKey(sid) } : null });
       if (part === 'after' && parts.ending) {
         const end = parts.ending.split('\n').filter(Boolean);
         const isTail = /^（尾聲・/.test(end[0]);
