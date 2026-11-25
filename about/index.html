@@ -108,7 +108,12 @@ section.block + section.block{border-top:1px solid var(--line)}
 .final .quote{font-size:20px;letter-spacing:.14em;margin-bottom:1.2em}
 footer{border-top:1px solid var(--line);padding:26px 0 calc(26px + env(safe-area-inset-bottom));text-align:center;font-size:13px;color:var(--soft)}
 footer .latin{font-family:var(--latin);letter-spacing:.2em}
-#support{margin:0 auto 22px}
+.support{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 16px 20px;margin:0 auto 24px;max-width:420px}
+.support__faces{display:flex;justify-content:center;margin-bottom:6px}
+.support__faces span{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--bg2);border:2px solid var(--card);margin:0 -6px;position:relative}
+.support__faces img{position:absolute;width:190%;max-width:none;left:-45%;top:-8%}
+.support__title{font-size:17px;color:var(--ink);letter-spacing:.1em;margin:0}
+.support__sub{margin:0 0 12px}
 
 @media (min-width:760px){
   .hero__cast{height:420px}
@@ -263,8 +268,17 @@ footer .latin{font-family:var(--latin);letter-spacing:.2em}
 
 <footer>
   <div class="wrap">
-    <!-- 贊助（請寶寶工作室喝杯茶）：拿到綠界網址後再打開 -->
-    <div id="support" hidden></div>
+    <!-- 贊助（請寶寶工作室喝杯茶）：跟遊戲裡的入口一起打開（拿掉 hidden） -->
+    <div id="support" class="support" hidden>
+      <div class="support__faces" aria-hidden="true">
+        <span><img src="../assets/characters/siang-078-cat-cafe.webp" alt="" loading="lazy"></span>
+        <span><img src="../assets/characters/siang-086-overtime-pibao.webp" alt="" loading="lazy"></span>
+        <span><img src="../assets/characters/siang-087-crashing-debao.webp" alt="" loading="lazy"></span>
+      </div>
+      <p class="support__title">請寶寶工作室喝杯茶</p>
+      <p class="support__sub">支持我們繼續寫下一頁</p>
+      <a class="btn-line" href="https://p.ecpay.com.tw/AB2A07A" target="_blank" rel="noopener">☕ 請喝茶</a>
+    </div>
     <p class="latin" style="margin:0">BETWEEN THE PAGES</p>
     <p style="margin:0">© 2026 頁邊協定 Margin Protocol. All rights reserved.</p>
   </div>
