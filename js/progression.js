@@ -1,5 +1,5 @@
 import { ensureTeamBonds } from './team-bonds.js';
-import { ensureKitchen, RECIPES as DISH_RECIPES } from './kitchen.js';
+import { ensureKitchen, BASE_RECIPES as DISH_RECIPES } from './kitchen.js';
 import { ensureCheckin } from './checkin.js';
 import { ensureDupCount } from './unlucky.js';
 import { todayKey, wishesFor, legacyWishesFor, wishById, swapWishId, actProgress, QUIZZES, WISH_REWARD, WISH_POOL, WISHES_PER_DAY } from './wishes.js';

@@ -30,6 +30,7 @@ const txt=await hub.textContent();assert.match(txt,/十萬兩紅妝/);assert.mat
 assert.equal(await hub.locator('[data-event-stage="mo-01"]').isDisabled(),false);
 assert.equal(await hub.locator('[data-event-stage="mo-02"]').isDisabled(),true);
 assert.equal(await hub.locator('[data-event-stage="mo-06"]').isDisabled(),true);
+assert.equal(await hub.locator('.event-keepsake').count(),5,'信物櫃五格');assert.equal(await hub.locator('.event-keepsake.is-got').count(),0);
 await shot('hub','.event-hub');
 // 打一場 MO-01，收戰報拿墨玉
 await hub.locator('[data-event-stage="mo-01"]').click();await p.waitForTimeout(200);

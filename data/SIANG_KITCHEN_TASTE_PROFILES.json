@@ -61,6 +61,24 @@
       "id": "glitch",
       "name": "故障糖漿",
       "tag": "怪味"
+    },
+    {
+      "id": "osmanthus",
+      "name": "金桂",
+      "tag": "濃甜",
+      "event": "mo"
+    },
+    {
+      "id": "bamboo",
+      "name": "雨後竹筍",
+      "tag": "清涼",
+      "event": "mo"
+    },
+    {
+      "id": "plum",
+      "name": "青梅釀",
+      "tag": "果香",
+      "event": "mo"
     }
   ],
   "featured_recipes": [
@@ -1404,7 +1422,7 @@
       "like": "濃甜",
       "dislike": "刺激",
       "secret_combo": [
-        "sakura",
+        "osmanthus",
         "tangyuan"
       ]
     },
@@ -1435,7 +1453,7 @@
       "like": "菇香",
       "dislike": "酥脆",
       "secret_combo": [
-        "matcha",
+        "bamboo",
         "mushroom"
       ]
     }

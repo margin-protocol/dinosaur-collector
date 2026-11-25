@@ -7,7 +7,7 @@ const p=await c.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message)
 await p.goto('http://127.0.0.1:8000');await p.locator('#intro-ok').click();
 const r=await p.evaluate(async()=>{
   const k=await import('/js/kitchen.js'),bt=await import('/js/battle.js'),ac=await import('/js/achievements.js'),eg=await import('/js/eggs.js'),tp=await import('/js/taste-profiles.js');
-  const I=k.INGREDIENTS.map(i=>i.id);const combos=[];const N=I.length;for(let a=0;a<N;a++)for(let b2=a+1;b2<N;b2++){combos.push([I[a],I[b2]]);for(let c2=b2+1;c2<N;c2++)combos.push([I[a],I[b2],I[c2]]);}
+  const I=k.BASE_INGREDIENTS.map(i=>i.id);const combos=[];const N=I.length;for(let a=0;a<N;a++)for(let b2=a+1;b2<N;b2++){combos.push([I[a],I[b2]]);for(let c2=b2+1;c2<N;c2++)combos.push([I[a],I[b2],I[c2]]);}
   const stable=combos.every(x=>{const d=k.dishOf(x),e=k.dishOf([...x].reverse());return d&&e&&d.id===e.id&&d.name===e.name;});
   const names=new Set(combos.map(x=>k.dishOf(x).name)).size;
   const bad=[k.dishOf(['milk']),k.dishOf(['milk','milk']),k.dishOf(['milk','star','moon','cloud'])];

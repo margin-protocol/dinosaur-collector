@@ -3816,13 +3816,13 @@ $('tab-kitchen').addEventListener('click', () => showErrandTab('kitchen'));
 let kitchenPicked = []; let kitchenMeal = null; let kitchenResult = null; let kitchenBusy = false;
 function renderKitchen() {
   const k = state.kitchen;
-  $('kitchen-ings').replaceChildren(...kitchen.INGREDIENTS.map(i => {
+  $('kitchen-ings').replaceChildren(...kitchen.INGREDIENTS.filter(i => !i.event || k.ingredients[i.id] || kitchenPicked.includes(i.id)).map(i => { // 活動食材有拿到才顯示
     const n = k.ingredients[i.id] || 0;
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'kitchen-ing'; btn.dataset.ing = i.id;
     btn.disabled = !n && !kitchenPicked.includes(i.id); btn.setAttribute('aria-pressed', String(kitchenPicked.includes(i.id)));
     btn.innerHTML = '<span class="kitchen-ing__icon" aria-hidden="true"></span><b></b><small></small>';
     btn.querySelector('span').textContent = i.icon; btn.querySelector('b').textContent = i.name;
-    btn.querySelector('small').textContent = n ? `× ${n}` : `第 ${i.chapter} 章`;
+    btn.querySelector('small').textContent = n ? `× ${n}` : i.event ? '活動限定' : `第 ${i.chapter} 章`;
     btn.addEventListener('click', () => { kitchenPicked = kitchenPicked.includes(i.id) ? kitchenPicked.filter(x => x !== i.id) : [...kitchenPicked, i.id].slice(-3); renderKitchen(); });
     return btn;
   }));
@@ -3876,15 +3876,16 @@ function renderKitchen() {
     res.append(box);
   }
   // 圖鑑
-  const known = Object.keys(k.known).length;
+  const known = Object.keys(k.known).filter(kitchen.isBaseDish).length;
   $('kitchen-stats').replaceChildren(...[`做過 ${known} / ${kitchen.COMBO_TOTAL} 道`, `特色料理 ${kitchen.recipesFound(state)} / 8`, `秘密最愛 ${kitchen.secretsFound(state)} 個`].flatMap((t, i) => [...(i ? [' '] : []), Object.assign(document.createElement('span'), { textContent: i ? `· ${t}` : t })])); // 「·」跟著後一段，換行時不會落單在行首
   renderCookbook();
-  $('kitchen-book').replaceChildren(...kitchen.RECIPES.map(rc => {
+  const evLive = events.activeEvents(state, events.eventNow(structuredClone({ clock: state.clock }))).filter(x => x.sch.state === 'battle').map(x => x.def.id);
+  $('kitchen-book').replaceChildren(...kitchen.RECIPES.filter(rc => !rc.event || evLive.includes(rc.event) || k.known[[...rc.ings].sort().join('+')]).map(rc => { // 活動限定料理：活動期間或做過才顯示
     const id = [...rc.ings].sort().join('+'); const got = Boolean(k.known[id]);
-    const card = document.createElement('div'); card.className = `kitchen-recipe${got ? ' is-found' : ''}${rc.dark ? ' is-dark' : ''}`;
+    const card = document.createElement('div'); card.className = `kitchen-recipe${got ? ' is-found' : ''}${rc.dark ? ' is-dark' : ''}${rc.event ? ' is-event' : ''}`;
     card.innerHTML = '<b></b><small></small><p></p>';
     card.querySelector('b').textContent = got ? rc.name : '？？？';
-    card.querySelector('small').textContent = got ? `${rc.ings.map(x => kitchen.ING[x].icon + kitchen.ING[x].name).join(' ＋ ')}` : rc.type;
+    card.querySelector('small').textContent = got ? `${rc.ings.map(x => kitchen.ING[x].icon + kitchen.ING[x].name).join(' ＋ ')}` : rc.event ? `墨痕江湖限定 · ${rc.type}` : rc.type;
     card.querySelector('p').textContent = got ? (rc.effect ? `${rc.type}｜${kitchen.buffText(rc.effect)}（看小湘喜不喜歡）` : rc.dark ? '黑暗料理｜勇氣可嘉' : `${rc.type}｜好感度專用`) : rc.clue;
     return card;
   }));
@@ -4112,6 +4113,25 @@ function eventStageCard(def, stageId, now) {
   btn.addEventListener('click', () => { battleEnemy = key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
   return btn;
 }
+// 代幣小籤：有圖用圖，沒圖用 emoji
+function tokenChip(def, n) {
+  const c = el('span', 'event-chip');
+  if (def.token.art) { const img = el('img', 'event-chip__icon'); img.src = def.token.art; img.alt = ''; c.append(img, `${def.token.name} ${n}`); } else c.textContent = `${def.token.icon} ${def.token.name} ${n}`;
+  return c;
+}
+// 信物櫃：拿到的亮著、點了看說明；沒拿到的只剩剪影
+function keepsakeShelf(ks, prog) {
+  const box = el('div', 'event-keepsakes'); const row = el('div', 'event-keepsakes__row'); const note = el('p', 'event-keepsakes__note', '打完上卷後重複討伐，打贏有機會拿到信物。');
+  for (const k of ks.list) {
+    const got = Boolean(prog.keepsakes?.[k.id]);
+    const b = el('button', `event-keepsake${got ? ' is-got' : ''}`); b.type = 'button'; b.dataset.keepsake = k.id; b.setAttribute('aria-label', got ? k.name : '還沒拿到的信物');
+    if (k.art) { const img = el('img'); img.src = k.art; img.alt = ''; img.loading = 'lazy'; b.append(img); }
+    b.append(el('small', null, got ? k.name : '？'));
+    b.addEventListener('click', () => { row.querySelectorAll('.is-on').forEach(x => x.classList.remove('is-on')); b.classList.add('is-on'); note.textContent = got ? `${k.name}：${k.text}` : '還沒拿到。打完上卷後重複討伐，打贏有機會掉落。'; });
+    row.append(b);
+  }
+  box.append(row, note); return box;
+}
 function eventHub(def, sch, now) {
   const prog = state.events?.[def.id] || {}; const ks = def.keepsakes;
   const sec = el('section', 'battle-chapter event-hub'); sec.dataset.event = def.id; sec.dataset.group = 'event';
@@ -4123,10 +4143,11 @@ function eventHub(def, sch, now) {
     : sch.state === 'shop' ? `討伐已結束 · 墨玉閣開到 ${tpeDate(sch.shopEndMs)}` : '活動已封存，已經拿到的都會留著';
   ban.append(seal, el('small', 'event-banner__kicker', `${def.code} · ${def.name}`), el('h3', 'event-banner__title', def.subtitle), el('p', 'event-banner__tag', def.tagline), el('p', 'event-banner__time', time));
   const bar = el('div', 'event-banner__bar');
-  bar.append(el('span', 'event-chip', `${def.token.icon} ${def.token.name} ${prog.tokens || 0}`));
+  bar.append(tokenChip(def, prog.tokens || 0));
   if (ks) bar.append(el('span', 'event-chip', `信物 ${Object.keys(prog.keepsakes || {}).length} / ${ks.list.length}`));
   if (sch.state === 'battle' || sch.state === 'shop') { const shop = el('button', 'text-action event-banner__shop', '墨玉閣 ⟶'); shop.type = 'button'; shop.addEventListener('click', () => { eventView = { id: def.id, view: 'shop' }; renderBattle(); }); bar.append(shop); }
   ban.append(bar); sec.append(ban);
+  if (ks && ks.list.some(k => k.art)) sec.append(keepsakeShelf(ks, prog));
   if (sch.state !== 'battle') return sec;
   for (const ph of def.phases) {
     const p = sch.phases.find(x => x.id === ph.id);
@@ -4143,7 +4164,7 @@ function eventShop(def, now) {
   const prog = state.events?.[def.id] || {};
   const sec = el('section', 'battle-chapter event-shop');
   const back = el('button', 'text-action', '⟵ 回關卡列表'); back.type = 'button'; back.addEventListener('click', () => { eventView = null; renderBattle(); });
-  const head = el('div', 'event-shop__head'); head.append(el('h3', 'egg-choices__heading', '墨玉閣'), el('span', 'event-chip', `${def.token.icon} ${def.token.name} ${prog.tokens || 0}`));
+  const head = el('div', 'event-shop__head'); head.append(el('h3', 'egg-choices__heading', '墨玉閣'), tokenChip(def, prog.tokens || 0));
   const list = el('div', 'event-shop__list');
   list.append(...events.shopList(state, def, now).map(item => {
     const row = el('div', `event-shop__item${item.soldOut ? ' is-sold' : ''}`);

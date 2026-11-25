@@ -23,10 +23,16 @@ export const INGREDIENTS = [
   { id: 'tangyuan', name: '白玉湯圓', short: '湯圓', tag: '滑順', icon: '🍡', chapter: 4 },
   { id: 'sakura', name: '櫻花蜜', short: '櫻花', tag: '果香', icon: '🌸', chapter: 4 },
   { id: 'matcha', name: '抹茶粉', short: '抹茶', tag: '清涼', icon: '🍵', chapter: 4 },
+  // 墨痕江湖活動食材（11/25）：只從活動關卡掉落，活動結束後手上的照樣能煮
+  { id: 'osmanthus', name: '金桂', short: '金桂', tag: '濃甜', icon: '🌼', event: 'mo' },
+  { id: 'bamboo', name: '雨後竹筍', short: '竹筍', tag: '清涼', icon: '🎋', event: 'mo' },
+  { id: 'plum', name: '青梅釀', short: '青梅', tag: '果香', icon: '🍶', event: 'mo' },
 ];
+export const BASE_INGREDIENTS = INGREDIENTS.filter((i) => !i.event);
 export const ING = Object.fromEntries(INGREDIENTS.map((i) => [i.id, i]));
 // 能煮出的料理種類＝任選 2 或 3 種食材的組合數（12 種時 286、16 種時 680）
-export const COMBO_TOTAL = ((n) => n * (n - 1) / 2 + n * (n - 1) * (n - 2) / 6)(INGREDIENTS.length);
+export const COMBO_TOTAL = ((n) => n * (n - 1) / 2 + n * (n - 1) * (n - 2) / 6)(BASE_INGREDIENTS.length); // 活動食材不算進總數
+export const isBaseDish = (id) => String(id).split('+').every((i) => ING[i] && !ING[i].event);
 
 // 8 道特色料理。effect：power 戰力、speed 討伐時間、gather 打贏多 1 份食材；沒有 effect 的是好感度專用
 export const RECIPES = [
@@ -38,7 +44,12 @@ export const RECIPES = [
   { id: 'R06', name: '雷電齒輪餅乾', ings: ['gear', 'lightning'], type: '戰力', effect: { kind: 'power', value: 0.05 }, clue: '咬下去會「喀啦——滋滋滋」。' },
   { id: 'R07', name: '草莓蘑菇湯', ings: ['mushroom', 'strawberry'], type: '黑暗料理', dark: true, clue: '紅紅的，還有一朵不該出現在甜湯裡的東西。' },
   { id: 'R08', name: '故障宇宙糖漿', ings: ['glitch', 'lightning', 'star'], type: '黑暗料理', dark: true, clue: '玩具星球上最不穩定的三種糖。' },
+  // 墨痕江湖限定料理（湘 11/25 交給德寶配）：不算進「全部 8 道特色料理」
+  { id: 'MO1', name: '桂花糕', ings: ['osmanthus', 'tangyuan'], type: '親密', event: 'mo', clue: '軟糯的白玉，淋一勺金色的花蜜。' },
+  { id: 'MO2', name: '山筍清湯', ings: ['bamboo', 'mushroom'], type: '採集', event: 'mo', effect: { kind: 'gather', value: 1 }, clue: '雨後山裡冒出來的兩樣東西，熬一鍋清湯。' },
+  { id: 'MO3', name: '江湖一盞', ings: ['moon', 'osmanthus', 'plum'], type: '戰力', event: 'mo', effect: { kind: 'power', value: 0.05 }, clue: '青梅入酒，兌一點月光，再撒一把桂花。敬江湖。' },
 ];
+export const BASE_RECIPES = RECIPES.filter((r) => !r.event);
 const key = (ids) => [...new Set(ids)].sort().join('+');
 const RECIPE_BY_KEY = Object.fromEntries(RECIPES.map((r) => [key(r.ings), r]));
 
@@ -195,9 +206,9 @@ export function teamFood(state, nos) {
 export function useFood(state, food) { if (food && state.kitchen?.buffs?.[food.no]) delete state.kitchen.buffs[food.no]; }
 
 // 討伐撿到的食材：一般關卡贏了保底 1 份、35% 多 1 份；Boss 2～3 份；輸了沒有。在出發時就決定好
-export function dropsFor(chapter, { win, boss, gather = 0 }, rand = Math.random) {
+export function dropsFor(chapter, { win, boss, gather = 0, event = null }, rand = Math.random) {
   if (!win) return [];
-  const pool = INGREDIENTS.filter((i) => i.chapter === chapter);
+  const pool = INGREDIENTS.filter((i) => (event ? i.event === event : i.chapter === chapter)); // 活動關卡掉活動食材
   if (!pool.length) return [];
   const n = (boss ? 2 + (rand() < 0.5 ? 1 : 0) : 1 + (rand() < 0.35 ? 1 : 0)) + gather;
   return Array.from({ length: n }, () => pool[Math.floor(rand() * pool.length) % pool.length].id);
@@ -223,7 +234,8 @@ export function cookbook(state) {
     return { dish, no: i + 1, at, times: Math.max(1, k.made?.[id] || 0), left: k.meals?.[id] || 0, eaters, kind: dish.dark ? 'dark' : dish.recipe ? 'recipe' : 'home' };
   }).reverse();
 }
-export const recipesFound = (state) => RECIPES.filter((r) => state.kitchen?.known?.[key(r.ings)]).length;
+export const recipesFound = (state) => BASE_RECIPES.filter((r) => state.kitchen?.known?.[key(r.ings)]).length;
+export const eventRecipesFound = (state, event) => RECIPES.filter((r) => r.event === event && state.kitchen?.known?.[key(r.ings)]).length;
 export const darkFound = (state) => Object.keys(state.kitchen?.known || {}).filter((id) => dishById(id)?.dark).length;
 
 // 反應台詞：先看每位小湘的專屬台詞（js/kitchen-lines.js），再看評價

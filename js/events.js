@@ -30,7 +30,7 @@ export const EVENT_DEFS = {
     keyArt: 'assets/events/mo/key-visual.webp', // 湘 11/25 主視覺（聞止水護海棠新娘），人物在右半，左邊留給文字
     battleDays: 14,
     shopDays: 21,
-    token: { id: 'moyu', name: '墨玉', icon: '🪨' },
+    token: { id: 'moyu', name: '墨玉', icon: '🪨', art: 'assets/events/mo/moyu.webp' },
     // 墨玉加成（湘 11/25 選推薦）：每位墨痕江湖居民 +10%，聞止水 +20%，一隊最多 +40%
     tokenBonus: { world: 0.10, by: { 'MO-001': 0.20 }, cap: 0.40 },
     firstClear: 30,
@@ -57,11 +57,11 @@ export const EVENT_DEFS = {
     keepsakes: {
       after: 'up', chance: 0.2, pity: 6, completeBonus: 50,
       list: [
-        { id: 'red-contract', name: '染朱婚書', text: '婚書上沒有新郎的姓名，卻詳細記載著新娘的生辰八字。' },
-        { id: 'gold-clasp', name: '鎖命金扣', text: '藏於嫁衣內側的金扣。奇怪的是，它只能扣上，不能解開。' },
-        { id: 'torn-recipe', name: '殘缺藥方', text: '開方之人似乎患有無藥可醫的重病。最後一味藥，竟寫著「紅妝」。' },
-        { id: 'broken-bangle', name: '斷裂玉鐲', text: '曾屬於另一位新娘。內側刻著一行小字：願來世不著紅衣。' },
-        { id: 'ink-tassel', name: '墨色劍穗', text: '聞止水繫於劍柄上的舊物。她似乎已經很久沒有為誰拔劍了。' },
+        { id: 'red-contract', art: 'assets/events/mo/keepsakes/red-contract.webp', name: '染朱婚書', text: '婚書上沒有新郎的姓名，卻詳細記載著新娘的生辰八字。' },
+        { id: 'gold-clasp', art: 'assets/events/mo/keepsakes/gold-clasp.webp', name: '鎖命金扣', text: '藏於嫁衣內側的金扣。奇怪的是，它只能扣上，不能解開。' },
+        { id: 'torn-recipe', art: 'assets/events/mo/keepsakes/torn-recipe.webp', name: '殘缺藥方', text: '開方之人似乎患有無藥可醫的重病。最後一味藥，竟寫著「紅妝」。' },
+        { id: 'broken-bangle', art: 'assets/events/mo/keepsakes/broken-bangle.webp', name: '斷裂玉鐲', text: '曾屬於另一位新娘。內側刻著一行小字：願來世不著紅衣。' },
+        { id: 'ink-tassel', art: 'assets/events/mo/keepsakes/ink-tassel.webp', name: '墨色劍穗', text: '聞止水繫於劍柄上的舊物。她似乎已經很久沒有為誰拔劍了。' },
       ],
     },
     // 墨玉閣：reward.type 由 applyShopReward 處理；soon:true 的商品還沒做好，不顯示、不能買
