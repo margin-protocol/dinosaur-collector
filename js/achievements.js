@@ -1,9 +1,11 @@
+import { worldOf } from './eggs.js';
 import { siangMailCount } from './letters.js';
 import { MAIN_ISLAND } from './geo.js';
 import { dishById, recipesFound, secretsFound } from './kitchen.js';
 const darkDish = (id) => dishById(id)?.dark;
 // 成就：由進度直接推算是否達成；領取獎勵的紀錄存在 state.achievements.claimed
 const dexCount = (s) => Object.keys(s.dex || {}).length;
+const originNos = (chars) => Object.values(chars).filter((c) => worldOf(c) === 'origin').map((c) => c.no);
 const rarityOwned = (s, chars, r) => Object.keys(s.dex || {}).some((no) => chars[no]?.rarity === r);
 const seriesDone = (s, chars) => {
   const by = {};
@@ -22,7 +24,8 @@ export const ACHIEVEMENTS = [
   { id: 'hatch-100', group: '孵化', title: '傳說中的飼養員', hint: '孵化 100 顆蛋', goal: 100, value: (s) => s.hatched || 0, reward: 100 },
   { id: 'dex-10', group: '收藏', title: '小小收藏家', hint: '收集 10 位小湘', goal: 10, value: dexCount, reward: 30 },
   { id: 'dex-30', group: '收藏', title: '收藏家', hint: '收集 30 位小湘', goal: 30, value: dexCount, reward: 60 },
-  { id: 'dex-all', group: '收藏', title: '全圖鑑', hint: '收集所有小湘', goal: (s, chars) => Object.keys(chars).length, value: dexCount, reward: 200 },
+  // 湘 11/25：全圖鑑只算創始系列（異世限定居民活動結束後拿不到，不算進來；異世另外有自己的收藏成就）
+  { id: 'dex-all', group: '收藏', title: '全圖鑑', hint: '收集所有創始系列的小湘', goal: (s, chars) => originNos(chars).length, value: (s, chars) => originNos(chars).filter((no) => s.dex?.[no]).length, reward: 200 },
   { id: 'series-1', group: '收藏', title: '整套收藏', hint: '集滿任何一個系列', goal: 1, value: seriesDone, reward: 50 },
   { id: 'ssr', group: '收藏', title: '閃閃發光', hint: '遇見一位 SSR 小湘', goal: 1, value: (s, c) => (rarityOwned(s, c, 'SSR') ? 1 : 0), reward: 50 },
   { id: 'ur', group: '收藏', title: '奇蹟', hint: '遇見一位 UR 小湘', goal: 1, value: (s, c) => (rarityOwned(s, c, 'UR') ? 1 : 0), reward: 100 },

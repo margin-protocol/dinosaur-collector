@@ -49,7 +49,8 @@ import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitl
 import * as install from './install.js';
 import { CHARACTER_REPORTS, SERIES_REPORTS } from './errand-copy.js';
 import { PLACES, HOME_TASKS, STORIES, errandSlots, errandSlotHint, depart, collect, recall, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
-import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer } from './updates.js';
+import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer, serverTime } from './updates.js';
+import { noteServerTime } from './events.js';
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
 import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP } from './affection.js';
 const GAIN_ERRAND = BOND_GAIN.errand;
@@ -3466,6 +3467,7 @@ function fillWhatsNew(entries, freshVersions = new Set()) {
 async function showWhatsNew(tries = 0) {
   if (navigator.webdriver && !window.__testWhatsNew) return; // 自動化測試不跳更新內容
   const list = await loadChangelog();
+  if (serverTime) { const t = serverTime; void updateState(c => { noteServerTime(c, t.serverMs, t.deviceMs); }); }
   const fresh = unseen(list, { returning: isReturning() });
   $('updates-new').hidden = !fresh.length;
   if (!fresh.length) return;

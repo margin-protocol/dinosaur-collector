@@ -18,9 +18,13 @@ async function signature() {
   return tags.join('|');
 }
 
+// 最近一次從 GitHub Pages 拿到的伺服器時間
+export let serverTime = null;
 export async function loadChangelog() {
   try {
     const res = await fetch(`changelog.json?v=${Date.now()}`, { cache: 'no-store' });
+    const date = Date.parse(res.headers.get('date') || ''); // 異世活動的可信時間（events.js noteServerTime）
+    if (Number.isFinite(date)) serverTime = { serverMs: date, deviceMs: Date.now() };
     const list = await res.json();
     return Array.isArray(list) ? list.filter((e) => e && typeof e.version === 'string' && Array.isArray(e.items)) : [];
   } catch { return []; }

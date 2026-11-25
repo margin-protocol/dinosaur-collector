@@ -19,11 +19,22 @@ export const TEAM_BONDS = [
 export function ensureTeamBonds(state) {
   const old=state.teamBonds || {};
   state.teamBonds={unlocked:Object.fromEntries(Object.entries(old.unlocked || {}).filter(([id,v])=>TEAM_BONDS.some(b=>b.id===id)&&typeof v==='string')),presets:Array.from({length:5},(_,i)=>{const p=old.presets?.[i];return p&&Array.isArray(p.nos)&&p.nos.length===3&&new Set(p.nos).size===3&&p.nos.every(n=>CHARACTERS[n])?{name:String(p.name||`隊伍 ${i+1}`).slice(0,20),nos:[...p.nos]}:null;})};
+  state.teamBonds.runs=Object.fromEntries(Object.entries(old.runs||{}).filter(([,v])=>Number.isSafeInteger(v)&&v>0));
   return state.teamBonds;
 }
+// 兩人羈絆（2.0：例如此生護卿）只看那兩位好感滿級，第三位誰都可以；runs＝要先一起出戰幾次（共同討伐次數記在 teamBonds.runs）。
+// 一隊只算一組羈絆：同時符合好幾組時取效果最好的（戰力＋減時加起來最高）。
+const maxed=(state,n)=>Boolean(state.dex?.[n])&&(state.affection?.[n]?.pts||0)>=LEVELS[LEVELS.length-1];
 export function teamBond(state,nos) {
-  if(nos.length!==3||new Set(nos).size!==3||!nos.every(n=>state.dex?.[n]&&(state.affection?.[n]?.pts||0)>=LEVELS[LEVELS.length-1]))return null;
-  return TEAM_BONDS.find(b=>b.nos.every(n=>nos.includes(n))) || {id:'general',name:'一起長大的默契',power:.10,speed:0};
+  if(nos.length<2||new Set(nos).size!==nos.length)return null;
+  const hits=TEAM_BONDS.filter(b=>(b.nos.length>=3?nos.length===3:true)&&b.nos.every(n=>nos.includes(n)&&maxed(state,n))&&(!b.runs||(state.teamBonds?.runs?.[b.id]||0)>=b.runs));
+  if(hits.length)return hits.reduce((a,b)=>(b.power+b.speed)>(a.power+a.speed)?b:a);
+  return nos.length===3&&nos.every(n=>maxed(state,n))?{id:'general',name:'一起長大的默契',power:.10,speed:0}:null;
+}
+// 有 runs 條件的羈絆：這幾位一起出戰（不論好感）就記一次
+export function countBondRuns(state,nos) {
+  const data=ensureTeamBonds(state);
+  for(const b of TEAM_BONDS)if(b.runs&&b.nos.every(n=>nos.includes(n)))data.runs[b.id]=(data.runs[b.id]||0)+1;
 }
 export function discoverBond(state,nos,now=new Date()) {
   const b=teamBond(state,nos);if(!b||b.id==='general')return null;
