@@ -57,14 +57,12 @@ p{margin:0 0 1em}
 .cta svg{width:18px;height:18px}
 .cta-note{font-size:13px;color:var(--soft);margin:.9em 0 0}
 
-/* 分區導覽列（jump＝長頁跳轉；tabs＝分頁） */
+/* 分區跳轉列（湘 11/25 選長頁＋跳轉列） */
 .secnav{position:sticky;top:0;z-index:20;display:flex;justify-content:center;gap:4px;padding:10px 12px calc(10px);
   background:rgba(251,241,243,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .secnav a{flex:0 1 auto;text-decoration:none;font-size:15px;letter-spacing:.08em;color:var(--soft);padding:.35em .9em;border-radius:999px;white-space:nowrap}
 .secnav a.is-on{background:var(--accent);color:var(--accent-ink)}
 html{scroll-padding-top:62px}
-.tabs section.block{border-top:0!important;min-height:60vh}
-.tabs section.block:not(.is-on){display:none}
 
 /* ── Sections ── */
 section.block{padding:56px 0}
@@ -313,26 +311,13 @@ footer .latin{font-family:var(--latin);letter-spacing:.2em}
     else if (now >= start) el.textContent = '活動進行中';
   })();
 
-  // 分區導覽：?nav=tabs 分頁、預設 jump 長頁跳轉（湘選定後寫死）
+  // 分區跳轉列：滑到哪一區就亮哪一顆
   (function () {
-    var mode = 'jump';
-    try { var q = new URLSearchParams(location.search).get('nav'); if (q === 'tabs') mode = 'tabs'; } catch (e) {}
-    var nav = document.getElementById('secnav'); if (!nav) return;
+    var nav = document.getElementById('secnav'); if (!nav || !('IntersectionObserver' in window)) return;
     var links = [].slice.call(nav.querySelectorAll('a'));
-    var secs = links.map(function (a) { return document.getElementById(a.dataset.sec); });
     function mark(id) { links.forEach(function (a) { a.classList.toggle('is-on', a.dataset.sec === id); }); }
-    if (mode === 'tabs') {
-      document.documentElement.classList.add('tabs');
-      var show = function (id, scroll) {
-        secs.forEach(function (s) { s.classList.toggle('is-on', s.id === id); }); mark(id);
-        if (scroll && nav.getBoundingClientRect().top < 1) window.scrollTo({ top: nav.offsetTop, behavior: 'smooth' });
-      };
-      var start = location.hash.slice(1); show(secs.some(function (s) { return s.id === start; }) ? start : 'play', false);
-      links.forEach(function (a) { a.addEventListener('click', function (e) { e.preventDefault(); show(a.dataset.sec, true); history.replaceState(null, '', '#' + a.dataset.sec); }); });
-    } else if ('IntersectionObserver' in window) {
-      var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) mark(e.target.id); }); }, { rootMargin: '-45% 0px -50% 0px' });
-      secs.forEach(function (s) { io.observe(s); });
-    }
+    var io = new IntersectionObserver(function (es) { es.forEach(function (e) { if (e.isIntersecting) mark(e.target.id); }); }, { rootMargin: '-45% 0px -50% 0px' });
+    links.forEach(function (a) { var s = document.getElementById(a.dataset.sec); if (s) io.observe(s); });
   })();
 </script>
 </body>
