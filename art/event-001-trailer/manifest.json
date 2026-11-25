@@ -1,0 +1,218 @@
+{
+  "title": "十萬兩紅妝｜此生護卿",
+  "event": "頁間居民 · EVENT 001",
+  "created": "2026-11-25",
+  "sourceCommit": "ee84967",
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "durationSeconds": 60,
+  "video": "docs/review/event-001-trailer/event-001-shiwanliang-hongzhuang.mp4",
+  "timezone": "Asia/Taipei",
+  "music": "Original synthesized pentatonic string-like ambient score and paper/sword sound effects; no third-party recordings, no voice-over.",
+  "artTreatment": "Existing official illustrations are composited with pans/fades and vector ink, fog, petals, ribbons, and sword strokes. This is a motion-graphics trailer, not newly generated character animation.",
+  "storyboard": [
+    {
+      "start": 0,
+      "end": 3,
+      "title": "宣紙墨暈",
+      "text": "一紙紅妝。一場出逃。／頁間居民 · EVENT 001"
+    },
+    {
+      "start": 3,
+      "end": 8,
+      "title": "竹林花轎",
+      "text": "我要嫁給誰？怎麼都沒有人問過我？"
+    },
+    {
+      "start": 8,
+      "end": 12,
+      "title": "紙傀從霧中浮現",
+      "text": "紙人的臉上，畫著一模一樣的笑。"
+    },
+    {
+      "start": 12,
+      "end": 17,
+      "title": "墨色劍光・聞止水",
+      "text": "站我後面。"
+    },
+    {
+      "start": 17,
+      "end": 22,
+      "title": "十萬兩客棧",
+      "text": "活捉，十萬兩／我好貴喔。"
+    },
+    {
+      "start": 22,
+      "end": 25,
+      "title": "杜今朝",
+      "text": "靖安司辦案。"
+    },
+    {
+      "start": 25,
+      "end": 28,
+      "title": "徐汀云",
+      "text": "你想知道什麼？價錢另議。"
+    },
+    {
+      "start": 28,
+      "end": 31,
+      "title": "游未遲",
+      "text": "這身衣裳，我見過三次。"
+    },
+    {
+      "start": 31,
+      "end": 34,
+      "title": "林晏洄",
+      "text": "說話慢，你別急。"
+    },
+    {
+      "start": 34,
+      "end": 37,
+      "title": "程不言",
+      "text": "一方不曾允諾，何來兩姓之好？"
+    },
+    {
+      "start": 37,
+      "end": 40,
+      "title": "簡牧陽",
+      "text": "有什麼壞掉的，交給我！"
+    },
+    {
+      "start": 40,
+      "end": 45,
+      "title": "紅帖山莊・斷紅綢",
+      "text": "她說了，不嫁。"
+    },
+    {
+      "start": 45,
+      "end": 50,
+      "title": "正式主視覺",
+      "text": "十萬兩紅妝／此生護卿"
+    },
+    {
+      "start": 50,
+      "end": 54,
+      "title": "上下卷卡池",
+      "text": "上卷11/26 12:00、下卷11/29 12:00"
+    },
+    {
+      "start": 54,
+      "end": 60,
+      "title": "活動時間表",
+      "text": "上卷 11/26 12:00｜下卷 11/29 12:00｜討伐至 12/10｜墨玉閣至 12/17／SSR 聞止水・海棠新娘小湘 登場"
+    }
+  ],
+  "sources": [
+    {
+      "path": "assets/events/mo/key-visual.webp",
+      "sha256": "b813c2c6292f36a8d9f07e914a7c1d6b92bf3ae56b28af82f4b83105e568730a"
+    },
+    {
+      "path": "assets/events/mo/pool-up.webp",
+      "sha256": "bba752aacd0771da99315c30b9b88d8c5d0783947132545e4acae60b8deae45d"
+    },
+    {
+      "path": "assets/events/mo/pool-down.webp",
+      "sha256": "591850bd2da46c0f52ff8dc09afc5eed64481f16bbc939ce0721ad9111d1f4d5"
+    },
+    {
+      "path": "assets/characters/siang-117-haitang-bride.webp",
+      "sha256": "0a192015c48afcd678f4ebae9f2b2f8d168f18cf63cc15c008e2175512258d67"
+    },
+    {
+      "path": "assets/characters/mo-001-wen-zhishui.webp",
+      "sha256": "b923e11dedfa56d49b081500644a000c41a18f3813f83671217cb34261b0e313"
+    },
+    {
+      "path": "assets/enemies/event-mo/mo-01-wedding-puppet.webp",
+      "sha256": "ac53c90aa53933034906d063cd2844cb5a1f9c3f5877b812ca96423480ba97bb"
+    },
+    {
+      "path": "assets/characters/mo-005-du-jinzhao.webp",
+      "sha256": "43230ec9cbb2de70f1173781529e11e375561458a93931b29bce4d88abaf05b8"
+    },
+    {
+      "path": "assets/characters/mo-004-xu-tingyun.webp",
+      "sha256": "86b4f839658132e1df45d3b3d90af35f446bb263a3800bc9860e4275e3ac2330"
+    },
+    {
+      "path": "assets/characters/mo-003-you-weichi.webp",
+      "sha256": "9a8004a23bddfdbdb1c773edf009927b0345bf98be92ce9f1d393ca259f7eafa"
+    },
+    {
+      "path": "assets/characters/mo-007-lin-yanhui.webp",
+      "sha256": "c1973fe72adf3f88e599f69f4b8ec737f035517834ce53ae0eaf4dc6a52440bb"
+    },
+    {
+      "path": "assets/characters/mo-006-cheng-buyan.webp",
+      "sha256": "cd30fc9e28bb23b3c87f8c65d527d1164415c532b8b69b5b5afe126aad439be1"
+    },
+    {
+      "path": "assets/characters/mo-008-jian-muyang.webp",
+      "sha256": "dd3682a699d0b32c999f5d374b9a8661ea35dc05c77d09ef7cd505bcb10e6694"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-01-bamboo-sedan.webp",
+      "sha256": "770af4998f9b5f8b74fa44be5c19cb7b9c23b5334dda3a1b8c60305b92d72eed"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-02-inn.webp",
+      "sha256": "43c412ba07e4844efd883c849b53f0de4bd9d366f7228e50c8f8166a55e82258"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-03-long-street.webp",
+      "sha256": "d23cc050dfe4911d018775e12d42cda26efae85f9ae97069651a581fbfff7855"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-04-misty-river.webp",
+      "sha256": "250cff04e8030ca58c7af4cfbd8d46c19d535dfa4677f0cd44962fd25c15d157"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-05-ruined-temple.webp",
+      "sha256": "23af28f5d09ee404f2a9e0895ca5cb82cb3c734e427a3cc9bc92719c6154c046"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-06-peach-village.webp",
+      "sha256": "57e19d9cfe616d134ee1dba45dd39400eff6c77c76728e905fc4d6053bc614e1"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-07-ghost-market.webp",
+      "sha256": "6691df5b9ab5f219bed5082d9a2de4ca0c04a3b33d26a489b97d3b0e6d12421c"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-08-old-mortuary.webp",
+      "sha256": "cee3e8675b87485ce9d2cda3e515abcdb82ea9c97a881ca06ff2dcbbf1f73fbc"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-09-red-manor.webp",
+      "sha256": "d3c3ccd5a3691288b0ad0719cbbd48220d52dcf049e27435fcbf783273f4bae8"
+    },
+    {
+      "path": "assets/scene/event-mo/mo-10-altar.webp",
+      "sha256": "b77418476e95549597804f73dcae350d647397dabea9d76e0193ce927e785332"
+    }
+  ],
+  "delivery": {
+    "videoBytes": 24514861,
+    "videoSha256": "9e5430eec361ecae8be6b510863ab89894da2beb82d089ce15959be53aedef11",
+    "videoCodec": "H.264",
+    "audioCodec": "AAC",
+    "audioSampleRate": 48000,
+    "audioChannels": 2,
+    "measuredMeanVolumeDb": -20.1,
+    "measuredMaxVolumeDb": -2.2
+  },
+  "verification": {
+    "fullDecode": "pass",
+    "mobileWidths": [
+      360,
+      390,
+      430
+    ],
+    "playAndSeek": "pass",
+    "stillsAndDownload": "pass",
+    "horizontalOverflow": false,
+    "browserErrors": []
+  }
+}
