@@ -12,17 +12,21 @@
 .battle-theater__progress i { flex:1; height:3px; border-radius:3px; background:var(--t-line); opacity:.5; }
 .battle-theater__progress .is-done { background:var(--t-accent); opacity:1; }
 .battle-theater__stage { position:relative; aspect-ratio:4/3; isolation:isolate; overflow:hidden; border-radius:14px; background-color:var(--t-raised); background-size:cover; background-position:center; }
-.battle-theater__enemy { position:absolute; right:3%; top:5%; width:46%; height:70%; display:grid; place-items:center; transition:opacity .4s,transform .4s; }
+.battle-theater__enemy { position:absolute; right:2%; top:6%; width:40%; height:62%; display:grid; place-items:center; transition:opacity .4s,transform .4s; }
 .battle-theater__enemy img { width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 8px 8px #0003); }
 .battle-theater__enemy-fallback { font-size:64px; }
-.battle-theater__allies { display:flex; align-items:flex-end; position:absolute; left:10%; bottom:2%; width:75%; height:72%; }
-.battle-theater__actor { position:relative; flex:1; min-width:0; height:87%; transform-origin:50% 90%; transition:opacity .3s; }
-.battle-theater__actor img { display:block; width:180%; margin-left:-40%; height:100%; object-fit:contain; filter:drop-shadow(0 5px 5px #0003); }
+/* 站位 B 前後排（湘 11/25 嫌三位疊在一起太擠）：第一位站前面中間，另外兩位在後排左右 */
+.battle-theater__allies { position:absolute; left:0; bottom:2%; width:62%; height:74%; }
+.battle-theater__actor { position:absolute; bottom:0; left:27%; width:46%; height:86%; z-index:2; transform-origin:50% 90%; transition:opacity .3s; }
+.battle-theater__actor:nth-child(2) { left:0; bottom:13%; height:66%; z-index:1; }
+.battle-theater__actor:nth-child(3) { left:54%; bottom:13%; height:66%; z-index:1; }
+.battle-theater__actor:only-child { left:20%; width:60%; }
+.battle-theater__actor img { display:block; width:100%; height:100%; object-fit:contain; filter:drop-shadow(0 5px 5px #0003); }
 .is-busy-scene .battle-theater__actor img { filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 4px #fff8f4cc) drop-shadow(0 5px 6px #0005); }
 .is-busy-scene .battle-theater__enemy img { filter:drop-shadow(0 0 1.5px #fff9) drop-shadow(0 8px 10px #0006); }
 .battle-theater[data-scene="attack"] .is-busy-scene .battle-theater__actor:not(.is-active) { opacity:.82; }
 .battle-theater[data-scene="attack"] .battle-theater__actor:not(.is-active) { opacity:.65; }
-.battle-theater[data-scene="attack"] .is-animating .is-active { z-index:1; animation:battle-ally-step .9s ease-in-out both; }
+.battle-theater[data-scene="attack"] .is-animating .is-active { z-index:3; animation:battle-ally-step .9s ease-in-out both; }
 .battle-theater[data-scene="attack"] .is-animating .battle-theater__enemy { animation:battle-enemy-hit .7s .3s ease-out both; }
 .battle-theater__impact { position:absolute; right:22%; top:33%; width:32px; aspect-ratio:1; border-radius:50%; background:radial-gradient(circle,#fff5,transparent 65%); opacity:0; pointer-events:none; }
 .battle-theater[data-scene="attack"] .is-animating .battle-theater__impact { animation:battle-impact .65s .25s ease-out; }
