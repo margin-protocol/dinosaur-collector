@@ -19,6 +19,7 @@ async function setup({hoursIn,cleared=[],tokens=0}){
 }
 const shot=async(name,sel)=>{if(!process.env.SHOT)return;const l=p.locator(sel).first();await l.scrollIntoViewIfNeeded();await p.evaluate(s=>document.querySelector(s).scrollIntoView({block:'start'}),sel);await p.waitForTimeout(250);await p.screenshot({path:`${process.env.SHOT}/${name}-${process.env.LOOK||'a'}-${W}.png`});};
 // 沒排日期：不顯示
+await p.evaluate(async()=>{const E=await import('/js/events.js');E.EVENT_DEFS.mo.start=null;});
 await p.evaluate(()=>document.getElementById('open-battle')?.click());await p.waitForTimeout(400);
 assert.equal(await p.locator('.event-hub').count(),0,'start:null 不顯示');
 await p.keyboard.press('Escape');

@@ -16,7 +16,7 @@ if(W===(process.env.W?Number(process.env.W):360)){
     const mine=secrets.find(([n])=>n===no)[1];
     const dish=KI.dishById(mine);
     return {free100:!E.CHARACTERS['100'],c:E.CHARACTERS[no],series:E.SERIES.bride,lastKey:Object.keys(E.CHARACTERS).filter(k=>/^\d+$/.test(k)).at(-1),
-      pools:Object.values(E.EGGS).filter(e=>e.pool?.[no]).map(e=>e.id).sort(),w:[E.EGGS.ordinary.pool[no],E.EGGS.cipher.pool[no],E.EGGS.star.pool[no]],
+      pools:Object.values(E.EGGS).filter(e=>e.id!=='mohen'&&e.pool?.[no]).map(e=>e.id).sort(),w:[E.EGGS.ordinary.pool[no],E.EGGS.cipher.pool[no],E.EGGS.star.pool[no]],
       has:[I.INTROS[no],I.MYSTERY_INTROS[no],B.BOND_STORIES[no],B.BOND_LINES[no]?.[2],B.BOND_LINES[no]?.[4],B.BOND_LINES[no]?.[5],X.EXTRA_LINES[no]?.hatch,X.EXTRA_LINES[no]?.dispatch,X.EXTRA_LINES[no]?.victory,X.EXTRA_LINES[no]?.defeat,K.KITCHEN_LINES[no]?.[3],K.KITCHEN_LINES[no]?.[2],K.KITCHEN_LINES[no]?.[1],K.KITCHEN_LINES[no]?.[0],R.CHARACTER_REPORTS[no]?.conv?.[0],R.CHARACTER_REPORTS[no]?.park?.[0],R.CHARACTER_REPORTS[no]?.market?.[0],R.CHARACTER_REPORTS[no]?.mountain?.[0],R.CHARACTER_REPORTS[no]?.faraway?.[0],V.WISH_VOICE_LATE[no]?.color?.includes('{color}'),V.WISH_VOICE_LATE[no]?.other?.includes('{wish}')].map(Boolean),
       hehe:(copy.match(/嘿嘿/g)||[]).length,heheAt:[X.EXTRA_LINES[no].hatch,B.BOND_LINES[no][5],K.KITCHEN_LINES[no][3]].map(s=>s.includes('嘿嘿')),
       stars:(copy.match(/\*\*/g)||[]).length,oiran:/花魁|遊廓/.test(copy),

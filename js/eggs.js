@@ -126,6 +126,19 @@ export const EGGS = {
     byCounty: true, // 固定孵出該縣市的小湘（見 rollFor）
     // 正式三層素材：assets/eggs/county/{shell,glow,cracks}.webp
   },
+  // 墨痕蛋（2.0 · 湘 11/25）：墨痕江湖活動卡池。只從墨玉閣兌換（每期最多 5 顆），不進其他蛋、也不進星光蛋
+  // 海棠新娘（117）、聞止水（MO-001）湘 11/25 決定只在這裡出；MO-003 以後的居民做好再加
+  mohen: {
+    id: 'mohen',
+    name: '墨痕蛋',
+    code: 'MO',
+    warmthNeeded: 150,
+    hatches: null,
+    stocked: true,
+    world: 'mo',
+    pool: { 'MO-001': 1, '117': 1 },
+    // 素材：assets/eggs/mohen/{shell,glow,cracks}.webp（還沒有，先用占位）
+  },
   star: {
     id: 'star',
     name: '星光蛋',

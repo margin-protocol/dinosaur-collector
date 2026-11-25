@@ -23,7 +23,7 @@ export const EVENT_DEFS = {
     name: '異世・墨痕江湖',
     subtitle: '十萬兩紅妝',
     tagline: '江湖有盡，書頁無涯。',
-    start: null,
+    start: '2026-11-26T12:00:00+08:00', // 湘 11/25：明天開始（中午 12 點）；下卷 11/29 12:00、討伐到 12/10、墨玉閣到 12/17
     battleDays: 14,
     shopDays: 21,
     token: { id: 'moyu', name: '墨玉', icon: '🪨' },
@@ -63,7 +63,7 @@ export const EVENT_DEFS = {
     // 墨玉閣：reward.type 由 applyShopReward 處理；soon:true 的商品還沒做好，不顯示、不能買
     shop: [
       { id: 'wen', name: '墨衣護衛・聞止水', cost: 500, limit: 1, reward: { type: 'character', no: 'MO-001' } },
-      { id: 'mohen-egg', name: '墨痕蛋', cost: 80, limit: 5, reward: { type: 'egg', egg: 'mohen' }, soon: true }, // 墨痕蛋（活動卡池）做好再打開
+      { id: 'mohen-egg', name: '墨痕蛋', cost: 80, limit: 5, reward: { type: 'egg', egg: 'mohen' } }, // 墨痕蛋＝活動卡池
       { id: 'title', name: '限定稱號「執筆入江湖」', cost: 150, limit: 1, reward: { type: 'title', id: 'mo-pen' } },
       { id: 'theme', name: '限定主題「煙雨渡口」', cost: 200, limit: 1, reward: { type: 'theme', id: 'yanyu' }, soon: true },
       { id: 'recipe', name: '限定料理食譜', cost: 60, limit: 1, reward: { type: 'recipe', id: 'mo-recipe' }, soon: true },

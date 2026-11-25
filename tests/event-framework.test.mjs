@@ -15,8 +15,9 @@ const clearAll = (state, ids) => { ensureEvents(state); for (const id of ids) st
 const UP = def.phases[0].stages, DOWN = def.phases[1].stages;
 
 test('unscheduled event stays hidden and locked', () => {
-  assert.equal(schedule(def, Date.now()).state, 'unscheduled');
-  assert.match(stageLock({}, def, 'mo-01', Date.now()), /還沒開始/);
+  const old = def.start; def.start = null;
+  try { assert.equal(schedule(def, Date.now()).state, 'unscheduled');
+  assert.match(stageLock({}, def, 'mo-01', Date.now()), /還沒開始/); } finally { def.start = old; }
 });
 
 test('schedule: down volume opens 72h after global start, battle 14 days, shop 21 days', () => withStart(() => {
@@ -147,3 +148,15 @@ test('event battle win records clears and tokens', () => withStart(() => {
   assert.ok(res.gains.some((g) => g.includes('墨玉 +36')));
   assert.ok(s.events.mo.story['mo-01:clear']);
 }));
+
+test('墨痕蛋: only 117 and MO-001, not in star pool or other eggs, sold in 墨玉閣', async () => {
+  const { EGGS } = await import('../js/eggs.js');
+  assert.deepEqual(Object.keys(EGGS.mohen.pool).sort(), ['117', 'MO-001']);
+  for (const id of Object.keys(EGGS)) if (id !== 'mohen') { assert.equal(EGGS[id].pool?.['117'], undefined, id); assert.equal(EGGS[id].pool?.['MO-001'], undefined, id); }
+  withStart(() => {
+    const s = { dex: {}, gifts: { eggs: [] } }; ensureEvents(s); s.events.mo.tokens = 500;
+    for (let i = 0; i < 5; i++) assert.equal(typeof buy(s, def, 'mohen-egg', h(1)), 'object');
+    assert.match(buy(s, def, 'mohen-egg', h(1)), /換完/);
+    assert.equal(s.gifts.eggs.filter((e) => e.egg === 'mohen').length, 5);
+  });
+});

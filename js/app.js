@@ -511,19 +511,21 @@ function renderGrowth() {
   $('growth-action').textContent = pending ? ({ daily: '去實現今日願望 ⟶', incubate: '前往培育 ⟶', errands: '派小湘出門 ⟶', home: '回首頁 ⟶', dex: '看看圖鑑 ⟶', kitchen: '去小湘廚房 ⟶', battle: '去對戰 ⟶', achievements: '看看成就 ⟶' }[pending.destination] || '前往培育 ⟶') : chapter.goals.some(g => !goalProgress(state, g).claimed) ? '領取已完成的願望' : '看看今日願望 ⟶';
 }
 
+// 存在 gifts.eggs 裡的蛋（暗號、紀念、約會、星光、墨痕）
+const GIFT_EGGS = ['cipher', 'keepsake', 'date', 'star', 'mohen'];
 // 從蛋庫取出的蛋（願望蛋、縣市蛋）
 function eggStock(s, id) {
   if (id === 'wish') return s.wishEgg?.stock || 0;
   if (id === 'county') return s.travel?.eggs?.length || 0;
   if (id === 'weather') return s.weather?.stock || 0;
-  if (id === 'cipher' || id === 'keepsake' || id === 'date' || id === 'star') return s.gifts?.eggs?.filter(e => e.egg === id).length || 0;
+  if (GIFT_EGGS.includes(id)) return s.gifts?.eggs?.filter(e => e.egg === id).length || 0;
   return 0;
 }
 function returnEgg(s, egg) {
   if (egg.id === 'wish') s.wishEgg.stock += 1;
   if (egg.id === 'county' && egg.county) s.travel.eggs.unshift(egg.county);
   if (egg.id === 'weather') s.weather.stock += 1;
-  if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date' || egg.id === 'star') s.gifts.eggs.unshift({ egg: egg.id, ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
+  if (GIFT_EGGS.includes(egg.id)) s.gifts.eggs.unshift({ egg: egg.id, ...(egg.character ? { character: egg.character } : {}), from: 'returned', at: egg.since });
 }
 function takeEgg(s, egg, county, character) {
   if (egg.id === 'wish') s.wishEgg.stock -= 1;
@@ -532,7 +534,7 @@ function takeEgg(s, egg, county, character) {
     egg.county = s.travel.eggs.splice(Math.max(i, 0), 1)[0];
   }
   if (egg.id === 'weather') s.weather.stock -= 1;
-  if (egg.id === 'cipher' || egg.id === 'keepsake' || egg.id === 'date' || egg.id === 'star') {
+  if (GIFT_EGGS.includes(egg.id)) {
     let i = character ? s.gifts.eggs.findIndex(e => giftMatch(e, egg.id, character)) : -1;
     if (i < 0) i = s.gifts.eggs.findIndex(e => e.egg === egg.id);
     const [gift] = s.gifts.eggs.splice(i, 1);
@@ -569,6 +571,8 @@ function canChooseEgg(current, id) {
 
 // 選擇蛋：先選六個分類（普通、願望、天氣、縣市、暗號、紀念），再選那一類裡的蛋
 const EGG_CATEGORIES = ['ordinary', 'wish', 'weather', 'county', 'cipher', 'keepsake', 'date', 'star'];
+// 異世活動的蛋：有排活動、或手上／架上有這種蛋才顯示分類
+const eggCategories = () => EGG_CATEGORIES.concat(['mohen'].filter(id => eggStock(state, id) || state.egg.id === id || state.shelf.some(x => x.id === id) || events.activeEvents(state, Date.now()).some(x => x.def.world === EGGS[id].world)));
 let eggCategory = null;
 const eggArt = (egg, pct = 0) => { const art = document.createElement('div'); art.className = 'egg-choice__art'; art.setAttribute('aria-hidden', 'true'); const v = createEggView(egg); v.setProgress(pct); art.append(v.el); return art; };
 const swapLabel = () => sideTarget !== null ? (pickBlocked() ? '暫放架滿了，先孵完一顆' : state.shelf[sideTarget] ? '換進這一格副架' : '放進這一格副架') : shelfFull(state) ? '暫放架滿了，先孵完一顆' : state.egg.warmth > 0 ? '換這顆（目前的蛋會暫放）' : '選擇這顆蛋';
@@ -714,7 +718,7 @@ function renderEggChoices() {
     $('egg-picker-title').textContent = '選擇培育的蛋';
     $('egg-picker-note').textContent = firstHatched ? `先選一個分類。換蛋時，已經注入能量的蛋會放上暫放架（最多 ${SHELF_MAX} 顆），進度不會消失。` : '本源蛋是首次相遇的禮物；完成第一次孵化後，就能培育其他的蛋。';
    }
-    const tiles = EGG_CATEGORIES.map(id => {
+    const tiles = eggCategories().map(id => {
       const egg = EGGS[id]; const info = categoryInfo(id);
       const tile = document.createElement('button'); tile.type = 'button'; tile.className = 'egg-cat'; tile.dataset.cat = id; tile.disabled = !firstHatched;
       tile.setAttribute('aria-pressed', String(info.current && sideTarget === null));
@@ -750,7 +754,7 @@ function renderEggChoices() {
   else if (['keepsake', 'date'].includes(eggCategory) && state.gifts.eggs.some(g => g.egg === eggCategory)) fresh = [...(mainHere(eggCategory) ? [eggCard(egg)] : []), ...giftCards(eggCategory)];
   else fresh = [eggCard(egg)];
   if (!fresh.length) fresh = [eggCard(egg)];
-  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣或徽章兌換時收到，固定孵出蛋裡指定的小湘。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。', star: '月簽到同一個月累積 28 天就會收到，裡面一定是 SR 以上的小湘。' }[eggCategory];
+  const detailText = { ordinary: '隨時都能培育的蛋，隨機遇見各種小湘。', wish: '三個願望全部完成的日子各得一枚願望印記，集滿 3 枚換一顆。', weather: '每天第一次感應到天氣時取得（需允許定位），每天最多一顆、最多存 2 顆。孵化時，當天的天氣會讓對應的天氣小湘更容易出現：晴天、陰天、下雨、打雷、起霧、大風、下雪、冰雹；雨後放晴有彩虹、黃昏有夕陽；感應過 4 種天氣後，天氣觀測師也會來。', county: '每天第一次按「探索附近」都會收到一顆蛋，大多是當地的縣市蛋（固定孵出當地的小湘），偶爾是願望蛋或天氣蛋。第一次到新縣市一定是縣市蛋。', cipher: '輸入湘給的暗號、完成她的委託時取得。', keepsake: '節日、小湘生日、走遍臺灣或徽章兌換時收到，固定孵出蛋裡指定的小湘。', mohen: '異世活動「墨痕江湖」的活動卡池：在墨玉閣用墨玉兌換，會遇見墨痕江湖的居民。', date: '見面時掃描湘的約會 QR Code 取得，會遇見約會小湘或蝰蝰♡。', star: '月簽到同一個月累積 28 天就會收到，裡面一定是 SR 以上的小湘。' }[eggCategory];
   $('egg-picker-note').textContent = detailText;
   const odds = egg.pool ? Object.assign(document.createElement('button'), { type: 'button', className: 'egg-odds-link', textContent: '📊 看這種蛋的機率表' }) : null;
   if (odds) odds.dataset.odds = egg.id;
@@ -815,6 +819,7 @@ function eggCard(egg) {
         : egg.id === 'weather' ? `持有 ${stock} 顆（每天第一次感應到天氣時取得）`
         : egg.id === 'cipher' ? `持有 ${stock} 顆（輸入湘給的暗號、完成她的委託時取得）`
         : egg.id === 'star' ? `持有 ${stock} 顆（月簽到滿 28 天取得，一定是 SR 以上）`
+        : egg.id === 'mohen' ? `持有 ${stock} 顆（墨痕江湖活動期間，在墨玉閣用墨玉兌換）`
         : egg.id === 'date' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'date').map(e => CHARACTERS[e.character]?.name || '隨機').join('、')}` : '見面時掃描湘的約會 QR Code 取得')
         : egg.id === 'keepsake' ? (stock ? `持有 ${stock} 顆：${state.gifts.eggs.filter(e => e.egg === 'keepsake').map(e => CHARACTERS[e.character]?.name).join('、')}` : '節日、小湘生日、走遍臺灣時會收到')
         : stock ? `另外還有 ${stock} 顆，列在下面，可以自己選` : '到新的縣市按「探索」，那裡的小湘就會想出現';
@@ -2188,7 +2193,7 @@ function howToGet(c) {
     return state.dex[c.no] ? '開發團隊限定：達成條件後收到紀念蛋' : `開發團隊限定：${p}`;
   }
   if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
-  if (c.no === '117' || c.no === 'MO-001') return '異世活動「墨痕江湖」的活動卡池（即將登場）';
+  if (c.no === '117' || c.no === 'MO-001') return c.no === 'MO-001' ? '異世活動「墨痕江湖」：墨痕蛋（活動卡池），或在墨玉閣用 500 墨玉直接兌換' : '異世活動「墨痕江湖」：墨痕蛋（活動卡池）';
   const eggs = Object.values(EGGS).filter(e => activePool(e)?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
 }
