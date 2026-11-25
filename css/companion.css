@@ -772,6 +772,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .kitchen-ings { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-bottom:10px; }
 .kitchen-ing { display:grid; justify-items:center; gap:1px; padding:8px 2px; border-radius:12px; border:1px solid #ffffff22; background:#ffffff0a; color:inherit; font:12px var(--font-display); min-width:0; }
 .kitchen-ing__icon { font-size:22px; line-height:1.15; }
+.kitchen-ing__icon img { display:block; width:30px; height:30px; margin:-4px auto -1px; object-fit:contain; }
 .kitchen-ing b { font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:100%; }
 .kitchen-ing small { font:11px var(--font-body); opacity:.75; }
 .kitchen-ing[aria-pressed="true"] { border-color:#ffd9a8; background:#ffd9a826; }

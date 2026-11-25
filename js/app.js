@@ -3821,7 +3821,7 @@ function renderKitchen() {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'kitchen-ing'; btn.dataset.ing = i.id;
     btn.disabled = !n && !kitchenPicked.includes(i.id); btn.setAttribute('aria-pressed', String(kitchenPicked.includes(i.id)));
     btn.innerHTML = '<span class="kitchen-ing__icon" aria-hidden="true"></span><b></b><small></small>';
-    btn.querySelector('span').textContent = i.icon; btn.querySelector('b').textContent = i.name;
+    if (i.art) { const img = document.createElement('img'); img.src = i.art; img.alt = ''; btn.querySelector('span').append(img); } else btn.querySelector('span').textContent = i.icon; btn.querySelector('b').textContent = i.name;
     btn.querySelector('small').textContent = n ? `× ${n}` : i.event ? '活動限定' : `第 ${i.chapter} 章`;
     btn.addEventListener('click', () => { kitchenPicked = kitchenPicked.includes(i.id) ? kitchenPicked.filter(x => x !== i.id) : [...kitchenPicked, i.id].slice(-3); renderKitchen(); });
     return btn;

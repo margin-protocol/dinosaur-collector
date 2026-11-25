@@ -24,9 +24,9 @@ export const INGREDIENTS = [
   { id: 'sakura', name: '櫻花蜜', short: '櫻花', tag: '果香', icon: '🌸', chapter: 4 },
   { id: 'matcha', name: '抹茶粉', short: '抹茶', tag: '清涼', icon: '🍵', chapter: 4 },
   // 墨痕江湖活動食材（11/25）：只從活動關卡掉落，活動結束後手上的照樣能煮
-  { id: 'osmanthus', name: '金桂', short: '金桂', tag: '濃甜', icon: '🌼', event: 'mo' },
-  { id: 'bamboo', name: '雨後竹筍', short: '竹筍', tag: '清涼', icon: '🎋', event: 'mo' },
-  { id: 'plum', name: '青梅釀', short: '青梅', tag: '果香', icon: '🍶', event: 'mo' },
+  { id: 'osmanthus', name: '金桂', short: '金桂', tag: '濃甜', icon: '🌼', event: 'mo', art: 'assets/kitchen/event-mo/osmanthus.webp' },
+  { id: 'bamboo', name: '雨後竹筍', short: '竹筍', tag: '清涼', icon: '🎋', event: 'mo', art: 'assets/kitchen/event-mo/bamboo.webp' },
+  { id: 'plum', name: '青梅釀', short: '青梅', tag: '果香', icon: '🍶', event: 'mo', art: 'assets/kitchen/event-mo/plum.webp' },
 ];
 export const BASE_INGREDIENTS = INGREDIENTS.filter((i) => !i.event);
 export const ING = Object.fromEntries(INGREDIENTS.map((i) => [i.id, i]));
