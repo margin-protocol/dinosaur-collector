@@ -413,7 +413,7 @@ const localDay = (now = new Date()) => `${now.getFullYear()}-${String(now.getMon
 // 拿到之後才進蛋池（湘 11/21 選「普通蛋＋星光蛋」）：加班皮寶、崩潰德寶、非酋／歐皇三部曲
 // 湘 11/23：勇者小隊（062–064，徽章兌換）也照同樣規則
 // 只有自己圖鑑裡已經有的才會出現，權重跟該蛋同稀有度的小湘一樣
-export const JOIN_WHEN_OWNED = ['062', '063', '064', '086', '087', '101', '102', '103', '104', '105', '106'];
+export const JOIN_WHEN_OWNED = ['062', '063', '064', '086', '087', '101', '102', '103', '104', '105', '106', 'MO-009', 'MO-010', 'MO-011']; // 頁邊江湖三寶（湘 11/26）也是拿到就進
 export const OWNED_WEIGHT = { ordinary: { SR: 2, SSR: 0.6, UR: 0.3 }, star: { SR: 3, SSR: 1, UR: 1 } };
 export function activePool(egg, now = new Date(), dex = null) {
   if (!egg?.pool) return null;

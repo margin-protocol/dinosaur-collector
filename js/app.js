@@ -2211,6 +2211,8 @@ function howToGet(c) {
   if (ev) return `${ev.when} 打開遊戲收到紀念蛋；${CHARACTERS[c.no].poolFrom ? `${CHARACTERS[c.no].poolFrom.slice(5).replace('-', '/')} 起普通蛋也孵得到` : ''}`;
   const h = HOLIDAYS.find(x => x.no === c.no);
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
+  if (c.series === 'studio' && state.dex[c.no]) { const eggs = Object.values(EGGS).filter(e => !e.mix && activePool(e, new Date(), state.dex)?.[c.no]).map(e => e.name); return `頁邊江湖隱藏收藏（墨痕江湖活動限定）${eggs.length ? `；已經加入收藏，現在${eggs.join('、')}也孵得到` : ''}`; } // 湘 11/26：拿到就進蛋池
+  if (c.series === 'studio' && c.no !== studio.CHIEF) return '頁邊江湖隱藏收藏：在墨痕江湖活動裡仔細找找看……';
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const st = lab.labStatus(state); const brewing = st?.recipe.id === recipe.id; return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
   if (c.badge) { const h = battle.heroStatus(state, c.no); const joined = JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no] ? Object.values(EGGS).filter(e => (e.mix ? e.pool[c.no] : activePool(e, new Date(), state.dex)?.[c.no])).map(e => e.name) : []; return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換專屬蛋，培育後固定孵出${h.requireText ? `（${h.requireText}）` : ''}${joined.length ? `；已經加入收藏，現在${joined.join('、')}也孵得到` : ''}`; }

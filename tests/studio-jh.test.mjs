@@ -2,7 +2,7 @@
 import assert from 'node:assert/strict';
 import * as S from '../js/studio-jh.js';
 import { RECIPES } from '../js/recipes.js';
-import { CHARACTERS, EGGS } from '../js/eggs.js';
+import { CHARACTERS, EGGS, activePool, JOIN_WHEN_OWNED } from '../js/eggs.js';
 import { ACHIEVEMENTS } from '../js/achievements.js';
 
 const fresh = () => ({ dex: {}, gifts: { eggs: [] }, events: { mo: { stages: {} } } });
@@ -44,6 +44,11 @@ const rc = RECIPES.find((r) => r.id === 'margin-chief');
 assert.deepEqual([rc.target, ...rc.members, rc.days, rc.secret], ['MO-011', 'MO-009', 'MO-010', 2, true]);
 assert.equal(CHARACTERS['MO-011'].rarity, 'UR');
 for (const egg of Object.values(EGGS)) for (const no of ['MO-009', 'MO-010', 'MO-011']) assert.ok(!egg.pool?.[no], `${no} 不在 ${egg.id} 蛋池`);
+// 湘 11/26：拿到了就進普通蛋＋星光蛋
+for (const no of ['MO-009', 'MO-010', 'MO-011']) assert.ok(JOIN_WHEN_OWNED.includes(no));
+assert.ok(!activePool(EGGS.ordinary, new Date(), {})['MO-011']);
+assert.equal(activePool(EGGS.ordinary, new Date(), { 'MO-011': {} })['MO-011'], 0.3);
+assert.ok(activePool(EGGS.star, new Date(), { 'MO-009': {} })['MO-009'] > 0);
 for (const id of ['jh-pibao', 'jh-debao', 'jh-chief', 'jh-branch']) assert.ok(ACHIEVEMENTS.find((a) => a.id === id)?.secret, id);
 // 開放時間：下卷 11/29 12:00（台北）
 assert.equal(S.isOpen(Date.parse('2026-11-29T03:59:59Z')), false); assert.equal(S.isOpen(Date.parse('2026-11-29T04:00:00Z')), true);
