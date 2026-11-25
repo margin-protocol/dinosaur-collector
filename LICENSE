@@ -1,0 +1,20 @@
+Copyright © 2026 頁邊協定 Margin Protocol. All rights reserved.
+
+本專案「頁間居民｜Between the Pages」（原名「小湘收集器」）的所有內容，
+包含程式碼、角色設定、劇情與文案、美術圖像、介面設計與其他素材，
+著作權皆屬頁邊協定所有，保留所有權利。
+
+公開在 GitHub 上只是為了架設網站，不代表授權。
+未經頁邊協定書面同意，不得複製、修改、散布、重新發布、
+用於其他作品、商業用途或 AI 訓練。
+
+All content in this repository — including source code, characters,
+story and text, artwork, interface design and other assets — is the
+exclusive property of 頁邊協定 Margin Protocol. Being publicly viewable
+does not grant any license. No part may be copied, modified, distributed,
+republished, or used in other works, for commercial purposes or for AI
+training without prior written permission.
+
+例外：vendor/ 與 js/vendor/ 內的第三方套件依其原本的授權條款。
+Exception: third-party libraries under vendor/ and js/vendor/ remain under
+their own licenses.

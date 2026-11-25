@@ -243,3 +243,4 @@ body:not([data-view="home"]) .scene { filter: brightness(0.4); }
 .dex-origin__list dd { margin: 1px 0 0; font: 14px var(--font-display); color: var(--ivory); overflow-wrap: anywhere; }
 .dex-origin__quote { margin: 12px 0 0; padding-top: 10px; border-top: 1px solid var(--t-line, #ad96b13d); font-size: 12px; font-style: italic; line-height: 1.8; color: var(--silver); }.dex-world[aria-selected="true"] .dex-world__seal, .dex-world[aria-selected="true"] small { color: inherit; }
 
+.fine.copyright { margin-top: 0; font-size: 10.5px; opacity: .75; letter-spacing: .04em; }
