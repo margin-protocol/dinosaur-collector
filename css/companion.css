@@ -1108,3 +1108,28 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .explore-pill.is-gifted.is-compact .explore-pill__tag { display:block; position:absolute; left:calc(100% + 6px); top:50%; transform:translateY(-50%); padding:3px 9px; border-radius:999px; background:var(--t-panel, #2a2236cc); border:1px solid var(--t-accent, #f4c6db); color:var(--t-text, var(--ivory)); font:11px/1.5 var(--font-body); font-style:normal; white-space:nowrap; }
 .explore-pill.is-gifted.is-compact .explore-pill__tag::before { content:'🎁 '; }
 .county-call__note.is-gift { display:block; padding:6px 12px; border-radius:12px; border:1px solid var(--t-line, #c9a8ff66); background:var(--t-selected, #ffffff10); color:var(--t-text, var(--ivory)); line-height:1.7; }
+
+/* ── 異世活動（2.0 · 墨痕江湖）：跟著主題色，不用整片黑底；朱紅只用在印章和小重點 */
+.event-hub { --cinnabar:#c2413a; --ink-gold:#b08a4e; }
+.event-banner { position:relative; overflow:hidden; margin-bottom:10px; padding:14px 14px 12px; border-radius:16px; border:1px solid var(--t-line, #ffffff26); background:var(--t-raised, #ffffff0d); }
+.event-banner__kicker { display:block; font-size:11px; letter-spacing:.08em; color:var(--t-muted, #c9b9bd); }
+.event-banner__title { margin:2px 0 2px; font-family:var(--font-display); font-size:22px; letter-spacing:.12em; }
+.event-banner__tag { margin:0; font-family:var(--font-display); font-size:13px; color:var(--t-muted, #c9b9bd); }
+.event-banner__time { margin:8px 0 0; font-size:12px; }
+.event-banner__bar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; margin-top:10px; }
+.event-banner__shop { margin-left:auto; }
+.event-banner__seal { position:absolute; top:12px; right:12px; display:grid; place-items:center; width:34px; height:34px; border-radius:6px; background:var(--cinnabar); color:#fff6ef; font-family:var(--font-display); font-style:normal; font-size:18px; transform:rotate(-6deg); box-shadow:0 0 0 2px #fff6ef55 inset; }
+.event-chip { display:inline-flex; align-items:center; gap:4px; padding:3px 9px; border-radius:999px; border:1px solid var(--t-line, #ffffff26); font-size:12px; white-space:nowrap; }
+.event-phase { margin:12px 2px 6px; font-family:var(--font-display); font-size:15px; letter-spacing:.06em; }
+.event-phase small { font-family:var(--font-body); font-size:12px; letter-spacing:0; color:var(--t-muted, #c9b9bd); }
+.event-hub .battle-stage-card.is-boss { border-color:#c2413a73; }
+/* 湘 11/25 選 A 宣紙：淡淡的紙紋＋左邊一筆墨痕 */
+.event-hub .event-banner { background:radial-gradient(120% 90% at 0% 0%, #b08a4e14, transparent 60%), radial-gradient(80% 70% at 100% 100%, #c2413a12, transparent 70%), var(--t-raised, #ffffff0d); }
+.event-hub .event-banner::before { content:""; position:absolute; left:0; top:14px; bottom:14px; width:4px; border-radius:0 4px 4px 0; background:linear-gradient(180deg, var(--t-ink, #2a1d22) 0%, transparent 100%); opacity:.55; }
+.event-shop__head { display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:8px; }
+.event-shop__list { display:grid; gap:8px; }
+.event-shop__item { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:10px; padding:10px 12px; border-radius:14px; border:1px solid var(--t-line, #ffffff26); background:var(--t-raised, #ffffff0d); }
+.event-shop__item b { display:block; font-size:14px; }
+.event-shop__item small { color:var(--t-muted, #c9b9bd); font-size:12px; }
+.event-shop__item.is-sold { opacity:.55; }
+.event-shop__item .btn { min-width:84px; }

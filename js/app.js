@@ -50,7 +50,8 @@ import * as install from './install.js';
 import { CHARACTER_REPORTS, SERIES_REPORTS } from './errand-copy.js';
 import { PLACES, HOME_TASKS, STORIES, errandSlots, errandSlotHint, depart, collect, recall, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer, serverTime } from './updates.js';
-import { noteServerTime } from './events.js';
+import * as events from './events.js';
+const { noteServerTime } = events;
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
 import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP } from './affection.js';
 const GAIN_ERRAND = BOND_GAIN.errand;
@@ -3945,7 +3946,12 @@ function renderBattle() {
       return btn;
     }));
     wildSec.append(wh, wnote, wgrid);
-    $('battle-map').replaceChildren(siangRoster(), wildSec, ...battle.CHAPTERS.map(ch => {
+    const evNow = events.eventNow(structuredClone({ clock: state.clock }));
+    const evList = events.activeEvents(state, evNow);
+    const shopFor = eventView && evList.find(x => x.def.id === eventView.id && x.sch.state !== 'archived' && x.sch.state !== 'upcoming');
+    if (eventView && !shopFor) eventView = null;
+    if (shopFor) { $('battle-map').replaceChildren(eventShop(shopFor.def, evNow)); return; }
+    $('battle-map').replaceChildren(siangRoster(), ...evList.map(x => eventHub(x.def, x.sch, evNow)), wildSec, ...battle.CHAPTERS.map(ch => {
       const sec = document.createElement('section'); sec.className = 'battle-chapter';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = `第 ${ch.id} 章 · ${ch.name}`;
       const chScene = sceneOf(ch); if (chScene) { sec.classList.add('has-scene'); sec.style.setProperty('--scene', `url("${chScene}")`); }
@@ -3984,6 +3990,71 @@ function renderBattle() {
     }
   }
   if (inStage) renderBattleStage();
+}
+// ── 異世活動（2.0 · 湘 11/25）：討伐頁最上面一區；資料全在 events.js，這裡只負責畫
+let eventView = null; // null＝關卡；{ id, view: 'shop' }＝墨玉閣
+const tpeDate = ms => new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(ms);
+const leftText = ms => { const m = Math.max(1, Math.ceil(ms / 60e3)); const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60); return d ? `${d} 天 ${h} 小時` : h ? `${h} 小時 ${m % 60} 分` : `${m} 分鐘`; };
+function eventScene(e) { const s = events.eventDef(e.event)?.stages[e.eventStage]; return s?.scene ? new URL(s.scene, document.baseURI).href : null; }
+function eventStageCard(def, stageId, now) {
+  const key = events.stageKey(def.id, stageId); const e = events.eventEnemy(def.id, stageId);
+  const st = state.events?.[def.id]?.stages?.[stageId]; const lock = events.stageLock(state, def, stageId, now);
+  const btn = el('button', `battle-stage-card${e.boss ? ' is-boss' : ''}${lock ? ' is-locked' : ''}`); btn.type = 'button'; btn.disabled = Boolean(lock); btn.dataset.eventStage = stageId;
+  btn.append(enemyArt(key));
+  const info = el('div', 'battle-stage-card__info'); info.innerHTML = '<small></small><b></b><span></span>';
+  info.querySelector('small').textContent = `${e.stage}${e.boss ? ' · BOSS' : ''}`;
+  info.querySelector('b').textContent = lock ? def.stages[stageId].title : e.name;
+  info.querySelector('span').textContent = lock ? (/前一關|要先打完/.test(lock) ? '🔒 未解鎖' : '🔒 未開放') : st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
+  btn.append(info);
+  if (!lock) stageFight(btn, info, key);
+  btn.addEventListener('click', () => { battleEnemy = key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
+  return btn;
+}
+function eventHub(def, sch, now) {
+  const prog = state.events?.[def.id] || {}; const ks = def.keepsakes;
+  const sec = el('section', 'battle-chapter event-hub'); sec.dataset.event = def.id;
+  const ban = el('div', 'event-banner');
+  const seal = el('i', 'event-banner__seal', '墨'); seal.setAttribute('aria-hidden', 'true');
+  const time = sch.state === 'upcoming' ? `${tpeDate(sch.startMs)} 開始 · 還有 ${leftText(sch.startMs - now)}`
+    : sch.state === 'battle' ? `討伐開到 ${tpeDate(sch.battleEndMs)} · 剩 ${leftText(sch.battleEndMs - now)}`
+    : sch.state === 'shop' ? `討伐已結束 · 墨玉閣開到 ${tpeDate(sch.shopEndMs)}` : '活動已封存，已經拿到的都會留著';
+  ban.append(seal, el('small', 'event-banner__kicker', `${def.code} · ${def.name}`), el('h3', 'event-banner__title', def.subtitle), el('p', 'event-banner__tag', def.tagline), el('p', 'event-banner__time', time));
+  const bar = el('div', 'event-banner__bar');
+  bar.append(el('span', 'event-chip', `${def.token.icon} ${def.token.name} ${prog.tokens || 0}`));
+  if (ks) bar.append(el('span', 'event-chip', `信物 ${Object.keys(prog.keepsakes || {}).length} / ${ks.list.length}`));
+  if (sch.state === 'battle' || sch.state === 'shop') { const shop = el('button', 'text-action event-banner__shop', '墨玉閣 ⟶'); shop.type = 'button'; shop.addEventListener('click', () => { eventView = { id: def.id, view: 'shop' }; renderBattle(); }); bar.append(shop); }
+  ban.append(bar); sec.append(ban);
+  if (sch.state !== 'battle') return sec;
+  for (const ph of def.phases) {
+    const p = sch.phases.find(x => x.id === ph.id);
+    const h = el('h4', 'event-phase', ph.name);
+    if (!p.open) h.append(el('small', null, ` · ${leftText(p.leftMs)}後開放`));
+    const grid = el('div', 'battle-stages'); grid.append(...ph.stages.map(id => eventStageCard(def, id, now)));
+    sec.append(h, grid);
+  }
+  return sec;
+}
+function eventShop(def, now) {
+  const prog = state.events?.[def.id] || {};
+  const sec = el('section', 'battle-chapter event-shop');
+  const back = el('button', 'text-action', '⟵ 回關卡列表'); back.type = 'button'; back.addEventListener('click', () => { eventView = null; renderBattle(); });
+  const head = el('div', 'event-shop__head'); head.append(el('h3', 'egg-choices__heading', '墨玉閣'), el('span', 'event-chip', `${def.token.icon} ${def.token.name} ${prog.tokens || 0}`));
+  const list = el('div', 'event-shop__list');
+  list.append(...events.shopList(state, def, now).map(item => {
+    const row = el('div', `event-shop__item${item.soldOut ? ' is-sold' : ''}`);
+    const txt = el('div'); txt.append(el('b', null, item.name), el('small', null, `${item.cost} ${def.token.name}${item.limit ? ` · 已換 ${item.bought} / ${item.limit}` : ''}`));
+    const btn = el('button', 'btn', item.soldOut ? '換完了' : item.ready ? '兌換' : `差 ${item.short}`); btn.type = 'button'; btn.disabled = !item.ready;
+    btn.addEventListener('click', () => void buyEventItem(def.id, item.id));
+    row.append(txt, btn); return row;
+  }));
+  const status = el('p', 'cloud-status'); status.id = 'event-shop-status'; status.setAttribute('role', 'status');
+  sec.append(back, head, list, status); return sec;
+}
+async function buyEventItem(eventId, itemId) {
+  const t = await updateState(c => { return events.buy(c, events.eventDef(eventId), itemId, events.eventNow(c)); });
+  state = t.state; renderAll(); renderBattle();
+  const msg = typeof t.result === 'string' ? t.result : t.result.result.egg ? `換到了「${t.result.item.name}」！蛋放在「選擇蛋」裡。` : `換到了「${t.result.item.name}」！`;
+  const box = $('event-shop-status'); if (box) box.textContent = msg;
 }
 // 小湘出勤狀態：不用點進關卡就能看誰可以出戰、誰在休息（還要多久）、誰出門了；收合狀態記在這台裝置
 const ROSTER_KEY = 'siang-collector:battle-roster:v1';
@@ -4048,9 +4119,10 @@ function placeUrl(key) { return new URL(`assets/places/${key}.webp`, document.ba
 function sceneOf(ch) { return ch?.scene ? new URL(ch.scene, document.baseURI).href : ch && PLACES[ch.bg] ? placeUrl(ch.bg) : null; }
 function chapterScene(id) { return sceneOf(battle.CHAPTERS.find(c => c.stages.includes(id))); }
 function renderBattleStage() {
-  const id = battleEnemy; const e = battle.enemyFor(state, id); const st = e.wild ? null : state.battle.stages[id];
+  const id = battleEnemy; const e = battle.enemyFor(state, id);
   if (!e) { battleEnemy = null; renderBattle(); return; }
-  const bigArt = enemyArt(id, 'is-big'); const scene = e.wild ? null : chapterScene(id);
+  const st = e.wild ? null : e.event ? state.events?.[e.event]?.stages?.[e.eventStage] : state.battle.stages[id];
+  const bigArt = enemyArt(id, 'is-big'); const scene = e.wild ? null : e.event ? eventScene(e) : chapterScene(id);
   if (scene) { bigArt.classList.add('has-scene'); bigArt.style.setProperty('--scene', `url("${scene}")`); }
   $('battle-enemy-art').replaceChildren(bigArt);
   $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}`;
@@ -4058,7 +4130,7 @@ function renderBattleStage() {
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;
   $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.story.before);
   $('battle-enemy-intro').textContent = e.intro;
-  $('battle-gift-hint').hidden = Boolean(e.wild); if (!e.wild) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
+  $('battle-gift-hint').hidden = Boolean(e.wild || e.event); if (!e.wild && !e.event) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
   const busy = allBusy(); const now = Date.now();
   const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
   // 可以出戰的排前面（照戰力），休息、忙碌的放後面，進關卡就能直接挑還在家的
@@ -4129,7 +4201,7 @@ async function collectBattle(id) {
   const t = await updateState(current => battle.collectBattle(current, id));
   state = t.state; renderAll(); renderBattle();
   if (!t.result) return;
-  const r = t.result; const rep = r.report; const e = r.snapshot ? battle.wildEnemy(r.snapshot) : battle.ENEMIES[r.enemy];
+  const r = t.result; const rep = r.report; const e = r.eventEnemy || (r.snapshot ? battle.wildEnemy(r.snapshot) : battle.ENEMIES[r.enemy]);
   $('battle-result-art').replaceChildren(r.snapshot ? wildArtFrom(r.snapshot) : enemyArt(r.enemy, 'is-big'));
   $('battle-result-eyebrow').textContent = `${e.stage} · ${e.name}`;
   $('battle-result-title').textContent = rep.win ? '討伐成功！' : '先撤退了……';
@@ -4154,7 +4226,7 @@ async function collectBattle(id) {
   if (epi) $('battle-result-story').append(epilogueButton(epi, '▶ 現在觀看尾聲', () => { pendingEpilogue = null; $('battle-result').close(); }));
   $('battle-result-gains').replaceChildren(...r.gains.map(g => Object.assign(document.createElement('li'), { textContent: g })));
   $('battle-result').showModal();
-  battleTheater.play({report:r.report,nos:r.nos,enemy:e,scene:chapterScene(r.enemy),bondUnlocked:Boolean(r.report.bond && state.teamBonds?.unlocked?.[r.report.bond])});
+  battleTheater.play({report:r.report,nos:r.nos,enemy:e,scene:r.eventEnemy ? eventScene(r.eventEnemy) : chapterScene(r.enemy),bondUnlocked:Boolean(r.report.bond && state.teamBonds?.unlocked?.[r.report.bond])});
   $('battle-result').scrollTop = 0; $('battle-result-ok').blur(); buzz(rep.win ? [20, 40, 30] : 15); // 長戰報從最上面（分數）開始看
   restart($('chip-energy'), 'is-bump');
 }

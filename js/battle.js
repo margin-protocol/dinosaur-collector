@@ -405,7 +405,7 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const note = observe(kind, r, enemy, prevStage);
   const review = lines.length ? { kind, text: lines[Math.floor(rand() * lines.length) % lines.length], ...(note ? { note } : {}), at: now.toISOString() } : null;
   if (!enemy.wild && !isEvent) { st.lastWin = r.win; if (review) st.review = review; }
-  return { ...battle, report: r, record, best, starGift: gift, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild), event: evGain ? { id: enemy.event, stage: enemy.eventStage, ...evGain } : null };
+  return { ...battle, report: r, record, best, starGift: gift, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild), event: evGain ? { id: enemy.event, stage: enemy.eventStage, ...evGain } : null, ...(isEvent ? { snapshot: undefined, eventEnemy: enemy } : {}) };
 }
 
 // 徽章兌換專屬蛋：孵化後才加入隊伍，不進隨機蛋池
