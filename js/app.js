@@ -364,7 +364,9 @@ function renderHome() {
   const exploredToday = state.bonus.explored === todayKey();
   $('explore').classList.toggle('is-fresh', firstHatched && !exploredToday);
   const gift = exploredToday ? todayGift(state) : null;
-  $('explore').classList.toggle('is-gifted', Boolean(gift)); // 今天的探索禮物收過了：圓鈕旁邊一張小標籤（湘 11/25 選 C）
+  $('explore').classList.toggle('is-gifted', Boolean(gift)); // 今天的探索禮物收過了（湘 11/25 選 C）
+  $('explore').dataset.fold = giftFoldStyle(); // 標籤擋畫面，收起方式給湘挑（11/25，選定後拿掉切換）
+  $('explore').classList.toggle('is-flash', Boolean(gift) && Date.now() < giftFlashUntil);
   $('explore').classList.toggle('is-compact', exploredToday && !exploring);
   $('explore').setAttribute('aria-label', gift ? `今天的探索禮物已收到：${giftLabel(gift)}，再探索一次附近` : exploredToday ? '再探索一次附近' : '探索附近');
   $('explore-tag').textContent = gift ? `${giftShort(gift)} ✓` : '';
@@ -1814,6 +1816,8 @@ async function checkWeather(pos) {
   return transaction.result;
 }
 // 每日探索禮物（travel.gift）：今天收過什麼、幾點收的
+let giftFlashUntil = 0; // 剛收到禮物時標籤亮幾秒
+function giftFoldStyle() { try { return localStorage.getItem('siang-collector:gift-fold') || 'a'; } catch { return 'a'; } }
 const todayGift = (s) => (s.travel?.gift?.date === todayKey() ? s.travel.gift : null);
 const giftLabel = (g) => (g.kind === 'county' ? `縣市蛋 · ${g.county}` : g.kind === 'wish' ? '願望蛋' : '天氣蛋');
 const giftShort = (g) => (g.kind === 'county' ? '縣市蛋' : g.kind === 'wish' ? '願望蛋' : '天氣蛋');
@@ -1838,6 +1842,7 @@ async function explore({ silent = false } = {}) {
     const weather = await checkWeather(pos);
     if (!county || !COUNTY_CHARACTER[county]) { if (!silent) showCountyCall({ county: county || null, weather }); else announceWeather(weather); return; } // 還沒有小湘的地方（例如金門）先不送蛋
     const transaction = await updateState(current => { const r = checkIn(current, county, todayKey()); if (silent && r.daily) { current.travel.gift.auto = true; r.auto = true; } return r; });
+    if (transaction.result.daily) { giftFlashUntil = Date.now() + 8000; setTimeout(renderHome, 8100); }
     state = transaction.state; renderAll();
     if (!silent || transaction.result.egg || transaction.result.daily) showCountyCall({ county, result: transaction.result, weather });
     else announceWeather(weather);
