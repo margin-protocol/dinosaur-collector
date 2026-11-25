@@ -53,6 +53,9 @@ import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer, server
 import * as events from './events.js';
 const { noteServerTime } = events;
 // 自動化測試才用：在載入前指定活動開始時間（玩家的瀏覽器不會走這裡）
+// 測試服（?test）：活動當作已經開跑 73 小時，上卷、下卷都能直接進去
+import { IS_TEST, TEST_EVENT_HOURS_IN } from './test-server.js';
+if (IS_TEST) for (const def of Object.values(events.EVENT_DEFS)) if (def.start) def.start = new Date(Date.now() - TEST_EVENT_HOURS_IN * 3600e3).toISOString();
 try { if (navigator.webdriver) for (const id of Object.keys(events.EVENT_DEFS)) { const v = localStorage.getItem(`siang-collector:test-event-start:${id}`); if (v) events.EVENT_DEFS[id].start = v === 'null' ? null : v; } } catch {}
 import { SEGMENTS, STAKES, WHEEL_SPINS, spin as spinWheel, spinsLeft } from './wheel.js';
 import { gain as gainBond, homeTick, bondInfo, bondText, LEVELS, MAX_LEVEL, UNLOCK_LABEL, DAILY_CAP, GAIN as BOND_GAIN, describeLevelReward, cookLeft, COOK_CAP, capLeft, capLeftAll } from './affection.js';
@@ -4315,7 +4318,7 @@ function renderBattleStage() {
   });
   const full = state.battle.active.length >= battle.teamSlots(state);
   $('battle-go').disabled = !battlePicked.length || full;
-  $('battle-go').textContent = full ? '隊伍都派出去了' : `出發討伐${fc ? `（約 ${fc.minutes} 分鐘）` : ''}`;
+  $('battle-go').textContent = full ? '隊伍都派出去了' : `出發討伐${fc ? (IS_TEST ? `（測試服 15 秒・正式 ${fc.minutes} 分鐘）` : `（約 ${fc.minutes} 分鐘）`) : ''}`;
 }
 $('battle-back').addEventListener('click', () => { battleEnemy = null; renderBattle(); });
 // 野生小怪的戰報：那一天的名單可能已經換掉，用出發時存下的資料畫

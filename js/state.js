@@ -1,4 +1,5 @@
 import { hydrateProgression, reconcileGrowthEnergy } from './progression.js';
+import { IS_TEST, testSeed } from './test-server.js';
 // 遊戲進度存在手機本機（Phase 2 會加上備份到私人 repo）
 const KEY = 'siang-collector:v1';
 let volatileState = null;
@@ -21,6 +22,8 @@ export function loadState() {
   try {
     raw = localStorage.getItem(KEY);
     if (raw) return hydrateProgression({ ...fresh(), ...JSON.parse(raw) });
+    // 測試服（?test）第一次打開：送一份全滿存檔（存在 siang-test: 底下，跟正式存檔分開）
+    if (IS_TEST) { const seeded = hydrateProgression(testSeed(fresh())); saveState(seeded); return seeded; }
   } catch {
     // 讀不到就當作新遊戲，但先把原本那份另存起來（11/19）：不然下一次存檔會把它蓋掉，進度就救不回來了
     try { if (raw && !localStorage.getItem(`${KEY}:unreadable`)) localStorage.setItem(`${KEY}:unreadable`, raw); } catch {}
@@ -45,7 +48,7 @@ export function resetState() {
   } catch {
     // 同上
   }
-  return hydrateProgression(fresh());
+  return IS_TEST ? loadState() : hydrateProgression(fresh());
 }
 
 // All game-resource writes share a lock and read the latest save inside it.

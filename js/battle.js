@@ -18,6 +18,9 @@ import { NAP_LINES } from './nap-lines.js';
 import { DEVTEAM_LINES } from './devteam-lines.js';
 import { EXTRA_LINES } from './extra-lines.js';
 import { BATTLE_PERSONAL_LINES } from './battle-personal-lines.js';
+// 測試服（?test，js/test-boot.js）：討伐 15 秒回來、不用休息
+const IS_TEST = Boolean(globalThis.__SIANG_TEST__);
+const TEST_BATTLE_MS = 15e3;
 const SPOKEN = { ...BATTLE_PERSONAL_LINES, ...WEATHER_LINES, ...RECIPE_LINES, ...FRIEND_LINES, ...NAP_LINES, ...DEVTEAM_LINES, ...EXTRA_LINES, ...HERO_LINES }; // 有專屬出戰／勝敗台詞的小湘
 
 // 敵人。圖片照皮寶的命名放在 assets/enemies/chapter-0N/（沒有圖就顯示 emoji）。
@@ -349,7 +352,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   if (!enemy.wild && !ev && win && stars === 3) { if (prev.stars < 3) loot.starGift = starGiftFor(chapterNo, rand); else loot.starBonus = { ...STAR_BONUS }; }
   const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries };
   if (enemy.story && !enemy.wild && !ev && !b.story[`${enemyId}:before`]) b.story[`${enemyId}:before`] = iso(now); // 看過 Boss 開場故事
-  const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + minutes * 60e3)), report, ...(wildEntry ? { snapshot: wildEntry } : ev ? { snapshot: enemy } : {}) };
+  const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + (IS_TEST ? TEST_BATTLE_MS : minutes * 60e3))), report, ...(wildEntry ? { snapshot: wildEntry } : ev ? { snapshot: enemy } : {}) };
   b.active.push(battle);
   return battle;
 }
@@ -394,7 +397,7 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const gift = r.loot.starGift || null;
   if (r.loot.starBonus) state.fossils = (state.fossils || 0) + (r.loot.starBonus.fossils || 0);
   if (gift) { b.badges += gift.badges || 0; state.fossils = (state.fossils || 0) + (gift.fossils || 0); addIngredients(state, gift.ingredients); if (st) st.starGiftAt = now.toISOString(); }
-  const restUntil = iso(new Date(now.getTime() + REST_MINUTES * 60e3));
+  const restUntil = iso(new Date(now.getTime() + (IS_TEST ? 0 : REST_MINUTES * 60e3))); // 測試服不用休息
   for (const no of battle.nos) b.rest[no] = restUntil;
   b.total += 1; if (r.win) b.wins += 1;
   const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`, evGain?.title && `五件信物收齊：稱號「${EVENT_DEFS[enemy.event]?.titles?.[evGain.title] || ''}」`].filter(Boolean);
