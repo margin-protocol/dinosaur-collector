@@ -1423,7 +1423,6 @@
       "dislike": "清涼",
       "secret_combo": [
         "osmanthus",
-        "tangyuan",
         "star"
       ]
     },
@@ -1434,8 +1433,7 @@
       "dislike": "刺激",
       "secret_combo": [
         "bamboo",
-        "matcha",
-        "mushroom"
+        "matcha"
       ]
     },
     {
@@ -1445,8 +1443,7 @@
       "dislike": "怪味",
       "secret_combo": [
         "osmanthus",
-        "sakura",
-        "tangyuan"
+        "sakura"
       ]
     },
     {
