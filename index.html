@@ -39,7 +39,7 @@
 <div class="app">
   <!-- 資源列：所有分頁都看得到 -->
   <div class="topbar">
-    <button class="back-button" id="back-home" type="button" aria-label="返回日常首頁" hidden>‹</button>
+    <button class="back-button" id="back-home" type="button" aria-label="返回書頁之間" hidden>‹</button>
     <div class="chip" id="chip-energy" role="img" aria-label="保溫能量">
       <span class="chip__icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 4 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg></span>
       <span class="chip__k visually-hidden">能量</span><span class="chip__v" id="energy-value">0</span>
@@ -184,12 +184,12 @@
 
   <main class="view view--research" data-view="research" id="research-root" hidden></main>
 
-  <footer class="game-footer"><span id="location-label">日常 / HOME</span><button class="center-button" id="open-center" type="button" aria-haspopup="dialog" aria-controls="function-center"><svg class="journal-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7a2.5 2.5 0 0 1-2.5-2.5V6A2.5 2.5 0 0 1 7 3.5Z"/><path d="M8 3.5v17M11.5 8h4.5M11.5 11.5H15M4.5 17.5H8"/></svg><span>研究者手記</span></button></footer>
+  <footer class="game-footer"><span id="location-label">書頁之間 / HOME</span><button class="center-button" id="open-center" type="button" aria-haspopup="dialog" aria-controls="function-center"><svg class="journal-icon" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M7 3.5h11a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7a2.5 2.5 0 0 1-2.5-2.5V6A2.5 2.5 0 0 1 7 3.5Z"/><path d="M8 3.5v17M11.5 8h4.5M11.5 11.5H15M4.5 17.5H8"/></svg><span>研究者手記</span></button></footer>
 </div>
 
 <dialog id="function-center" class="function-center" aria-labelledby="center-title"><div class="drawer-handle" aria-hidden="true"></div><div class="drawer-heading"><div><small>RESEARCHER’S JOURNAL</small><h2 id="center-title">研究者手記</h2></div><button class="close-button" id="close-center" aria-label="關閉研究者手記" type="button">×</button></div>  <nav class="nav" id="nav" aria-label="研究者手記">
 
-    <section class="nav-group"><h3 class="nav-group__title">每天</h3><div class="nav-group__grid"><button class="nav__item" type="button" data-view="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M5 9v12h5v-7h4v7h5V9"/></svg>日常<small class="nav__sub">回到小湘們身邊</small></button>
+    <section class="nav-group"><h3 class="nav-group__title">每天</h3><div class="nav-group__grid"><button class="nav__item" type="button" data-view="home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8M5 9v12h5v-7h4v7h5V9"/></svg>書頁之間<small class="nav__sub">回到居民們身邊</small></button>
 <button class="nav__item" type="button" data-view="incubate">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c3.500 0 6 6 6 10a6 6 0 0 1-12 0c0-4 2.500-10 6-10z"/></svg>培育
     <small class="nav__sub">幫蛋保溫、選蛋</small></button>

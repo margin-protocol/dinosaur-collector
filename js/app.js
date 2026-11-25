@@ -1160,7 +1160,7 @@ function showView(name, options = {}) {
   if ($('function-center').open) $('function-center').close();
   $('back-home').hidden = name === 'home';
   if (['wish', 'incubate', 'dex'].includes(name)) setTimeout(() => showTip(name, document.querySelector(`.view[data-view="${name}"]`)), 50);
-  $('location-label').textContent = { home: '日常 / HOME', incubate: '培育 / INCUBATION', wish: '願望 / WISHES', dex: '圖鑑 / COLLECTION', research: '研究 / RESEARCH' }[name];
+  $('location-label').textContent = { home: '書頁之間 / HOME', incubate: '培育 / INCUBATION', wish: '願望 / WISHES', dex: '圖鑑 / COLLECTION', research: '研究 / RESEARCH' }[name];
   const nextHash = name === 'home' ? '#home' : `#${name}`;
   if (location.hash !== nextHash) history[options.replace ? 'replaceState' : 'pushState'](null, '', nextHash);
   $('header').hidden = !TITLES[name];
