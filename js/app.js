@@ -3844,6 +3844,9 @@ $('tab-battle').addEventListener('click', () => showErrandTab('battle'));
 $('tab-kitchen').addEventListener('click', () => showErrandTab('kitchen'));
 
 /* ---------- 小湘廚房（皮寶企劃，11/20）：選食材開煮 → 餵小湘 ---------- */
+// 餵食名單：依系列分組、系列可以收起來（湘 11/25 選 C），收起來的系列記在這裡
+const FEED_FOLD_KEY = 'siang-collector:feed-fold:v1';
+let feedFolded = (() => { try { return JSON.parse(localStorage.getItem(FEED_FOLD_KEY)) || []; } catch { return []; } })();
 let kitchenPicked = []; let kitchenMeal = null; let kitchenResult = null; let kitchenBusy = false;
 function renderKitchen() {
   const k = state.kitchen;
@@ -3877,20 +3880,36 @@ function renderKitchen() {
     const d = kitchen.dishById(kitchenMeal);
     $('kitchen-feed-hint').textContent = `要把「${d.name}」給誰吃？（料理的好感另外算，每位每天最多 ${COOK_CAP} 點；滿了也還是可以餵）`;
     const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
-    $('kitchen-siangs').replaceChildren(...owned.map(no => {
+    const tile = no => {
       const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'errand-siang'; btn.dataset.siang = no;
       const r = k.tasted[no]?.[d.id]; const left = cookLeft(state, no, todayKey());
       const guess = r === undefined ? kitchen.guessRating(state, no, d) : null; // 口味筆記猜得出來就先提示（秘密最愛猜不到，所以說「應該」）
       const hint = guess === 2 ? '😋 喜歡？' : guess === 0 ? '🤢 討厭？' : '';
-      btn.append(siangImg(no), Object.assign(document.createElement('span'), { textContent: r !== undefined ? `${kitchen.RATINGS[r].icon} ${kitchen.RATINGS[r].label}` : [hint, left ? `今天還能 +${left}` : '今天料理好感已滿'].filter(Boolean).join('\n') }));
+      btn.append(siangImg(no));
+      const c = CHARACTERS[no]; btn.append(Object.assign(document.createElement('b'), { className: 'errand-siang__name', textContent: c.name.replace(/小湘.*/, '') || c.name }));
+      btn.append(Object.assign(document.createElement('span'), { textContent: r !== undefined ? `${kitchen.RATINGS[r].icon} ${kitchen.RATINGS[r].label}` : [hint, left ? `今天還能 +${left}` : '今天料理好感已滿'].filter(Boolean).join('\n') }));
       if (k.buffs[no]) {
         btn.append(Object.assign(document.createElement('i'), { className: 'star', textContent: '🍳' }));
         const swap = kitchen.replacesBuff(state, no, d); // 餵下去會換掉原本的料理加成就先講
         btn.append(Object.assign(document.createElement('em'), { className: `errand-siang__food${swap !== false ? ' is-swap' : ''}`, textContent: `${swap === true ? '會換掉' : swap === null ? '可能換掉' : '目前'}\n${kitchen.buffShort(k.buffs[no]).replace('🍳', '')}` }));
       }
       btn.addEventListener('click', () => void feedKitchen(no, d.id));
-      return btn;
-    }));
+      return { btn, like: hint.startsWith('😋'), left };
+    };
+    // 依系列分組（11/25 玩家：像出勤狀態一樣，每次都找不到人）
+    const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+    const out = [];
+    for (const sid of Object.keys(SERIES)) {
+      const part = owned.filter(no => CHARACTERS[no].series === sid).map(tile); if (!part.length) continue;
+      const grid = el('div', 'kitchen-feed__grid'); grid.append(...part.map(t => t.btn));
+      const open = !feedFolded.includes(sid);
+      const head = el('button', 'kitchen-feed__series'); head.type = 'button'; head.setAttribute('aria-expanded', String(open));
+      const likes = part.filter(t => t.like).length;
+      head.append(el('span', null, `${SERIES[sid].name} · ${part.length}`), ...(likes ? [el('em', null, `😋 ${likes}`)] : []), el('i', null, open ? '收起 ▾' : '展開 ▸'));
+      head.addEventListener('click', () => { feedFolded = open ? [...feedFolded, sid] : feedFolded.filter(x => x !== sid); try { localStorage.setItem(FEED_FOLD_KEY, JSON.stringify(feedFolded)); } catch {} renderKitchen(); });
+      out.push(head); if (open) out.push(grid);
+    }
+    $('kitchen-siangs').replaceChildren(...out);
   }
   const res = $('kitchen-result'); res.hidden = !kitchenResult;
   if (kitchenResult) {

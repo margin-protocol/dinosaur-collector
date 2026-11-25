@@ -1204,3 +1204,15 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .event-title { padding:4px 10px; border-radius:999px; border:1px solid #a4423c66; background:transparent; color:inherit; font:13px var(--font-display); cursor:pointer; }
 .event-title[aria-pressed="true"] { background:#a4423c; border-color:#a4423c; color:#fff; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .fold-head__sum { opacity:1; }
+/* 廚房餵食名單依系列分組（11/25 玩家回饋） */
+.kitchen-feed__list { margin-bottom:12px; }
+.kitchen-feed__grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
+.kitchen-feed__grid .errand-siang span { white-space:pre-line; text-align:center; }
+.kitchen-feed__list .errand-siang { border-color:var(--t-line, #ffffff14); }
+.errand-siang__name { font:600 11.5px/1.25 var(--font-body); max-width:100%; text-align:center; word-break:break-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.kitchen-feed__grid .errand-siang { align-content:start; padding:6px 1px; }
+.kitchen-feed__list .errand-siang img { width:48px; height:48px; }
+.kitchen-feed__series { display:flex; align-items:center; gap:8px; width:100%; min-height:36px; margin:6px 0 4px; padding:4px 10px; border:1px solid var(--t-line, #ffffff14); border-radius:10px; background:var(--t-raised, #ffffff08); color:var(--t-text, inherit); font:13px/1.3 var(--font-body); text-align:left; }
+.kitchen-feed__series span { flex:1; }
+.kitchen-feed__series em { font-style:normal; font-size:12px; color:var(--t-accent, #ffd9a8); }
+.kitchen-feed__series i { font-style:normal; font-size:11px; color:var(--t-muted); }
