@@ -118,6 +118,14 @@ section.block + section.block{border-top:1px solid var(--line)}
 .final .quote{font-size:20px;letter-spacing:.14em;margin-bottom:1.2em}
 footer{border-top:1px solid var(--line);padding:26px 0 calc(26px + env(safe-area-inset-bottom));text-align:center;font-size:13px;color:var(--soft)}
 footer .latin{font-family:var(--latin);letter-spacing:.2em}
+.more__head{font-size:13px;letter-spacing:.2em;margin:0 0 10px}
+.more--cards{display:grid;gap:10px;max-width:420px;margin:0 auto 26px;text-align:left}
+.more--cards .more__head{text-align:center}
+.more__card{position:relative;display:block;text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px 40px 12px 16px}
+.more__name{display:block;color:var(--ink);font-size:16px;letter-spacing:.08em}
+.more__name small{font-family:var(--latin);font-size:12px;letter-spacing:.2em;color:var(--soft);margin-left:.6em}
+.more__desc{display:block;font-size:13px;color:var(--soft);line-height:1.5}
+.more__go{position:absolute;right:16px;top:50%;transform:translateY(-50%);color:var(--accent);font-size:18px}
 .support{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:18px 16px 20px;margin:0 auto 24px;max-width:420px}
 .support__faces{display:flex;justify-content:center;margin-bottom:6px}
 .support__faces span{width:64px;height:64px;border-radius:50%;overflow:hidden;background:var(--bg2);border:2px solid var(--card);margin:0 -6px;position:relative}
@@ -294,6 +302,18 @@ footer .latin{font-family:var(--latin);letter-spacing:.2em}
       <p class="support__title">請寶寶工作室喝杯茶</p>
       <p class="support__sub">支持我們繼續寫下一頁</p>
       <a class="btn-line" href="https://p.ecpay.com.tw/AB2A07A" target="_blank" rel="noopener">☕ 請喝茶</a>
+    </div>
+    <!-- 更多來自頁邊協定（湘 11/25 選卡片） -->
+    <div class="more more--cards">
+      <p class="more__head">更多來自頁邊協定</p>
+      <a class="more__card" href="https://margin-protocol.github.io/studio/" target="_blank" rel="noopener">
+        <span class="more__name">頁邊協定<small>MARGIN PROTOCOL</small></span>
+        <span class="more__desc">文學、互動敘事與設計的獨立創作工作室</span><span class="more__go" aria-hidden="true">↗</span>
+      </a>
+      <a class="more__card" href="https://margin-protocol.github.io/Off-Page/" target="_blank" rel="noopener">
+        <span class="more__name">岔頁<small>OFF PAGE</small></span>
+        <span class="more__desc">原創世界觀、角色故事與小咒語</span><span class="more__go" aria-hidden="true">↗</span>
+      </a>
     </div>
     <p class="latin" style="margin:0">BETWEEN THE PAGES</p>
     <p style="margin:0">© 2026 頁邊協定 Margin Protocol. All rights reserved.</p>
