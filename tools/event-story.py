@@ -10,6 +10,13 @@ for f in sorted(glob.glob('docs/event-001/MO-*.md')):
         if line.startswith('## '): cur = SEC[line[3:].strip()]; secs[cur] = []
         elif cur and line: secs[cur].append(line)
     out[sid] = {k: '\n'.join(v) for k, v in secs.items()}
-js = "// 墨痕江湖劇情（湘 11/25 定稿，原稿 docs/event-001/MO-xx.md；用 python3 tools/event-story.py 重新產生）\n// 每行一段：「角色：「台詞」」是對話，整行（）是旁白。before＝關卡頁開打前，after＝首次通關的戰報，ending＝MO-05 上卷結尾／MO-10 尾聲\nexport const MO_STORY = " + json.dumps(out, ensure_ascii=False, indent=2) + ";\n"
+# 信物小劇情（docs/event-001/keepsakes.md）：## 信物名／## 收齊；「加成：」「獎勵：」那行只是說明，不進遊戲
+ks = {}; cur = None
+for line in open('docs/event-001/keepsakes.md', encoding='utf-8'):
+    line = line.strip()
+    if line.startswith('## '): cur = line[3:].strip(); ks[cur] = []
+    elif cur and line and not line.startswith(('加成：', '獎勵：')): ks[cur].append(line)
+ks = {k: '\n'.join(v) for k, v in ks.items()}
+js = "// 墨痕江湖劇情（湘 11/25 定稿，原稿 docs/event-001/MO-xx.md；用 python3 tools/event-story.py 重新產生）\n// 每行一段：「角色：「台詞」」是對話，整行（）是旁白。before＝關卡頁開打前，after＝首次通關的戰報，ending＝MO-05 上卷結尾／MO-10 尾聲\nexport const MO_STORY = " + json.dumps(out, ensure_ascii=False, indent=2) + ";\n// 信物小劇情：key＝信物名，「收齊」＝五件到齊\nexport const MO_KEEPSAKE_STORY = " + json.dumps(ks, ensure_ascii=False, indent=2) + ";\n"
 open('js/event-mo-story.js', 'w', encoding='utf-8').write(js)
-print(sorted(out), [k for k in out if 'ending' in out[k]])
+print(sorted(ks), sorted(out), [k for k in out if 'ending' in out[k]])

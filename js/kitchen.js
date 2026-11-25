@@ -72,6 +72,7 @@ export function dishOf(ids) {
   return { id, ings: list, tags, name: `${words}${pool[hash(id) % pool.length]}`, dark, recipe: null, art: null, type: dark ? '黑暗料理' : '家常料理', effect: null };
 }
 export const dishById = (id) => dishOf(String(id || '').split('+'));
+export const isEventRecipe = (id) => { const r = dishById(id)?.recipe; return Boolean(r && RECIPES.find((x) => x.id === r)?.event); };
 
 // 口味評價：3 超喜歡（隱藏最愛）、2 喜歡、1 普通、0 討厭
 export const RATINGS = [

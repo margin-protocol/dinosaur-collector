@@ -1,7 +1,7 @@
 import { TEAM_BONDS, teamBond, discoverBond, effectText, countBondRuns } from './team-bonds.js';
 import { teamSkills } from './skills.js';
-import { EVENT_DEFS, ensureEvents, parseStageKey, eventEnemy, stageLock, eventNow, progressOf, recordEventRun } from './events.js';
-import { teamFood, useFood, dropsFor, addIngredients, ingredientText, buffText, INGREDIENTS } from './kitchen.js';
+import { EVENT_DEFS, ensureEvents, parseStageKey, eventEnemy, stageLock, eventNow, progressOf, recordEventRun, keepsakePower } from './events.js';
+import { teamFood, useFood, dropsFor, addIngredients, ingredientText, buffText, INGREDIENTS, isEventRecipe } from './kitchen.js';
 // 討伐：派 1～3 位小湘去打敵人（像皮克敏那樣派遣，回來看戰報）。
 // 設計原則（皮寶 11/17）：剋制只影響效率與評分、不是通關必要條件；只有原味小湘也能打完入門關；
 // 戰敗提示依實際原因；保留分數、歷史最高與進步；徽章可以拿來特訓，讓下一次打得更好。
@@ -219,11 +219,14 @@ export function teamPower(state, nos, enemyId) {
   const bond = teamBond(state, nos);
   const food = teamFood(state, nos); // 小湘廚房：一隊最多用一份料理加成
   const skills = teamSkills(nos, { level: (no) => levelOf(state.affection?.[no]?.pts || 0), world: worldNo }); // 居民專屬技能（2.0）
-  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty ? HERO_PARTY_BONUS : 0)) * (1 + (food?.kind === 'power' ? food.value : 0)) * (1 + skills.power);
+  // 異世活動信物：只在該活動關卡有效
+  const evDef = enemy?.event ? EVENT_DEFS[enemy.event] : null;
+  const keepsakes = evDef ? keepsakePower(evDef, state.events?.[evDef.id]?.keepsakes, nos, { worldOf: worldNo, eventFood: Boolean(food && isEventRecipe(food.dish)) }) : { power: 0, list: [] };
+  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty ? HERO_PARTY_BONUS : 0)) * (1 + (food?.kind === 'power' ? food.value : 0)) * (1 + skills.power) * (1 + keepsakes.power);
   const total = Math.round(raw * mult * 10) / 10;
   // 料理多加了幾點戰力（拿掉料理那一層算一次，差多少就是料理的功勞）
   const foodPower = food?.kind === 'power' ? Math.round((total - Math.round(raw * mult / (1 + food.value) * 10) / 10) * 10) / 10 : 0;
-  return { members, raw: Math.round(raw * 10) / 10, total, sameSeries, weakHit, heroParty, bond, food, foodPower, skills };
+  return { members, raw: Math.round(raw * 10) / 10, total, sameSeries, weakHit, heroParty, bond, food, foodPower, skills, keepsakes };
 }
 
 // 預估：勝率與評語
@@ -394,10 +397,11 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const restUntil = iso(new Date(now.getTime() + REST_MINUTES * 60e3));
   for (const no of battle.nos) b.rest[no] = restUntil;
   b.total += 1; if (r.win) b.wins += 1;
-  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`].filter(Boolean);
+  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`, evGain?.title && `五件信物收齊：稱號「${EVENT_DEFS[enemy.event]?.titles?.[evGain.title] || ''}」`].filter(Boolean);
   const firstClear = r.win && st.clears === 1;
   // 異世活動：第一次通關才在戰報播「打完後」（MO-05 再接上卷結尾）；解鎖紀錄在 state.events[id].story
-  const story = isEvent ? (evGain?.first && enemy.story ? [enemy.story.after, enemy.story.ending].filter(Boolean).join('\n') || null : null)
+  const ksDef = isEvent ? EVENT_DEFS[enemy.event]?.keepsakes : null; // 拿到信物＝播那件的小劇情；收齊再接「收齊」
+  const story = isEvent ? ((evGain?.first && enemy.story ? [enemy.story.after, enemy.story.ending] : evGain?.keepsake ? [evGain.keepsake.story, evGain.complete && ksDef?.completeStory] : []).filter(Boolean).join('\n') || null)
     : enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
   const clue = firstClear && enemy.clue ? enemy.clue : null;
   // 咕咕書評：依結果挑一種，結算時就決定並存起來（檔案館讀存好的，不會每次重抽）

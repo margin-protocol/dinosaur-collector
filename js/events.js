@@ -4,7 +4,7 @@
 // 而且永遠不清除：活動結束後，通關紀錄、劇情、信物、商店購買都留著（之後可以復刻）。
 // 時間：一律用 eventNow()（GitHub Pages 回應的 Date 標頭校正過的時間，而且不會往回撥）。
 
-import { MO_STORY } from './event-mo-story.js';
+import { MO_STORY, MO_KEEPSAKE_STORY } from './event-mo-story.js';
 
 const H = 3600e3;
 const D = 24 * H;
@@ -24,6 +24,7 @@ export const EVENT_DEFS = {
     world: 'mo',
     name: '異世・墨痕江湖',
     subtitle: '十萬兩紅妝',
+    titles: { 'mo-pen': '執筆入江湖', 'mo-unwed': '紅妝不嫁' }, // 活動稱號：墨玉閣買／信物收齊
     tagline: '江湖有盡，書頁無涯。',
     start: '2026-11-26T12:00:00+08:00', // 湘 11/25：明天開始（中午 12 點）；下卷 11/29 12:00、討伐到 12/10、墨玉閣到 12/17
     poolArt: { up: 'assets/events/mo/pool-up.webp', down: 'assets/events/mo/pool-down.webp' }, // 墨玉閣墨痕蛋上方的卡池圖：下卷開放後換 down（德寶合成，湘 11/25 OK）
@@ -55,13 +56,14 @@ export const EVENT_DEFS = {
     // 限定劇情信物：打完上卷後，重複討伐（打贏）才會掉；每件只拿一次。
     // 保底：連續 pity 場沒掉，下一場一定掉一件還沒有的。
     keepsakes: {
-      after: 'up', chance: 0.2, pity: 6, completeBonus: 50,
+      after: 'up', chance: 0.2, pity: 6, completeBonus: 50, completeTitle: 'mo-unwed',
+      // perk：拿到就生效，只在這個活動的關卡有效。token＝墨玉掉落；power 的 who：origin＝小湘（非異世居民）、event-food＝吃了活動限定料理、編號＝那位居民在隊上
       list: [
-        { id: 'red-contract', art: 'assets/events/mo/keepsakes/red-contract.webp', name: '染朱婚書', text: '婚書上沒有新郎的姓名，卻詳細記載著新娘的生辰八字。' },
-        { id: 'gold-clasp', art: 'assets/events/mo/keepsakes/gold-clasp.webp', name: '鎖命金扣', text: '藏於嫁衣內側的金扣。奇怪的是，它只能扣上，不能解開。' },
-        { id: 'torn-recipe', art: 'assets/events/mo/keepsakes/torn-recipe.webp', name: '殘缺藥方', text: '開方之人似乎患有無藥可醫的重病。最後一味藥，竟寫著「紅妝」。' },
-        { id: 'broken-bangle', art: 'assets/events/mo/keepsakes/broken-bangle.webp', name: '斷裂玉鐲', text: '曾屬於另一位新娘。內側刻著一行小字：願來世不著紅衣。' },
-        { id: 'ink-tassel', art: 'assets/events/mo/keepsakes/ink-tassel.webp', name: '墨色劍穗', text: '聞止水繫於劍柄上的舊物。她似乎已經很久沒有為誰拔劍了。' },
+        { id: 'red-contract', perk: { kind: 'token', value: 0.05 }, art: 'assets/events/mo/keepsakes/red-contract.webp', name: '染朱婚書', text: '婚書上沒有新郎的姓名，卻詳細記載著新娘的生辰八字。' },
+        { id: 'gold-clasp', perk: { kind: 'power', who: 'origin', value: 0.03 }, art: 'assets/events/mo/keepsakes/gold-clasp.webp', name: '鎖命金扣', text: '藏於嫁衣內側的金扣。奇怪的是，它只能扣上，不能解開。' },
+        { id: 'torn-recipe', perk: { kind: 'power', who: 'event-food', value: 0.02 }, art: 'assets/events/mo/keepsakes/torn-recipe.webp', name: '殘缺藥方', text: '開方之人似乎患有無藥可醫的重病。最後一味藥，竟寫著「紅妝」。' },
+        { id: 'broken-bangle', perk: { kind: 'power', who: '117', value: 0.05 }, art: 'assets/events/mo/keepsakes/broken-bangle.webp', name: '斷裂玉鐲', text: '曾屬於另一位新娘。內側刻著一行小字：願來世不著紅衣。' },
+        { id: 'ink-tassel', perk: { kind: 'power', who: 'MO-001', value: 0.05 }, art: 'assets/events/mo/keepsakes/ink-tassel.webp', name: '墨色劍穗', text: '聞止水繫於劍柄上的舊物。她似乎已經很久沒有為誰拔劍了。' },
       ],
     },
     // 墨玉閣：reward.type 由 applyShopReward 處理；soon:true 的商品還沒做好，不顯示、不能買
@@ -154,6 +156,7 @@ function cleanProgress(old) {
   if (Array.isArray(old.titles)) p.titles = [...new Set(old.titles.filter(isStr))];
   if (isStr(old.leftoverAt)) p.leftoverAt = old.leftoverAt;
   if (isStr(old.completeAt)) p.completeAt = old.completeAt;
+  if (isStr(old.wornTitle) && p.titles.includes(old.wornTitle)) p.wornTitle = old.wornTitle;
   return p;
 }
 // 不認得的活動 id 也保留（未來版本或復刻用），只整理認得的格式
@@ -203,6 +206,10 @@ export function eventEnemy(eventId, stageId) {
   };
 }
 
+// 信物小劇情（docs/event-001/keepsakes.md → tools/event-story.py）
+for (const k of EVENT_DEFS.mo.keepsakes.list) k.story = MO_KEEPSAKE_STORY[k.name] || null;
+EVENT_DEFS.mo.keepsakes.completeStory = MO_KEEPSAKE_STORY['收齊'] || null;
+
 // ───────── 墨玉 ─────────
 // worldOf：(no) => 世界代碼；用參數傳進來，這個檔案不依賴 eggs.js
 export function tokenBonus(def, nos, worldOf) {
@@ -210,10 +217,21 @@ export function tokenBonus(def, nos, worldOf) {
   const sum = nos.reduce((n, no) => n + (b.by?.[no] ?? (worldOf(no) === def.world ? b.world : 0)), 0);
   return Math.min(b.cap ?? Infinity, Math.round(sum * 100) / 100);
 }
-export function tokenDrop(def, stageId, { win, first = false, nos = [], worldOf = () => null }) {
+export function tokenDrop(def, stageId, { win, first = false, nos = [], worldOf = () => null, owned = {} }) {
   const s = def.stages[stageId]; if (!s) return 0;
   const base = win ? s.drop : def.loseDrop || 0;
-  return Math.round(base * (1 + tokenBonus(def, nos, worldOf))) + (win && first ? def.firstClear || 0 : 0);
+  return Math.round(base * (1 + tokenBonus(def, nos, worldOf) + keepsakeTokenBonus(def, owned))) + (win && first ? def.firstClear || 0 : 0);
+}
+// ───────── 信物加成（湘選 D：劇情＋加成＋收齊稱號） ─────────
+const ownedPerks = (def, owned) => (def.keepsakes?.list || []).filter((k) => k.perk && owned?.[k.id]);
+export function keepsakeTokenBonus(def, owned) { return Math.round(ownedPerks(def, owned).filter((k) => k.perk.kind === 'token').reduce((n, k) => n + k.perk.value, 0) * 100) / 100; }
+// 戰力加成：回傳 { power, list:[{id,name,value}] }；eventFood＝隊上用的料理是不是活動限定料理
+export function keepsakePower(def, owned, nos, { worldOf = () => null, eventFood = false } = {}) {
+  const list = ownedPerks(def, owned).filter((k) => k.perk.kind === 'power').filter((k) => {
+    const w = k.perk.who;
+    return w === 'origin' ? nos.some((no) => [null, undefined, 'origin'].includes(worldOf(no))) : w === 'event-food' ? eventFood : nos.includes(w);
+  }).map((k) => ({ id: k.id, name: k.name, value: k.perk.value }));
+  return { power: Math.round(list.reduce((n, k) => n + k.value, 0) * 100) / 100, list };
 }
 function addTokens(prog, n) { prog.tokens += n; prog.earned += n; }
 
@@ -226,7 +244,7 @@ export function recordEventRun(state, eventId, stageId, report, { now = new Date
   st.tries += 1; prog.runs += 1;
   if (report.win) { st.clears += 1; prog.wins += 1; st.stars = Math.max(st.stars, report.stars | 0); if (!st.firstAt) st.firstAt = now.toISOString(); }
   if ((report.score | 0) > st.best) st.best = report.score | 0;
-  const out = { tokens: tokenDrop(def, stageId, { win: report.win, first, nos, worldOf }), first, story: null, keepsake: null, complete: false };
+  const out = { tokens: tokenDrop(def, stageId, { win: report.win, first, nos, worldOf, owned: prog.keepsakes }), first, story: null, keepsake: null, complete: false };
   addTokens(prog, out.tokens);
   // 首次通關解鎖劇情（故事冊之後做，但解鎖資格現在就記）
   if (first) { const k = `${stageId}:clear`; if (!prog.story[k]) { prog.story[k] = now.toISOString(); out.story = k; } }
@@ -239,7 +257,7 @@ export function recordEventRun(state, eventId, stageId, report, { now = new Date
       if (hit) {
         const pick = missing[Math.floor(rand() * missing.length) % missing.length];
         prog.keepsakes[pick.id] = now.toISOString(); prog.keepsakeMiss = 0; out.keepsake = pick;
-        if (missing.length === 1) { addTokens(prog, ks.completeBonus || 0); out.tokens += ks.completeBonus || 0; out.complete = true; prog.completeAt = now.toISOString(); }
+        if (missing.length === 1) { addTokens(prog, ks.completeBonus || 0); out.tokens += ks.completeBonus || 0; out.complete = true; prog.completeAt = now.toISOString(); if (ks.completeTitle && !prog.titles.includes(ks.completeTitle)) { prog.titles.push(ks.completeTitle); out.title = ks.completeTitle; } }
       } else prog.keepsakeMiss += 1;
     }
   }
@@ -289,4 +307,18 @@ export function settleLeftover(state, def, nowMs) {
   if (def.leftover?.type === 'energy') state.energy = (state.energy || 0) + amount;
   const spent = prog.tokens; prog.tokens = 0; prog.leftoverAt = iso(nowMs);
   return { tokens: spent, energy: amount };
+}
+
+// ───────── 稱號：全遊戲只能戴一個，名字跟著研究者等級顯示 ─────────
+export function wornTitle(state) {
+  for (const [id, p] of Object.entries(state.events || {})) if (p?.wornTitle) { const name = EVENT_DEFS[id]?.titles?.[p.wornTitle]; if (name) return { eventId: id, id: p.wornTitle, name }; }
+  return null;
+}
+// titleId 為 null＝拿下來；回傳戴上的名字或 null
+export function wearTitle(state, eventId, titleId) {
+  ensureEvents(state);
+  const prog = state.events[eventId]; if (titleId && !prog?.titles.includes(titleId)) return null;
+  for (const p of Object.values(state.events)) if (p && typeof p === 'object') delete p.wornTitle;
+  if (!titleId) return null;
+  prog.wornTitle = titleId; return EVENT_DEFS[eventId]?.titles?.[titleId] || null;
 }

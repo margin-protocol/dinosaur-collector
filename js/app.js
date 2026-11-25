@@ -433,7 +433,8 @@ function say(text, mood, ms = 2200, mode) {
 function renderPlayer() {
   const level = playerLevel(state);
   const xp = state.player.xp % XP_PER_LEVEL;
-  $('player-rank').textContent = `Lv.${level} ${rankTitle(level)}`;
+  const worn = events.wornTitle(state);
+  $('player-rank').textContent = `Lv.${level} ${rankTitle(level)}${worn ? `｜${worn.name}` : ''}`;
   $('player-xp').textContent = `${xp} / ${XP_PER_LEVEL} XP`;
   $('xp-fill').style.width = `${xp / XP_PER_LEVEL * 100}%`;
   $('xp-track').setAttribute('aria-valuenow', xp);
@@ -4120,15 +4121,27 @@ function tokenChip(def, n) {
   if (def.token.art) { const img = el('img', 'event-chip__icon'); img.src = def.token.art; img.alt = ''; c.append(img, `${def.token.name} ${n}`); } else c.textContent = `${def.token.icon} ${def.token.name} ${n}`;
   return c;
 }
+// 活動稱號：點一下戴上（顯示在研究者等級旁），再點一下拿下來
+function titleRow(def, prog) {
+  const row = el('div', 'event-titles'); row.append(el('small', null, '稱號'));
+  for (const id of prog.titles) {
+    const name = def.titles[id]; if (!name) continue;
+    const b = el('button', 'event-title', `「${name}」`); b.type = 'button'; b.dataset.title = id; b.setAttribute('aria-pressed', String(prog.wornTitle === id));
+    b.addEventListener('click', () => void updateState(cur => ({ worn: events.wearTitle(cur, def.id, prog.wornTitle === id ? null : id) })).then(t => { state = t.state; toast(t.result.worn ? `戴上稱號「${t.result.worn}」` : '拿下稱號了'); renderAll(); renderBattle(); }));
+    row.append(b);
+  }
+  return row;
+}
+const keepsakePerkText = p => `${p.kind === 'token' ? '墨玉掉落' : p.who === 'origin' ? '隊上有小湘時戰力' : p.who === 'event-food' ? '吃了活動限定料理時戰力' : `${CHARACTERS[p.who]?.name || p.who}出戰時戰力`} +${Math.round(p.value * 100)}%`;
 // 信物櫃：拿到的亮著、點了看說明；沒拿到的只剩剪影
 function keepsakeShelf(ks, prog) {
-  const box = el('div', 'event-keepsakes'); const row = el('div', 'event-keepsakes__row'); const note = el('p', 'event-keepsakes__note', '打完上卷後重複討伐，打贏有機會拿到信物。');
+  const box = el('div', 'event-keepsakes'); const row = el('div', 'event-keepsakes__row'); const gotAll = ks.list.every(k => prog.keepsakes?.[k.id]); const note = el('p', 'event-keepsakes__note', gotAll ? '五件信物都收齊了。點一下看它們的故事和加成。' : '打完上卷後重複討伐，打贏有機會拿到信物。每件都有加成。');
   for (const k of ks.list) {
     const got = Boolean(prog.keepsakes?.[k.id]);
     const b = el('button', `event-keepsake${got ? ' is-got' : ''}`); b.type = 'button'; b.dataset.keepsake = k.id; b.setAttribute('aria-label', got ? k.name : '還沒拿到的信物');
     if (k.art) { const img = el('img'); img.src = k.art; img.alt = ''; img.loading = 'lazy'; b.append(img); }
     b.append(el('small', null, got ? k.name : '？'));
-    b.addEventListener('click', () => { row.querySelectorAll('.is-on').forEach(x => x.classList.remove('is-on')); b.classList.add('is-on'); note.textContent = got ? `${k.name}：${k.text}` : '還沒拿到。打完上卷後重複討伐，打贏有機會掉落。'; });
+    b.addEventListener('click', () => { row.querySelectorAll('.is-on').forEach(x => x.classList.remove('is-on')); b.classList.add('is-on'); note.textContent = got ? `${k.name}：${k.text}${k.perk ? `\n加成：${keepsakePerkText(k.perk)}（只在活動關卡）` : ''}` : '還沒拿到。打完上卷後重複討伐，打贏有機會掉落。'; });
     row.append(b);
   }
   box.append(row, note); return box;
@@ -4149,6 +4162,7 @@ function eventHub(def, sch, now) {
   if (sch.state === 'battle' || sch.state === 'shop') { const shop = el('button', 'text-action event-banner__shop', '墨玉閣 ⟶'); shop.type = 'button'; shop.addEventListener('click', () => { eventView = { id: def.id, view: 'shop' }; renderBattle(); }); bar.append(shop); }
   ban.append(bar); sec.append(ban);
   if (ks && ks.list.some(k => k.art)) sec.append(keepsakeShelf(ks, prog));
+  if (prog.titles?.length && def.titles) sec.append(titleRow(def, prog));
   if (sch.state !== 'battle') return sec;
   for (const ph of def.phases) {
     const p = sch.phases.find(x => x.id === ph.id);
@@ -4286,7 +4300,7 @@ function renderBattleStage() {
   const fc = battlePicked.length ? battle.forecast(state, battlePicked, id) : null;
   $('battle-forecast').innerHTML = '';
   if (fc) {
-    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}${fc.foodPower ? `（+${fc.foodPower}）` : ''}`].filter(Boolean).join(' · ');
+    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}${fc.foodPower ? `（+${fc.foodPower}）` : ''}`, fc.keepsakes?.list.length && `信物 +${Math.round(fc.keepsakes.power * 100)}%（${fc.keepsakes.list.map(k => k.name).join('、')}）`].filter(Boolean).join(' · ');
     $('battle-forecast').innerHTML = `<b></b><span></span>`;
     $('battle-forecast').querySelector('b').textContent = `隊伍戰力 ${fc.total} vs ${e.power} · ${fc.label}`;
     $('battle-forecast').querySelector('span').textContent = bonus || '沒有加成（帶 ✦ 的小湘有剋制效果）';
