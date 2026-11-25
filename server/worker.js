@@ -18,6 +18,9 @@
 //   GET  /ls/<dir>                    → [{ name, path, type: 'file'|'dir' }]
 //   POST /push/subscribe {endpoint, keys:{p256dh, auth}} → 玩家這支手機開啟通知
 //   POST /push/unsubscribe {endpoint}  → 關掉
+//   POST /timers {endpoint, keys, key, timers} → 回家／討伐提醒（不用邀請碼，見下面 timerRoute）
+//   POST /timers/off {endpoint, key}    → 這支手機不再收提醒
+//   Cron Trigger 每分鐘（* * * * *）→ runTimers 推出到期的提醒
 //
 // 手機通知（Web Push，湘 11/21）：審核員把審核結果、紙條、照片回覆、新委託寫進某位玩家的空間時，
 // 後台用 VAPID 金鑰（Worker secret VAPID_PRIVATE_JWK，不在 repo 裡）推一則通知到那位玩家開過通知的手機。
@@ -53,6 +56,10 @@ export async function ensureSchema(db) {
     db.prepare('CREATE TABLE IF NOT EXISTS players (id TEXT PRIMARY KEY, name TEXT, token_hash TEXT UNIQUE, created TEXT, seen TEXT, revoked INTEGER DEFAULT 0)'),
     db.prepare('CREATE TABLE IF NOT EXISTS files (key TEXT PRIMARY KEY, body BLOB, type TEXT, size INTEGER, updated TEXT)'),
     db.prepare('CREATE TABLE IF NOT EXISTS push_subs (endpoint TEXT PRIMARY KEY, player TEXT, p256dh TEXT, auth TEXT, created TEXT)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS timer_subs (endpoint TEXT PRIMARY KEY, key_hash TEXT, p256dh TEXT, auth TEXT, seen INTEGER)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS timers (endpoint TEXT, at INTEGER, title TEXT, body TEXT, tag TEXT)'),
+    db.prepare('CREATE INDEX IF NOT EXISTS timers_at ON timers (at)'),
+    db.prepare('CREATE INDEX IF NOT EXISTS timers_endpoint ON timers (endpoint)'),
   ]);
 }
 
@@ -117,19 +124,90 @@ async function vapidHeader(endpoint, jwk, subject) {
   const pub = b64u(cat(new Uint8Array([4]), unb64u(jwk.x), unb64u(jwk.y)));
   return `vapid t=${head}.${body}.${b64u(sig)}, k=${pub}`;
 }
+// 推一則通知到一個訂閱；回傳 'ok' | 'gone'（推播服務說這個訂閱已經不在了）| 'fail'
+async function pushOne(env, sub, note, ttl = 86400) {
+  const jwk = JSON.parse(env.VAPID_PRIVATE_JWK);
+  try {
+    const res = await fetch(sub.endpoint, { method: 'POST', headers: { Authorization: await vapidHeader(sub.endpoint, jwk, env.VAPID_SUBJECT || 'https://margin-protocol.github.io/dinosaur-collector/'), 'Content-Encoding': 'aes128gcm', 'Content-Type': 'application/octet-stream', TTL: String(ttl), Urgency: 'normal', Topic: String(note.tag || 'siang').replace(/[^\w-]/g, '').slice(0, 32) || 'siang' }, body: await encryptPush(JSON.stringify(note), sub) });
+    return res.status === 404 || res.status === 410 ? 'gone' : res.ok ? 'ok' : 'fail';
+  } catch { return 'fail'; }
+}
 export async function sendPush(db, env, player, note) {
   if (!env.VAPID_PRIVATE_JWK || !note) return 0;
-  const jwk = JSON.parse(env.VAPID_PRIVATE_JWK);
   const { results } = await db.prepare('SELECT endpoint, p256dh, auth FROM push_subs WHERE player = ?').bind(player).all();
   let sent = 0;
   await Promise.all(results.map(async (sub) => {
-    try {
-      const res = await fetch(sub.endpoint, { method: 'POST', headers: { Authorization: await vapidHeader(sub.endpoint, jwk, env.VAPID_SUBJECT || 'https://margin-protocol.github.io/dinosaur-collector/'), 'Content-Encoding': 'aes128gcm', 'Content-Type': 'application/octet-stream', TTL: '86400', Urgency: 'normal', Topic: note.tag }, body: await encryptPush(JSON.stringify(note), sub) });
-      if (res.status === 404 || res.status === 410) await db.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
-      else if (res.ok) sent += 1;
-    } catch {}
+    const r = await pushOne(env, sub, note);
+    if (r === 'gone') await db.prepare('DELETE FROM push_subs WHERE endpoint = ?').bind(sub.endpoint).run();
+    else if (r === 'ok') sent += 1;
   }));
   return sent;
+}
+
+/* ---------- 回家／討伐提醒（湘 11/25：所有玩家都能開，不用邀請碼） ----------
+   遊戲把「什麼時候回來」整份排好（合併、晚上安靜都在遊戲裡算好）送來，後台只負責時間到了推出去。
+   POST /timers {endpoint, keys:{p256dh, auth}, key, timers:[{at, title, body, tag}]} → 整份換掉（空陣列＝都取消）
+   POST /timers/off {endpoint, key} → 這支手機不再收提醒
+   key 是遊戲在這支手機產生的亂數，只存雜湊；同一個 endpoint 之後要帶同一把 key 才能改。 */
+export const TIMER_MAX = 8;
+export const TIMER_AHEAD_MS = 30 * 3600e3; // 最遠排到 30 小時後（出門最長 8 小時、晚上安靜會延到早上）
+const TIMER_HOSTS = /(^|\.)(googleapis\.com|push\.apple\.com|push\.services\.mozilla\.com|notify\.windows\.com)$/;
+export const timerEndpointOk = (u, env = {}) => { try { const x = new URL(u); return (x.protocol === 'https:' && TIMER_HOSTS.test(x.hostname)) || (Boolean(env.TIMER_ALLOW_LOCAL) && x.hostname === '127.0.0.1'); } catch { return false; } };
+const cleanText = (t, max) => String(t ?? '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, max);
+async function timerRoute(route, request, env) {
+  const db = env.DB;
+  const body = await request.json().catch(() => ({}));
+  const endpoint = String(body.endpoint || '');
+  if (!timerEndpointOk(endpoint, env) || endpoint.length > 1000) return fail(400, '通知設定格式不對');
+  if (!/^[\w-]{20,64}$/.test(body.key || '')) return fail(400, '通知設定格式不對');
+  const keyHash = await sha256(body.key);
+  const row = await db.prepare('SELECT key_hash FROM timer_subs WHERE endpoint = ?').bind(endpoint).first();
+  if (row && row.key_hash !== keyHash) return fail(403, '這支手機的通知設定對不上，請關掉再重新開一次');
+  if (route === '/timers/off') {
+    await db.batch([db.prepare('DELETE FROM timers WHERE endpoint = ?').bind(endpoint), db.prepare('DELETE FROM timer_subs WHERE endpoint = ?').bind(endpoint)]);
+    return json({ ok: true });
+  }
+  const p256dh = body.keys?.p256dh; const auth = body.keys?.auth;
+  if (!/^[\w-]{80,100}$/.test(p256dh || '') || !/^[\w-]{16,32}$/.test(auth || '')) return fail(400, '通知設定格式不對');
+  const list = Array.isArray(body.timers) ? body.timers : [];
+  if (list.length > TIMER_MAX) return fail(400, `一次最多排 ${TIMER_MAX} 則`);
+  const now = Date.now();
+  const timers = [];
+  for (const t of list) {
+    const at = Math.round(Number(t?.at));
+    if (!Number.isFinite(at) || at > now + TIMER_AHEAD_MS) return fail(400, '時間不對');
+    const title = cleanText(t.title, 40); const text = cleanText(t.body, 140);
+    if (!title || !text) return fail(400, '通知內容是空的');
+    if (at > now - 60e3) timers.push({ at, title, body: text, tag: cleanText(t.tag, 32).replace(/[^\w-]/g, '') || 'siang-home' });
+  }
+  await db.batch([
+    db.prepare('INSERT INTO timer_subs (endpoint, key_hash, p256dh, auth, seen) VALUES (?, ?, ?, ?, ?) ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth, seen = excluded.seen').bind(endpoint, keyHash, p256dh, auth, now),
+    db.prepare('DELETE FROM timers WHERE endpoint = ?').bind(endpoint),
+    ...timers.map((t) => db.prepare('INSERT INTO timers (endpoint, at, title, body, tag) VALUES (?, ?, ?, ?, ?)').bind(endpoint, t.at, t.title, t.body, t.tag)),
+  ]);
+  return json({ ok: true, count: timers.length });
+}
+// 每分鐘跑一次（Cron Trigger）：推出到期的提醒。免費方案一次最多 50 個對外連線、10ms CPU，所以一輪最多推 TIMER_BATCH 則，其餘下一分鐘接著推。
+export const TIMER_BATCH = 20;
+export async function runTimers(env, now = Date.now()) {
+  const db = env.DB;
+  if (!schemaReady) { await ensureSchema(db); schemaReady = true; }
+  if (!env.VAPID_PRIVATE_JWK) return 0;
+  await db.prepare('DELETE FROM timers WHERE at < ?').bind(now - 6 * 3600e3).run(); // 後台停太久沒推到的，就不補了
+  const { results } = await db.prepare('SELECT t.rowid AS id, t.endpoint, t.title, t.body, t.tag, s.p256dh, s.auth FROM timers t JOIN timer_subs s ON s.endpoint = t.endpoint WHERE t.at <= ? ORDER BY t.at LIMIT ?').bind(now, TIMER_BATCH).all();
+  if (!results.length) return 0;
+  await db.batch(results.map((r) => db.prepare('DELETE FROM timers WHERE rowid = ?').bind(r.id)));
+  let sent = 0; const gone = new Set();
+  await Promise.all(results.map(async (r) => {
+    const out = await pushOne(env, r, { title: r.title, body: r.body, tag: r.tag, kind: 'timer' }, 6 * 3600);
+    if (out === 'gone') gone.add(r.endpoint); else if (out === 'ok') sent += 1;
+  }));
+  if (gone.size) await db.batch([...gone].flatMap((e) => [db.prepare('DELETE FROM timers WHERE endpoint = ?').bind(e), db.prepare('DELETE FROM timer_subs WHERE endpoint = ?').bind(e)]));
+  return sent;
+}
+// 很久沒打開遊戲的手機（90 天）就從提醒名單拿掉
+export async function cleanTimerSubs(env, now = Date.now()) {
+  await env.DB.prepare('DELETE FROM timer_subs WHERE seen < ? AND endpoint NOT IN (SELECT endpoint FROM timers)').bind(now - 90 * 86400e3).run();
 }
 const validEndpoint = (u) => { try { const x = new URL(u); return x.protocol === 'https:' || (x.hostname === '127.0.0.1' && x.protocol === 'http:'); } catch { return false; } };
 
@@ -140,6 +218,7 @@ async function handle(request, env, ctx) {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
   if (route === '/' || route === '/health') return json({ ok: true, app: 'siang-collector' });
   if (!schemaReady) { await ensureSchema(db); schemaReady = true; }
+  if ((route === '/timers' || route === '/timers/off') && request.method === 'POST') return timerRoute(route, request, env);
 
   if (route === '/admin/claim' && request.method === 'POST') {
     const body = await request.json().catch(() => ({}));
@@ -255,5 +334,10 @@ export default {
   async fetch(request, env, ctx) {
     try { return await handle(request, env, ctx); }
     catch (err) { return fail(500, `後台出錯了：${err.message}`); }
+  },
+  async scheduled(event, env, ctx) {
+    const now = event?.scheduledTime || Date.now();
+    const job = runTimers(env, now).then(() => (new Date(now).getUTCHours() === 19 && new Date(now).getUTCMinutes() === 0 ? cleanTimerSubs(env, now) : 0));
+    if (ctx?.waitUntil) ctx.waitUntil(job); else await job;
   },
 };
