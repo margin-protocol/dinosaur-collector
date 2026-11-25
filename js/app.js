@@ -1,6 +1,9 @@
 import { renderBattleLog } from './battle-log.js';
 import { createBattleTheater } from './battle-theater.js';
 import { createEpilogueTheater } from './chapter-epilogue.js';
+import { buildStories } from './event-theater.js';
+const EVENT_THEATER_SKIN = 'b'; // 活動劇情劇場外觀（湘選；a 劇場／b 水墨卷軸／c 說書頭像）
+buildStories(EVENT_THEATER_SKIN);
 import { renderAtlas, renderTeamTools } from './team-ui.js';
 import { savePreset, ensureTeamBonds, effectText, teamBond } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
@@ -4279,6 +4282,12 @@ function renderBattleStage() {
   $('battle-enemy-name').textContent = e.name;
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;
   $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.event && st?.clears ? [e.story.before, '── 打完後 ──', e.story.after, e.story.ending && (e.eventStage === 'mo-05' ? '── 上卷結尾 ──' : '── 尾聲 ──'), e.story.ending].filter(Boolean).join('\n') : e.story.before); // 異世活動：通關後在關卡頁可以重看整段
+  if (e.story && e.event) { // 劇情劇場：開打前隨時看；打完後要先通關
+    const row = el('div', 'battle-story__play'); const base = `${e.event}:${e.eventStage}`;
+    if (epilogue.has(`${base}:before`)) row.append(epilogueButton(`${base}:before`, '▶ 看開打前劇情'));
+    if (st?.clears && epilogue.has(`${base}:after`)) row.append(epilogueButton(`${base}:after`, '▶ 重看打完後'));
+    if (row.children.length) $('battle-story').prepend(row);
+  }
   $('battle-enemy-intro').textContent = e.intro;
   $('battle-gift-hint').hidden = Boolean(e.wild || e.event); if (!e.wild && !e.event) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
   const busy = allBusy(); const now = Date.now();
@@ -4370,10 +4379,11 @@ async function collectBattle(id) {
   if (r.review) { guguAvatar(document.querySelector('#battle-result-review .gugu-review__avatar')); $('battle-review-label').textContent = `咕咕書評 · ${REVIEW_LABEL[r.review.kind] || ''}`; setParas($('battle-review-text'), r.review.text, 0); setParas($('battle-review-note'), r.review.note || '', 0); $('battle-review-note').hidden = !r.review.note; }
   $('battle-result-advice').hidden = !rep.advice; if (rep.advice) setParas($('battle-result-advice'), `💡 ${rep.advice.text}`, 0);
   const storyLines = [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), ...(r.story ? storyParas(`📖 ${r.story}`) : [])];
-  const epi = r.story && !r.snapshot && epilogue.has(r.enemy) ? r.enemy : null; pendingEpilogue = epi;
-  const epiLines = epi ? [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), '📖 這一章的故事迎來了尾聲。收下戰報後，會播放尾聲劇場。'] : storyLines;
+  const evEpi = r.event?.first && !r.snapshot ? `${r.event.id}:${r.event.stage}:after` : null; // 異世活動：第一次通關播這關的「打完後」劇場
+  const epi = evEpi && epilogue.has(evEpi) ? evEpi : r.story && !r.snapshot && epilogue.has(r.enemy) ? r.enemy : null; pendingEpilogue = epi;
+  const epiLines = epi ? [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), evEpi === epi ? '📖 收下戰報後，會播放這一關的劇情。' : '📖 這一章的故事迎來了尾聲。收下戰報後，會播放尾聲劇場。'] : storyLines;
   $('battle-result-story').hidden = !epiLines.length; $('battle-result-story').replaceChildren(...epiLines.map(t => el('span', 'para', t)));
-  if (epi) $('battle-result-story').append(epilogueButton(epi, '▶ 現在觀看尾聲', () => { pendingEpilogue = null; $('battle-result').close(); }));
+  if (epi) $('battle-result-story').append(epilogueButton(epi, evEpi === epi ? '▶ 現在觀看劇情' : '▶ 現在觀看尾聲', () => { pendingEpilogue = null; $('battle-result').close(); }));
   $('battle-result-gains').replaceChildren(...r.gains.map(g => Object.assign(document.createElement('li'), { textContent: g })));
   // 再打一次（湘 11/25）：收下後直接回到同一關的出戰畫面；剛打完的隊伍要休息，所以先幫忙選還能出戰的人
   const againKey = r.eventEnemy ? r.eventEnemy.key : r.enemy; const againOk = againKey && !(r.wild && rep.win) && battle.unlocked(state, againKey);

@@ -42,10 +42,12 @@ await p.reload();await p.waitForTimeout(300);await p.evaluate(async()=>{const E=
 await p.evaluate(()=>document.getElementById('open-battle')?.click());await p.waitForTimeout(400);
 await p.click('#battle-active .btn');await p.waitForTimeout(600);
 assert.match(await p.locator('#battle-result-gains').textContent(),/墨玉 \+36/);
-assert.match(await p.locator('#battle-result-story').textContent(),/我接的是護送，不是送嫁/,'首通播打完後');
+assert.match(await p.locator('#battle-result-story').textContent(),/會播放這一關的劇情/,'首通播打完後劇場');
 const saved=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v1')));
 assert.equal(saved.events.mo.stages['mo-01'].clears,1);assert.equal(saved.battle.stages['event:mo:mo-01'],undefined);
-await p.evaluate(()=>document.getElementById('battle-result').close());
+await p.evaluate(()=>document.getElementById('battle-result').close());await p.waitForTimeout(300);
+assert.equal(await p.locator('#chapter-epilogue[open] .epi__stage[data-skin="b"]').count(),1,'收下戰報自動播水墨卷軸劇場');
+await p.evaluate(()=>document.getElementById('chapter-epilogue').close());
 // 上卷打完、過 72 小時：下卷開
 await setup({hoursIn:73,cleared:['mo-01','mo-02','mo-03','mo-04','mo-05'],tokens:520});
 assert.equal(await p.locator('.event-hub [data-event-stage="mo-06"]').isDisabled(),false);

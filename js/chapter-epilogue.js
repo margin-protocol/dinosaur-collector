@@ -323,6 +323,9 @@ export const EPILOGUES = {
   },
 };
 export const epilogueFor = (enemyId) => EPILOGUES[enemyId] || null;
+// 其他劇情（異世活動）借用這個劇場：登記劇本＋演員＋背景。演員節點在播放時才補建。
+// ep.skin：劇場外觀（data-skin）；ep.endNote：結尾卡說明文字；ep.chapter 可以是字串（例如 'mo'）
+export function registerStory(id, ep, { actors = {}, bg = {} } = {}) { Object.assign(ACTORS, actors); Object.assign(BG, bg); EPILOGUES[id] = ep; }
 
 // 把沿用規則展開成每一句完整的畫面設定（測試也用這個檢查）
 export function resolveBeats(ep) {
@@ -347,7 +350,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     <div class="epi__spark" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i></div>
     <div class="epi__bar"><span class="epi__chip"></span><button type="button" class="epi__btn" data-a="auto" aria-pressed="false">自動</button><button type="button" class="epi__btn" data-a="log">紀錄</button><button type="button" class="epi__btn" data-a="skip">跳過</button><button type="button" class="epi__btn epi__close" data-a="close" aria-label="關閉尾聲劇場">×</button></div>
     <div class="epi__act" aria-hidden="true"></div>
-    <div class="epi__box" role="status" aria-live="polite"><span class="epi__name"></span><p class="epi__text"></p><span class="epi__count"></span><span class="epi__hint">點一下 ▼</span></div>
+    <div class="epi__box" role="status" aria-live="polite"><img class="epi__face" alt="" hidden><span class="epi__name"></span><p class="epi__text"></p><span class="epi__count"></span><span class="epi__hint">點一下 ▼</span></div>
     <div class="epi__card"><b></b><small></small></div>
     <div class="epi__stamp"></div>
     <div class="epi__log" hidden><button type="button" class="epi__btn epi__close" data-a="log-close">關閉</button><h3 id="epilogue-log-title">對話紀錄</h3><div class="epi__log-list"></div></div>
@@ -398,6 +401,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     q('.epi__chip').textContent = b.act || ep.title;
     if (b.newAct && !reduced.matches) { const act = q('.epi__act'); act.textContent = b.act; act.classList.remove('is-on'); void act.offsetWidth; act.classList.add('is-on'); }
     const onStage = new Map(b.cast);
+    for (const [key] of b.cast) if (!actors[key] && ACTORS[key]) { const node = el('div', 'epi__actor is-out'); node.dataset.key = key; const img = el('img'); img.alt = ACTORS[key].name; img.decoding = 'async'; node.append(img); castBox.append(node); actors[key] = { node, img, loaded: false }; }
     for (const [key, a] of Object.entries(actors)) {
       const slot = onStage.get(key);
       if (slot && !a.loaded) { loadWithFallback(a.img, ACTORS[key].src); a.loaded = true; }
@@ -415,6 +419,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     stage.classList.remove('is-shake'); if (b.shake && !reduced.matches) { void stage.offsetWidth; stage.classList.add('is-shake'); }
     if (b.kind === 'stamp') { q('.epi__stamp').textContent = b.stamp; full = ''; return finishLine(2600); }
     const who = b.who ? ACTORS[b.who].name : '';
+    const face = q('.epi__face'), src = b.who && ACTORS[b.who].src?.[0]; face.hidden = !src; if (src && !face.src.endsWith(src)) face.src = src; // 說書版：對話框裡的頭像
     q('.epi__name').textContent = who; box.classList.toggle('is-narration', !who); box.classList.toggle('is-voice', b.voice);
     full = b.text; type(b.hold);
   }
@@ -438,6 +443,8 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     if (beats[index] !== b) { index = beats.length - 1; render(); stopTimers(); }
     stage.dataset.kind = 'end'; q('.epi__end').hidden = false;
     q('.epi__end small').textContent = ep.endSmall || `CHAPTER ${ep.chapter} CLEAR`;
+    q('.epi__end-row [data-a="close"]').textContent = ep.closeLabel || '收下';
+    q('.epi__end-card p').textContent = ep.endNote || '這段故事收進「咕咕的故事檔案館」的討伐故事，隨時可以重看。';
     q('#epilogue-title').textContent = ep.endTitle || `第${'一二三四五六七八九十'[ep.chapter - 1] || ep.chapter}章《${ep.title}》・完`;
     const seq = ep.sequel && EPILOGUES[ep.sequel], seqBtn = q('[data-a="sequel"]');
     seqBtn.hidden = !seq; seqBtn.textContent = seq ? `▶ 接著看${seq.subtitle.split('・')[0]}《${seq.title}》` : '';
@@ -453,7 +460,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
   function play(enemyId) {
     ep = epilogueFor(enemyId); if (!ep) return false;
     beats = resolveBeats(ep); index = 0; auto = false; q('[data-a="auto"]').setAttribute('aria-pressed', 'false');
-    q('.epi__end').hidden = true; q('.epi__log').hidden = true; stage.dataset.chapter = String(ep.chapter);
+    q('.epi__end').hidden = true; q('.epi__log').hidden = true; stage.dataset.chapter = String(ep.chapter); stage.dataset.skin = ep.skin || '';
     if (!dialog.open) dialog.showModal();
     render(); stage.focus({ preventScroll: true }); onActivity();
     return true;

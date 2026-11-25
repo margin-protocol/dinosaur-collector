@@ -166,3 +166,39 @@
   .epi__stage[data-kind="stamp"] .epi__stamp { opacity:1; }
   .has-notes .epi__notes i { opacity:1; }
 }
+
+/* ───── 異世活動劇情（js/event-theater.js）外觀：data-skin ───── */
+.epi__face { display:none; }
+.epi__face[hidden] { display:none !important; }
+/* B 水墨卷軸：宣紙對話框、朱印名牌、背景淡淡的水墨邊 */
+.epi__stage[data-skin="b"] .epi__bg { filter:saturate(.78) sepia(.12) contrast(.96); }
+.epi__stage[data-skin="b"]::after { background:radial-gradient(115% 85% at 50% 38%,transparent 55%,#2a1f1a99), linear-gradient(transparent 62%,#1b1411aa); }
+.epi__stage[data-skin="b"] .epi__box { border:0; border-radius:4px; padding:18px 18px 28px; background:
+  linear-gradient(90deg,#3a2a2022,transparent 6%,transparent 94%,#3a2a2022),
+  url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .45 0 0 0 0 .38 0 0 0 0 .3 0 0 0 .08 0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E"),
+  #f3ead9; color:#2b211c; box-shadow:0 10px 26px #0006, inset 0 0 0 1px #8c6b4f55, inset 0 0 22px #b8946a33; }
+.epi__stage[data-skin="b"] .epi__box::before, .epi__stage[data-skin="b"] .epi__box::after { content:""; position:absolute; top:-5px; bottom:-5px; width:9px; border-radius:5px; background:linear-gradient(90deg,#5b3a28,#8a5a3c 45%,#4a2e20); box-shadow:0 2px 4px #0005; }
+.epi__stage[data-skin="b"] .epi__box::before { left:-4px; } .epi__stage[data-skin="b"] .epi__box::after { right:-4px; }
+.epi__stage[data-skin="b"] .epi__name { top:-16px; left:16px; padding:5px 10px 4px; border-radius:3px; background:#a4302a; color:#fbefe0; font-size:13px; letter-spacing:.18em; box-shadow:0 0 0 2px #f3ead9, 0 0 0 3px #a4302a; transform:rotate(-1.5deg); }
+.epi__stage[data-skin="b"] .epi__text { color:#2b211c; font-size:15.5px; }
+.epi__stage[data-skin="b"] .epi__box.is-narration .epi__text { color:#5e4d40; font-style:normal; }
+.epi__stage[data-skin="b"] .epi__count, .epi__stage[data-skin="b"] .epi__hint { color:#7a6352; }
+.epi__stage[data-skin="b"] .epi__chip { border-radius:3px; background:#1d1714cc; color:#f3ead9; letter-spacing:.2em; }
+.epi__stage[data-skin="b"] .epi__act { top:16%; left:auto; right:9%; width:auto; writing-mode:vertical-rl; font-size:26px; letter-spacing:.3em; color:#f7efe2; text-shadow:0 0 14px #000a, 0 2px 4px #000c; }
+.epi__stage[data-skin="b"] .epi__actor img { filter:drop-shadow(0 0 1px #f3ead9) drop-shadow(0 8px 8px #0006); }
+.epi__stage[data-skin="b"] .epi__card { background:#f3ead9; color:#2b211c; }
+/* C 說書：不站立繪，背景整張慢慢推近；講話的人頭像放進對話框 */
+.epi__stage[data-skin="c"] .epi__cam { animation:epi-drift 24s ease-in-out infinite alternate; }
+@keyframes epi-drift { from { transform:scale(1.02) translate(0,0); } to { transform:scale(1.12) translate(-3%,-2%); } }
+.epi__stage[data-skin="c"] .epi__box { padding-left:96px; min-height:25%; }
+.epi__stage[data-skin="c"] .epi__face { display:block; position:absolute; left:12px; top:14px; width:72px; height:72px; border-radius:50%; object-fit:cover; object-position:50% 6%; background:#f3ead9; border:2px solid var(--t-accent); box-shadow:0 3px 10px #0004; }
+.epi__stage[data-skin="c"] .epi__name { left:96px; }
+.epi__stage[data-skin="c"] .epi__box.is-narration { padding-left:16px; }
+@media (prefers-reduced-motion: reduce) { .epi__stage[data-skin="c"] .epi__cam { animation:none; } }
+.battle-story__play { display:flex; gap:8px; margin:0 0 8px; }
+.battle-story__play .epilogue-cta { margin:0; flex:1; }
+.epi__stage[data-skin="b"] .epi__end { background:linear-gradient(transparent 30%,#1b1411c0); }
+.epi__stage[data-skin="b"] .epi__end-card { border:0; border-radius:4px; background:#f3ead9; color:#2b211c; box-shadow:0 10px 26px #0006, inset 0 0 0 1px #8c6b4f55; }
+.epi__stage[data-skin="b"] .epi__end-card small, .epi__stage[data-skin="b"] .epi__end-card p { color:#6a5546; }
+.epi__stage[data-skin="b"] .epi__end-row .btn { border-radius:4px; border-color:#8c6b4f88; color:#2b211c; background:transparent; }
+.epi__stage[data-skin="b"] .epi__end-row .btn[data-a="close"] { background:#a4302a; border-color:#a4302a; color:#fbefe0; }
