@@ -31,7 +31,7 @@ await g.reload();await g.waitForFunction(k=>JSON.parse(localStorage.getItem(k)).
 await g.locator('#review-result[open]').waitFor();assert.match(await g.textContent('#review-result-title'),/通過了/);assert.match(await g.textContent('#review-result-reward'),/100 能量/);assert.match(await g.textContent('#review-result-note'),/好好吃/);
 if(process.env.SHOT_RESULT) await g.screenshot({path:process.env.SHOT_RESULT});
 await g.click('#review-result-ok');await g.waitForTimeout(300);assert.equal(await g.locator('#review-result[open]').count(),0);
-let s=await save();assert.equal(s.energy>=100,true);assert.equal(s.memories[0].note,'看起來好好吃！下次帶我去。');assert.ok(s.memories[0].thumb.startsWith('data:image/jpeg'));
+let s=await save();assert.equal(s.energy>=100,true);assert.equal(s.memories[0].note,'看起來好好吃！下次帶我去。');assert.equal(s.memories[0].thumb,undefined,'縮圖不放存檔');assert.ok((await g.evaluate(p=>import('/js/thumbs.js').then(m=>m.getThumb(p)),s.memories[0].photo)||'').startsWith('data:image/jpeg'),'縮圖在手機縮圖倉庫');
 await g.reload();await g.waitForTimeout(1500);s=await save();assert.equal(s.memories.length,1,'review applied once');
 await g.click('#open-center');await g.click('#open-memories');await g.locator('.memory').click();await g.locator('#memory-view[open]').waitFor();assert.match(await g.textContent('#memory-view-note'),/好好吃/);
 await g.waitForFunction(()=>document.querySelector('#memory-view-img').src.startsWith('blob:'));

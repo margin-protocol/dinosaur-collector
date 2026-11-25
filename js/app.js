@@ -21,6 +21,7 @@ import { HERO_SHOP } from './badge-heroes.js';
 import { createAmbience, startChats, attachSnackDrag } from './home-life.js';
 import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
+import { putThumb, showThumb, thumbKeyFor, offloadThumbs, stripThumbs } from './thumbs.js';
 import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS, PICK_TIERS, FOSSIL_ENERGY } from './fossils.js';
 import { FLAVORS, makeOffer, eggLabel, naughtyRequest, NAUGHTY_BONUS } from './egg-traits.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
@@ -93,9 +94,19 @@ function daysSince(iso) {
   return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
 }
 
+let saveWarned = false;
 // 開遊戲的第一次存檔：順便結算「住在首頁的小湘每天 ♡+2」，不另外多存一次
 const initialSave = await updateState(current => ({ homeBond: homeTick(current, residentsFor(current.dex), todayKey()) }));
 let state = initialSave.state;
+// 舊存檔搬家（11/25）：存檔裡的照片縮圖搬到手機縮圖倉庫，存檔變小，才不會存不進去、備份也不會超過上限
+void offloadThumbs(state).then(moved => moved.size ? updateState(current => { stripThumbs(current, moved); }) : null).then(t => { if (t) state = t.state; }).catch(() => {});
+// 手機空間滿了存不進去時要講（以前會安靜地只存在記憶體裡，關掉遊戲進度就不見了）
+globalThis.addEventListener?.('siang-save-failed', () => {
+  if (saveWarned) return; saveWarned = true;
+  const el = $('save-warning'); if (el) el.hidden = false;
+});
+$('save-warning-x')?.addEventListener('click', () => { $('save-warning').hidden = true; });
+globalThis.addEventListener?.('siang-save-ok', () => { saveWarned = false; const el = $('save-warning'); if (el) el.hidden = true; });
 if (!state.egg) state.egg = newEgg('ordinary'); // 培育槽不留空：孵完就送來下一顆
 let eggView = null;
 let displayedEggId = null;
@@ -2489,7 +2500,8 @@ function nextReviewResult() {
   $('review-result-kicker').textContent = r.approved ? 'COMMISSION APPROVED' : 'COMMISSION RETURNED';
   $('review-result-title').textContent = r.approved ? '委託通過了！' : '委託被退回了';
   $('review-result-mission').textContent = `「${r.mission.title}」`;
-  $('review-result-img').hidden = !r.thumb; if (r.thumb) $('review-result-img').src = r.thumb;
+  $('review-result-img').hidden = true; $('review-result-img').removeAttribute('src');
+  void showThumb($('review-result-img'), { thumb: r.thumb, key: r.thumbKey, cloud: thumbCloud() }).then(how => { if (how !== 'fallback') $('review-result-img').hidden = false; });
   $('review-result-img').alt = `${r.mission.title} 的照片`;
   $('review-result-reward').hidden = !r.approved;
   $('review-result-reward').textContent = r.approved ? `🎁 獲得 ${describeReward(r.mission.reward, CHARACTERS, EGGS)}，照片收進記憶檔案` : '';
@@ -2542,14 +2554,14 @@ async function syncMissions() {
         if (r.approved) {
           applyReward(current, mission.reward, 'mission');
           current.missions.status[r.mission] = 'approved';
-          current.memories.push({ id: `m-${r.mission}`, kind: 'mission', title: mission.title, note: String(r.note || '').slice(0, 600), at: r.createdAt || new Date().toISOString(), thumb: pending.thumb, photo: `submissions/${r.mission}/${r.submission}.jpg` });
+          current.memories.push({ id: `m-${r.mission}`, kind: 'mission', title: mission.title, note: String(r.note || '').slice(0, 600), at: r.createdAt || new Date().toISOString(), ...(pending.thumb ? { thumb: pending.thumb } : {}), photo: `submissions/${r.mission}/${r.submission}.jpg` });
           delete current.missions.pending[r.mission]; delete current.missions.notes[r.mission];
         } else {
           current.missions.status[r.mission] = 'rejected';
           current.missions.notes[r.mission] = String(r.note || '').slice(0, 600);
           delete current.missions.pending[r.mission];
         }
-        applied.push({ ...r, mission, thumb: pending.thumb || '' });
+        applied.push({ ...r, mission, thumb: pending.thumb || '', thumbKey: thumbKeyFor(r.mission, r.submission) });
       }
       return { fresh, applied, badSeal };
     });
@@ -2571,7 +2583,8 @@ function renderMissions() {
     const st = missionStatus(m);
     const expired = st !== 'approved' && m.expires && Date.now() > Date.parse(m.expires);
     const el = document.createElement('article'); el.className = `commission${st === 'open' || st === 'rejected' ? ' is-open' : ''}`;
-    if (st === 'submitted' && state.missions.pending[m.id]?.thumb) { const img = document.createElement('img'); img.className = 'commission__thumb'; img.src = state.missions.pending[m.id].thumb; img.alt = ''; el.append(img); }
+    const pend = st === 'submitted' && state.missions.pending[m.id];
+    if (pend) { const img = document.createElement('img'); img.className = 'commission__thumb'; img.alt = ''; img.hidden = true; el.append(img); void showThumb(img, { thumb: pend.thumb, key: pend.sid && thumbKeyFor(m.id, pend.sid), cloud: thumbCloud(), fallback: () => img.remove() }).then(how => { if (how !== 'fallback') img.hidden = false; }); }
     const h = document.createElement('h3'); h.textContent = m.title;
     const body = document.createElement('p'); body.textContent = m.body;
     const info = document.createElement('small');
@@ -2609,7 +2622,8 @@ $('mission-input').addEventListener('change', async () => {
     const cloud = createCloud(cloudConfig());
     await cloud.putBytes(`submissions/${id}/${sid}.jpg`, bytes, 'submit photo');
     await cloud.putJSON(`submissions/${id}/${sid}.json`, { mission: id, sid, at: new Date().toISOString() }, 'submit photo');
-    const t = await updateState(current => { current.missions.pending[id] = { sid, thumb, at: new Date().toISOString() }; delete current.missions.status[id]; });
+    const kept = await putThumb(thumbKeyFor(id, sid), thumb); // 縮圖放倉庫；倉庫不能用才退回存在存檔裡
+    const t = await updateState(current => { current.missions.pending[id] = { sid, ...(kept ? {} : { thumb }), at: new Date().toISOString() }; delete current.missions.status[id]; });
     state = t.state; renderAll(); renderMissions();
     $('missions-status').textContent = '上傳好了！等湘審核，通過會收進記憶檔案。';
     if (cloudConfig()?.kind === 'siang' && (await pushState().catch(() => 'unsupported')) === 'off') $('missions-status').textContent += '\n想在審完時收到通知？到「雲端與備份」開啟手機通知 🔔';
@@ -2617,12 +2631,18 @@ $('mission-input').addEventListener('change', async () => {
 });
 
 // 記憶檔案
+// 縮圖：存檔裡的舊縮圖 → 手機縮圖倉庫 → 雲端原圖重做一張 → 角色立繪（約會紀念本來就沒有照片）
+function thumbCloud() { const c = cloudConfig(); return c ? createCloud(c) : null; }
+function showMemoryThumb(img, m, always = false) {
+  const fallback = () => { if (m.character || always) loadWithFallback(img, characterSources(CHARACTERS[m.character]?.image || 'siang-014-date')); };
+  return showThumb(img, { thumb: m.thumb, key: m.photo, cloud: m.photo ? thumbCloud() : null, fallback });
+}
 function openMemories() {
   const list = [...state.memories].sort((a, b) => String(b.at).localeCompare(String(a.at)));
   $('memories-intro').textContent = list.length ? `一共 ${list.length} 份記憶。` : '完成湘的委託、跟湘約會、寄照片給湘，回憶就會收在這裡。';
   $('memories-grid').replaceChildren(...list.map(m => {
     const el = document.createElement('button'); el.type = 'button'; el.className = `memory memory--${m.kind}`;
-    const img = document.createElement('img'); img.alt = ''; if (m.thumb) img.src = m.thumb; else if (m.character) loadWithFallback(img, characterSources(CHARACTERS[m.character]?.image || 'siang-014-date'));
+    const img = document.createElement('img'); img.alt = ''; void showMemoryThumb(img, m);
     const t = document.createElement('span'); t.textContent = m.title;
     const d = document.createElement('small'); d.textContent = new Date(m.at).toLocaleDateString('zh-TW');
     el.append(img, t, d); el.addEventListener('click', () => void openMemory(m)); return el;
@@ -2631,7 +2651,7 @@ function openMemories() {
 }
 async function openMemory(m) {
   const img = $('memory-view-img');
-  img.removeAttribute('src'); if (m.thumb) img.src = m.thumb; else loadWithFallback(img, characterSources(CHARACTERS[m.character]?.image || 'siang-014-date'));
+  img.removeAttribute('src'); void showMemoryThumb(img, m, true);
   $('memory-view-date').textContent = `${{ date: '約會紀念', postcard: '寄給湘的照片' }[m.kind] || '委託'} · ${new Date(m.at).toLocaleDateString('zh-TW')}`;
   $('memory-view-title').textContent = m.kind === 'postcard' ? (m.text || '寄給湘的照片') : m.title;
   $('memory-view-note').textContent = m.note || '';
@@ -2709,7 +2729,8 @@ $('postcard-form').addEventListener('submit', async event => {
     const cloud = createCloud(cloudConfig());
     await cloud.putBytes(`postcards/${id}.jpg`, bytes, 'send postcard');
     await cloud.putJSON(`postcards/${id}.json`, { id, text, at: new Date().toISOString() }, 'send postcard');
-    const t = await updateState(current => { current.memories.push({ id: `p-${id}`, kind: 'postcard', title: text ? text.split('\n')[0].slice(0, 30) : '寄給湘的照片', text, note: '', at: new Date().toISOString(), thumb, photo: `postcards/${id}.jpg`, postcard: id }); });
+    const kept = await putThumb(`postcards/${id}.jpg`, thumb);
+    const t = await updateState(current => { current.memories.push({ id: `p-${id}`, kind: 'postcard', title: text ? text.split('\n')[0].slice(0, 30) : '寄給湘的照片', text, note: '', at: new Date().toISOString(), ...(kept ? {} : { thumb }), photo: `postcards/${id}.jpg`, postcard: id }); });
     state = t.state; renderAll();
     postcardFile = null; $('postcard-preview').hidden = true; $('postcard-pick-text').hidden = false; $('postcard-text').value = '';
     $('postcard-status').textContent = '寄出了！湘回覆的話會出現在記憶檔案裡。';

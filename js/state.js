@@ -31,13 +31,16 @@ export function loadState() {
   return hydrateProgression(fresh());
 }
 
+const notify = (type) => { try { globalThis.dispatchEvent?.(new Event(type)); } catch {} };
 export function saveState(state) {
   try {
     localStorage.setItem(KEY, JSON.stringify(state));
+    if (volatileState) notify('siang-save-ok'); // 之前存不進去、現在又可以了
     volatileState = null;
   } catch {
     volatileState = JSON.stringify(state);
-    // Storage unavailable: retain this session without resetting progress.
+    // 存不進去（通常是手機空間滿了）：這次先留在記憶體裡不重置進度，但要讓畫面提醒玩家（11/25）
+    notify('siang-save-failed');
   }
 }
 
