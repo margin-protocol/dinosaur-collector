@@ -1167,9 +1167,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .fold-minis__one { padding:0; border:0; color:inherit; cursor:pointer; position:relative; display:grid; place-items:center; width:46px; height:46px; border-radius:10px; background:var(--t-panel,#0002); }
 .fold-minis__one.is-locked { opacity:.35; filter:grayscale(1); }
 .fold-minis__one i { position:absolute; right:-3px; bottom:-3px; width:16px; height:16px; border-radius:50%; display:grid; place-items:center; font:700 10px/1 sans-serif; font-style:normal; background:var(--t-accent,#c47); color:#fff; }
-.battle-tabs { display:flex; gap:6px; margin:10px 0 4px; padding:4px; border:1px solid var(--t-line,#ad96b14d); border-radius:999px; overflow-x:auto; scrollbar-width:none; }
-.battle-tabs__tab { flex:1 0 auto; min-height:40px; padding:6px 12px; border:0; border-radius:999px; background:none; color:var(--t-muted); font:13px var(--font-display); white-space:nowrap; }
-.battle-tabs__tab.is-on { background:var(--t-selected,#ffd9a826); color:var(--t-text); }
 
 /* 戰報：再打一次（湘 11/25） */
 .battle-result__actions { display:flex; gap:8px; }

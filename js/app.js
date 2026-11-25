@@ -4068,17 +4068,14 @@ function renderBattle() {
       sec.append(h, grid); $('battle-map').append(sec);
     }
   }
-  if (!inStage && !inTrain) battleTabs();
   if (inStage) renderBattleStage();
 }
 // ── 討伐頁收合（湘 11/25：頁面太長）。收合狀態只存在這支手機
-// 預覽：localStorage FOLD_LOOK_KEY = a 標題列收合／b 分頁／c 收成小圖示
-const FOLD_KEY = 'siang-collector:battle-fold:v1', FOLD_LOOK_KEY = 'siang-collector:battle-fold-look:v1', BATTLE_TAB_KEY = 'siang-collector:battle-tab:v1';
-const foldLook = () => { try { return localStorage.getItem(FOLD_LOOK_KEY) || 'off'; } catch { return 'off'; } }; // 湘還沒選，先不收合（off）
+// 湘 11/25 選 C：收起來留一排小怪圖示（打過的有勾），點圖示直接進那一關；全部打完的區塊預設收起
+const FOLD_KEY = 'siang-collector:battle-fold:v1';
 const foldSaved = () => { try { return JSON.parse(localStorage.getItem(FOLD_KEY) || '{}') || {}; } catch { return {}; } };
 // head：區塊標題；body：要收起來的元素；done：全部打完的區塊預設收起
 function foldable(head, body, key, { summary = '', done = false, minis = null } = {}) {
-  const look = foldLook(); if (look !== 'a' && look !== 'c') return;
   const bodies = [].concat(body); const saved = foldSaved();
   const closed = key in saved ? Boolean(saved[key]) : done;
   const title = head.textContent; head.textContent = ''; head.classList.add('fold-head');
@@ -4087,25 +4084,14 @@ function foldable(head, body, key, { summary = '', done = false, minis = null } 
   btn.addEventListener('click', () => { const next = foldSaved(); next[key] = !closed; try { localStorage.setItem(FOLD_KEY, JSON.stringify(next)); } catch {} renderBattle(); });
   head.append(btn);
   for (const b of bodies) b.hidden = closed;
-  if (closed && look === 'c' && minis?.length) head.classList.add('has-minis');
-  if (closed && look === 'c' && minis?.length) {
+  if (closed && minis?.length) head.classList.add('has-minis');
+  if (closed && minis?.length) {
     // 湘 11/25：點小圖示直接進那一關；還沒解鎖的點了就展開整章
     const strip = el('div', 'fold-minis');
     strip.append(...minis.map(m => { const w = el('button', `fold-minis__one${m.done ? ' is-done' : ''}${m.locked ? ' is-locked' : ''}`); w.type = 'button'; w.setAttribute('aria-label', m.locked ? `${title}：展開` : `進入關卡`); w.append(enemyArt(m.key, 'is-mini')); if (m.done) w.append(el('i', null, '✓'));
       w.addEventListener('click', () => { if (m.locked) { btn.click(); return; } battleEnemy = m.key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); }); return w; }));
     head.append(strip);
   }
-}
-function battleTabs() {
-  if (foldLook() !== 'b') return;
-  const map = $('battle-map'); const groups = [['event', '活動'], ['wild', '野外巡邏'], ['story', '主線章節'], ['extra', '特殊關卡']].filter(([g]) => map.querySelector(`[data-group="${g}"]`));
-  if (groups.length < 2) return;
-  let cur; try { cur = localStorage.getItem(BATTLE_TAB_KEY); } catch {}
-  if (!groups.some(([g]) => g === cur)) cur = groups[0][0];
-  const bar = el('div', 'battle-tabs'); bar.setAttribute('role', 'tablist');
-  bar.append(...groups.map(([g, name]) => { const t = el('button', `battle-tabs__tab${g === cur ? ' is-on' : ''}`, name); t.type = 'button'; t.setAttribute('role', 'tab'); t.setAttribute('aria-selected', String(g === cur)); t.addEventListener('click', () => { try { localStorage.setItem(BATTLE_TAB_KEY, g); } catch {} renderBattle(); }); return t; }));
-  for (const sec of map.querySelectorAll('[data-group]')) sec.hidden = sec.dataset.group !== cur;
-  const roster = $('siang-roster'); if (roster) roster.after(bar); else map.prepend(bar);
 }
 // ── 異世活動（2.0 · 湘 11/25）：討伐頁最上面一區；資料全在 events.js，這裡只負責畫
 let eventView = null; // null＝關卡；{ id, view: 'shop' }＝墨玉閣
