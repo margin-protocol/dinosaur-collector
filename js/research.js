@@ -1,17 +1,17 @@
 import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
 import { RECIPES } from './recipes.js';
-import { labStatus, fmtLeft } from './lab.js';
+import { labStatuses, labStatusFor, labSlots, freeSlot, fmtLeft, LAB_SLOT_COST } from './lab.js';
 const asset = path => new URL(path, new URL('../', import.meta.url)).href;
 const ownedFor = state => Object.values(CHARACTERS).filter(c => state.dex?.[c.no]);
 
 // The real game provides onStudy (persistent notes). The independent demo remains read-only.
-export function createResearch({ root, getState, onCollect = () => {}, onStudy = null, onBrew = null, onCancelBrew = null }) {
+export function createResearch({ root, getState, onCollect = () => {}, onStudy = null, onBrew = null, onCancelBrew = null, onBuyLab = null }) {
   root.innerHTML = `
     <div class="research-eyebrow"><span>RESEARCH / 01</span><span class="research-preview-tag">${onStudy ? "研究筆記" : "介面預覽"}</span></div>
     <h1 class="research-heading">孵化研究室</h1>
     <p class="research-intro">兩位夥伴，一顆蛋。一點新的可能。</p>
     <section class="research-locked" hidden><span class="research-lock-mark" aria-hidden="true">＋</span><h2>先讓家裡熱鬧一點。</h2><p class="research-unlock-copy"></p><button type="button" class="research-primary" data-collect>前往培育 <span aria-hidden="true">⟶</span></button></section>
-    <section class="research-lab" hidden aria-live="polite"></section>
+    <section class="research-labs" hidden aria-live="polite"></section>
     <div class="research-workspace">
       <div class="research-stage" role="group" aria-label="選擇兩位研究搭檔">
         <button type="button" class="research-slot" data-slot="0"><span class="research-slot-art"></span><span class="research-slot-name"></span><span class="research-slot-action"></span></button>
@@ -34,29 +34,53 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     image.alt = character.name;
     loadWithFallback(image, characterSources(character.image).map(asset));
   }
-  // 研究室：正在調配的那一組（一次一組）
-  function renderLab() {
-    const panel = find('.research-lab'); if (!onBrew) { panel.hidden = true; return; }
-    const st = labStatus(getState());
-    panel.hidden = !st; if (!st) { panel.replaceChildren(); return; }
-    const names = st.members.map(no => CHARACTERS[no]?.name || '小湘').join(' × ');
-    panel.innerHTML = `<div class="research-lab__art"></div><div class="research-lab__body"><small>IN THE LAB · 調配中</small><h2></h2><p class="research-lab__who"></p><div class="research-lab__bar"><span></span></div><p class="research-lab__left"></p><button type="button" class="research-lab__cancel" data-cancel-brew>中止調配</button></div>`;
-    const art = panel.querySelector('.research-lab__art');
+  // 研究室：每個研究欄位一張卡（湘 11/25 選 A：上下兩張卡）。第二格沒開時，有在調配就多一張虛線卡可以花化石開
+  function labCard(st, i) {
+    const card = document.createElement('div'); card.className = 'research-lab'; card.dataset.lab = String(i);
+    card.innerHTML = `<div class="research-lab__art"></div><div class="research-lab__body"><small></small><h2></h2><p class="research-lab__who"></p><div class="research-lab__bar"><span></span></div><p class="research-lab__left"></p><button type="button" class="research-lab__cancel" data-cancel-brew="${i}">中止調配</button></div>`;
+    const art = card.querySelector('.research-lab__art');
     for (const no of st.members) { const img = new Image(); portrait(img, CHARACTERS[no]); art.append(img); }
-    panel.querySelector('h2').textContent = `《${st.recipe.note.title}》`;
-    panel.querySelector('.research-lab__who').textContent = names;
+    card.querySelector('small').textContent = `LAB ${String(i + 1).padStart(2, '0')} · 調配中`;
+    card.querySelector('h2').textContent = `《${st.recipe.note.title}》`;
+    card.querySelector('.research-lab__who').textContent = st.members.map(no => CHARACTERS[no]?.name || '小湘').join(' × ');
     const total = st.recipe.days * 864e5, pct = Math.min(100, Math.round(100 * (total - st.left) / total));
-    panel.querySelector('.research-lab__bar span').style.width = `${pct}%`;
-    panel.querySelector('.research-lab__left').textContent = st.ready ? '調配完成！紀念蛋馬上送到～' : `第 ${st.day} / ${st.recipe.days} 天 · 還要 ${fmtLeft(st.left)}`;
+    card.querySelector('.research-lab__bar span').style.width = `${pct}%`;
+    card.querySelector('.research-lab__left').textContent = st.ready ? '調配完成！紀念蛋馬上送到～' : `第 ${st.day} / ${st.recipe.days} 天 · 還要 ${fmtLeft(st.left)}`;
+    return card;
+  }
+  function emptyCard(i, locked) {
+    const card = document.createElement('div'); card.className = 'research-lab research-lab--empty'; card.dataset.lab = String(i);
+    card.innerHTML = `<div class="research-lab__flask" aria-hidden="true">＋</div><div class="research-lab__body"><small></small><h2></h2><p class="research-lab__who"></p></div>`;
+    card.querySelector('small').textContent = `LAB ${String(i + 1).padStart(2, '0')} · ${locked ? '未開放' : '空著'}`;
+    card.querySelector('h2').textContent = locked ? '第二個研究欄位' : '這一格空著';
+    if (!locked) { card.querySelector('.research-lab__who').textContent = '從研究紀錄挑一組找到的配方，放進來一起調配。'; return card; }
+    const have = getState().fossils || 0, short = Math.max(0, LAB_SLOT_COST - have);
+    card.querySelector('.research-lab__who').textContent = short ? `同時調配兩組配方，紀念蛋來得更快。還差 ${short} 化石。` : '同時調配兩組配方，紀念蛋來得更快。';
+    const buy = document.createElement('button'); buy.type = 'button'; buy.className = 'research-lab__buy'; buy.dataset.buyLab = '';
+    buy.disabled = Boolean(short); buy.textContent = `🦴 ${LAB_SLOT_COST} 化石開放`;
+    const status = document.createElement('p'); status.className = 'research-lab__status'; status.setAttribute('role', 'status');
+    card.querySelector('.research-lab__body').append(buy, status);
+    return card;
+  }
+  function renderLab() {
+    const panel = find('.research-labs'); if (!onBrew) { panel.hidden = true; return; }
+    const state = getState(), sts = labStatuses(state), slotsOpen = labSlots(state), used = sts.filter(Boolean).length;
+    panel.hidden = !used; if (!used) { panel.replaceChildren(); return; }
+    const head = document.createElement('div'); head.className = 'research-labs__head';
+    head.innerHTML = '<span>IN THE LAB · 研究台</span><b></b>';
+    head.querySelector('b').textContent = `${used} / ${slotsOpen} 使用中`;
+    const cards = sts.map((st, i) => st ? labCard(st, i) : emptyCard(i, false));
+    if (slotsOpen < 2 && onBuyLab) cards.push(emptyCard(1, true));
+    panel.replaceChildren(head, ...cards);
   }
   // 研究結果／研究紀錄裡的「放進研究室」按鈕
   function setBrew(recipe, discovered) {
     const btn = find('[data-brew]'); find('.research-brew-status').textContent = '';
     if (!onBrew || !recipe || discovered) { btn.hidden = true; return; }
-    const st = labStatus(getState());
+    const state = getState(), st = labStatusFor(state, recipe.id);
     btn.hidden = false; btn.dataset.brew = recipe.id;
-    if (st?.recipe.id === recipe.id) { btn.disabled = true; btn.textContent = `調配中 · 還要 ${fmtLeft(st.left)}`; }
-    else if (st) { btn.disabled = true; btn.textContent = '研究室正在調配別組'; }
+    if (st) { btn.disabled = true; btn.textContent = `調配中 · 還要 ${fmtLeft(st.left)}`; }
+    else if (freeSlot(state) < 0) { btn.disabled = true; btn.textContent = labSlots(state) > 1 ? '研究室兩格都在調配' : '研究室正在調配別組'; }
     else { btn.disabled = false; btn.textContent = `🧪 放進研究室調配 ${recipe.days} 天`; }
   }
   function update() {
@@ -172,7 +196,14 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     }
     if (button.matches('[data-cancel-brew]') && onCancelBrew) {
       if (button.dataset.confirm !== '1') { button.dataset.confirm = '1'; button.textContent = '確定要中止嗎？已經調配的天數不會保留（再按一次）'; return; }
-      await onCancelBrew(); update(); return;
+      await onCancelBrew(Number(button.dataset.cancelBrew) || 0); update(); return;
+    }
+    if (button.matches('[data-buy-lab]') && onBuyLab) {
+      if (button.dataset.confirm !== '1') { button.dataset.confirm = '1'; button.textContent = `確定花 ${LAB_SLOT_COST} 化石？再按一次`; return; }
+      button.disabled = true;
+      const err = await onBuyLab();
+      if (err) { update(); const s = find('.research-lab__status'); if (s) s.textContent = err; return; }
+      update(); return;
     }
     if (button.matches('[data-trial]')) { const trial = (getState().research?.trials || [])[Number(button.dataset.trial)]; if (trial?.members?.length === 2) showTrial(trial); return; }
     if (button.matches('[data-note]')) { const i = Number(button.dataset.note); noteIndex = RECIPES[i] ? i : 0; update(); }

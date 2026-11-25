@@ -1,4 +1,5 @@
 // 化石交換所：抽到重複的小湘會得到化石碎片，可以在這裡換東西
+import { labSlots, LAB_SLOT_COST } from './lab.js';
 export const FOSSIL_ENERGY = 15; // 3 化石換多少能量
 export const FOSSIL_OFFERS = [
   { id: 'energy', name: '15 能量', cost: 3, desc: '馬上可以拿去孵蛋' }, // 湘 11/20：從 30 調成 15，化石留著換蛋比較划算
@@ -30,7 +31,13 @@ export function pickable(state, eggs, chars, now = new Date()) {
   return [...pool].filter((no) => chars[no] && !state.dex?.[no] && !(chars[no].poolFrom && chars[no].poolFrom > today)).sort();
 }
 
-export const offersFor = (state) => [...FOSSIL_OFFERS, ...(slotOffer(state) ? [slotOffer(state)] : [])];
+// 第二個研究欄位（湘 11/25：玩家許願，定價 500）
+export function labOffer(state) {
+  if (labSlots(state) >= 2) return null;
+  return { id: 'lab', name: '第二個研究欄位', cost: LAB_SLOT_COST, desc: '研究室可以同時調配兩組配方，紀念蛋來得更快' };
+}
+
+export const offersFor = (state) => [...FOSSIL_OFFERS, ...(slotOffer(state) ? [slotOffer(state)] : []), ...(labOffer(state) ? [labOffer(state)] : [])];
 export function exchange(state, offerId, { eggs, chars, no } = {}) {
   const offer = offersFor(state).find((o) => o.id === offerId);
   if (!offer) return null;
@@ -40,6 +47,7 @@ export function exchange(state, offerId, { eggs, chars, no } = {}) {
   state.fossils -= cost;
   if (offerId === 'energy') state.energy += FOSSIL_ENERGY;
   else if (offerId === 'wish') state.wishEgg.stock += 1;
+  else if (offerId === 'lab') state.labSlots = labSlots(state) + 1;
   else if (offerId === 'slot') state.cradle = { slots: (state.cradle?.slots || 1) + 1 };
   else if (offerId === 'cipher') state.gifts.eggs.push({ egg: 'cipher', from: 'fossil', at: new Date().toISOString() });
   else state.gifts.eggs.push({ egg: 'cipher', character: no, from: 'fossil', at: new Date().toISOString() });
