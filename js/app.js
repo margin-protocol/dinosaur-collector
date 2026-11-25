@@ -4018,6 +4018,8 @@ function renderBattle() {
       btn.addEventListener('click', () => { battleEnemy = w.key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
       return btn;
     }));
+    wildSec.dataset.group = 'wild';
+    foldable(wh, [wnote, wgrid], 'wild', { summary: `打跑 ${wild.filter(w => w.defeated).length} / ${wild.length}`, done: wild.length > 0 && wild.every(w => w.defeated), minis: wild.map(w => ({ key: w.key, done: w.defeated, locked: w.defeated })) });
     wildSec.append(wh, wnote, wgrid);
     const evNow = events.eventNow(structuredClone({ clock: state.clock }));
     const evList = events.activeEvents(state, evNow);
@@ -4042,6 +4044,9 @@ function renderBattle() {
         btn.addEventListener('click', () => { battleEnemy = id; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
         return btn;
       }));
+      const clears = ch.stages.filter(id => b.stages[id]?.clears).length; const stars = ch.stages.reduce((n, id) => n + (b.stages[id]?.stars || 0), 0);
+      sec.dataset.group = 'story';
+      foldable(h, grid, `chapter:${ch.id}`, { summary: clears ? `${clears} / ${ch.stages.length} · ★${stars}` : `0 / ${ch.stages.length}`, done: clears === ch.stages.length, minis: ch.stages.map(id => ({ key: id, done: Boolean(b.stages[id]?.clears), locked: !battle.unlocked(state, id) })) });
       sec.append(h, grid); return sec;
     }));
     // 特殊關卡（EX）：還沒解鎖時整區不出現，避免劇透
@@ -4059,10 +4064,48 @@ function renderBattle() {
       stageFight(btn, info, x.id);
       btn.addEventListener('click', () => { battleEnemy = x.id; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
       const grid = document.createElement('div'); grid.className = 'battle-stages'; grid.append(btn);
+      sec.dataset.group = 'extra'; foldable(h, grid, `extra:${x.id}`, { summary: st?.clears ? `★${st.stars}` : '', done: false, minis: [{ key: x.id, done: Boolean(st?.clears) }] });
       sec.append(h, grid); $('battle-map').append(sec);
     }
   }
+  if (!inStage && !inTrain) battleTabs();
   if (inStage) renderBattleStage();
+}
+// ── 討伐頁收合（湘 11/25：頁面太長）。收合狀態只存在這支手機
+// 預覽：localStorage FOLD_LOOK_KEY = a 標題列收合／b 分頁／c 收成小圖示
+const FOLD_KEY = 'siang-collector:battle-fold:v1', FOLD_LOOK_KEY = 'siang-collector:battle-fold-look:v1', BATTLE_TAB_KEY = 'siang-collector:battle-tab:v1';
+const foldLook = () => { try { return localStorage.getItem(FOLD_LOOK_KEY) || 'off'; } catch { return 'off'; } }; // 湘還沒選，先不收合（off）
+const foldSaved = () => { try { return JSON.parse(localStorage.getItem(FOLD_KEY) || '{}') || {}; } catch { return {}; } };
+// head：區塊標題；body：要收起來的元素；done：全部打完的區塊預設收起
+function foldable(head, body, key, { summary = '', done = false, minis = null } = {}) {
+  const look = foldLook(); if (look !== 'a' && look !== 'c') return;
+  const bodies = [].concat(body); const saved = foldSaved();
+  const closed = key in saved ? Boolean(saved[key]) : done;
+  const title = head.textContent; head.textContent = ''; head.classList.add('fold-head');
+  const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'fold-head__btn'; btn.setAttribute('aria-expanded', String(!closed));
+  btn.append(el('span', 'fold-head__title', title), el('span', 'fold-head__sum', summary), el('i', 'fold-head__caret', closed ? '▸' : '▾'));
+  btn.addEventListener('click', () => { const next = foldSaved(); next[key] = !closed; try { localStorage.setItem(FOLD_KEY, JSON.stringify(next)); } catch {} renderBattle(); });
+  head.append(btn);
+  for (const b of bodies) b.hidden = closed;
+  if (closed && look === 'c' && minis?.length) head.classList.add('has-minis');
+  if (closed && look === 'c' && minis?.length) {
+    // 湘 11/25：點小圖示直接進那一關；還沒解鎖的點了就展開整章
+    const strip = el('div', 'fold-minis');
+    strip.append(...minis.map(m => { const w = el('button', `fold-minis__one${m.done ? ' is-done' : ''}${m.locked ? ' is-locked' : ''}`); w.type = 'button'; w.setAttribute('aria-label', m.locked ? `${title}：展開` : `進入關卡`); w.append(enemyArt(m.key, 'is-mini')); if (m.done) w.append(el('i', null, '✓'));
+      w.addEventListener('click', () => { if (m.locked) { btn.click(); return; } battleEnemy = m.key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); }); return w; }));
+    head.append(strip);
+  }
+}
+function battleTabs() {
+  if (foldLook() !== 'b') return;
+  const map = $('battle-map'); const groups = [['event', '活動'], ['wild', '野外巡邏'], ['story', '主線章節'], ['extra', '特殊關卡']].filter(([g]) => map.querySelector(`[data-group="${g}"]`));
+  if (groups.length < 2) return;
+  let cur; try { cur = localStorage.getItem(BATTLE_TAB_KEY); } catch {}
+  if (!groups.some(([g]) => g === cur)) cur = groups[0][0];
+  const bar = el('div', 'battle-tabs'); bar.setAttribute('role', 'tablist');
+  bar.append(...groups.map(([g, name]) => { const t = el('button', `battle-tabs__tab${g === cur ? ' is-on' : ''}`, name); t.type = 'button'; t.setAttribute('role', 'tab'); t.setAttribute('aria-selected', String(g === cur)); t.addEventListener('click', () => { try { localStorage.setItem(BATTLE_TAB_KEY, g); } catch {} renderBattle(); }); return t; }));
+  for (const sec of map.querySelectorAll('[data-group]')) sec.hidden = sec.dataset.group !== cur;
+  const roster = $('siang-roster'); if (roster) roster.after(bar); else map.prepend(bar);
 }
 // ── 異世活動（2.0 · 湘 11/25）：討伐頁最上面一區；資料全在 events.js，這裡只負責畫
 let eventView = null; // null＝關卡；{ id, view: 'shop' }＝墨玉閣
@@ -4085,7 +4128,7 @@ function eventStageCard(def, stageId, now) {
 }
 function eventHub(def, sch, now) {
   const prog = state.events?.[def.id] || {}; const ks = def.keepsakes;
-  const sec = el('section', 'battle-chapter event-hub'); sec.dataset.event = def.id;
+  const sec = el('section', 'battle-chapter event-hub'); sec.dataset.event = def.id; sec.dataset.group = 'event';
   const ban = el('div', 'event-banner');
   if (def.keyArt) { ban.classList.add('has-art'); ban.style.setProperty('--key-art', `url("${new URL(def.keyArt, document.baseURI).href}")`); }
   const seal = el('i', 'event-banner__seal', '墨'); seal.setAttribute('aria-hidden', 'true');
@@ -4104,6 +4147,8 @@ function eventHub(def, sch, now) {
     const h = el('h4', 'event-phase', ph.name);
     if (!p.open) h.append(el('small', null, ` · ${leftText(p.leftMs)}後開放`));
     const grid = el('div', 'battle-stages'); grid.append(...ph.stages.map(id => eventStageCard(def, id, now)));
+    const cleared = ph.stages.filter(id => prog.stages?.[id]?.clears).length;
+    foldable(h, grid, `event:${def.id}:${ph.id}`, { summary: `${cleared} / ${ph.stages.length}`, done: cleared === ph.stages.length, minis: p.open ? ph.stages.map(id => ({ key: events.stageKey(def.id, id), done: Boolean(prog.stages?.[id]?.clears), locked: Boolean(events.stageLock(state, def, id, now)) })) : null });
     sec.append(h, grid);
   }
   return sec;
@@ -4299,12 +4344,25 @@ async function collectBattle(id) {
   $('battle-result-story').hidden = !epiLines.length; $('battle-result-story').replaceChildren(...epiLines.map(t => el('span', 'para', t)));
   if (epi) $('battle-result-story').append(epilogueButton(epi, '▶ 現在觀看尾聲', () => { pendingEpilogue = null; $('battle-result').close(); }));
   $('battle-result-gains').replaceChildren(...r.gains.map(g => Object.assign(document.createElement('li'), { textContent: g })));
+  // 再打一次（湘 11/25）：收下後直接回到同一關的出戰畫面；剛打完的隊伍要休息，所以先幫忙選還能出戰的人
+  const againKey = r.eventEnemy ? r.eventEnemy.key : r.enemy; const againOk = againKey && !(r.wild && rep.win) && battle.unlocked(state, againKey);
+  $('battle-again').hidden = !againOk; $('battle-again').dataset.key = againOk ? againKey : ''; $('battle-again').dataset.nos = (r.nos || []).join(',');
   $('battle-result').showModal();
   battleTheater.play({report:r.report,nos:r.nos,enemy:e,scene:r.eventEnemy ? eventScene(r.eventEnemy) : chapterScene(r.enemy),bondUnlocked:Boolean(r.report.bond && state.teamBonds?.unlocked?.[r.report.bond])});
   $('battle-result').scrollTop = 0; $('battle-result-ok').blur(); buzz(rep.win ? [20, 40, 30] : 15); // 長戰報從最上面（分數）開始看
   restart($('chip-energy'), 'is-bump');
 }
 $('battle-result-ok').addEventListener('click', () => $('battle-result').close());
+$('battle-again').addEventListener('click', () => {
+  const key = $('battle-again').dataset.key; if (!key) return;
+  $('battle-result').close(); eventView = null;
+  const free = battle.available(state, Date.now(), allBusy()); const last = ($('battle-again').dataset.nos || '').split(',').filter(Boolean);
+  const resting = last.filter(no => !free.includes(no));
+  battleEnemy = key; battlePicked = last.filter(no => free.includes(no));
+  if (!$('errand-dialog').open) openErrands(); showErrandTab('battle'); renderBattle();
+  $('battle-status').textContent = resting.length === last.length && last.length ? `剛剛那隊要休息 ${battle.REST_MINUTES} 分鐘，先換其他小湘上場吧。` : resting.length ? `${resting.map(no => CHARACTERS[no].name).join('、')}還在休息，其他人先幫你選好了。` : '';
+  $('battle-stage').scrollIntoView({ block: 'start' });
+});
 // 討伐首頁也看得到常用隊伍，對照隱藏羈絆圖鑑組隊（玩家 11/24）
 const GLANCE_KEY = 'siang-collector:preset-glance:v1';
 function presetBondLine(nos) {
