@@ -3,8 +3,7 @@
 // SHOT=路徑前綴 會輸出每位的圖鑑截圖（例：SHOT=/mnt/project-files/previews/new-118/dex），W=360,430 指定寬度（預設 360）。
 // 格子有沒有填齊在 tests/residents-all.mjs。
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
-// 墨痕江湖 MO-003～008 的立繪是滿版排的（腳底 y≈1015、頭頂貼齊上緣），11/25 上架檢查才發現；要不要重排等湘看過比較圖再決定，先跳過腳位檢查
-const ART_PENDING=new Set(['MO-003','MO-004','MO-005','MO-006','MO-007','MO-008']);
+const ART_PENDING=new Set();
 const WIDTHS=(process.env.W||'360').split(',').map(Number);
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const errs=[],problems=[];let list;
