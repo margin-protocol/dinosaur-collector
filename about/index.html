@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>頁間居民｜Between the Pages</title>
+<meta name="description" content="故事之外，亦有生活。孵蛋、收集、討伐、料理、出門合照，和書頁之間的居民們一起生活。免下載，手機打開就能玩。">
+<meta name="copyright" content="© 2026 頁邊協定 Margin Protocol. All rights reserved.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="頁間居民｜Between the Pages">
+<meta property="og:description" content="故事之外，亦有生活。每一個落筆而生的靈魂，都在這裡擁有自己的歸處。">
+<meta property="og:image" content="https://betweenthepages.pages.dev/about/og.jpg">
+<meta property="og:url" content="https://betweenthepages.pages.dev/about/">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#fbf1f3">
+<link rel="icon" href="../assets/icons/siang-icon-v2-192.png" type="image/png">
+<link rel="apple-touch-icon" href="../assets/icons/siang-icon-v2-180.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Noto+Serif+TC:wght@400;500;700&display=swap">
+<style>
+:root{
+  --bg:#fbf1f3; --bg2:#f6e3e8; --card:#fffafb; --ink:#4a2b35; --soft:#8a6470; --line:#ecd0d8;
+  --accent:#c45a78; --accent-ink:#fff; --gold:#c89a6a; --glow:rgba(232,150,175,.35);
+  --serif:'Noto Serif TC','Songti TC',serif; --latin:'Cormorant Garamond',serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:1.75;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+a{color:inherit}
+.wrap{width:min(100% - 32px, 1040px);margin-inline:auto}
+.eyebrow{font-family:var(--latin);letter-spacing:.32em;font-size:12px;text-transform:uppercase;color:var(--soft);margin:0}
+h2{font-weight:500;font-size:clamp(26px,7vw,36px);letter-spacing:.12em;margin:.2em 0 .5em;line-height:1.35}
+p{margin:0 0 1em}
+
+/* ── Hero ── */
+.hero{position:relative;padding:28px 0 40px;overflow:hidden;
+  background:radial-gradient(120% 70% at 50% 18%, var(--glow), transparent 70%), linear-gradient(var(--bg2), var(--bg))}
+.hero__brand{text-align:center;position:relative;z-index:2}
+.hero__brand h1{margin:.35em 0 .1em;font-weight:500;font-size:clamp(44px,14vw,72px);letter-spacing:.28em;text-indent:.28em;line-height:1.2}
+.hero__en{font-family:var(--latin);letter-spacing:.55em;text-indent:.55em;font-size:13px;color:var(--soft);margin:0}
+.hero__cast{position:relative;height:clamp(250px,74vw,420px);margin:-6px auto 0;max-width:520px}
+.hero__cast img{position:absolute;bottom:0;width:62%;filter:drop-shadow(0 10px 16px rgba(60,30,40,.18))}
+.hero__cast .c1{left:-8%;width:56%;bottom:6%}
+.hero__cast .c2{left:14%;z-index:2;width:72%;bottom:-4%}
+.hero__cast .c3{right:-8%;width:54%;bottom:7%}
+.hero__lead{text-align:center;position:relative;z-index:2}
+.hero__lead .quote{font-size:clamp(20px,5.6vw,26px);letter-spacing:.14em;margin:.4em 0 .3em}
+.hero__lead .sub{color:var(--soft);font-size:15px;max-width:22em;margin:0 auto 1.4em}
+.cta{display:inline-flex;align-items:center;justify-content:center;gap:.6em;min-height:56px;padding:0 2.2em;border-radius:999px;
+  background:var(--accent);color:var(--accent-ink);text-decoration:none;font-size:19px;letter-spacing:.2em;text-indent:.2em;
+  box-shadow:0 10px 24px -8px var(--accent);transition:transform .15s}
+.cta:active{transform:scale(.97)}
+.cta svg{width:18px;height:18px}
+.cta-note{font-size:13px;color:var(--soft);margin:.9em 0 0}
+
+/* ── Sections ── */
+section.block{padding:56px 0}
+section.block + section.block{border-top:1px solid var(--line)}
+.center{text-align:center}
+.lede{color:var(--soft);max-width:30em;margin-inline:auto}
+
+/* 玩法 */
+.features{display:grid;gap:44px;margin-top:32px}
+.feature{display:grid;grid-template-columns:minmax(0,1fr) 46%;gap:18px;align-items:center}
+.feature:nth-child(even){grid-template-columns:46% minmax(0,1fr)}
+.feature:nth-child(even) .feature__text{order:2}
+.feature__num{font-family:var(--latin);font-size:15px;letter-spacing:.2em;color:var(--accent)}
+.feature h3{font-weight:500;font-size:21px;letter-spacing:.1em;margin:.1em 0 .4em;line-height:1.4}
+.feature p{font-size:14.5px;color:var(--soft);margin:0}
+.phone{border-radius:22px;overflow:hidden;border:5px solid var(--card);box-shadow:0 14px 30px -12px rgba(60,30,40,.35), 0 0 0 1px var(--line);background:var(--card);aspect-ratio:390/700}
+.phone img{width:100%;height:100%;object-fit:cover;object-position:top}
+
+/* 世界 */
+.worlds{display:grid;gap:18px;margin-top:28px}
+.world{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:22px 18px 0;overflow:hidden;position:relative}
+.world__tag{display:inline-block;font-size:12px;letter-spacing:.2em;padding:.15em .9em;border-radius:999px;border:1px solid var(--line);color:var(--soft)}
+.world h3{font-weight:500;font-size:22px;letter-spacing:.12em;margin:.4em 0 .3em}
+.world p{font-size:14.5px;color:var(--soft)}
+.strip{display:flex;margin:6px -18px 0;padding:0 8px;overflow:hidden;height:118px}
+.strip img{width:92px;height:118px;object-fit:cover;object-position:50% 30%;flex:none;margin-right:-14px}
+.world--mo{background:linear-gradient(160deg,#f7f0e2,#efe3cc);color:#2b2521;border-color:#d9cbb2}
+.world--mo p,.world--mo .world__tag{color:#6e6258;border-color:#cdb894}
+.world--mo .world__tag{color:#a8322a;border-color:#a8322a}
+
+/* 活動 */
+.event{background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;margin-top:26px}
+.event__kv{aspect-ratio:16/9;width:100%;object-fit:cover}
+.event__body{padding:20px 18px 22px}
+.event__status{display:inline-flex;gap:.5em;align-items:center;font-size:13px;letter-spacing:.12em;color:#a8322a;font-weight:700}
+.event__status::before{content:'';width:8px;height:8px;border-radius:50%;background:#a8322a;box-shadow:0 0 0 4px rgba(168,50,42,.15)}
+.event h3{font-weight:500;font-size:24px;letter-spacing:.14em;margin:.25em 0 .3em}
+.event dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;font-size:14px;margin:0 0 16px;color:var(--soft)}
+.event dt{color:var(--ink)}
+.event dd{margin:0}
+.btn-line{display:inline-flex;align-items:center;gap:.5em;min-height:44px;padding:0 1.3em;border-radius:999px;border:1px solid var(--accent);color:var(--accent);text-decoration:none;font-size:15px;letter-spacing:.1em}
+
+/* 加入主畫面 */
+.howto{display:grid;gap:12px;margin-top:24px;text-align:left}
+.howto div{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px 16px;font-size:14.5px}
+.howto b{display:block;font-weight:700;margin-bottom:.2em}
+
+/* 頁尾 */
+.final{text-align:center;padding:60px 0 48px}
+.final .quote{font-size:20px;letter-spacing:.14em;margin-bottom:1.2em}
+footer{border-top:1px solid var(--line);padding:26px 0 calc(26px + env(safe-area-inset-bottom));text-align:center;font-size:13px;color:var(--soft)}
+footer .latin{font-family:var(--latin);letter-spacing:.2em}
+#support{margin:0 auto 22px}
+
+@media (min-width:760px){
+  .hero__cast{height:420px}
+  .features{grid-template-columns:1fr 1fr;gap:56px 48px}
+  .feature,.feature:nth-child(even){grid-template-columns:minmax(0,1fr) 44%}
+  .feature:nth-child(even) .feature__text{order:0}
+  .worlds{grid-template-columns:1fr 1fr}
+  .howto{grid-template-columns:1fr 1fr}
+  .event{display:grid;grid-template-columns:1.3fr 1fr}
+  .event__kv{height:100%;aspect-ratio:auto}
+}
+@media (prefers-reduced-motion:no-preference){
+  .hero__cast img{animation:bob 5s ease-in-out infinite}
+  .hero__cast .c1{animation-delay:-1.6s}.hero__cast .c3{animation-delay:-3.2s}
+  @keyframes bob{50%{transform:translateY(-6px)}}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero__brand">
+    <p class="eyebrow">Margin Protocol Presents</p>
+    <h1>頁間居民</h1>
+    <p class="hero__en">BETWEEN THE PAGES</p>
+  </div>
+  <div class="hero__cast" aria-hidden="true">
+    <img class="c1" src="../assets/characters/mo-001-wen-zhishui.webp" alt="" width="1024" height="1024">
+    <img class="c2" src="../assets/characters/siang-001-hd/idle-open.webp" alt="" width="1254" height="1254">
+    <img class="c3" src="../assets/characters/siang-117-haitang-bride.webp" alt="" width="1024" height="1024">
+  </div>
+  <div class="wrap hero__lead">
+    <p class="quote">故事之外，亦有生活。</p>
+    <p class="sub">每一個落筆而生的靈魂，<br>都在這裡擁有自己的歸處。</p>
+    <a class="cta" href="../">開始遊戲<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+    <p class="cta-note">免下載・用手機瀏覽器打開就能玩</p>
+  </div>
+</header>
+
+<main>
+<section class="block" id="play">
+  <div class="wrap">
+    <div class="center">
+      <p class="eyebrow">How to live here</p>
+      <h2>和居民們一起生活</h2>
+      <p class="lede">不用急著學會所有事。先陪一顆蛋長大，再慢慢把這個家變熱鬧。</p>
+    </div>
+    <div class="features">
+      <article class="feature">
+        <div class="feature__text"><span class="feature__num">01</span><h3>孵蛋・收集</h3><p>替蛋保溫、注入能量，迎接一位位居民。圖鑑會替你記下她們的故事、好感度，還有你們相遇的那一天。</p></div>
+        <div class="phone"><img src="shots/dex.webp" alt="圖鑑畫面" loading="lazy" width="600" height="1298"></div>
+      </article>
+      <article class="feature">
+        <div class="feature__text"><span class="feature__num">02</span><h3>討伐</h3><p>挑三位居民組隊出發，一章一章打下去。好感滿了的組合，還可能觸發隱藏羈絆。</p></div>
+        <div class="phone"><img src="shots/battle.webp" alt="討伐畫面" loading="lazy" width="600" height="1298"></div>
+      </article>
+      <article class="feature">
+        <div class="feature__text"><span class="feature__num">03</span><h3>料理</h3><p>用討伐撿回來的食材下廚。每位居民口味都不一樣，餵著餵著，就會發現她藏起來的秘密最愛。</p></div>
+        <div class="phone"><img src="shots/kitchen.webp" alt="廚房畫面" loading="lazy" width="600" height="1298"></div>
+      </article>
+      <article class="feature">
+        <div class="feature__text"><span class="feature__num">04</span><h3>出門・合照</h3><p>派她們去便利商店、海邊、夜市，帶回旅行照片；也可以打開相機，和她拍一張只屬於你們的合照。</p></div>
+        <div class="phone"><img src="shots/photo.webp" alt="外出合照畫面" loading="lazy" width="600" height="1298"></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="worlds">
+  <div class="wrap">
+    <div class="center">
+      <p class="eyebrow">Worlds</p>
+      <h2>世界之外，還有世界</h2>
+      <p class="lede">一切從小湘開始。翻過這一頁，門後還有別的故事正在等你。</p>
+    </div>
+    <div class="worlds">
+      <article class="world">
+        <span class="world__tag">創始系列</span>
+        <h3>小湘們</h3>
+        <p>草莓、雨傘、夜貓、臺灣每個縣市、各種天氣和節日……一百多位小湘，各有各的個性和小故事。</p>
+        <div class="strip" aria-hidden="true">
+          <img src="../assets/characters/siang-002-strawberry.webp" alt="" loading="lazy">
+          <img src="../assets/characters/siang-003-umbrella.webp" alt="" loading="lazy">
+          <img src="../assets/characters/siang-044-cat.webp" alt="" loading="lazy">
+          <img src="../assets/characters/siang-025-nantou.webp" alt="" loading="lazy">
+          <img src="../assets/characters/siang-108-cheshire.webp" alt="" loading="lazy">
+          <img src="../assets/characters/siang-074-rainbow.webp" alt="" loading="lazy">
+          <img src="../assets/characters/siang-109-white-tiger.webp" alt="" loading="lazy">
+        </div>
+      </article>
+      <article class="world world--mo">
+        <span class="world__tag">異世・墨痕江湖</span>
+        <h3>墨衣、紅妝與刀光</h3>
+        <p>第一扇被推開的門。寡言的墨衣護衛聞止水，和江湖裡各懷心事的人們，正在書頁的另一邊。</p>
+        <div class="strip" aria-hidden="true">
+          <img src="../assets/characters/mo-001-wen-zhishui.webp" alt="" loading="lazy">
+          <img src="../assets/characters/siang-117-haitang-bride.webp" alt="" loading="lazy">
+          <img src="../assets/characters/mo-003-you-weichi.webp" alt="" loading="lazy">
+          <img src="../assets/characters/mo-004-xu-tingyun.webp" alt="" loading="lazy">
+          <img src="../assets/characters/mo-005-du-jinzhao.webp" alt="" loading="lazy">
+          <img src="../assets/characters/mo-006-cheng-buyan.webp" alt="" loading="lazy">
+          <img src="../assets/characters/mo-007-lin-yanhui.webp" alt="" loading="lazy">
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="event">
+  <div class="wrap">
+    <div class="center">
+      <p class="eyebrow">Event 001</p>
+      <h2>限時活動</h2>
+    </div>
+    <article class="event">
+      <img class="event__kv" src="../assets/events/mo/key-visual.webp" alt="墨痕江湖・十萬兩紅妝 主視覺" loading="lazy" width="1600" height="900">
+      <div class="event__body">
+        <span class="event__status" id="event-status">11/26（四）中午 12:00 開跑</span>
+        <h3>墨痕江湖・十萬兩紅妝</h3>
+        <dl>
+          <dt>上卷</dt><dd>11/26 12:00 開放</dd>
+          <dt>下卷</dt><dd>11/29 12:00 開放</dd>
+          <dt>討伐</dt><dd>到 12/10</dd>
+          <dt>墨玉閣</dt><dd>到 12/17</dd>
+        </dl>
+        <p style="font-size:14.5px;color:var(--soft)">十關江湖劇情，打下墨玉，到墨玉閣換墨痕蛋，把聞止水和海棠新娘小湘接回家。</p>
+        <a class="btn-line" id="event-video" href="#" hidden>▶ 觀看宣傳影片</a>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="block" id="install">
+  <div class="wrap center">
+    <p class="eyebrow">Add to home screen</p>
+    <h2>放到手機主畫面</h2>
+    <p class="lede">加到主畫面後就像一般 App，點一下就回到書頁之間，也能收到居民們的消息。</p>
+    <div class="howto">
+      <div><b>iPhone（Safari）</b>開啟遊戲 → 點下方「分享」→「加入主畫面」</div>
+      <div><b>Android（Chrome）</b>開啟遊戲 → 點右上「⋮」→「安裝應用程式」或「加到主畫面」</div>
+    </div>
+  </div>
+</section>
+
+<section class="final">
+  <div class="wrap">
+    <p class="quote">她們，正在書頁之間等你。</p>
+    <a class="cta" href="../">開始遊戲<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <!-- 贊助（請寶寶工作室喝杯茶）：拿到綠界網址後再打開 -->
+    <div id="support" hidden></div>
+    <p class="latin" style="margin:0">BETWEEN THE PAGES</p>
+    <p style="margin:0">© 2026 頁邊協定 Margin Protocol. All rights reserved.</p>
+  </div>
+</footer>
+
+<script>
+  // 活動狀態跟著時間變
+  (function () {
+    var el = document.getElementById('event-status'); if (!el) return;
+    var now = Date.now();
+    var start = Date.parse('2026-11-26T12:00:00+08:00'), battleEnd = Date.parse('2026-12-10T12:00:00+08:00'), shopEnd = Date.parse('2026-12-17T12:00:00+08:00');
+    if (now >= shopEnd) el.closest('#event').hidden = true;
+    else if (now >= battleEnd) el.textContent = '墨玉閣開放中・到 12/17';
+    else if (now >= start) el.textContent = '活動進行中';
+  })();
+</script>
+</body>
+</html>
