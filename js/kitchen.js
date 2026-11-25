@@ -45,9 +45,9 @@ export const RECIPES = [
   { id: 'R07', name: '草莓蘑菇湯', ings: ['mushroom', 'strawberry'], type: '黑暗料理', dark: true, clue: '紅紅的，還有一朵不該出現在甜湯裡的東西。' },
   { id: 'R08', name: '故障宇宙糖漿', ings: ['glitch', 'lightning', 'star'], type: '黑暗料理', dark: true, clue: '玩具星球上最不穩定的三種糖。' },
   // 墨痕江湖限定料理（湘 11/25 交給德寶配）：不算進「全部 8 道特色料理」
-  { id: 'MO1', name: '桂花糕', ings: ['osmanthus', 'tangyuan'], type: '親密', event: 'mo', clue: '軟糯的白玉，淋一勺金色的花蜜。' },
-  { id: 'MO2', name: '山筍清湯', ings: ['bamboo', 'mushroom'], type: '採集', event: 'mo', effect: { kind: 'gather', value: 1 }, clue: '雨後山裡冒出來的兩樣東西，熬一鍋清湯。' },
-  { id: 'MO3', name: '江湖一盞', ings: ['moon', 'osmanthus', 'plum'], type: '戰力', event: 'mo', effect: { kind: 'power', value: 0.05 }, clue: '青梅入酒，兌一點月光，再撒一把桂花。敬江湖。' },
+  { id: 'MO1', art: 'assets/kitchen/event-mo/osmanthus-cake.webp', name: '桂花糕', ings: ['osmanthus', 'tangyuan'], type: '親密', event: 'mo', clue: '軟糯的白玉，淋一勺金色的花蜜。' },
+  { id: 'MO2', art: 'assets/kitchen/event-mo/bamboo-soup.webp', name: '山筍清湯', ings: ['bamboo', 'mushroom'], type: '採集', event: 'mo', effect: { kind: 'gather', value: 1 }, clue: '雨後山裡冒出來的兩樣東西，熬一鍋清湯。' },
+  { id: 'MO3', art: 'assets/kitchen/event-mo/jianghu-cup.webp', name: '江湖一盞', ings: ['moon', 'osmanthus', 'plum'], type: '戰力', event: 'mo', effect: { kind: 'power', value: 0.05 }, clue: '青梅入酒，兌一點月光，再撒一把桂花。敬江湖。' },
 ];
 export const BASE_RECIPES = RECIPES.filter((r) => !r.event);
 const key = (ids) => [...new Set(ids)].sort().join('+');
@@ -65,11 +65,11 @@ export function dishOf(ids) {
   const id = list.join('+');
   const tags = list.map((i) => ING[i].tag);
   const r = RECIPE_BY_KEY[id];
-  if (r) return { id, ings: list, tags, name: r.name, dark: Boolean(r.dark), recipe: r.id, type: r.type, effect: r.effect || null };
+  if (r) return { id, ings: list, tags, name: r.name, dark: Boolean(r.dark), recipe: r.id, art: r.art || null, type: r.type, effect: r.effect || null };
   const dark = list.includes('glitch') || CLASH.some(([a, b]) => list.includes(a) && list.includes(b));
   const words = list.map((i) => ING[i].short).join('');
   const pool = dark ? DARK_SUFFIX : NORMAL_SUFFIX;
-  return { id, ings: list, tags, name: `${words}${pool[hash(id) % pool.length]}`, dark, recipe: null, type: dark ? '黑暗料理' : '家常料理', effect: null };
+  return { id, ings: list, tags, name: `${words}${pool[hash(id) % pool.length]}`, dark, recipe: null, art: null, type: dark ? '黑暗料理' : '家常料理', effect: null };
 }
 export const dishById = (id) => dishOf(String(id || '').split('+'));
 

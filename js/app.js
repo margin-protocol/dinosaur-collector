@@ -3834,7 +3834,7 @@ function renderKitchen() {
   $('kitchen-meals').replaceChildren(...(meals.length ? meals.map(({ dish: d, n }) => {
     const btn = document.createElement('button'); btn.type = 'button'; btn.className = `kitchen-meal${d.dark ? ' is-dark' : ''}`; btn.setAttribute('aria-pressed', String(kitchenMeal === d.id));
     btn.innerHTML = '<span aria-hidden="true"></span><b></b><small></small>';
-    btn.querySelector('span').textContent = d.dark ? '🫕' : d.recipe ? '🍽️' : '🥣';
+    if (d.art) { const img = document.createElement('img'); img.src = d.art; img.alt = ''; img.className = 'kitchen-meal__art'; btn.querySelector('span').append(img); } else btn.querySelector('span').textContent = d.dark ? '🫕' : d.recipe ? '🍽️' : '🥣';
     btn.querySelector('b').textContent = `${d.name} × ${n}`;
     btn.querySelector('small').textContent = d.effect ? `${d.type}｜吃了：${kitchen.buffText(d.effect)}` : d.type;
     btn.addEventListener('click', () => { kitchenMeal = kitchenMeal === d.id ? null : d.id; kitchenResult = null; renderKitchen(); });
@@ -3884,8 +3884,9 @@ function renderKitchen() {
     const id = [...rc.ings].sort().join('+'); const got = Boolean(k.known[id]);
     const card = document.createElement('div'); card.className = `kitchen-recipe${got ? ' is-found' : ''}${rc.dark ? ' is-dark' : ''}${rc.event ? ' is-event' : ''}`;
     card.innerHTML = '<b></b><small></small><p></p>';
+    if (rc.art) { const img = document.createElement('img'); img.src = rc.art; img.alt = ''; img.className = 'kitchen-recipe__art'; card.prepend(img); }
     card.querySelector('b').textContent = got ? rc.name : '？？？';
-    card.querySelector('small').textContent = got ? `${rc.ings.map(x => kitchen.ING[x].icon + kitchen.ING[x].name).join(' ＋ ')}` : rc.event ? `墨痕江湖限定 · ${rc.type}` : rc.type;
+    card.querySelector('small').textContent = got ? `${rc.ings.map(x => kitchen.ING[x].icon + kitchen.ING[x].name).join(' ＋ ')}` : rc.event ? `${rc.type}｜墨痕限定` : rc.type;
     card.querySelector('p').textContent = got ? (rc.effect ? `${rc.type}｜${kitchen.buffText(rc.effect)}（看小湘喜不喜歡）` : rc.dark ? '黑暗料理｜勇氣可嘉' : `${rc.type}｜好感度專用`) : rc.clue;
     return card;
   }));
