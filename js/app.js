@@ -4137,7 +4137,7 @@ function renderBattleStage() {
   $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}`;
   $('battle-enemy-name').textContent = e.name;
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;
-  $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.story.before);
+  $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.event && st?.clears ? [e.story.before, '── 打完後 ──', e.story.after, e.story.ending && '── 上卷結尾 ──', e.story.ending].filter(Boolean).join('\n') : e.story.before); // 異世活動：通關後在關卡頁可以重看整段
   $('battle-enemy-intro').textContent = e.intro;
   $('battle-gift-hint').hidden = Boolean(e.wild || e.event); if (!e.wild && !e.event) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
   const busy = allBusy(); const now = Date.now();

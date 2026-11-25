@@ -396,7 +396,9 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   b.total += 1; if (r.win) b.wins += 1;
   const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`].filter(Boolean);
   const firstClear = r.win && st.clears === 1;
-  const story = enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
+  // 異世活動：第一次通關才在戰報播「打完後」（MO-05 再接上卷結尾）；解鎖紀錄在 state.events[id].story
+  const story = isEvent ? (evGain?.first && enemy.story ? [enemy.story.after, enemy.story.ending].filter(Boolean).join('\n') || null : null)
+    : enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
   const clue = firstClear && enemy.clue ? enemy.clue : null;
   // 咕咕書評：依結果挑一種，結算時就決定並存起來（檔案館讀存好的，不會每次重抽）
   const prevStage = enemy.wild || isEvent ? null : { clears: st.clears - (r.win ? 1 : 0), best: r.prevBest, tries: r.tries, lastWin: st.lastWin };

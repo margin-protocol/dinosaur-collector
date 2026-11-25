@@ -33,6 +33,7 @@ assert.equal(await hub.locator('[data-event-stage="mo-06"]').isDisabled(),true);
 await shot('hub','.event-hub');
 // 打一場 MO-01，收戰報拿墨玉
 await hub.locator('[data-event-stage="mo-01"]').click();await p.waitForTimeout(200);
+assert.match(await p.locator('#battle-story').textContent(),/花轎裡，小湘慢慢睜開眼睛/,'開打前劇情');await shot('stage','#battle-stage');
 for(const no of ['001','002','003'])await p.click(`#battle-siangs [data-siang="${no}"]`);
 await p.click('#battle-go');await p.waitForTimeout(300);
 await p.evaluate(()=>{const k='siang-collector:v1',s=JSON.parse(localStorage.getItem(k));for(const a of s.battle.active)a.until=new Date(Date.now()-1000).toISOString();localStorage.setItem(k,JSON.stringify(s));});
@@ -40,6 +41,7 @@ await p.reload();await p.waitForTimeout(300);await p.evaluate(async()=>{const E=
 await p.evaluate(()=>document.getElementById('open-battle')?.click());await p.waitForTimeout(400);
 await p.click('#battle-active .btn');await p.waitForTimeout(600);
 assert.match(await p.locator('#battle-result-gains').textContent(),/墨玉 \+36/);
+assert.match(await p.locator('#battle-result-story').textContent(),/我接的是護送，不是送嫁/,'首通播打完後');
 const saved=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v1')));
 assert.equal(saved.events.mo.stages['mo-01'].clears,1);assert.equal(saved.battle.stages['event:mo:mo-01'],undefined);
 await p.evaluate(()=>document.getElementById('battle-result').close());

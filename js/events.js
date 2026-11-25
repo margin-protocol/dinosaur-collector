@@ -4,6 +4,8 @@
 // 而且永遠不清除：活動結束後，通關紀錄、劇情、信物、商店購買都留著（之後可以復刻）。
 // 時間：一律用 eventNow()（GitHub Pages 回應的 Date 標頭校正過的時間，而且不會往回撥）。
 
+import { MO_STORY } from './event-mo-story.js';
+
 const H = 3600e3;
 const D = 24 * H;
 const isStr = (v) => typeof v === 'string';
@@ -74,6 +76,9 @@ export const EVENT_DEFS = {
     leftover: { type: 'energy', rate: 1 },
   },
 };
+
+// 定稿劇情接進關卡（before／after／ending）
+for (const [id, story] of Object.entries(MO_STORY)) if (EVENT_DEFS.mo.stages[id]) EVENT_DEFS.mo.stages[id].story = story;
 
 export const eventDef = (id) => EVENT_DEFS[id] || null;
 export const stageKey = (eventId, stageId) => `event:${eventId}:${stageId}`;
@@ -192,7 +197,7 @@ export function eventEnemy(eventId, stageId) {
     key: stageKey(eventId, stageId), event: eventId, eventStage: stageId, stage: s.label, name: s.name, emoji: s.emoji,
     art: s.art || `event-${eventId}/${stageId}`, power: s.power, minutes: s.minutes, weak: s.weak, boss: Boolean(s.boss),
     intro: s.intro || `「${s.title}」——${s.name}擋住了去路。`, win: s.win || `${s.name}退開了。`, lose: s.lose || `${s.name}太難纏了，先撤退再說。`,
-    weakHit: s.weakHit || `${s.name}被看穿了破綻！`, bio: s.bio || '',
+    weakHit: s.weakHit || `${s.name}被看穿了破綻！`, bio: s.bio || '', ...(s.story ? { story: s.story } : {}),
   };
 }
 
