@@ -4167,6 +4167,12 @@ function eventShop(def, now) {
     row.append(txt, btn); return row;
   }));
   const status = el('p', 'cloud-status'); status.id = 'event-shop-status'; status.setAttribute('role', 'status');
+  if (def.poolArt) {
+    const down = events.schedule(def, now).phases?.find(x => x.id === 'down')?.open;
+    const img = el('img', 'event-shop__pool'); img.alt = down ? '下卷卡池：游未遲、徐汀云、程不言、林晏洄' : '上卷卡池：杜今朝、聞止水、簡牧陽'; img.loading = 'lazy'; img.src = down ? def.poolArt.down : def.poolArt.up;
+    const fig = el('figure', 'event-shop__banner'); fig.append(img, el('figcaption', null, down ? '墨痕蛋 · 下卷居民加入卡池' : '墨痕蛋 · 上卷卡池（下卷居民 11/29 12:00 加入）'));
+    sec.append(back, head, fig, list, status); return sec;
+  }
   sec.append(back, head, list, status); return sec;
 }
 async function buyEventItem(eventId, itemId) {
