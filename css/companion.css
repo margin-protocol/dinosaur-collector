@@ -704,7 +704,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 #residents :is(.resident-choice,.residents-slot).is-shiny::after { content:""; position:absolute; inset:-1px; border-radius:inherit; padding:1.5px; background:linear-gradient(135deg,#fff4d6,#d8ae5e 30%,#9c7330 50%,#e9c97f 70%,#fff4d6); -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0); -webkit-mask-composite:xor; mask-composite:exclude; pointer-events:none; }
 #residents :is(.resident-choice,.residents-slot).is-shiny::before { content:"✦"; position:absolute; top:-8px; left:50%; z-index:2; width:16px; height:16px; transform:translateX(-50%); color:#e9c97f; font:12px/16px var(--font-body); text-align:center; text-shadow:0 0 4px #ffe7a6aa; pointer-events:none; }
 #residents-list .residents-grid { padding-top:8px; row-gap:10px; }
-:root:is([data-theme="cream"],[data-theme="daylight"]) #residents :is(.resident-choice,.residents-slot).is-shiny::before { color:#d29a3e; text-shadow:0 0 3px #fff6dc; }
+:root:is([data-theme="cream"],[data-theme="daylight"],[data-theme="yanyu"]) #residents :is(.resident-choice,.residents-slot).is-shiny::before { color:#d29a3e; text-shadow:0 0 3px #fff6dc; }
 :root[data-theme="sakura"] #residents :is(.resident-choice,.residents-slot).is-shiny::after { background:linear-gradient(135deg,#fbe3dc,#dba092 30%,#a9646b 50%,#e9b8aa 70%,#fbe3dc); }
 :root[data-theme="sakura"] #residents :is(.resident-choice,.residents-slot).is-shiny::before { color:#c07a74; text-shadow:0 0 3px #fff3ee; }
 @media (max-width:359px) { .residents-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
@@ -804,9 +804,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .kitchen-secrets { display:grid; gap:6px; }
 .kitchen-secret { display:flex; align-items:center; gap:8px; font-size:13px; }
 .kitchen-secret img { width:40px; height:40px; object-fit:contain; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.kitchen-ing,.kitchen-meal,.kitchen-recipe,.kitchen-pot,.kitchen-feed) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.kitchen-ing[aria-pressed="true"],.kitchen-meal[aria-pressed="true"],.kitchen-result) { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .kitchen-ing:disabled { opacity:.55; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.kitchen-ing,.kitchen-meal,.kitchen-recipe,.kitchen-pot,.kitchen-feed) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.kitchen-ing[aria-pressed="true"],.kitchen-meal[aria-pressed="true"],.kitchen-result) { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .kitchen-ing:disabled { opacity:.55; }
 /* 小恐龍委託：先問要不要接；接下後縮成小圓鈕（湘 11/20） */
 .dino-task { flex-wrap:wrap; }
 .dino-task__icon { flex:none; position:relative; border:0; background:none; padding:0; line-height:1; color:inherit; cursor:pointer; }
@@ -861,10 +861,10 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .egg-odds__list li small { flex:none; font:12px var(--font-mono); opacity:.85; }
 .egg-odds__list li.is-new span { opacity:.7; }
 .egg-odds__list li.is-new small { color:#ffd9a8; opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds-link { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__luck { background:var(--t-raised); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__rarity { border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-odds__list li.is-new small { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-odds-link { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-odds__luck { background:var(--t-raised); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-odds__rarity { border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-odds__list li.is-new small { color:var(--t-accent); }
 .vote-day__note { font-size:12px; opacity:.75; }
 /* 明信片盒與重複明信片（湘 11/20） */
 .card-dupes { display:grid; gap:8px; margin:10px 0; text-align:left; }
@@ -896,9 +896,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .card-box__card small { font-size:10.5px; opacity:.75; }
 .card-box__card.has-dupes { border-color:#ffd9a8aa; }
 .card-box__toss { width:100%; margin-top:2px; padding:4px 2px; border-radius:8px; border:1px solid currentColor; background:none; color:inherit; font-size:11px; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .card-dupe { background:var(--t-raised); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .card-box__card { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .card-box__card.has-dupes { border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .card-dupe { background:var(--t-raised); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .card-box__card { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .card-box__card.has-dupes { border-color:var(--t-accent); }
 /* 三位入住時房間長高一點，最上面那位的頭不會被切掉；上下也不再裁切，只裁左右（湘 11/20） */
 .companion-room { overflow-x:clip; overflow-y:visible; }
 .companion-room:has(.resident-lanes[data-count="3"]) { min-height:420px; }
@@ -920,13 +920,13 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .checkin-reward small.checkin-reward__note { opacity:.85; margin-top:-2px; }
 .checkin-reward.is-egg { border-style:solid; border-color:#ffd36b99; }
 .checkin-reward.is-got { background:#ffd9a81f; border-style:solid; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day.is-blank { background:none; border:0; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day.is-signed { background:var(--t-selected); border-color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day.is-today { border-color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-day i { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-reward { border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .checkin-reward.is-got { background:var(--t-selected); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .checkin-day { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .checkin-day.is-blank { background:none; border:0; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .checkin-day.is-signed { background:var(--t-selected); border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .checkin-day.is-today { border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .checkin-day i { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .checkin-reward { border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .checkin-reward.is-got { background:var(--t-selected); }
 .letter-read__gift { margin: 4px 0 10px; padding: 8px 12px; border-radius: 10px; background: none; border: 1px dashed currentColor; font-size: 14px; text-align: center; opacity: .9; }
 .letter-gift-dot { font-weight: 400; margin-right: 4px; }
 .review-result { text-align: center; }
@@ -1202,3 +1202,4 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .event-titles small { font-size:12px; opacity:.7; }
 .event-title { padding:4px 10px; border-radius:999px; border:1px solid #a4423c66; background:transparent; color:inherit; font:13px var(--font-display); cursor:pointer; }
 .event-title[aria-pressed="true"] { background:#a4423c; border-color:#a4423c; color:#fff; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .fold-head__sum { opacity:1; }

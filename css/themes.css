@@ -42,6 +42,12 @@
   --t-button:#cce1f1; --t-button-end:#b7d2e8; --t-light:#deedf8; --t-ink:#293e52;
   --t-mode:light; --t-cta-end:#c6dff1; --t-scene:#eff8ffe3; --t-page:#f8fcfff5;
 }
+:root[data-theme="yanyu"], [data-palette="yanyu"] {
+  --t-bg:#eceee9; --t-panel:#f7f8f4; --t-raised:#e2e7e1; --t-selected:#cfdad2;
+  --t-line:#879a90; --t-text:#28352f; --t-muted:#475a52; --t-accent:#8c3a33;
+  --t-button:#d6e0d9; --t-button-end:#c4d2c9; --t-light:#e4ebe6; --t-ink:#28352f;
+  --t-mode:light; --t-cta-end:#d0dcd4; --t-scene:#f3f5f0a8; --t-page:#f7f8f4ee;
+}
 :root[data-theme] {
   color-scheme:var(--t-mode); --bg-deep:var(--t-bg); --bg-panel:var(--t-panel); --line:var(--t-line);
   --ivory:var(--t-text); --pearl:var(--t-muted); --silver:var(--t-muted);
@@ -51,6 +57,13 @@
 body { background:linear-gradient(var(--t-scene),var(--t-scene)),url('../assets/scene/home-bg.webp') center / cover no-repeat var(--t-bg); }
 body:not([data-view="home"]) { background-image:linear-gradient(var(--t-page),var(--t-page)),url('../assets/scene/home-bg.webp'); }
 body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var(--t-scene)),url('../assets/scene/home-bg.webp'); }
+/* 煙雨渡口（墨痕江湖墨玉閣限定）：湘畫的直式渡口，人物多在中下段，圖靠上對齊 */
+:root[data-theme="yanyu"] body { background:linear-gradient(var(--t-scene),var(--t-scene)),url('../assets/scene/yanyu-bg.webp') center top / cover no-repeat var(--t-bg); background-attachment:fixed; }
+:root[data-theme="yanyu"] body:not([data-view="home"]) { background-image:linear-gradient(var(--t-page),var(--t-page)),url('../assets/scene/yanyu-bg.webp'); }
+:root[data-theme="yanyu"] body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var(--t-scene)),url('../assets/scene/yanyu-bg.webp'); }
+[data-palette="yanyu"] .theme-choice__preview { background:url('../assets/scene/yanyu-thumb.webp') center 40% / cover; }
+.theme-choice.is-locked { opacity:.72; }
+.theme-choice.is-locked .theme-choice__preview { filter:grayscale(.6); }
 /* Preserve the original art and semantic target colours: no filters on characters, eggs or wish gems. */
 .sheet,.function-center,.research-result { background:var(--t-panel); border-color:var(--t-line); color:var(--t-text); }
 #reveal { background:radial-gradient(ellipse at 50% 35%,var(--t-selected),var(--t-panel) 65%); border-color:var(--t-line); }
@@ -109,16 +122,16 @@ body[data-view="incubate"] { background-image:linear-gradient(var(--t-scene),var
 @media(prefers-reduced-motion:reduce) { .theme-choice { transition:none; } }
 
 /* Keep stage labels legible over the softly lit room, including nighttime ambience. */
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .companion-room.is-night::before { background:radial-gradient(ellipse 60% 55% at 50% 48%,#d9e8f322,transparent 75%); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.room-empty,.resident-name,.bubble__text,.wish-dialogue p) { text-shadow:none; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.ach-tile.is-ready,.bingo-cell.is-line) { background:var(--t-selected); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .ach-tile.is-ready small { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.room-gift,.letter-new,.incubation-omen) { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .topbar__brand { color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .companion-room.is-night::before { background:radial-gradient(ellipse 60% 55% at 50% 48%,#d9e8f322,transparent 75%); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.room-empty,.resident-name,.bubble__text,.wish-dialogue p) { text-shadow:none; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.ach-tile.is-ready,.bingo-cell.is-line) { background:var(--t-selected); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .ach-tile.is-ready small { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.room-gift,.letter-new,.incubation-omen) { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .topbar__brand { color:var(--t-text); }
 
 .online { color:var(--t-muted); }
 .resident-dex { background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .pips i.is-on { background:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .pips i.is-on { background:var(--t-accent); }
 /* Give the document its own canvas so the room keeps painting on tall screens. */
 html { background:var(--t-bg); }
 .egg-select-entry { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
@@ -142,6 +155,6 @@ html { background:var(--t-bg); }
   --font-mono: var(--font-serif-mix);
 }
 body, button, input, select, textarea { font-variant-numeric: lining-nums tabular-nums; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .letter-item .letter-star { color:#c0841a; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .letter-empty { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .letter-tabs small { background:#00000012; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .letter-item .letter-star { color:#c0841a; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .letter-empty { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .letter-tabs small { background:#00000012; }

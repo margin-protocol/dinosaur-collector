@@ -71,7 +71,7 @@ export const EVENT_DEFS = {
       { id: 'wen', name: '墨衣護衛・聞止水', cost: 500, limit: 1, reward: { type: 'character', no: 'MO-001' } },
       { id: 'mohen-egg', name: '墨痕蛋', cost: 80, limit: 5, reward: { type: 'egg', egg: 'mohen' } }, // 墨痕蛋＝活動卡池
       { id: 'title', name: '限定稱號「執筆入江湖」', cost: 150, limit: 1, reward: { type: 'title', id: 'mo-pen' } },
-      { id: 'theme', name: '限定主題「煙雨渡口」', cost: 200, limit: 1, reward: { type: 'theme', id: 'yanyu' }, soon: true },
+      { id: 'theme', name: '限定主題「煙雨渡口」', cost: 200, limit: 1, reward: { type: 'theme', id: 'yanyu' } },
       { id: 'recipe', name: '限定料理食譜', cost: 60, limit: 1, reward: { type: 'recipe', id: 'mo-recipe' }, soon: true },
       { id: 'gift', name: '高級好感度禮物', cost: 30, limit: 10, reward: { type: 'gift', id: 'mo-gift' }, soon: true },
       { id: 'energy', name: '能量 ×20', cost: 20, limit: 0, reward: { type: 'energy', amount: 20 } },
@@ -140,7 +140,7 @@ export function activeEvents(state, nowMs) {
 }
 
 // ───────── 存檔 ─────────
-const freshProgress = () => ({ stages: {}, story: {}, tokens: 0, earned: 0, spent: 0, shop: {}, keepsakes: {}, keepsakeMiss: 0, runs: 0, wins: 0, titles: [], leftoverAt: null });
+const freshProgress = () => ({ stages: {}, story: {}, tokens: 0, earned: 0, spent: 0, shop: {}, keepsakes: {}, keepsakeMiss: 0, runs: 0, wins: 0, titles: [], themes: [], leftoverAt: null });
 function cleanProgress(old) {
   const p = freshProgress();
   if (!old || typeof old !== 'object') return p;
@@ -154,6 +154,7 @@ function cleanProgress(old) {
   for (const [k, v] of Object.entries(old.keepsakes || {})) if (isStr(v)) p.keepsakes[k] = v;
   for (const k of ['tokens', 'earned', 'spent', 'keepsakeMiss', 'runs', 'wins']) if (isInt(old[k])) p[k] = old[k];
   if (Array.isArray(old.titles)) p.titles = [...new Set(old.titles.filter(isStr))];
+  if (Array.isArray(old.themes)) p.themes = [...new Set(old.themes.filter(isStr))];
   if (isStr(old.leftoverAt)) p.leftoverAt = old.leftoverAt;
   if (isStr(old.completeAt)) p.completeAt = old.completeAt;
   if (isStr(old.wornTitle) && p.titles.includes(old.wornTitle)) p.wornTitle = old.wornTitle;
@@ -291,6 +292,7 @@ export function buy(state, def, itemId, nowMs, apply = applyShopReward) {
 export function applyShopReward(state, reward, { def, now = new Date() } = {}) {
   if (reward.type === 'energy') { state.energy = (state.energy || 0) + reward.amount; return { energy: reward.amount }; }
   if (reward.type === 'title') { const p = progressOf(state, def.id); if (!p.titles.includes(reward.id)) p.titles.push(reward.id); return { title: reward.id }; }
+  if (reward.type === 'theme') { const p = progressOf(state, def.id); if (!p.themes.includes(reward.id)) p.themes.push(reward.id); return { theme: reward.id }; }
   const gifts = state.gifts || (state.gifts = { eggs: [] }); gifts.eggs ||= [];
   if (reward.type === 'character') {
     if (state.dex?.[reward.no] || gifts.eggs.some((e) => e.character === reward.no)) return '已經有了。';
@@ -322,3 +324,5 @@ export function wearTitle(state, eventId, titleId) {
   if (!titleId) return null;
   prog.wornTitle = titleId; return EVENT_DEFS[eventId]?.titles?.[titleId] || null;
 }
+// 活動換到的主題（全部活動合起來）
+export const ownedThemes = (state) => new Set(Object.values(state.events || {}).flatMap((p) => (Array.isArray(p?.themes) ? p.themes : [])));

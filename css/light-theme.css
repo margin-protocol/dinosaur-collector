@@ -2,96 +2,97 @@
 :root[data-theme="cream"] { --t-muted:#614b3a; --t-accent:#70482f; }
 :root[data-theme="sakura"] { --t-muted:#684454; --t-accent:#7e3e5b; }
 :root[data-theme="daylight"] { --t-muted:#3f5970; --t-accent:#2d5477; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) { --t-success:#205f3c; --t-warning:#754b15; --t-danger:#9b2c40; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__card.card { background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__card.is-owned::after { opacity:.08; mix-blend-mode:normal; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .header__title { background:none; color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.whats-new__entry h3,.battle-head b,.battle-stage-card__info span,.battle-score .is-record b,.battle-log .is-special,.battle-result__stars,.star-gift b,.dex-bond__hearts) { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.whats-new__entry small,.wheel-total,.wheel-left,.dex-bond__today,.bond-up__reward,.battle-stage-card__info small,.battle-enemy small,.battle-enemy p,.battle-score small,.battle-log .is-power,.train-row small) { color:var(--t-muted); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.wheel-stake,.errand-tabs button,.battle-stage-card,.train-row) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.wheel-stake[aria-checked="true"],.errand-tabs button[aria-selected="true"],.battle-stage-card.is-boss,.battle-stage-card.is-shiny,.battle-score .is-record) { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.errand-tabs,.battle-forecast,.battle-log,.battle-intro,.battle-story,.battle-advice,.star-gift-hint,.battle-score>div,.dex-bond,.dex-bond__unlocks li,.dex-taste) { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-bond__unlocks li { opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-bond__unlocks li.is-open { background:var(--t-selected); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__bond { background:var(--t-selected); color:var(--t-accent); box-shadow:inset 0 0 0 1px var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.battle-forecast[data-level="good"] b,.battle-score .is-up b) { color:var(--t-success); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .battle-forecast[data-level="ok"] b { color:var(--t-warning); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .battle-forecast[data-level="risk"] b { color:var(--t-danger); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.battle-stage-card.is-locked,.battle-stage-card.is-done,.ach-tile.is-locked,.room-wheel.is-spent,.research-primary:disabled,.egg-cat:disabled,.fossil-offer:disabled,.errand-siang:disabled) { opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.battle-stage-card.is-locked,.battle-stage-card.is-done) .enemy-art { opacity:.55; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.research-partner:disabled,.research-text-button:disabled,.growth-claim:disabled) { opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) button:disabled { color:var(--t-muted); border-color:var(--t-line); border-style:dashed; cursor:default; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-choice[aria-pressed="true"] { background:var(--t-selected); color:var(--t-text); border-color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-choice__state { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .egg-choice:disabled:not([aria-pressed="true"]) { background:var(--t-raised); color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(input,textarea)::placeholder { color:var(--t-muted); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .update-pill { background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .update-pill b { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .update-pill small { color:var(--t-muted); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .letter-badge { background:#a72c4c; color:#fff; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .chapter-reward { background:var(--t-raised); color:var(--t-accent); border-color:var(--t-line); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.banner,.float-gain) { background:var(--t-panel); border:1px solid var(--t-line); border-radius:8px; padding:3px 8px; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.banner__en,.banner__zh,.float-gain) { color:var(--t-text); text-shadow:none; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .album-item small { color:var(--t-muted); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .snap-btn.is-done { opacity:1; background:var(--t-raised); color:var(--t-muted); border:1px dashed var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .view--incubate #cultivate:focus-visible { outline-color:var(--t-accent); }
-@media(hover:hover) { :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .view--incubate #cultivate:hover:not(:disabled) { background:var(--t-selected); color:var(--t-text); } }
+:root[data-theme="yanyu"] { --t-muted:#41534b; --t-accent:#82342e; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) { --t-success:#205f3c; --t-warning:#754b15; --t-danger:#9b2c40; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex__card.card { background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex__card.is-owned::after { opacity:.08; mix-blend-mode:normal; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .header__title { background:none; color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.whats-new__entry h3,.battle-head b,.battle-stage-card__info span,.battle-score .is-record b,.battle-log .is-special,.battle-result__stars,.star-gift b,.dex-bond__hearts) { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.whats-new__entry small,.wheel-total,.wheel-left,.dex-bond__today,.bond-up__reward,.battle-stage-card__info small,.battle-enemy small,.battle-enemy p,.battle-score small,.battle-log .is-power,.train-row small) { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.wheel-stake,.errand-tabs button,.battle-stage-card,.train-row) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.wheel-stake[aria-checked="true"],.errand-tabs button[aria-selected="true"],.battle-stage-card.is-boss,.battle-stage-card.is-shiny,.battle-score .is-record) { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.errand-tabs,.battle-forecast,.battle-log,.battle-intro,.battle-story,.battle-advice,.star-gift-hint,.battle-score>div,.dex-bond,.dex-bond__unlocks li,.dex-taste) { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex-bond__unlocks li { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex-bond__unlocks li.is-open { background:var(--t-selected); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex__bond { background:var(--t-selected); color:var(--t-accent); box-shadow:inset 0 0 0 1px var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.battle-forecast[data-level="good"] b,.battle-score .is-up b) { color:var(--t-success); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-forecast[data-level="ok"] b { color:var(--t-warning); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-forecast[data-level="risk"] b { color:var(--t-danger); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.battle-stage-card.is-locked,.battle-stage-card.is-done,.ach-tile.is-locked,.room-wheel.is-spent,.research-primary:disabled,.egg-cat:disabled,.fossil-offer:disabled,.errand-siang:disabled) { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.battle-stage-card.is-locked,.battle-stage-card.is-done) .enemy-art { opacity:.55; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.research-partner:disabled,.research-text-button:disabled,.growth-claim:disabled) { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) button:disabled { color:var(--t-muted); border-color:var(--t-line); border-style:dashed; cursor:default; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-choice[aria-pressed="true"] { background:var(--t-selected); color:var(--t-text); border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-choice__state { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-choice:disabled:not([aria-pressed="true"]) { background:var(--t-raised); color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(input,textarea)::placeholder { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .update-pill { background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .update-pill b { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .update-pill small { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .letter-badge { background:#a72c4c; color:#fff; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .chapter-reward { background:var(--t-raised); color:var(--t-accent); border-color:var(--t-line); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.banner,.float-gain) { background:var(--t-panel); border:1px solid var(--t-line); border-radius:8px; padding:3px 8px; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.banner__en,.banner__zh,.float-gain) { color:var(--t-text); text-shadow:none; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .album-item small { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .snap-btn.is-done { opacity:1; background:var(--t-raised); color:var(--t-muted); border:1px dashed var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .view--incubate #cultivate:focus-visible { outline-color:var(--t-accent); }
+@media(hover:hover) { :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .view--incubate #cultivate:hover:not(:disabled) { background:var(--t-selected); color:var(--t-text); } }
 /* Story archive and reviews use the same daylight ink and surfaces. */
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive,.archive-entry,.gugu-review) { --rose-gold:var(--t-accent); --rose-gold-soft:var(--t-line); background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive__head h2,.archive-card b,.archive-facts dd,.archive-story p,.archive-bio,.archive-lines,.archive-clues ul,.gugu-review p) { color:var(--t-text); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive__head small,.archive__greet,.archive-note,.archive-card small,.archive-facts dt,.archive-entry small,.archive-clues small) { color:var(--t-muted); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive-card,.archive__tabs button) { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive-card.is-locked,.archive-file.is-uncleared) { opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive__tabs button small { color:var(--t-muted); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive__tabs button[aria-selected="true"] { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); box-shadow:inset 0 -2px 0 var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive__head,.archive-story p) { border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive-stars,.gugu-review p.gugu-review__note) { color:var(--t-accent); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.archive,.archive-entry,.gugu-review) { --rose-gold:var(--t-accent); --rose-gold-soft:var(--t-line); background:var(--t-panel); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.archive__head h2,.archive-card b,.archive-facts dd,.archive-story p,.archive-bio,.archive-lines,.archive-clues ul,.gugu-review p) { color:var(--t-text); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.archive__head small,.archive__greet,.archive-note,.archive-card small,.archive-facts dt,.archive-entry small,.archive-clues small) { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.archive-card,.archive__tabs button) { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.archive-card.is-locked,.archive-file.is-uncleared) { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .archive__tabs button small { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .archive__tabs button[aria-selected="true"] { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); box-shadow:inset 0 -2px 0 var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.archive__head,.archive-story p) { border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.archive-stars,.gugu-review p.gugu-review__note) { color:var(--t-accent); opacity:1; }
 
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.nav-group__title,.guide-tip small,.guide-tip__ok) { color:var(--t-accent); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.nav__sub,.today-item small,.guide-feature p) { color:var(--t-muted); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .guide-feature.is-locked { opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .guide-tip { background:var(--t-raised); border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-note-tabs button { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-note-tabs button[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-history-list li { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-history-list strong { color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.research-history-list small,.research-history-count,.research-history-intro,.research-clues) { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-clues .is-found { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .whats-new__entry.is-new small { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .whats-new__entry + .whats-new__entry { border-top-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.photo-hint,.photo-tip,.photo-status,.photo-result-note,.photo-size-row,.photo-fx-row,.photo-fx-note,.photo-fx-hint) { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .photo-tabs { background:var(--t-raised); box-shadow:inset 0 0 0 1px var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .photo-pick-item { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .photo-shutter { border-color:var(--t-accent); background:radial-gradient(circle,var(--t-accent) 0 55%,transparent 57%); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .devteam-line { background:var(--t-raised); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .devteam-line b { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.devteam-line.is-system,.devteam-caption) { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .side-cradle { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.side-cradle__pct,.side-cradles__head) { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .side-cradle__swap { color:var(--t-accent); border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .mission-swap { border-color:var(--t-line); color:var(--t-muted); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-lab { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.research-lab__who,.research-lab__left,.research-lab__cancel) { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-lab__body small { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-lab__bar { background:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .research-brew-status { color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .residents-slot { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .residents-slot.is-empty { background:none; border-color:var(--t-line); color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.residents-series,.residents-slot__x) { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .resident-choice__away { background:#4e3040e6; color:#fff; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .press-tip { background:#fff8fa; color:var(--t-text); border-color:var(--t-line); box-shadow:0 6px 18px #4e304033; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .press-tip span { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex__stars:not(.is-full) { background:var(--t-selected); color:#8a5a12; box-shadow:inset 0 0 0 1px var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-detail__stars b { color:#b07a1c; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-detail__stars span { color:var(--t-muted); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-text { border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.archive-filter button,.archive-locked-chip) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); opacity:1; }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-filter button[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-locked-chip b { color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .archive-locked-chip small { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.nav-group__title,.guide-tip small,.guide-tip__ok) { color:var(--t-accent); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.nav__sub,.today-item small,.guide-feature p) { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .guide-feature.is-locked { opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .guide-tip { background:var(--t-raised); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-note-tabs button { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-note-tabs button[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-history-list li { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-history-list strong { color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.research-history-list small,.research-history-count,.research-history-intro,.research-clues) { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-clues .is-found { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .whats-new__entry.is-new small { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .whats-new__entry + .whats-new__entry { border-top-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.photo-hint,.photo-tip,.photo-status,.photo-result-note,.photo-size-row,.photo-fx-row,.photo-fx-note,.photo-fx-hint) { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .photo-tabs { background:var(--t-raised); box-shadow:inset 0 0 0 1px var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .photo-pick-item { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .photo-shutter { border-color:var(--t-accent); background:radial-gradient(circle,var(--t-accent) 0 55%,transparent 57%); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .devteam-line { background:var(--t-raised); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .devteam-line b { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.devteam-line.is-system,.devteam-caption) { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .side-cradle { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.side-cradle__pct,.side-cradles__head) { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .side-cradle__swap { color:var(--t-accent); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .mission-swap { border-color:var(--t-line); color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-lab { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.research-lab__who,.research-lab__left,.research-lab__cancel) { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-lab__body small { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-lab__bar { background:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .research-brew-status { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .residents-slot { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .residents-slot.is-empty { background:none; border-color:var(--t-line); color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.residents-series,.residents-slot__x) { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .resident-choice__away { background:#4e3040e6; color:#fff; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .press-tip { background:#fff8fa; color:var(--t-text); border-color:var(--t-line); box-shadow:0 6px 18px #4e304033; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .press-tip span { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex__stars:not(.is-full) { background:var(--t-selected); color:#8a5a12; box-shadow:inset 0 0 0 1px var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex-detail__stars b { color:#b07a1c; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex-detail__stars span { color:var(--t-muted); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .archive-text { border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.archive-filter button,.archive-locked-chip) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .archive-filter button[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .archive-locked-chip b { color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .archive-locked-chip small { color:var(--t-muted); }
 
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"])  .dex-taste__chip { background:var(--t-selected); border-color:var(--t-line); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .dex-taste__chip.is-on { border-color:var(--t-accent); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.dex-taste__row) { border-color:var(--t-line); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) .kitchen-result .kitchen-learned { background:var(--t-raised); color:var(--t-text); }
-:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"]) :is(.dex-taste__hint,.dex-taste__unknown,.dex-taste__head small,.dex-taste__ings,.dex-taste__row > b) { color:var(--t-muted); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"])  .dex-taste__chip { background:var(--t-selected); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .dex-taste__chip.is-on { border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.dex-taste__row) { border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .kitchen-result .kitchen-learned { background:var(--t-raised); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.dex-taste__hint,.dex-taste__unknown,.dex-taste__head small,.dex-taste__ings,.dex-taste__row > b) { color:var(--t-muted); opacity:1; }

@@ -3124,7 +3124,7 @@ attachSnackDrag($('snack'), {
   },
 });
 
-setupThemes({ onOpen: syncRoomActivity });
+setupThemes({ onOpen: syncRoomActivity, owned: () => events.ownedThemes(state) });
 for (const id of ['home-errand', 'open-errands']) $(id).querySelector('svg')?.replaceWith(featureIcon('errand'));
 renderAll();
 renderExplore();
@@ -4200,7 +4200,7 @@ function eventShop(def, now) {
 async function buyEventItem(eventId, itemId) {
   const t = await updateState(c => { return events.buy(c, events.eventDef(eventId), itemId, events.eventNow(c)); });
   state = t.state; renderAll(); renderBattle();
-  const msg = typeof t.result === 'string' ? t.result : t.result.result.egg ? `換到了「${t.result.item.name}」！蛋放在「選擇蛋」裡。` : `換到了「${t.result.item.name}」！`;
+  const msg = typeof t.result === 'string' ? t.result : t.result.result.egg ? `換到了「${t.result.item.name}」！蛋放在「選擇蛋」裡。` : t.result.result.theme ? `換到了「${t.result.item.name}」！到選單的「主題配色」就能換上。` : `換到了「${t.result.item.name}」！`;
   const box = $('event-shop-status'); if (box) box.textContent = msg;
 }
 // 小湘出勤狀態：不用點進關卡就能看誰可以出戰、誰在休息（還要多久）、誰出門了；收合狀態記在這台裝置
