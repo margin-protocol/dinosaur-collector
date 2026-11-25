@@ -1376,6 +1376,27 @@
         "caramel",
         "pudding"
       ]
+    },
+    {
+      "no": "MO-005",
+      "name": "靖安司捕頭・杜今朝",
+      "like": "菇香",
+      "dislike": "清涼",
+      "secret_combo": [
+        "mushroom",
+        "tangyuan"
+      ]
+    },
+    {
+      "no": "MO-008",
+      "name": "巧匠公子・簡牧陽",
+      "like": "濃甜",
+      "dislike": "清涼",
+      "secret_combo": [
+        "caramel",
+        "rainbow",
+        "strawberry"
+      ]
     }
   ]
 }

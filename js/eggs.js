@@ -127,7 +127,7 @@ export const EGGS = {
     // 正式三層素材：assets/eggs/county/{shell,glow,cracks}.webp
   },
   // 墨痕蛋（2.0 · 湘 11/25）：墨痕江湖活動卡池。只從墨玉閣兌換（每期最多 5 顆），不進其他蛋、也不進星光蛋
-  // 海棠新娘（117）、聞止水（MO-001）湘 11/25 決定只在這裡出；MO-003 以後的居民做好再加
+  // 海棠新娘（117）、聞止水（MO-001）、杜今朝（MO-005）、簡牧陽（MO-008）只在這裡出；下卷四位做好再加
   mohen: {
     id: 'mohen',
     name: '墨痕蛋',
@@ -136,7 +136,7 @@ export const EGGS = {
     hatches: null,
     stocked: true,
     world: 'mo',
-    pool: { 'MO-001': 1, '117': 1 },
+    pool: { 'MO-001': 1, '117': 1, 'MO-005': 2, 'MO-008': 2 }, // 湘 11/25：上卷卡池加杜今朝、簡牧陽（SR 各 2 份）
     // 素材：assets/eggs/mohen/{shell,glow,cracks}.webp（還沒有，先用占位）
   },
   star: {
@@ -329,6 +329,9 @@ const CHARACTER_TABLE = {
   'MO-001': { no: 'MO-001', name: '墨衣護衛・聞止水', rarity: 'SSR', line: '「站我身後。其他的，不用管。」', image: 'mo-001-wen-zhishui', series: 'mohen',
     // 原典（湘 11/25）：origin.id 相同＝同一位角色在不同世界的版本（之後的「同源居民收藏成就」用）
     origin: { id: 'wen-zhishui', world: '棲川市', role: '紀實攝影師' }, worldRole: '墨衣護衛', quote: '縱使世道更迭、姓名散落於不同書頁，有些人仍會一次又一次，走向同一個人。' },
+  // 墨痕江湖上卷卡池（湘 11/25 定稿，六位 MO 男角都是「他」）。文案：docs/event-001/residents/
+  'MO-005': { no: 'MO-005', name: '靖安司捕頭・杜今朝', rarity: 'SR', line: '「靖安司，杜今朝。有事報案，沒事也可以坐下喝杯茶。」', image: 'mo-005-du-jinzhao', series: 'mohen', worldRole: '靖安司捕頭' },
+  'MO-008': { no: 'MO-008', name: '巧匠公子・簡牧陽', rarity: 'SR', line: '「我叫簡牧陽！有什麼壞掉的，交給我！」', image: 'mo-008-jian-muyang', series: 'mohen', worldRole: '巧匠公子' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）

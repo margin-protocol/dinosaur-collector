@@ -13,7 +13,7 @@ assert.deepEqual(Object.keys(kept).sort(),['001','002','117','MO-001'],'舊存�
 assert.match(await p.textContent('.topbar__brand'),/頁間居民/);
 const m=await p.evaluate(async()=>{const e=await import('/js/eggs.js'),r=await import('/js/resident-lines.js');const keys=Object.keys(e.CHARACTERS);
   return {label117:e.noLabel('117'),label001:e.noLabel('001'),labelMo:e.noLabel('MO-001'),w117:e.worldOf(e.CHARACTERS['117']),wMo:e.worldOf(e.CHARACTERS['MO-001']),w001:e.worldOf(e.CHARACTERS['001']),
-  moLast:keys.at(-1)==='MO-001',same:e.sameOrigin('wen-zhishui').map(c=>c.no),pool:Object.values(e.EGGS).some(g=>g.id!=='mohen'&&g.pool?.['MO-001']),
+  moLast:keys.at(-1).startsWith('MO-')&&keys.indexOf('MO-001')>keys.indexOf('116'),same:e.sameOrigin('wen-zhishui').map(c=>c.no),pool:Object.values(e.EGGS).some(g=>g.id!=='mohen'&&g.pool?.['MO-001']),
   lineBride:r.residentLine('MO-001',{residents:['117']},()=>0.1),lineLong:r.residentLine('MO-001',{idleMs:r.LONG_IDLE_MS},()=>0.9),lineMax:r.residentLine('MO-001',{level:5},()=>0.999),none:r.residentLine('001')};});
 assert.deepEqual([m.label117,m.label001,m.labelMo],['MO-002','No.001','MO-001']);assert.deepEqual([m.w117,m.wMo,m.w001],['mo','mo','origin']);
 assert(m.moLast,'異世排在最後');assert.deepEqual(m.same,['MO-001']);assert(!m.pool,'聞止水只在墨痕蛋（活動卡池）');
@@ -25,13 +25,13 @@ assert.equal(await p.locator('#dex-worlds').isVisible(),false);assert.equal(awai
 // 異世 → 墨痕江湖：MO-001、MO-002 照顯示編號排
 await p.locator('.dex-realm').nth(1).click();await p.waitForTimeout(200);
 assert.equal(await p.locator('.dex-world[aria-selected="true"]').getAttribute('data-dex-world'),'mo');
-assert.deepEqual(await p.locator('.dex__card .dex__no').allTextContents(),['MO-001','MO-002']);
-for(const mode of ['series','rarity','power']){await p.click(`[data-dex-mode="${mode}"]`);await p.waitForTimeout(100);assert.equal(await p.locator('.dex__card').count(),2,mode);}
+assert.deepEqual(await p.locator('.dex__card .dex__no').allTextContents(),['MO-001','MO-002','MO-005','MO-008']);
+for(const mode of ['series','rarity','power']){await p.click(`[data-dex-mode="${mode}"]`);await p.waitForTimeout(100);assert.equal(await p.locator('.dex__card').count(),4,mode);}
 await p.click('[data-dex-mode="all"]');
 assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'沒有橫向捲動');
 // 記得上次選的世界
 await p.reload();await p.waitForTimeout(400);await p.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());location.hash='dex';});await p.waitForTimeout(300);
-assert.equal(await p.locator('.dex-realm[aria-selected="true"]').textContent(),'異世2/2');
+assert.equal(await p.locator('.dex-realm[aria-selected="true"]').textContent(),'異世2/4');
 // 居民檔案
 await p.locator('[data-dex-no="MO-001"]').click();await p.locator('#dex-detail[open]').waitFor();
 assert.match(await p.textContent('#dex-detail-no'),/MO-001 · SSR · 異世・墨痕江湖/);

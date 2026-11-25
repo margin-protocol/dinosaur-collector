@@ -238,6 +238,7 @@ export function reaction(no, dish, r) {
   const sp = KITCHEN_LINES[no];
   if (r === 3 && sp?.[3]) return sp[3];
   if (dish.dark && sp?.dark) return sp.dark;
+  if (r === 1 && !dish.dark && sp?.tags) { const t = Object.keys(sp.tags).find(t => dish.tags.includes(t)); if (t) return sp.tags[t]; } // 依口味的專屬反應（MO-005／MO-008）
   if (sp?.[r] && !dish.dark) return sp[r]; // 有些小湘四種評價都有專屬台詞（非酋三部曲）
   if (r === 0 && sp?.[0]) return sp[0];
   const list = dish.dark && r < 2 ? DARK : LINES[r];

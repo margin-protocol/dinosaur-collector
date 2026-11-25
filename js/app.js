@@ -2203,7 +2203,7 @@ function howToGet(c) {
     return state.dex[c.no] ? '開發團隊限定：達成條件後收到紀念蛋' : `開發團隊限定：${p}`;
   }
   if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
-  if (c.no === '117' || c.no === 'MO-001') return c.no === 'MO-001' ? '異世活動「墨痕江湖」：墨痕蛋（活動卡池），或在墨玉閣用 500 墨玉直接兌換' : '異世活動「墨痕江湖」：墨痕蛋（活動卡池）';
+  if (c.no === '117' || c.no === 'MO-001' || EGGS.mohen.pool[c.no]) return c.no === 'MO-001' ? '異世活動「墨痕江湖」：墨痕蛋（活動卡池），或在墨玉閣用 500 墨玉直接兌換' : '異世活動「墨痕江湖」：墨痕蛋（活動卡池）';
   const eggs = Object.values(EGGS).filter(e => activePool(e)?.[c.no]).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
 }
