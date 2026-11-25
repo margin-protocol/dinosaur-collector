@@ -12,3 +12,15 @@ test('下卷開放前不會孵到下卷居民，開放後會', () => {
   assert.ok(DOWN.some((n) => got2.has(n)));
   assert.ok(EGGS.mohen.pool['MO-003']);
 });
+import { activePool } from '../js/eggs.js';
+test('墨痕蛋混池：活動居民合計 30%、其他小湘 70%，比例照原本份數（湘 11/25）', () => {
+  const sum = (o, f) => Object.entries(o).filter(([no]) => f(no)).reduce((a, [, w]) => a + w, 0);
+  for (const now of [new Date('2026-11-27T12:00:00+08:00'), new Date('2026-11-30T12:00:00+08:00')]) {
+    const p = activePool(EGGS.mohen, now, {}); const own = (no) => EGGS.mohen.pool[no];
+    assert.ok(Math.abs(sum(p, own) - 30) < 1e-9); assert.ok(Math.abs(sum(p, (n) => !own(n)) - 70) < 1e-9);
+    assert.ok(Object.keys(p).length > 20, '有其他小湘');
+  }
+  const up = activePool(EGGS.mohen, new Date('2026-11-27T12:00:00+08:00'), {});
+  assert.ok(Math.abs(up['MO-005'] - 10) < 1e-9 && Math.abs(up['MO-001'] - 5) < 1e-9);
+  for (const id of Object.keys(EGGS)) if (id !== 'mohen') assert.equal(activePool(EGGS[id], new Date('2026-11-30T12:00:00+08:00'), {})?.['MO-001'], undefined, id);
+});

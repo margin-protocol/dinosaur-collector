@@ -794,7 +794,7 @@ function openEggOdds(id) {
   const mineTotal = Object.values(mine).reduce((a, b) => a + b, 0);
   const pct = (v) => { const x = v * 100; return x >= 10 ? `${x.toFixed(0)}%` : x >= 1 ? `${x.toFixed(1)}%` : `${x.toFixed(2)}%`; };
   const body = $('egg-odds-body');
-  const intro = el('p', 'residents-intro', `${egg.name}裡共有 ${Object.keys(pool).length} 位小湘。「你現在」已經算進沒遇過的小湘 ×${NEW_FACE_TIMES}；蛋的個性、天氣和時間的加成另外算。`);
+  const intro = el('p', 'residents-intro', `${egg.name}裡共有 ${Object.keys(pool).length} 位小湘。${egg.mix ? `其中墨痕江湖的居民合計 ${Math.round(egg.mix.share * 100)}%，其他小湘合計 ${Math.round((1 - egg.mix.share) * 100)}%。` : ''}「你現在」已經算進沒遇過的小湘 ×${NEW_FACE_TIMES}；蛋的個性、天氣和時間的加成另外算。`);
   const luck = el('div', 'egg-odds__luck');
   luck.append(el('span', '', `連續重複 ${Math.min(state.dupStreak || 0, DUP_PITY)} / ${DUP_PITY}（到了下一顆必定是新面孔）`), el('span', '', `沒出 SR 以上 ${Math.min(state.srStreak || 0, SR_PITY - 1)} / ${SR_PITY - 1}（到了下一顆必定 SR 以上）`));
   const sections = RARITY_ORDER.map(r => {
@@ -2210,8 +2210,8 @@ function howToGet(c) {
   if (h) return h.window ? `${h.name}（${h.when}）前後 3 天打開遊戲，收到紀念蛋` : `只在小湘生日（${h.when}）收到紀念蛋`;
   const recipe = RECIPES.find(r => r.target === c.no);
   if (recipe) { const st = lab.labStatus(state); const brewing = st?.recipe.id === recipe.id; return `隱藏配方：${state.dex[c.no] || brewing ? recipe.text : '找到某兩位小湘的配方，放進研究室調配，就會發生什麼……'}${brewing ? `（調配中，還要 ${lab.fmtLeft(st.left)}）` : ''}`; }
-  if (c.badge) { const h = battle.heroStatus(state, c.no); const joined = JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no] ? Object.values(EGGS).filter(e => activePool(e, new Date(), state.dex)?.[c.no]).map(e => e.name) : []; return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換專屬蛋，培育後固定孵出${h.requireText ? `（${h.requireText}）` : ''}${joined.length ? `；已經加入收藏，現在${joined.join('、')}也孵得到` : ''}`; }
-  if (JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no]) { const eggs = Object.values(EGGS).filter(e => activePool(e, new Date(), state.dex)?.[c.no]).map(e => e.name); if (eggs.length) return `已經加入收藏，現在${eggs.join('、')}也孵得到`; }
+  if (c.badge) { const h = battle.heroStatus(state, c.no); const joined = JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no] ? Object.values(EGGS).filter(e => (e.mix ? e.pool[c.no] : activePool(e, new Date(), state.dex)?.[c.no])).map(e => e.name) : []; return `在討伐的「特訓與兌換」用 ${h.cost} 枚討伐徽章兌換專屬蛋，培育後固定孵出${h.requireText ? `（${h.requireText}）` : ''}${joined.length ? `；已經加入收藏，現在${joined.join('、')}也孵得到` : ''}`; }
+  if (JOIN_WHEN_OWNED.includes(c.no) && state.dex[c.no]) { const eggs = Object.values(EGGS).filter(e => (e.mix ? e.pool[c.no] : activePool(e, new Date(), state.dex)?.[c.no])).map(e => e.name); if (eggs.length) return `已經加入收藏，現在${eggs.join('、')}也孵得到`; }
   if (c.newNeed) return `一般的蛋累計孵到新朋友 ${c.newNeed} 次，她會自己來找你（目前 ${Math.min(state.newTotal || 0, c.newNeed)} / ${c.newNeed}）`;
   if (c.dupNeed) return `累計孵到重複的小湘 ${c.dupNeed} 次，她會自己來找你（目前 ${Math.min(state.dupTotal || 0, c.dupNeed)} / ${c.dupNeed}）`;
   if (c.no === '090') return state.dex[c.no] ? '湘研究所沒考上時，用暗號送給大家的紀念（沒關係，先吃蛋糕）' : '湘有心事的時候，會用暗號送給大家……';
@@ -2222,7 +2222,7 @@ function howToGet(c) {
   }
   if (c.series === 'date') return '見面時掃描湘的約會 QR Code，取得約會蛋來孵';
   if (c.no === '117' || c.no === 'MO-001' || EGGS.mohen.pool[c.no]) return c.no === 'MO-001' ? '異世活動「墨痕江湖」：墨痕蛋（活動卡池），或在墨玉閣用 500 墨玉直接兌換' : '異世活動「墨痕江湖」：墨痕蛋（活動卡池）';
-  const eggs = Object.values(EGGS).filter(e => activePool(e)?.[c.no]).map(e => e.name);
+  const eggs = Object.values(EGGS).filter(e => (e.mix ? e.pool[c.no] : activePool(e)?.[c.no])).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
 }
 function openDexDetail(no) {

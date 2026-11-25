@@ -136,7 +136,8 @@ export const EGGS = {
     hatches: null,
     stocked: true,
     world: 'mo',
-    pool: { 'MO-001': 1, '117': 1, 'MO-005': 2, 'MO-008': 2, 'MO-003': 2, 'MO-007': 2, 'MO-004': 1, 'MO-006': 1 }, // 湘 11/25：SR 各 2 份、SSR 各 1 份；MO-003/004/006/007 下卷（poolFrom 11/29 12:00）才出現
+    pool: { 'MO-001': 1, '117': 1, 'MO-005': 2, 'MO-008': 2, 'MO-003': 2, 'MO-007': 2, 'MO-004': 1, 'MO-006': 1 },
+    mix: { from: 'ordinary', share: 0.3 }, // 湘 11/25：活動居民合計 30%（比例照上面），另外 70% 照普通蛋的池子出其他小湘 // 湘 11/25：SR 各 2 份、SSR 各 1 份；MO-003/004/006/007 下卷（poolFrom 11/29 12:00）才出現
     // 素材：assets/eggs/mohen/{shell,glow,cracks}.webp（還沒有，先用占位）
   },
   star: {
@@ -416,7 +417,13 @@ export function activePool(egg, now = new Date(), dex = null) {
   const base = hidden.length ? Object.fromEntries(Object.entries(egg.pool).filter(([no]) => !hidden.includes(no))) : egg.pool;
   const weights = OWNED_WEIGHT[egg.id];
   const joined = dex && weights ? JOIN_WHEN_OWNED.filter((no) => dex[no] && weights[CHARACTERS[no]?.rarity] && !base[no]) : [];
-  return joined.length ? { ...base, ...Object.fromEntries(joined.map((no) => [no, weights[CHARACTERS[no].rarity]])) } : base;
+  const own = joined.length ? { ...base, ...Object.fromEntries(joined.map((no) => [no, weights[CHARACTERS[no].rarity]])) } : base;
+  if (!egg.mix) return own;
+  // 混池（墨痕蛋）：自己的居民合計 share，其他照 mix.from 那顆蛋的池子分剩下的；總權重 100
+  const other = Object.fromEntries(Object.entries(activePool(EGGS[egg.mix.from], now, dex) || {}).filter(([no]) => !own[no]));
+  const sum = (o) => Object.values(o).reduce((a, b) => a + b, 0); const a = sum(own), b = sum(other);
+  if (!b) return own;
+  return { ...Object.fromEntries(Object.entries(own).map(([no, w]) => [no, (w / a) * 100 * egg.mix.share])), ...Object.fromEntries(Object.entries(other).map(([no, w]) => [no, (w / b) * 100 * (1 - egg.mix.share)])) };
 }
 export const isHigh = (no) => HIGH.has(CHARACTERS[no]?.rarity);
 export const isRandomEgg = (eggState) => Boolean(EGGS[eggState.id]?.pool && !(eggState.character && CHARACTERS[eggState.character]) && !EGGS[eggState.id].byCounty);
