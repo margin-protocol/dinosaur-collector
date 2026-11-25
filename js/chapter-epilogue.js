@@ -8,6 +8,7 @@
 // cast: [[角色, 站位], …]；fx: { 角色: 動作 }；prop: 'cards'（黏成一串的邀請卡）／'sign'（蘑菇的木牌，sign: 牌子上的字）。
 // screen: 控制室大螢幕上的字 { lines, count（{n} 依序換數字）, stamp（紅章）, alert, fade }；prop 'notes'：飄音符。
 // card: 全黑轉場字卡（over: 疊在畫面上；boom: 白光大字）；flash: 'soft' | 'big' 打雷閃光。
+import { startTheaterMusic, stopTheaterMusic, musicOn, setMusicOn, nudgeTheaterMusic, pauseForHidden } from './theater-music.js';
 import { characterSources, loadWithFallback, CHARACTERS } from './eggs.js';
 
 const STORY = 'assets/storybooks/chapter-one/', STORY2 = 'assets/storybooks/chapter-two/', STORY3 = 'assets/storybooks/chapter-three/', STORY4 = 'assets/storybooks/chapter-four/';
@@ -348,7 +349,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     <div class="epi__cast"></div>
     <div class="epi__cards" aria-hidden="true">${'<i></i>'.repeat(6)}</div>
     <div class="epi__spark" aria-hidden="true"><i>✦</i><i>✧</i><i>✦</i></div>
-    <div class="epi__bar"><span class="epi__chip"></span><button type="button" class="epi__btn" data-a="auto" aria-pressed="false">自動</button><button type="button" class="epi__btn" data-a="log">紀錄</button><button type="button" class="epi__btn" data-a="skip">跳過</button><button type="button" class="epi__btn epi__close" data-a="close" aria-label="關閉尾聲劇場">×</button></div>
+    <div class="epi__bar"><span class="epi__chip"></span><button type="button" class="epi__btn epi__music" data-a="music" aria-pressed="true" aria-label="配樂" hidden>♪</button><button type="button" class="epi__btn" data-a="auto" aria-pressed="false">自動</button><button type="button" class="epi__btn" data-a="log">紀錄</button><button type="button" class="epi__btn" data-a="skip">跳過</button><button type="button" class="epi__btn epi__close" data-a="close" aria-label="關閉尾聲劇場">×</button></div>
     <div class="epi__act" aria-hidden="true"></div>
     <div class="epi__box" role="status" aria-live="polite"><img class="epi__face" alt="" hidden><span class="epi__name"></span><p class="epi__text"></p><span class="epi__count"></span><span class="epi__hint">點一下 ▼</span></div>
     <div class="epi__card"><b></b><small></small></div>
@@ -462,11 +463,15 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     beats = resolveBeats(ep); index = 0; auto = false; q('[data-a="auto"]').setAttribute('aria-pressed', 'false');
     q('.epi__end').hidden = true; q('.epi__log').hidden = true; stage.dataset.chapter = String(ep.chapter); stage.dataset.skin = ep.skin || '';
     if (!dialog.open) dialog.showModal();
+    q('[data-a="music"]').hidden = !ep.music; q('[data-a="music"]').setAttribute('aria-pressed', String(musicOn()));
+    startTheaterMusic(ep.music); // ep.music：有配樂的劇情（墨痕江湖＝'mo'）
     render(); stage.focus({ preventScroll: true }); onActivity();
     return true;
   }
   stage.addEventListener('click', (e) => {
     const act = e.target.closest('[data-a]')?.dataset.a;
+    nudgeTheaterMusic();
+    if (act === 'music') { const on = !musicOn(); setMusicOn(on); e.target.closest('button').setAttribute('aria-pressed', String(on)); return; }
     if (act === 'auto') { auto = !auto; e.target.setAttribute('aria-pressed', String(auto)); clearTimeout(autoTimer); if (auto && !typing) finishLine(); return; }
     if (act === 'log') return openLog();
     if (act === 'log-close') { q('.epi__log').hidden = true; stage.focus({ preventScroll: true }); return finishLine(); }
@@ -478,7 +483,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     next();
   });
   stage.addEventListener('keydown', (e) => { if (e.target === stage && (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowRight')) { e.preventDefault(); next(); } });
-  dialog.addEventListener('close', () => { stopTimers(); onActivity(); });
-  document.addEventListener('visibilitychange', () => { if (!dialog.open) return; if (document.hidden) clearTimeout(autoTimer); else if (!typing) finishLine(); });
+  dialog.addEventListener('close', () => { stopTimers(); stopTheaterMusic(); onActivity(); });
+  document.addEventListener('visibilitychange', () => { if (!dialog.open) return; pauseForHidden(document.hidden); if (document.hidden) clearTimeout(autoTimer); else if (!typing) finishLine(); });
   return { play, has: (id) => Boolean(epilogueFor(id)), sequelOf: (id) => epilogueFor(id)?.sequel || null };
 }

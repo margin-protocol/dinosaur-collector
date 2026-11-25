@@ -68,7 +68,7 @@ export function buildStories(skin = '') {
       }
       const id = `mo:${sid}:${part}`;
       registerStory(id, {
-        chapter: 'mo', skin, title: s.title, subtitle: `${s.label}・${part === 'before' ? '開打前' : '打完後'}`,
+        chapter: 'mo', music: 'mo', skin, title: s.title, subtitle: `${s.label}・${part === 'before' ? '開打前' : '打完後'}`,
         endSmall: `${def.code} · ${s.label} · ${part === 'before' ? '開打前' : '打完後'}`, endTitle: `《${s.title}》${part === 'before' ? '' : '・完'}`,
         endNote: part === 'before' ? '準備好了就出發吧。這段劇情在關卡頁隨時可以重看。' : '這段劇情在關卡頁隨時可以重看。',
         closeLabel: part === 'before' ? '好，出發' : '收下', beats,
