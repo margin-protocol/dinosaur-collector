@@ -107,10 +107,14 @@ export function ensureClock(state) {
 export function noteServerTime(state, serverMs, deviceMs = Date.now()) {
   if (!Number.isFinite(serverMs) || serverMs <= 0) return false;
   const c = ensureClock(state);
-  if (serverMs < c.seen - 60e3) return false; // 比看過的時間還舊＝離線時拿到的快取回應，不採用
+  // 比上次採用的伺服器時間還新＝真的剛從伺服器拿到。就算比 seen 早也要採用：
+  // seen 可能是手機時間曾經調快時記下的，不校正的話活動會一直提早開、提早結束。
+  const last = isStr(c.syncedAt) ? Date.parse(c.syncedAt) : 0;
+  const fresh = serverMs > (Number.isFinite(last) ? last : 0);
+  if (!fresh && serverMs < c.seen - 60e3) return false; // 比看過的時間還舊、也不比上次新＝離線時拿到的快取回應，不採用
   c.offset = Math.round(serverMs - deviceMs);
   c.syncedAt = iso(serverMs);
-  c.seen = Math.max(c.seen, serverMs);
+  c.seen = fresh ? serverMs : Math.max(c.seen, serverMs);
   return true;
 }
 export function eventNow(state, deviceMs = Date.now()) {

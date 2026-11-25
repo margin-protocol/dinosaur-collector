@@ -125,7 +125,8 @@ function storyVariationFor(er, storyId, nos, rand) {
 
 function weekOf(date) {
   const d = new Date(date); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day);
-  return d.toISOString().slice(0, 10);
+  // 用本機日期組字串：toISOString 是 UTC，台北早上 8 點前會算成前一天（週日），每週一顆縣市蛋的限制就被繞過
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
 export function ensureErrands(state) {
