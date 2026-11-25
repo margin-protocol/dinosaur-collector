@@ -3633,10 +3633,10 @@ function renderHomeEvent() {
   const live = events.activeEvents(state, events.eventNow(structuredClone({ clock: state.clock }))).find(x => x.sch.state === 'battle' || x.sch.state === 'shop');
   if (!live) return;
   const { def, sch } = live; const name = def.name.replace(/^異世・/, '');
-  const btn = el('button', 'home-event home-event--c'); btn.type = 'button'; btn.dataset.event = def.id; btn.setAttribute('aria-label', `前往活動：${name}`);
+  const btn = el('button', 'home-event home-event--c'); btn.type = 'button'; btn.dataset.event = def.id; if (def.keyArt) { btn.classList.add('has-art'); btn.style.setProperty('--key-art', `url("${new URL(def.keyArt, document.baseURI).href}")`); } btn.setAttribute('aria-label', `前往活動：${name}`);
   const seal = el('i', 'home-event__seal', '墨'); seal.setAttribute('aria-hidden', 'true');
   const sub = sch.state === 'shop' ? '墨玉閣開放中' : '活動進行中';
-  const txt = el('span', 'home-event__text'); txt.append(el('small', null, `${def.code} · ${sub}`), el('b', null, `${name}｜${def.subtitle}`)); btn.append(seal, txt, el('span', 'home-event__go', '⟶')); document.querySelector('.view--home .home-actions').before(btn);
+  const txt = el('span', 'home-event__text'); txt.append(el('small', null, `${name} · ${sub}`), el('b', null, def.subtitle)); btn.append(seal, txt, el('span', 'home-event__go', '⟶')); document.querySelector('.view--home .home-actions').before(btn);
   btn.addEventListener('click', () => openEventHub(def.id));
 }
 function renderWheelBadge() {
@@ -4087,6 +4087,7 @@ function eventHub(def, sch, now) {
   const prog = state.events?.[def.id] || {}; const ks = def.keepsakes;
   const sec = el('section', 'battle-chapter event-hub'); sec.dataset.event = def.id;
   const ban = el('div', 'event-banner');
+  if (def.keyArt) { ban.classList.add('has-art'); ban.style.setProperty('--key-art', `url("${new URL(def.keyArt, document.baseURI).href}")`); }
   const seal = el('i', 'event-banner__seal', '墨'); seal.setAttribute('aria-hidden', 'true');
   const time = sch.state === 'upcoming' ? `${tpeDate(sch.startMs)} 開始 · 還有 ${leftText(sch.startMs - now)}`
     : sch.state === 'battle' ? `討伐開到 ${tpeDate(sch.battleEndMs)} · 剩 ${leftText(sch.battleEndMs - now)}`

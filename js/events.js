@@ -26,6 +26,7 @@ export const EVENT_DEFS = {
     subtitle: '十萬兩紅妝',
     tagline: '江湖有盡，書頁無涯。',
     start: '2026-11-26T12:00:00+08:00', // 湘 11/25：明天開始（中午 12 點）；下卷 11/29 12:00、討伐到 12/10、墨玉閣到 12/17
+    keyArt: 'assets/events/mo/key-visual.webp', // 湘 11/25 主視覺（聞止水護海棠新娘），人物在右半，左邊留給文字
     battleDays: 14,
     shopDays: 21,
     token: { id: 'moyu', name: '墨玉', icon: '🪨' },

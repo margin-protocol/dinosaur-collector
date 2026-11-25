@@ -1143,3 +1143,13 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .home-event__text small { font-size:11px; letter-spacing:.06em; opacity:.7; }
 .home-event__text b { font:15px var(--font-display); letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .home-event--c .home-event__go { opacity:.7; }
+
+/* 活動主視覺（湘 11/25）：活動區最上面放一條主視覺，文字放在圖下方的宣紙上，不壓到人物 */
+.event-hub .event-banner.has-art { padding-top:calc(min(46vw, 210px) + 10px); border-color:#c2413a55; }
+.event-hub .event-banner.has-art::after { content:""; position:absolute; left:0; right:0; top:0; height:min(46vw, 210px); background:linear-gradient(180deg,#0000 70%,var(--t-raised,#f6ece2) 100%), var(--key-art) 72% 38%/cover no-repeat; pointer-events:none; }
+.event-banner.has-art .event-banner__seal { z-index:1; }
+.home-event--c.has-art { position:relative; overflow:hidden; min-height:72px; color:#2f2226; background:linear-gradient(90deg,#f6ece2 0%,#f6ece2 44%,#f6ece2cc 54%,#f6ece200 74%), var(--key-art) 100% 30%/auto 240% no-repeat, #f3e6d8; }
+.home-event--c.has-art .home-event__text { flex:0 1 58%; max-width:58%; }
+.home-event--c.has-art .home-event__text small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.home-event--c.has-art .home-event__text small { opacity:.85; }
+.home-event--c.has-art .home-event__go { margin-left:auto; opacity:1; background:#fff8f2d9; border-radius:999px; width:30px; height:30px; display:grid; place-items:center; flex:none; }
