@@ -151,7 +151,7 @@ test('event battle win records clears and tokens', () => withStart(() => {
 
 test('墨痕蛋: only MO residents (117, MO-001, MO-005, MO-008), not in star pool or other eggs, sold in 墨玉閣', async () => {
   const { EGGS } = await import('../js/eggs.js');
-  assert.deepEqual(Object.keys(EGGS.mohen.pool).sort(), ['117', 'MO-001', 'MO-005', 'MO-008']);
+  assert.deepEqual(Object.keys(EGGS.mohen.pool).sort(), ['117', 'MO-001', 'MO-003', 'MO-004', 'MO-005', 'MO-006', 'MO-007', 'MO-008']);
   for (const id of Object.keys(EGGS)) if (id !== 'mohen') for (const no of Object.keys(EGGS.mohen.pool)) assert.equal(EGGS[id].pool?.[no], undefined, `${id} ${no}`);
   withStart(() => {
     const s = { dex: {}, gifts: { eggs: [] } }; ensureEvents(s); s.events.mo.tokens = 500;

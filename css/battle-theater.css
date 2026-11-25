@@ -18,6 +18,9 @@
 .battle-theater__allies { display:flex; align-items:flex-end; position:absolute; left:10%; bottom:2%; width:75%; height:72%; }
 .battle-theater__actor { position:relative; flex:1; min-width:0; height:87%; transform-origin:50% 90%; transition:opacity .3s; }
 .battle-theater__actor img { display:block; width:180%; margin-left:-40%; height:100%; object-fit:contain; filter:drop-shadow(0 5px 5px #0003); }
+.is-busy-scene .battle-theater__actor img { filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 4px #fff8f4cc) drop-shadow(0 5px 6px #0005); }
+.is-busy-scene .battle-theater__enemy img { filter:drop-shadow(0 0 1.5px #fff9) drop-shadow(0 8px 10px #0006); }
+.battle-theater[data-scene="attack"] .is-busy-scene .battle-theater__actor:not(.is-active) { opacity:.82; }
 .battle-theater[data-scene="attack"] .battle-theater__actor:not(.is-active) { opacity:.65; }
 .battle-theater[data-scene="attack"] .is-animating .is-active { z-index:1; animation:battle-ally-step .9s ease-in-out both; }
 .battle-theater[data-scene="attack"] .is-animating .battle-theater__enemy { animation:battle-enemy-hit .7s .3s ease-out both; }

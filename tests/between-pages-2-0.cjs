@@ -25,13 +25,13 @@ assert.equal(await p.locator('#dex-worlds').isVisible(),false);assert.equal(awai
 // 異世 → 墨痕江湖：MO-001、MO-002 照顯示編號排
 await p.locator('.dex-realm').nth(1).click();await p.waitForTimeout(200);
 assert.equal(await p.locator('.dex-world[aria-selected="true"]').getAttribute('data-dex-world'),'mo');
-assert.deepEqual(await p.locator('.dex__card .dex__no').allTextContents(),['MO-001','MO-002','MO-005','MO-008']);
-for(const mode of ['series','rarity','power']){await p.click(`[data-dex-mode="${mode}"]`);await p.waitForTimeout(100);assert.equal(await p.locator('.dex__card').count(),4,mode);}
+assert.deepEqual(await p.locator('.dex__card .dex__no').allTextContents(),['MO-001','MO-002','MO-003','MO-004','MO-005','MO-006','MO-007','MO-008']);
+for(const mode of ['series','rarity','power']){await p.click(`[data-dex-mode="${mode}"]`);await p.waitForTimeout(100);assert.equal(await p.locator('.dex__card').count(),8,mode);}
 await p.click('[data-dex-mode="all"]');
 assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),'沒有橫向捲動');
 // 記得上次選的世界
 await p.reload();await p.waitForTimeout(400);await p.evaluate(()=>{document.querySelectorAll('dialog[open]').forEach(d=>d.close());location.hash='dex';});await p.waitForTimeout(300);
-assert.equal(await p.locator('.dex-realm[aria-selected="true"]').textContent(),'異世2/4');
+assert.equal(await p.locator('.dex-realm[aria-selected="true"]').textContent(),'異世2/8');
 // 居民檔案
 await p.locator('[data-dex-no="MO-001"]').click();await p.locator('#dex-detail[open]').waitFor();
 assert.match(await p.textContent('#dex-detail-no'),/MO-001 · SSR · 異世・墨痕江湖/);

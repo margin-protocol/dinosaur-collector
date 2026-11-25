@@ -39,16 +39,16 @@ export const EVENT_DEFS = {
     ],
     // 敵人圖：湘 11/25 交，assets/enemies/event-mo/（1024² 去背 WebP）；圖載不到時退回 emoji
     stages: {
-      'mo-01': { art: 'event-mo/mo-01-wedding-puppet', label: 'MO-01', title: '花轎空空', name: '迎親紙傀', emoji: '🎎', power: 30, minutes: 45, drop: 6, weak: ['bride', 'daily'] },
-      'mo-02': { art: 'event-mo/mo-02-bounty-swordsman', label: 'MO-02', title: '十萬兩客棧', name: '貪金刀客', emoji: '🗡️', power: 40, minutes: 45, drop: 7, weak: ['mohen', 'friends'] },
-      'mo-03': { art: 'event-mo/mo-03-coin-spirit', label: 'MO-03', title: '長街買買買', name: '百寶錢妖', emoji: '🪙', power: 55, minutes: 60, drop: 8, weak: ['daily', 'recipe'] },
-      'mo-04': { art: 'event-mo/mo-04-river-ghost', label: 'MO-04', title: '煙雨渡江', name: '鎖江水鬼', emoji: '🌊', power: 70, minutes: 60, drop: 9, weak: ['weather', 'mohen'] },
-      'mo-05': { art: 'event-mo/mo-05-broken-blade', label: 'MO-05', title: '破廟夜談', name: '斷刃使', emoji: '⚔️', power: 95, minutes: 90, drop: 14, boss: true, weak: ['mohen', 'friends'] },
-      'mo-06': { art: 'event-mo/mo-06-mountain-imp', label: 'MO-06', title: '桃源歇腳', name: '偷糧山魈', emoji: '🐒', power: 100, minutes: 60, drop: 9, weak: ['animals', 'county'] },
-      'mo-07': { art: 'event-mo/mo-07-masked-broker', label: 'MO-07', title: '子夜鬼市', name: '千面牙商', emoji: '🎭', power: 115, minutes: 75, drop: 10, weak: ['mohen', 'holiday'] },
-      'mo-08': { art: 'event-mo/mo-08-bone-puppet', label: 'MO-08', title: '白骨有言', name: '索命骨傀', emoji: '💀', power: 130, minutes: 75, drop: 11, weak: ['memorial', 'mohen'] },
-      'mo-09': { art: 'event-mo/mo-09-wedding-wraith', label: 'MO-09', title: '紅帖山莊', name: '八方喜煞', emoji: '🧧', power: 150, minutes: 90, drop: 12, weak: ['bride', 'friends'] },
-      'mo-10': { art: 'event-mo/mo-10-crimson-contract-lord', label: 'MO-10', title: '江湖不嫁', name: '紅契之主', emoji: '📜', power: 175, minutes: 120, drop: 17, boss: true, weak: ['mohen', 'bride', 'daily'] },
+      'mo-01': { scene: 'assets/scene/event-mo/mo-01-bamboo-sedan.webp', art: 'event-mo/mo-01-wedding-puppet', label: 'MO-01', title: '花轎空空', name: '迎親紙傀', emoji: '🎎', power: 30, minutes: 45, drop: 6, weak: ['bride', 'daily'] },
+      'mo-02': { scene: 'assets/scene/event-mo/mo-02-inn.webp', art: 'event-mo/mo-02-bounty-swordsman', label: 'MO-02', title: '十萬兩客棧', name: '貪金刀客', emoji: '🗡️', power: 40, minutes: 45, drop: 7, weak: ['mohen', 'friends'] },
+      'mo-03': { scene: 'assets/scene/event-mo/mo-03-long-street.webp', art: 'event-mo/mo-03-coin-spirit', label: 'MO-03', title: '長街買買買', name: '百寶錢妖', emoji: '🪙', power: 55, minutes: 60, drop: 8, weak: ['daily', 'recipe'] },
+      'mo-04': { scene: 'assets/scene/event-mo/mo-04-misty-river.webp', art: 'event-mo/mo-04-river-ghost', label: 'MO-04', title: '煙雨渡江', name: '鎖江水鬼', emoji: '🌊', power: 70, minutes: 60, drop: 9, weak: ['weather', 'mohen'] },
+      'mo-05': { scene: 'assets/scene/event-mo/mo-05-ruined-temple.webp', art: 'event-mo/mo-05-broken-blade', label: 'MO-05', title: '破廟夜談', name: '斷刃使', emoji: '⚔️', power: 95, minutes: 90, drop: 14, boss: true, weak: ['mohen', 'friends'] },
+      'mo-06': { scene: 'assets/scene/event-mo/mo-06-peach-village.webp', art: 'event-mo/mo-06-mountain-imp', label: 'MO-06', title: '桃源歇腳', name: '偷糧山魈', emoji: '🐒', power: 100, minutes: 60, drop: 9, weak: ['animals', 'county'] },
+      'mo-07': { scene: 'assets/scene/event-mo/mo-07-ghost-market.webp', art: 'event-mo/mo-07-masked-broker', label: 'MO-07', title: '子夜鬼市', name: '千面牙商', emoji: '🎭', power: 115, minutes: 75, drop: 10, weak: ['mohen', 'holiday'] },
+      'mo-08': { scene: 'assets/scene/event-mo/mo-08-old-mortuary.webp', art: 'event-mo/mo-08-bone-puppet', label: 'MO-08', title: '白骨有言', name: '索命骨傀', emoji: '💀', power: 130, minutes: 75, drop: 11, weak: ['memorial', 'mohen'] },
+      'mo-09': { scene: 'assets/scene/event-mo/mo-09-red-manor.webp', art: 'event-mo/mo-09-wedding-wraith', label: 'MO-09', title: '紅帖山莊', name: '八方喜煞', emoji: '🧧', power: 150, minutes: 90, drop: 12, weak: ['bride', 'friends'] },
+      'mo-10': { scene: 'assets/scene/event-mo/mo-10-altar.webp', art: 'event-mo/mo-10-crimson-contract-lord', label: 'MO-10', title: '江湖不嫁', name: '紅契之主', emoji: '📜', power: 175, minutes: 120, drop: 17, boss: true, weak: ['mohen', 'bride', 'daily'] },
     },
     // 限定劇情信物：打完上卷後，重複討伐（打贏）才會掉；每件只拿一次。
     // 保底：連續 pity 場沒掉，下一場一定掉一件還沒有的。

@@ -1397,6 +1397,47 @@
         "rainbow",
         "strawberry"
       ]
+    },
+    {
+      "no": "MO-003",
+      "name": "白衣仵作・游未遲",
+      "like": "濃甜",
+      "dislike": "刺激",
+      "secret_combo": [
+        "sakura",
+        "tangyuan"
+      ]
+    },
+    {
+      "no": "MO-004",
+      "name": "天機閣主・徐汀云",
+      "like": "清涼",
+      "dislike": "酥脆",
+      "secret_combo": [
+        "matcha",
+        "redbean"
+      ]
+    },
+    {
+      "no": "MO-006",
+      "name": "無訟先生・程不言",
+      "like": "菇香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "moon",
+        "mushroom",
+        "tangyuan"
+      ]
+    },
+    {
+      "no": "MO-007",
+      "name": "山野隱士・林晏洄",
+      "like": "菇香",
+      "dislike": "酥脆",
+      "secret_combo": [
+        "matcha",
+        "mushroom"
+      ]
     }
   ]
 }

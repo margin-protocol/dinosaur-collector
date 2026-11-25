@@ -136,7 +136,7 @@ export const EGGS = {
     hatches: null,
     stocked: true,
     world: 'mo',
-    pool: { 'MO-001': 1, '117': 1, 'MO-005': 2, 'MO-008': 2 }, // 湘 11/25：上卷卡池加杜今朝、簡牧陽（SR 各 2 份）
+    pool: { 'MO-001': 1, '117': 1, 'MO-005': 2, 'MO-008': 2, 'MO-003': 2, 'MO-007': 2, 'MO-004': 1, 'MO-006': 1 }, // 湘 11/25：SR 各 2 份、SSR 各 1 份；MO-003/004/006/007 下卷（poolFrom 11/29 12:00）才出現
     // 素材：assets/eggs/mohen/{shell,glow,cracks}.webp（還沒有，先用占位）
   },
   star: {
@@ -332,6 +332,11 @@ const CHARACTER_TABLE = {
   // 墨痕江湖上卷卡池（湘 11/25 定稿，六位 MO 男角都是「他」）。文案：docs/event-001/residents/
   'MO-005': { no: 'MO-005', name: '靖安司捕頭・杜今朝', rarity: 'SR', line: '「靖安司，杜今朝。有事報案，沒事也可以坐下喝杯茶。」', image: 'mo-005-du-jinzhao', series: 'mohen', worldRole: '靖安司捕頭' },
   'MO-008': { no: 'MO-008', name: '巧匠公子・簡牧陽', rarity: 'SR', line: '「我叫簡牧陽！有什麼壞掉的，交給我！」', image: 'mo-008-jian-muyang', series: 'mohen', worldRole: '巧匠公子' },
+  // 墨痕江湖下卷卡池（湘 11/25 定稿）：11/29 12:00 下卷開放才出現在墨痕蛋（poolFrom）
+  'MO-003': { no: 'MO-003', name: '白衣仵作・游未遲', rarity: 'SR', line: '「游未遲，仵作。放心，我今天不想上班。」', image: 'mo-003-you-weichi', series: 'mohen', worldRole: '白衣仵作', poolFrom: '2026-11-29T12:00:00+08:00' },
+  'MO-004': { no: 'MO-004', name: '天機閣主・徐汀云', rarity: 'SSR', line: '「天機閣，徐汀云。你想知道什麼？先說好，價錢另議。」', image: 'mo-004-xu-tingyun', series: 'mohen', worldRole: '天機閣主', poolFrom: '2026-11-29T12:00:00+08:00' },
+  'MO-006': { no: 'MO-006', name: '無訟先生・程不言', rarity: 'SSR', line: '「程不言，替人說話的。名字是反著取的。」', image: 'mo-006-cheng-buyan', series: 'mohen', worldRole: '無訟先生', poolFrom: '2026-11-29T12:00:00+08:00' },
+  'MO-007': { no: 'MO-007', name: '山野隱士・林晏洄', rarity: 'SR', line: '「林晏洄。山裡住慣了，說話慢，你別急。」', image: 'mo-007-lin-yanhui', series: 'mohen', worldRole: '山野隱士', poolFrom: '2026-11-29T12:00:00+08:00' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -406,7 +411,8 @@ export const OWNED_WEIGHT = { ordinary: { SR: 2, SSR: 0.6, UR: 0.3 }, star: { SR
 export function activePool(egg, now = new Date(), dex = null) {
   if (!egg?.pool) return null;
   const today = localDay(now);
-  const hidden = Object.keys(egg.pool).filter((no) => CHARACTERS[no]?.poolFrom && CHARACTERS[no].poolFrom > today);
+  const notYet = (from) => (from.includes('T') ? Date.parse(from) > now.getTime() : from > today); // poolFrom 可寫日期或精確時間（墨痕江湖下卷 11/29 12:00）
+  const hidden = Object.keys(egg.pool).filter((no) => CHARACTERS[no]?.poolFrom && notYet(CHARACTERS[no].poolFrom));
   const base = hidden.length ? Object.fromEntries(Object.entries(egg.pool).filter(([no]) => !hidden.includes(no))) : egg.pool;
   const weights = OWNED_WEIGHT[egg.id];
   const joined = dex && weights ? JOIN_WHEN_OWNED.filter((no) => dex[no] && weights[CHARACTERS[no]?.rarity] && !base[no]) : [];
