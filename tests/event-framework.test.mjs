@@ -56,11 +56,11 @@ test('trusted clock: a fresh server time corrects a clock that was pushed ahead'
 
 test('token drop: base, first clear, MO bonus capped at +40%', () => {
   const w = (no) => (no.startsWith('MO-') || no === '117' ? 'mo' : 'origin');
-  assert.equal(tokenDrop(def, 'mo-01', { win: true }), 6);
-  assert.equal(tokenDrop(def, 'mo-01', { win: true, first: true }), 36);
+  assert.equal(tokenDrop(def, 'mo-01', { win: true }), 12);
+  assert.equal(tokenDrop(def, 'mo-01', { win: true, first: true }), 72);
   assert.equal(tokenDrop(def, 'mo-01', { win: false }), 2);
-  assert.equal(tokenDrop(def, 'mo-10', { win: true, nos: ['MO-001', '117', '001'], worldOf: w }), Math.round(17 * 1.3));
-  assert.equal(tokenDrop(def, 'mo-10', { win: true, nos: ['MO-001', '117', 'MO-003'], worldOf: w }), Math.round(17 * 1.4));
+  assert.equal(tokenDrop(def, 'mo-10', { win: true, nos: ['MO-001', '117', '001'], worldOf: w }), Math.round(34 * 1.3));
+  assert.equal(tokenDrop(def, 'mo-10', { win: true, nos: ['MO-001', '117', 'MO-003'], worldOf: w }), Math.round(34 * 1.4));
 });
 
 test('keepsakes only after 上卷, pity guarantees a drop, all five gives bonus', () => {
@@ -156,8 +156,10 @@ test('event battle win records clears and tokens', () => withStart(() => {
   const b = startBattle(s, key, ['001', '002', '003'], { now: new Date(h(1)), rand: () => 0 });
   const res = collectBattle(s, b.id, new Date(h(3)), () => 0);
   assert.equal(s.events.mo.stages['mo-01'].clears, 1);
-  assert.equal(s.events.mo.tokens, 36);
-  assert.ok(res.gains.some((g) => g.includes('墨玉 +36')));
+  assert.equal(s.events.mo.tokens, 72 + 30);
+  assert.ok(res.gains.some((g) => g.includes('墨玉 +72')));
+  assert.ok(res.gains.some((g) => g.includes('今日首勝：墨玉 +30')));
+  assert.equal(res.event.daily, 30);
   assert.ok(s.events.mo.story['mo-01:clear']);
 }));
 
@@ -178,3 +180,18 @@ test('all ten stages have story before/after; MO-05 and MO-10 have endings', () 
   assert.match(def.stages['mo-05'].story.ending, /上卷・完/);
   assert.match(def.stages['mo-10'].story.ending, /江湖再嫁/);
 });
+
+test('daily first win: +30 once per local day, wins only, no team bonus', () => withStart(() => {
+  const s = { events: {} }; ensureEvents(s);
+  const d1 = new Date(2026, 10, 27, 9), d1b = new Date(2026, 10, 27, 23, 50), d2 = new Date(2026, 10, 28, 0, 5);
+  const lose = recordEventRun(s, 'mo', 'mo-01', { win: false, score: 1 }, { now: d1 });
+  assert.equal(lose.tokens, 2); assert.equal(lose.daily, undefined);
+  const w1 = recordEventRun(s, 'mo', 'mo-01', { win: true, stars: 3, score: 10 }, { now: d1, nos: ['MO-001'], worldOf: () => 'mo' });
+  assert.equal(w1.daily, 30); assert.equal(w1.tokens, Math.round(12 * 1.2) + 60);
+  const w2 = recordEventRun(s, 'mo', 'mo-01', { win: true, stars: 3, score: 10 }, { now: d1b });
+  assert.equal(w2.daily, undefined); assert.equal(w2.tokens, 12);
+  const w3 = recordEventRun(s, 'mo', 'mo-01', { win: true, stars: 3, score: 10 }, { now: d2 });
+  assert.equal(w3.daily, 30);
+  assert.equal(s.events.mo.tokens, 2 + w1.tokens + 30 + 12 + 12 + 30);
+  ensureEvents(s); assert.equal(s.events.mo.dailyWinDay, '2026-11-28');
+}));

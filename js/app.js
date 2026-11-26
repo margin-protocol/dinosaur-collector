@@ -4354,6 +4354,7 @@ function eventHub(def, sch, now) {
   const bar = el('div', 'event-banner__bar');
   bar.append(tokenChip(def, prog.tokens || 0));
   if (ks) bar.append(el('span', 'event-chip', `信物 ${Object.keys(prog.keepsakes || {}).length} / ${ks.list.length}`));
+  if (sch.state === 'battle' && def.dailyWin) { const ready = events.dailyWinReady(prog, def); const c = el('span', `event-chip event-chip--daily${ready ? '' : ' is-done'}`, ready ? `☀️ 今日首勝 +${def.dailyWin}` : '☀️ 今日首勝 ✓'); c.title = ready ? `今天第一場打贏，額外 +${def.dailyWin} ${def.token.name}` : '今天的首勝獎勵拿過了，明天再來'; bar.append(c); }
   if (sch.state === 'battle' || sch.state === 'shop') { const shop = el('button', 'text-action event-banner__shop', '墨玉閣 ⟶'); shop.type = 'button'; shop.addEventListener('click', () => { eventView = { id: def.id, view: 'shop' }; renderBattle(); }); bar.append(shop); }
   ban.append(bar); { const ink = studioInk('banner'); if (ink) ban.append(ink); } sec.append(ban);
   if (ks && ks.list.some(k => k.art)) sec.append(keepsakeShelf(ks, prog));

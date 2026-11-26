@@ -34,24 +34,26 @@ export const EVENT_DEFS = {
     token: { id: 'moyu', name: '墨玉', icon: '🪨', art: 'assets/events/mo/moyu.webp' },
     // 墨玉加成（湘 11/25 選推薦）：每位墨痕江湖居民 +10%，聞止水 +20%，一隊最多 +40%
     tokenBonus: { world: 0.10, by: { 'MO-001': 0.20 }, cap: 0.40 },
-    firstClear: 30,
+    // 湘 11/26：墨玉加量（A＋C）——每關掉落、首通都 ×2（輸了維持 2），加每日首勝 +30（本地日期，每天第一場打贏；不吃隊伍／信物加成）
+    firstClear: 60,
     loseDrop: 2,
+    dailyWin: 30,
     phases: [
       { id: 'up', name: '上卷・紅妝出逃', opensAfterH: 0, stages: ['mo-01', 'mo-02', 'mo-03', 'mo-04', 'mo-05'] },
       { id: 'down', name: '下卷・江湖不嫁', opensAfterH: 72, requires: 'up', stages: ['mo-06', 'mo-07', 'mo-08', 'mo-09', 'mo-10'] },
     ],
     // 敵人圖：湘 11/25 交，assets/enemies/event-mo/（1024² 去背 WebP）；圖載不到時退回 emoji
     stages: {
-      'mo-01': { scene: 'assets/scene/event-mo/mo-01-bamboo-sedan.webp', art: 'event-mo/mo-01-wedding-puppet', label: 'MO-01', title: '花轎空空', name: '迎親紙傀', emoji: '🎎', power: 30, minutes: 45, drop: 6, weak: ['bride', 'daily'] },
-      'mo-02': { scene: 'assets/scene/event-mo/mo-02-inn.webp', art: 'event-mo/mo-02-bounty-swordsman', label: 'MO-02', title: '十萬兩客棧', name: '貪金刀客', emoji: '🗡️', power: 40, minutes: 45, drop: 7, weak: ['mohen', 'friends'] },
-      'mo-03': { scene: 'assets/scene/event-mo/mo-03-long-street.webp', art: 'event-mo/mo-03-coin-spirit', label: 'MO-03', title: '長街買買買', name: '百寶錢妖', emoji: '🪙', power: 55, minutes: 60, drop: 8, weak: ['daily', 'recipe'] },
-      'mo-04': { scene: 'assets/scene/event-mo/mo-04-misty-river.webp', art: 'event-mo/mo-04-river-ghost', label: 'MO-04', title: '煙雨渡江', name: '鎖江水鬼', emoji: '🌊', power: 70, minutes: 60, drop: 9, weak: ['weather', 'mohen'] },
-      'mo-05': { scene: 'assets/scene/event-mo/mo-05-ruined-temple.webp', art: 'event-mo/mo-05-broken-blade', label: 'MO-05', title: '破廟夜談', name: '斷刃使', emoji: '⚔️', power: 95, minutes: 90, drop: 14, boss: true, weak: ['mohen', 'friends'] },
-      'mo-06': { scene: 'assets/scene/event-mo/mo-06-peach-village.webp', art: 'event-mo/mo-06-mountain-imp', label: 'MO-06', title: '桃源歇腳', name: '偷糧山魈', emoji: '🐒', power: 100, minutes: 60, drop: 9, weak: ['animals', 'county'] },
-      'mo-07': { scene: 'assets/scene/event-mo/mo-07-ghost-market.webp', art: 'event-mo/mo-07-masked-broker', label: 'MO-07', title: '子夜鬼市', name: '千面牙商', emoji: '🎭', power: 115, minutes: 75, drop: 10, weak: ['mohen', 'holiday'] },
-      'mo-08': { scene: 'assets/scene/event-mo/mo-08-old-mortuary.webp', art: 'event-mo/mo-08-bone-puppet', label: 'MO-08', title: '白骨有言', name: '索命骨傀', emoji: '💀', power: 130, minutes: 75, drop: 11, weak: ['memorial', 'mohen'] },
-      'mo-09': { scene: 'assets/scene/event-mo/mo-09-red-manor.webp', art: 'event-mo/mo-09-wedding-wraith', label: 'MO-09', title: '紅帖山莊', name: '八方喜煞', emoji: '🧧', power: 150, minutes: 90, drop: 12, weak: ['bride', 'friends'] },
-      'mo-10': { scene: 'assets/scene/event-mo/mo-10-altar.webp', art: 'event-mo/mo-10-crimson-contract-lord', label: 'MO-10', title: '江湖不嫁', name: '紅契之主', emoji: '📜', power: 175, minutes: 120, drop: 17, boss: true, weak: ['mohen', 'bride', 'daily'] },
+      'mo-01': { scene: 'assets/scene/event-mo/mo-01-bamboo-sedan.webp', art: 'event-mo/mo-01-wedding-puppet', label: 'MO-01', title: '花轎空空', name: '迎親紙傀', emoji: '🎎', power: 30, minutes: 45, drop: 12, weak: ['bride', 'daily'] },
+      'mo-02': { scene: 'assets/scene/event-mo/mo-02-inn.webp', art: 'event-mo/mo-02-bounty-swordsman', label: 'MO-02', title: '十萬兩客棧', name: '貪金刀客', emoji: '🗡️', power: 40, minutes: 45, drop: 14, weak: ['mohen', 'friends'] },
+      'mo-03': { scene: 'assets/scene/event-mo/mo-03-long-street.webp', art: 'event-mo/mo-03-coin-spirit', label: 'MO-03', title: '長街買買買', name: '百寶錢妖', emoji: '🪙', power: 55, minutes: 60, drop: 16, weak: ['daily', 'recipe'] },
+      'mo-04': { scene: 'assets/scene/event-mo/mo-04-misty-river.webp', art: 'event-mo/mo-04-river-ghost', label: 'MO-04', title: '煙雨渡江', name: '鎖江水鬼', emoji: '🌊', power: 70, minutes: 60, drop: 18, weak: ['weather', 'mohen'] },
+      'mo-05': { scene: 'assets/scene/event-mo/mo-05-ruined-temple.webp', art: 'event-mo/mo-05-broken-blade', label: 'MO-05', title: '破廟夜談', name: '斷刃使', emoji: '⚔️', power: 95, minutes: 90, drop: 28, boss: true, weak: ['mohen', 'friends'] },
+      'mo-06': { scene: 'assets/scene/event-mo/mo-06-peach-village.webp', art: 'event-mo/mo-06-mountain-imp', label: 'MO-06', title: '桃源歇腳', name: '偷糧山魈', emoji: '🐒', power: 100, minutes: 60, drop: 18, weak: ['animals', 'county'] },
+      'mo-07': { scene: 'assets/scene/event-mo/mo-07-ghost-market.webp', art: 'event-mo/mo-07-masked-broker', label: 'MO-07', title: '子夜鬼市', name: '千面牙商', emoji: '🎭', power: 115, minutes: 75, drop: 20, weak: ['mohen', 'holiday'] },
+      'mo-08': { scene: 'assets/scene/event-mo/mo-08-old-mortuary.webp', art: 'event-mo/mo-08-bone-puppet', label: 'MO-08', title: '白骨有言', name: '索命骨傀', emoji: '💀', power: 130, minutes: 75, drop: 22, weak: ['memorial', 'mohen'] },
+      'mo-09': { scene: 'assets/scene/event-mo/mo-09-red-manor.webp', art: 'event-mo/mo-09-wedding-wraith', label: 'MO-09', title: '紅帖山莊', name: '八方喜煞', emoji: '🧧', power: 150, minutes: 90, drop: 24, weak: ['bride', 'friends'] },
+      'mo-10': { scene: 'assets/scene/event-mo/mo-10-altar.webp', art: 'event-mo/mo-10-crimson-contract-lord', label: 'MO-10', title: '江湖不嫁', name: '紅契之主', emoji: '📜', power: 175, minutes: 120, drop: 34, boss: true, weak: ['mohen', 'bride', 'daily'] },
     },
     // 限定劇情信物：打完上卷後，重複討伐（打贏）才會掉；每件只拿一次。
     // 保底：連續 pity 場沒掉，下一場一定掉一件還沒有的。
@@ -144,7 +146,7 @@ export function activeEvents(state, nowMs) {
 }
 
 // ───────── 存檔 ─────────
-const freshProgress = () => ({ stages: {}, story: {}, tokens: 0, earned: 0, spent: 0, shop: {}, keepsakes: {}, keepsakeMiss: 0, runs: 0, wins: 0, titles: [], themes: [], leftoverAt: null });
+const freshProgress = () => ({ stages: {}, story: {}, tokens: 0, earned: 0, spent: 0, shop: {}, keepsakes: {}, keepsakeMiss: 0, runs: 0, wins: 0, titles: [], themes: [], leftoverAt: null, dailyWinDay: null });
 function cleanProgress(old) {
   const p = freshProgress();
   if (!old || typeof old !== 'object') return p;
@@ -161,6 +163,7 @@ function cleanProgress(old) {
   if (Array.isArray(old.themes)) p.themes = [...new Set(old.themes.filter(isStr))];
   if (isStr(old.leftoverAt)) p.leftoverAt = old.leftoverAt;
   if (isStr(old.completeAt)) p.completeAt = old.completeAt;
+  if (isStr(old.dailyWinDay)) p.dailyWinDay = old.dailyWinDay;
   if (isStr(old.wornTitle) && p.titles.includes(old.wornTitle)) p.wornTitle = old.wornTitle;
   return p;
 }
@@ -239,6 +242,9 @@ export function keepsakePower(def, owned, nos, { worldOf = () => null, eventFood
   return { power: Math.round(list.reduce((n, k) => n + k.value, 0) * 100) / 100, list };
 }
 function addTokens(prog, n) { prog.tokens += n; prog.earned += n; }
+// 每日首勝（本地日期）：今天還沒領就是 true
+export const localDay = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+export const dailyWinReady = (prog, def, now = new Date()) => Boolean(def.dailyWin) && prog?.dailyWinDay !== localDay(now);
 
 // 收下一場活動討伐（battle.js collectBattle 呼叫）。只動 state.events；回傳要顯示的收穫。
 export function recordEventRun(state, eventId, stageId, report, { now = new Date(), rand = Math.random, worldOf = () => null, nos = [] } = {}) {
@@ -251,6 +257,7 @@ export function recordEventRun(state, eventId, stageId, report, { now = new Date
   if ((report.score | 0) > st.best) st.best = report.score | 0;
   const out = { tokens: tokenDrop(def, stageId, { win: report.win, first, nos, worldOf, owned: prog.keepsakes }), first, story: null, keepsake: null, complete: false };
   addTokens(prog, out.tokens);
+  if (report.win && dailyWinReady(prog, def, now)) { prog.dailyWinDay = localDay(now); out.daily = def.dailyWin; addTokens(prog, def.dailyWin); }
   // 首次通關解鎖劇情（故事冊之後做，但解鎖資格現在就記）
   if (first) { const k = `${stageId}:clear`; if (!prog.story[k]) { prog.story[k] = now.toISOString(); out.story = k; } }
   // 信物：要先打完指定的卷，打贏才掉
