@@ -25,7 +25,7 @@ if(process.env.SHOT)await p.locator('#notify-dialog').screenshot({path:`${proces
 await p.evaluate(async()=>{const {updateState}=await import('/js/state.js');const iso=t=>new Date(t).toISOString();
 await updateState(s=>{s.errands=s.errands||{};s.errands.active=[{id:'t1',place:'conv',nos:['001'],start:iso(Date.now()),until:iso(Date.now()+3600e3),loot:{}}];});});
 await p.waitForFunction(n=>window.__sentLen===undefined,0);await p.waitForTimeout(2200);
-const last=()=>sent.at(-1).body;assert.equal(sent.length,2,'出門後送一次');assert.equal(last().timers.length,1);assert.match(last().timers[0].title,/回來囉|忙完了/);
+const last=()=>sent.at(-1).body;assert.equal(sent.length,2,'出門後送一次');assert.equal(last().timers.length,1);assert.match(last().timers[0].title,/回來囉|忙完了|早安/);
 assert.ok(Math.abs(last().timers[0].at-(Date.now()+3600e3))<120e3||last().timers[0].title.startsWith('早安'));
 // 存檔再變但清單一樣：不重送
 await p.evaluate(async()=>{const {updateState}=await import('/js/state.js');await updateState(s=>{s.hatched=(s.hatched||0)+0;});});await p.waitForTimeout(2000);assert.equal(sent.length,2);
