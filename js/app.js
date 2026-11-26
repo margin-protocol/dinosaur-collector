@@ -23,6 +23,7 @@ import { photoHash, similarPhoto } from './photo-hash.js';
 import { compressPhoto, thumbnail, DATE_CODE } from './commissions.js';
 import { putThumb, showThumb, thumbKeyFor, offloadThumbs, stripThumbs } from './thumbs.js';
 import { offersFor, pickable, exchange, pickCost, cheapestPick, PICK_COSTS, PICK_TIERS, FOSSIL_ENERGY } from './fossils.js';
+import { CANDY_TIERS, CANDY_PRICES, CANDY_WEEKLY, MERGE_CANDY, candyCount, grantDupCandy, nextStarCost, feedCandy, mergeCandy, buyCandy, buyLeft } from './candy.js';
 import { FLAVORS, makeOffer, eggLabel, naughtyRequest, NAUGHTY_BONUS } from './egg-traits.js';
 import { ACHIEVEMENT_GROUPS, achievementStatus, claimAchievement } from './achievements.js';
 import { RECIPES } from './recipes.js';
@@ -1367,27 +1368,27 @@ async function hatch(expected) {
     const character = CHARACTERS[rollFor(current.egg, hatchBoosts(current), random ? { dex: current.dex, dupStreak: current.dupStreak || 0, srStreak: current.srStreak || 0, mixStreak: current.mixStreak?.[current.egg.id] || 0, now: new Date(events.eventNow(structuredClone({ clock: current.clock }))) } : {})];
     const duplicate = Boolean(current.dex[character.no]);
     if (random) { current.dupStreak = duplicate ? (current.dupStreak || 0) + 1 : 0; current.srStreak = isHigh(character.no) ? 0 : (current.srStreak || 0) + 1;  if (EGGS[current.egg.id]?.mix) { const ms = current.mixStreak && typeof current.mixStreak === 'object' ? current.mixStreak : (current.mixStreak = {}); ms[current.egg.id] = EGGS[current.egg.id].pool[character.no] ? 0 : (ms[current.egg.id] || 0) + 1; } }
-    let bondUp = [];
+    let bondUp = []; let candy = 0;
     if (random && duplicate) current.dupTotal = (current.dupTotal || 0) + 1; // 非酋三部曲：一般（隨機）蛋孵到重複才算
     if (random && !duplicate) current.newTotal = (current.newTotal || 0) + 1; // 歐皇三部曲：一般（隨機）蛋孵到新面孔才算
-    if (duplicate) { current.fossils += DUPLICATE_FOSSILS; current.dex[character.no].dup = Math.min(battle.MAX_STARS, (current.dex[character.no].dup || 0) + 1); bondUp = gainBond(current, character.no, 'duplicate', todayKey()).up; }
+    if (duplicate) { current.fossils += DUPLICATE_FOSSILS; candy = grantDupCandy(current, character.rarity, current.dex[character.no].dup || 0); current.dex[character.no].dup = Math.min(battle.MAX_STARS, (current.dex[character.no].dup || 0) + 1); bondUp = gainBond(current, character.no, 'duplicate', todayKey()).up; }
     else current.dex[character.no] = { at: new Date().toISOString(), story: meetingStory(current) };
     current.hatched += 1; if (isNight()) current.bonus.total.nightHatch += 1; const resumed = current.shelf.shift(); current.egg = resumed || newEgg('ordinary'); current.eggOffer = resumed ? null : makeOffer();
-    return { character, duplicate, bondUp };
+    return { character, duplicate, bondUp, candy };
   });
   state = transaction.state; eggView = null; sayOverride = null;
   if (transaction.result && !transaction.result.duplicate) welcomeResident(transaction.result.character.no, state.dex);
   if (transaction.result?.bondUp?.length) queueBondUps([{ no: transaction.result.character.no, up: transaction.result.bondUp }]);
   renderAll();
   if (transaction.result) {
-    const { character: c, duplicate } = transaction.result;
+    const { character: c, duplicate, candy } = transaction.result;
     // 墨痕蛋出 SSR／UR：江湖出貨演出（湘 11/26）。存檔已寫好，演出只是畫面；重複的播快轉版
     // 其他蛋出 SSR／UR：櫻花綻放（湘 11/26 選 B），顏色跟著主題、UR 更華麗
     if (c.rarity === 'SSR' || c.rarity === 'UR') {
       const fx = { name: c.name, image: characterSources(c.image)[0], rarity: c.rarity, fast: duplicate || reducedMotion() };
       try { buzz([20, 40, 90]); await (eggId === 'mohen' ? playMoSsrFx(fx) : playHatchFx(fx)); } catch { /* 演出失敗也要看到結果 */ }
     }
-    showReveal(c, duplicate);
+    showReveal(c, duplicate, candy);
   } else toast('這顆蛋已經完成孵化，進度已更新。');
 }
 
@@ -1435,7 +1436,7 @@ async function runAnalysis() {
 
 // 星級：重複孵到同一位小湘 +1 星（最多 5 星），每星討伐戰力 +10%
 const starText = (n) => `${'★'.repeat(n)}${'☆'.repeat(Math.max(0, battle.MAX_STARS - n))}`;
-function showReveal(c, duplicate) {
+function showReveal(c, duplicate, candy = 0) {
   loadWithFallback($('reveal-img'), characterSources(c.image));
   $('reveal-img').alt = c.name;
   $('reveal').dataset.duplicate = String(duplicate);
@@ -1447,7 +1448,7 @@ function showReveal(c, duplicate) {
   $('reveal-line').textContent = hatchLine ? `「${hatchLine}」` : c.line;
   $('reveal-bonus').hidden = !duplicate;
   const stars = state.dex[c.no]?.dup || 0;
-  $('reveal-bonus').textContent = `再次相遇的禮物 · 化石碎片 +${DUPLICATE_FOSSILS}${duplicate ? ` · ${stars >= battle.MAX_STARS ? `星級已滿 ${starText(stars)}` : `星級 +1 → ${starText(stars)}`}` : ''}`;
+  $('reveal-bonus').textContent = `再次相遇的禮物 · 化石碎片 +${DUPLICATE_FOSSILS}${duplicate ? ` · ${stars >= battle.MAX_STARS ? `星級已滿 ${starText(stars)}` : `星級 +1 → ${starText(stars)}`}${candy ? ` · 🍬 ${c.rarity} 星光糖 +${candy}（現在 ${candyCount(state, c.rarity)} 顆）` : ''}` : ''}`;
   $('reveal-ok').textContent = duplicate ? '收下化石' : '一起回家';
   $('reveal').dataset.next = 'home';
   $('reveal').showModal();
@@ -2256,6 +2257,28 @@ function howToGet(c) {
   const eggs = Object.values(EGGS).filter(e => (e.mix ? e.pool[c.no] : activePool(e)?.[c.no])).map(e => e.name);
   return eggs.length ? `${eggs.join('、')}可能孵出` : '特殊方式取得';
 }
+// 星光糖膠囊（湘 11/26 選 A）：星星下面一行，顯示持有幾顆＋餵糖升一星
+function renderDexCandy(no, owned) {
+  const box = $('dex-detail-candy'); const c = CHARACTERS[no];
+  const stars = owned ? Math.min(battle.MAX_STARS, state.dex[no]?.dup || 0) : 0;
+  const cost = nextStarCost(stars);
+  box.hidden = !owned || !cost || !CANDY_TIERS.includes(c?.rarity);
+  if (box.hidden) return;
+  const have = candyCount(state, c.rarity);
+  $('dex-candy-have').textContent = `🍬 ${c.rarity} 糖 ×${have}`;
+  const btn = $('dex-candy-feed'); btn.dataset.no = no;
+  btn.disabled = have < cost;
+  btn.textContent = have < cost ? `還差 ${cost - have} 顆` : `餵 ${cost} 顆 → ★${stars + 1}`;
+}
+$('dex-candy-feed').addEventListener('click', async () => {
+  const no = $('dex-candy-feed').dataset.no; if (!no) return;
+  const t = await updateState(current => feedCandy(current, CHARACTERS, no));
+  state = t.state;
+  if (!t.result) { toast('星光糖不夠喔。'); renderDexCandy(no, Boolean(state.dex[no])); return; }
+  buzz([20, 30, 40]);
+  toast(`${CHARACTERS[no].name} 升到 ${starText(t.result.stars)}！（${t.result.rarity} 糖剩 ${t.result.left} 顆）`);
+  renderAll(); openDexDetail(no);
+});
 function openDexDetail(no) {
   const c = CHARACTERS[no];
   const owned = Boolean(state.dex[no]);
@@ -2266,7 +2289,8 @@ function openDexDetail(no) {
   $('dex-detail-no').textContent = `${noLabel(c.no)} · ${owned ? c.rarity : '?'} · ${worldOf(c) === 'origin' ? (SERIES[c.series]?.name || '') : worldLabel(worldOf(c))}`;
   const stars = owned ? state.dex[no]?.dup || 0 : 0;
   $('dex-detail-stars').hidden = !owned;
-  $('dex-detail-stars').replaceChildren(Object.assign(document.createElement('b'), { textContent: starText(stars) }), Object.assign(document.createElement('span'), { textContent: stars >= battle.MAX_STARS ? `星級 ${stars} / ${battle.MAX_STARS} · 已滿星！討伐戰力 +${stars * 10}%` : `星級 ${stars} / ${battle.MAX_STARS} · 再孵到她一次 +1 星${stars ? `（目前討伐戰力 +${stars * 10}%）` : '（每星討伐戰力 +10%）'}` }));
+  $('dex-detail-stars').replaceChildren(Object.assign(document.createElement('b'), { textContent: starText(stars) }), Object.assign(document.createElement('span'), { textContent: stars >= battle.MAX_STARS ? `星級 ${stars} / ${battle.MAX_STARS} · 已滿星！討伐戰力 +${stars * 10}%` : `星級 ${stars} / ${battle.MAX_STARS} · 再孵到她一次或餵星光糖 +1 星${stars ? `（目前討伐戰力 +${stars * 10}%）` : '（每星討伐戰力 +10%）'}` }));
+  renderDexCandy(no, owned);
   $('dex-detail-name').textContent = owned ? c.name : '???';
   $('dex-detail-line').textContent = owned ? c.line : '';
   $('dex-detail-line').hidden = !owned;
@@ -2292,7 +2316,7 @@ function openDexDetail(no) {
   renderTaste(no, owned);
   if (owned) showTip('bond', $('dex-detail-bond'));
   $('dex-detail').classList.toggle('is-shiny', owned && bondInfo(state, no, todayKey()).max);
-  $('dex-detail').showModal();
+  if (!$('dex-detail').open) $('dex-detail').showModal();
 }
 $('dex-grid').addEventListener('click', event => { const card = event.target.closest('[data-dex-no]'); if (card) openDexDetail(card.dataset.dexNo); });
 $('close-dex-detail').addEventListener('click', () => $('dex-detail').close());
@@ -2866,6 +2890,7 @@ function openFossils() {
     const cost = document.createElement('span'); cost.textContent = o.from ? `${o.cost} 化石起` : `${o.cost} 化石`;
     btn.append(text, cost); return btn;
   }));
+  renderCandyJar();
   $('fossil-pick').hidden = true;
   if (!$('fossil-dialog').open) { $('fossil-status').textContent = ''; $('fossil-dialog').showModal(); syncRoomActivity(); }
 }
@@ -2877,6 +2902,27 @@ async function doExchange(offerId, no) {
   $('fossil-status').textContent = offerId === 'lab' ? '第二個研究欄位開好了！到「研究」就能同時調配兩組配方。' : offerId === 'slot' ? `蛋架擴充到 ${state.cradle.slots} 格！到培育室就能看到副架：換蛋時，正在孵的那顆會放上去繼續保溫。` : offerId === 'energy' ? `換到 ${FOSSIL_ENERGY} 能量了！` : offerId === 'pick' ? `用 ${t.result.cost} 化石換到一顆暗號蛋，裡面是${CHARACTERS[no].name}！到「選擇蛋」把它拿出來吧。` : `換到${t.result.name}了！到「選擇蛋」把它拿出來吧。`;
   openFossils();
 }
+// 星光糖罐（湘 11/26）：每種糖持有幾顆、3 顆合成高一階、用化石買（每種每週 3 顆）
+function renderCandyJar() {
+  $('candy-jar-note').textContent = `重複遇見居民會拿到同稀有度的糖，可以在圖鑑餵給同稀有度的居民升星。${MERGE_CANDY} 顆合成 1 顆高一階；化石購買每種每週 ${CANDY_WEEKLY} 顆。`;
+  $('candy-jar-rows').replaceChildren(...CANDY_TIERS.map((r, i) => {
+    const have = candyCount(state, r); const top = i === CANDY_TIERS.length - 1; const left = buyLeft(state, r); const price = CANDY_PRICES[r];
+    const row = el('div', 'candy-jar__row');
+    const name = el('span', 'candy-jar__name'); name.append(el('b', null, r), el('small', null, `×${have}`));
+    const merge = Object.assign(el('button', 'candy-jar__merge', top ? '最高階' : `${MERGE_CANDY} 顆 → ${CANDY_TIERS[i + 1]}`), { type: 'button', disabled: top || have < MERGE_CANDY }); merge.dataset.merge = r;
+    const buy = Object.assign(el('button', 'candy-jar__buy', left ? `${price} 化石 · 剩 ${left}` : '本週買完了'), { type: 'button', disabled: !left || state.fossils < price }); buy.dataset.buy = r;
+    row.append(name, merge, buy); return row;
+  }));
+}
+$('candy-jar-rows').addEventListener('click', async event => {
+  const btn = event.target.closest('[data-merge],[data-buy]'); if (!btn || btn.disabled) return;
+  const merging = Boolean(btn.dataset.merge); const r = btn.dataset.merge || btn.dataset.buy;
+  const t = await updateState(current => merging ? mergeCandy(current, r) : buyCandy(current, r));
+  state = t.state; renderAll();
+  $('fossil-status').textContent = !t.result ? (merging ? '糖不夠喔。' : '化石不夠，或這週已經買完了。') : merging ? `合成了 1 顆 ${t.result.to} 星光糖！（現在 ${candyCount(state, t.result.to)} 顆）` : `買到 1 顆 ${r} 星光糖！（現在 ${candyCount(state, r)} 顆，本週還能買 ${t.result.left} 顆）`;
+  if (t.result && !merging) restart($('chip-fossil'), 'is-bump');
+  openFossils();
+});
 $('chip-fossil').addEventListener('click', openFossils);
 $('close-fossil').addEventListener('click', () => $('fossil-dialog').close());
 $('fossil-dialog').addEventListener('close', syncRoomActivity);

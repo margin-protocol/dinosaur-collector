@@ -726,6 +726,20 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .dex-detail__stars[hidden] { display:none; }
 .dex-detail__stars b { color:#ffd27a; font-size:18px; letter-spacing:.12em; font-weight:400; }
 .dex-detail__stars span { font:11px var(--font-display); color:var(--pearl); }
+/* 星光糖（湘 11/26 選 A 膠囊） */
+.dex-candy { display:flex; align-items:center; justify-content:space-between; gap:8px; max-width:320px; margin:-4px auto 14px; padding:6px 6px 6px 14px; border:1px solid var(--t-line,#6d6079); border-radius:999px; background:var(--t-raised,#302b3c); color:var(--t-text,#f8f0f6); font:13px var(--font-display); }
+.dex-candy[hidden] { display:none; }
+.dex-candy__feed { flex:none; border:0; border-radius:999px; padding:7px 12px; min-height:32px; background:linear-gradient(135deg,#f7b6d2,#c9a7f0); color:#3a2140; font:13px var(--font-display); white-space:nowrap; cursor:pointer; }
+.dex-candy__feed:disabled { background:transparent; border:1px dashed var(--t-line,#6d6079); color:var(--t-muted,#d6cadc); cursor:default; }
+.candy-jar { margin:12px 0 0; padding:12px; border:1px solid var(--t-line,#6d6079); border-radius:14px; background:var(--t-raised,#302b3c); color:var(--t-text,#f8f0f6); display:grid; gap:8px; }
+.candy-jar h3 { margin:0; font:400 15px var(--font-display); }
+.candy-jar__note { margin:0; font-size:11px; line-height:1.6; color:var(--t-muted,#d6cadc); }
+.candy-jar__row { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:6px; font-size:13px; }
+.candy-jar__name b { font:400 14px var(--font-display); }
+.candy-jar__name small { margin-left:4px; font-size:11px; color:var(--t-muted,#d6cadc); }
+.candy-jar__row button { min-height:32px; border:1px solid var(--t-line,#6d6079); border-radius:10px; padding:6px 8px; background:transparent; color:var(--t-text,#f8f0f6); font:12px var(--font-display); white-space:nowrap; cursor:pointer; }
+.candy-jar__row .candy-jar__buy { border:0; background:linear-gradient(135deg,#f7b6d2,#c9a7f0); color:#3a2140; }
+.candy-jar__row button:disabled { opacity:.45; cursor:default; }
 
 /* Daily affection is visible for the whole collection without changing residents. */
 .residents-bond-summary { margin:4px 0 12px; color:var(--t-muted); font:11px/1.7 var(--font-display); }
