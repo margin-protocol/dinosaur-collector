@@ -4270,7 +4270,8 @@ function studioCard() {
   if (seen.opening) replays.append(epilogueButton('studio:opening', '重看〈江湖開業第一日〉'));
   if (seen.merge) replays.append(epilogueButton('studio:merge', '重看〈不祥的金光〉'));
   if (replays.childElementCount) card.append(replays);
-  if (ds.step !== 'done') { const ink = studioInk('door'); if (ink) card.append(ink); }
+  { const ink = studioInk('door'); if (ink) card.append(ink); } // 門修好後也要留著，不然先修門的人會拿不到皮寶
+  if (events.schedule(events.EVENT_DEFS[studio.EVENT_ID], events.eventNow(state)).state !== 'battle') { const ink = studioInk('stage'); if (ink) { ink.classList.add('studio-ink--late'); card.append(ink); } } // 討伐結束後關卡卡片收起來了，那滴改藏在茶肆卡
   const due = studio.storyDue(state);
   const busy = () => document.querySelector('dialog.epilogue[open], #battle-result[open]');
   if (due && !busy() && !studioStoryQueued) { studioStoryQueued = true; setTimeout(() => { if (busy()) { studioStoryQueued = false; return; } epilogue.play(`studio:${due}`); void updateState(cur => studio.markSeen(cur, due)).then(t => { state = t.state; studioStoryQueued = false; renderBattle(); }); }, 300); }

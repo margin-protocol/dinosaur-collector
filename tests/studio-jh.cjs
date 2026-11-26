@@ -66,4 +66,17 @@ await p.waitForTimeout(500);
 assert.equal(await p.locator('#chapter-epilogue[open]').count(),1,'不祥的金光');
 await p.evaluate(()=>document.getElementById('chapter-epilogue').close());await p.waitForTimeout(400);
 s=await save();assert.ok(s.studioJh.seen.merge);assert.equal(await p.locator('.studio-card__hint').count(),0);
+// 皮寶回報（11/26）：先修好門，門邊那滴還要在 → 點第 5 滴拿到皮寶蛋
+await setup("s.dex['MO-010']={at:'x'};s.studioJh={door:['a','b','c'],granted:{'MO-010':'x'},ink:{banner:'x',stage:'x',keepsake:'x',shop:'x'}}");
+assert.equal(await p.locator('.studio-card.is-open .studio-ink--door').count(),1,'門修好後門邊墨點還在');
+await p.locator('.studio-ink--door').click();await p.waitForTimeout(500);
+s=await save();assert.ok(s.gifts.eggs.some(e=>e.character==='MO-009'),'先修門再點第 5 滴也拿到皮寶');
+// 討伐結束、只剩墨玉閣那一週：關卡那滴改在茶肆卡上
+await setup("s.studioJh={ink:{banner:'x',keepsake:'x',shop:'x',door:'x'}}");
+await p.evaluate(()=>localStorage.setItem('siang-collector:event-start-test',new Date(Date.now()-16*24*3600e3).toISOString()));await p.reload();await p.waitForTimeout(300);
+await p.evaluate(async()=>{const E=await import('/js/events.js');E.EVENT_DEFS.mo.start=localStorage.getItem('siang-collector:event-start-test');});
+await p.evaluate(()=>document.getElementById('open-battle')?.click());await p.waitForTimeout(600);
+assert.equal(await p.locator('[data-event-stage]').count(),0,'墨玉閣週沒有關卡');
+await p.locator('.studio-card .studio-ink--late').click();await p.waitForTimeout(500);
+s=await save();assert.ok(s.gifts.eggs.some(e=>e.character==='MO-009'),'墨玉閣週也拿得到皮寶');
 assert.deepEqual(errs,[]);console.log('studio-jh.cjs: PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1);});
