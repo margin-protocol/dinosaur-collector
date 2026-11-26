@@ -76,6 +76,7 @@ import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
 import * as studio from './studio-jh.js';
 import { playMoSsrFx } from './mo-ssr-fx.js';
+import { playHatchFx } from './hatch-fx.js';
 import { refreshPush } from './push.js';
 import { setupNotify, msgPushOn } from './notify-ui.js';
 import { queueTimerSync, syncTimers } from './push-timers.js';
@@ -1381,8 +1382,10 @@ async function hatch(expected) {
   if (transaction.result) {
     const { character: c, duplicate } = transaction.result;
     // 墨痕蛋出 SSR／UR：江湖出貨演出（湘 11/26）。存檔已寫好，演出只是畫面；重複的播快轉版
-    if (eggId === 'mohen' && (c.rarity === 'SSR' || c.rarity === 'UR')) {
-      try { buzz([20, 40, 90]); await playMoSsrFx({ name: c.name, image: characterSources(c.image)[0], rarity: c.rarity, fast: duplicate || reducedMotion() }); } catch { /* 演出失敗也要看到結果 */ }
+    // 其他蛋出 SSR／UR：櫻花綻放（湘 11/26 選 B），顏色跟著主題、UR 更華麗
+    if (c.rarity === 'SSR' || c.rarity === 'UR') {
+      const fx = { name: c.name, image: characterSources(c.image)[0], rarity: c.rarity, fast: duplicate || reducedMotion() };
+      try { buzz([20, 40, 90]); await (eggId === 'mohen' ? playMoSsrFx(fx) : playHatchFx(fx)); } catch { /* 演出失敗也要看到結果 */ }
     }
     showReveal(c, duplicate);
   } else toast('這顆蛋已經完成孵化，進度已更新。');
