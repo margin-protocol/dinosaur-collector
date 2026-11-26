@@ -32,7 +32,15 @@ export function parseLine(line) {
 }
 
 // 自動站位：兩個位置 L／R
-function stage(lines, { bgKey, act, skin, foe = null }) {
+// 湘 11/26：結尾的「（上卷・完）（紅妝未卸…）（下卷・…）」是標題，不是旁白——收成最後一張字卡，不要一個字一個字打出來
+const TAIL = /^[上下]卷・完$/;
+function stage(lines, opts) {
+  const at = lines.findIndex((l) => TAIL.test(parseLine(l).text));
+  if (at < 0) return stageLines(lines, opts);
+  const [head, ...rest] = lines.slice(at).map((l) => parseLine(l).text);
+  return [...stageLines(lines.slice(0, at), opts), { card: head, sub: rest.join('\n').replace(/。(?=.)/g, '。\n'), tail: true }];
+}
+function stageLines(lines, { bgKey, act, skin, foe = null }) {
   const slots = { L: null, R: null }; const lastSpoke = {}; let n = 0;
   return lines.map((line, i) => {
     const b = parseLine(line);
@@ -64,7 +72,8 @@ export function buildStories(skin = '') {
       const beats = stage(lines, { bgKey: `mo:${sid}`, act: s.title, skin, foe: part === 'before' && FOE_ENTRY[sid] !== undefined ? { at: FOE_ENTRY[sid], key: foeKey(sid) } : null });
       if (part === 'after' && parts.ending) {
         const end = parts.ending.split('\n').filter(Boolean);
-        const isTail = /^（尾聲・/.test(end[0]);
+        // 結尾自己有開場（尾聲字卡）或自己會收「上卷・完」，中間就不再插一張「完」——不然故事演到一半就跳「上卷・完」又接著演（湘 11/26 回報的卡一下）
+        const isTail = /^（尾聲・/.test(end[0]) || end.some((l) => TAIL.test(parseLine(l).text));
         beats.push(...(isTail ? [] : [{ card: sid === 'mo-05' ? '上卷・完' : '下卷・完', sub: '' }]), ...stage(end, { bgKey: `mo:${sid}`, act: sid === 'mo-05' ? '上卷結尾' : '江湖再嫁', skin }));
       }
       const id = `mo:${sid}:${part}`;

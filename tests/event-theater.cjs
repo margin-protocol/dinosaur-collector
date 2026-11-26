@@ -11,6 +11,13 @@ assert.equal(r.n,22,'十關×2＋頁邊江湖兩段');assert.deepEqual(r.foes,Ar
 assert.deepEqual(r.line,{who:'mo_聞止水',text:'「……這也需要救命？」'});assert.deepEqual(r.nar,{text:'鑼鼓聲停了。'});
 for(const k of ['mo_小湘','mo_聞止水','mo_刀客'])assert.ok(r.imgs.includes(k),k);
 assert.ok(!r.imgs.includes('mo_莊主'),'沒立繪的不上台');
+// 湘 11/26：斷刃使打完後演到一半跳「上卷・完」又接著演＝卡一下。上卷／下卷結尾只在最後收成一張字卡，「X卷・完」不會變成打字的旁白
+const tail=await p.evaluate(async()=>{const E=await import('/js/chapter-epilogue.js');return ['mo-05','mo-10'].map(sid=>{const bs=E.resolveBeats(E.epilogueFor('mo:'+sid+':after'));return {mid:bs.slice(0,-1).filter(x=>x.kind==='card'&&/完/.test(x.card)).length,typed:bs.filter(x=>x.kind==='line'&&/卷・完|江湖未歇|書頁無涯/.test(x.text)).length,last:bs.at(-1).card,sub:bs.at(-1).sub};});});
+assert.deepEqual(tail.map(t=>[t.mid,t.typed,t.last]),[[0,0,'上卷・完'],[0,0,'下卷・完']]);
+assert.equal(tail[0].sub,'紅妝未卸，江湖未歇。\n下卷・江湖不嫁。\n這一次，她們不再逃亡。');
+// 開演就先載好會上場的立繪（斷刃使半路登場不用等圖）
+await p.evaluate(async()=>{const E=await import('/js/chapter-epilogue.js');const d=document.createElement('dialog');d.id='pre';document.body.append(d);E.createEpilogueTheater({dialog:d}).play('mo:mo-05:before');});
+await p.waitForFunction(()=>{const i=document.querySelector('#pre .epi__actor[data-key="mo_斷刃使"] img');return i&&i.complete&&i.naturalWidth>0;},null,{timeout:8000});
 // 每張立繪與背景都載得到
 const srcs=await p.evaluate(async()=>{const E=await import('/js/events.js');const eg=await import('/js/eggs.js');return [...Object.values(E.EVENT_DEFS.mo.stages).map(s=>s.scene),...['117','MO-001','MO-003','MO-004','MO-005','MO-006','MO-007','MO-008'].map(n=>`assets/characters/${eg.CHARACTERS[n].image}.webp`)];});
 for(const s of srcs){const res=await p.request.get(`http://127.0.0.1:8000/${s}`);assert.equal(res.status(),200,s);}

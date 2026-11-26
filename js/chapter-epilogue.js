@@ -365,6 +365,8 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     const node = el('div', 'epi__actor is-out'); node.dataset.key = key;
     const img = el('img'); img.alt = a.name; img.decoding = 'async'; node.append(img); castBox.append(node); actors[key] = { node, img, loaded: false };
   }
+  function ensureActor(key) { if (!actors[key] && ACTORS[key]) { const node = el('div', 'epi__actor is-out'); node.dataset.key = key; const img = el('img'); img.alt = ACTORS[key].name; img.decoding = 'async'; node.append(img); castBox.append(node); actors[key] = { node, img, loaded: false }; } return actors[key]; }
+  function loadActor(key) { const a = ensureActor(key); if (a && !a.loaded && ACTORS[key].src?.length) { loadWithFallback(a.img, ACTORS[key].src); a.loaded = true; } }
   let ep = null, beats = [], index = 0, typing = null, autoTimer = null, auto = false, full = '', panTimer = null;
 
   let countTimer = null;
@@ -402,10 +404,10 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     q('.epi__chip').textContent = b.act || ep.title;
     if (b.newAct && !reduced.matches) { const act = q('.epi__act'); act.textContent = b.act; act.classList.remove('is-on'); void act.offsetWidth; act.classList.add('is-on'); }
     const onStage = new Map(b.cast);
-    for (const [key] of b.cast) if (!actors[key] && ACTORS[key]) { const node = el('div', 'epi__actor is-out'); node.dataset.key = key; const img = el('img'); img.alt = ACTORS[key].name; img.decoding = 'async'; node.append(img); castBox.append(node); actors[key] = { node, img, loaded: false }; }
+    for (const [key] of b.cast) ensureActor(key);
     for (const [key, a] of Object.entries(actors)) {
       const slot = onStage.get(key);
-      if (slot && !a.loaded) { loadWithFallback(a.img, ACTORS[key].src); a.loaded = true; }
+      if (slot && !a.loaded) loadActor(key);
       a.node.className = `epi__actor${slot ? ` is-${slot}` : ' is-out'}${b.who && slot && key !== b.who ? ' is-dim' : ''}${key === b.who ? ' is-on' : ''}`;
       const fx = b.fx[key];
       if (slot && fx && !reduced.matches) { void a.node.offsetWidth; a.node.classList.add(`fx-${fx}`); }
@@ -460,7 +462,9 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
   }
   function play(enemyId) {
     ep = epilogueFor(enemyId); if (!ep) return false;
-    beats = resolveBeats(ep); index = 0; auto = false; q('[data-a="auto"]').setAttribute('aria-pressed', 'false');
+    beats = resolveBeats(ep); index = 0;
+    // 開演就先載這段劇情會上場的立繪：不然像斷刃使這種半路登場的，手機上會等圖載完才跳出來，看起來卡一下
+    for (const k of new Set(beats.flatMap((x) => (x.cast || []).map(([key]) => key)))) loadActor(k); auto = false; q('[data-a="auto"]').setAttribute('aria-pressed', 'false');
     q('.epi__end').hidden = true; q('.epi__log').hidden = true; stage.dataset.chapter = String(ep.chapter); stage.dataset.skin = ep.skin || '';
     if (!dialog.open) dialog.showModal();
     q('[data-a="music"]').hidden = !ep.music; q('[data-a="music"]').setAttribute('aria-pressed', String(musicOn()));

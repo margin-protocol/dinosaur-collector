@@ -131,7 +131,7 @@
 /* 轉場字卡、片尾章、紀錄、結尾卡 */
 .epi__card { position:absolute; z-index:7; inset:0; display:grid; place-content:center; gap:10px; text-align:center; background:#1d1310; color:#fff3e8; opacity:0; pointer-events:none; transition:opacity .6s; }
 .epi__card b { font-size:22px; letter-spacing:.2em; }
-.epi__card small { font-size:15px; color:#f1cfb5; letter-spacing:.08em; }
+.epi__card small { font-size:15px; color:#f1cfb5; letter-spacing:.08em; white-space:pre-line; line-height:1.9; padding:0 20px; text-wrap:balance; }
 .epi__card small:empty { display:none; }
 .epi__stage[data-kind="card"] .epi__card { opacity:1; pointer-events:auto; }
 .epi__stage[data-card="over"] .epi__card { background:#1a0f0cb0; }
@@ -190,6 +190,7 @@
 .epi__stage[data-skin="b"] .epi__act { top:16%; left:auto; right:9%; width:auto; writing-mode:vertical-rl; font-size:26px; letter-spacing:.3em; color:#f7efe2; text-shadow:0 0 14px #000a, 0 2px 4px #000c; }
 .epi__stage[data-skin="b"] .epi__actor img { filter:drop-shadow(0 0 1px #f3ead9) drop-shadow(0 8px 8px #0006); }
 .epi__stage[data-skin="b"] .epi__card { background:#f3ead9; color:#2b211c; }
+.epi__stage[data-skin="b"] .epi__card small { color:#7a5a46; }
 /* C 說書：不站立繪，背景整張慢慢推近；講話的人頭像放進對話框 */
 .epi__stage[data-skin="c"] .epi__cam { animation:epi-drift 24s ease-in-out infinite alternate; }
 @keyframes epi-drift { from { transform:scale(1.02) translate(0,0); } to { transform:scale(1.12) translate(-3%,-2%); } }
