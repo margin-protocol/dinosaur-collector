@@ -20,6 +20,8 @@
 //   POST /push/unsubscribe {endpoint}  → 關掉
 //   POST /timers {endpoint, keys, key, timers} → 回家／討伐提醒（不用邀請碼，見下面 timerRoute）
 //   POST /timers/off {endpoint, key}    → 這支手機不再收提醒
+//   POST /hello                         → 新玩家 +1（不用邀請碼，見下面 helloRoute）
+//   GET  /admin/new-players             → 審核員看每日新玩家數
 //   Cron Trigger 每分鐘（* * * * *）→ runTimers 推出到期的提醒
 //
 // 手機通知（Web Push，湘 11/21）：審核員把審核結果、紙條、照片回覆、新委託寫進某位玩家的空間時，
@@ -59,6 +61,7 @@ export async function ensureSchema(db) {
     db.prepare('CREATE TABLE IF NOT EXISTS timer_subs (endpoint TEXT PRIMARY KEY, key_hash TEXT, p256dh TEXT, auth TEXT, seen INTEGER)'),
     db.prepare('CREATE TABLE IF NOT EXISTS timers (endpoint TEXT, at INTEGER, title TEXT, body TEXT, tag TEXT)'),
     db.prepare('CREATE INDEX IF NOT EXISTS timers_at ON timers (at)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS new_players (day TEXT, site TEXT, n INTEGER, PRIMARY KEY (day, site))'),
     db.prepare('CREATE INDEX IF NOT EXISTS timers_endpoint ON timers (endpoint)'),
   ]);
 }
@@ -211,6 +214,33 @@ export async function cleanTimerSubs(env, now = Date.now()) {
 }
 const validEndpoint = (u) => { try { const x = new URL(u); return x.protocol === 'https:' || (x.hostname === '127.0.0.1' && x.protocol === 'http:'); } catch { return false; } };
 
+/* ---------- 新玩家計數（湘 11/26） ---------- */
+// 遊戲第一次在一支手機打開（全新存檔）時打一次 POST /hello。後台只記「哪一天（台灣時間）、哪個網址、+1」，
+// 不存 IP、裝置、token 或任何玩家資料；已經在玩的玩家不會補算，測試服（?test）不會送。
+export const HELLO_SITES = { 'https://margin-protocol.github.io': 'gh', 'https://betweenthepages.pages.dev': 'cf' };
+const HELLO_DAILY_MAX = 3000; // 一天一個網址最多算這麼多，免得被亂打灌爆
+export const taiwanDay = (ms = Date.now()) => new Date(ms + 8 * 3600e3).toISOString().slice(0, 10);
+async function helloRoute(request, env) {
+  const origin = request.headers.get('Origin') || '';
+  let site = HELLO_SITES[origin];
+  if (!site && env.HELLO_ALLOW_LOCAL && /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?$/.test(origin)) site = 'local';
+  if (!site) return fail(403, '不是遊戲網址');
+  const day = taiwanDay();
+  await env.DB.prepare('INSERT INTO new_players (day, site, n) VALUES (?, ?, 1) ON CONFLICT(day, site) DO UPDATE SET n = n + 1 WHERE n < ?').bind(day, site, HELLO_DAILY_MAX).run();
+  return json({ ok: true });
+}
+async function newPlayerStats(db) {
+  const { results } = await db.prepare('SELECT day, site, n FROM new_players ORDER BY day').all();
+  const byDay = new Map();
+  for (const r of results) {
+    const d = byDay.get(r.day) || { day: r.day, gh: 0, cf: 0, total: 0 };
+    if (r.site === 'gh' || r.site === 'cf') d[r.site] += r.n;
+    d.total += r.n; byDay.set(r.day, d);
+  }
+  const days = [...byDay.values()];
+  return { today: taiwanDay(), since: days[0]?.day || null, total: days.reduce((n, d) => n + d.total, 0), days };
+}
+
 async function handle(request, env, ctx) {
   const db = env.DB;
   const url = new URL(request.url);
@@ -219,6 +249,7 @@ async function handle(request, env, ctx) {
   if (route === '/' || route === '/health') return json({ ok: true, app: 'siang-collector' });
   if (!schemaReady) { await ensureSchema(db); schemaReady = true; }
   if ((route === '/timers' || route === '/timers/off') && request.method === 'POST') return timerRoute(route, request, env);
+  if (route === '/hello' && request.method === 'POST') return helloRoute(request, env);
 
   if (route === '/admin/claim' && request.method === 'POST') {
     const body = await request.json().catch(() => ({}));
@@ -258,6 +289,7 @@ async function handle(request, env, ctx) {
       const { results } = await db.prepare('SELECT id, name, created, seen, revoked FROM players ORDER BY created').all();
       return json(results.map((r) => ({ ...r, revoked: Boolean(r.revoked) })));
     }
+    if (route === '/admin/new-players' && request.method === 'GET') return json(await newPlayerStats(db));
     if (route === '/admin/players' && request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
       const name = String(body.name || '').trim().slice(0, 20) || '新玩家';

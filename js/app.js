@@ -1,3 +1,4 @@
+import './hello.js'; // 新玩家計數：一定要第一個載入（見 hello.js）
 import { renderBattleLog } from './battle-log.js';
 import { createBattleTheater } from './battle-theater.js';
 import { createEpilogueTheater } from './chapter-epilogue.js';

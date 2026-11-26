@@ -122,9 +122,45 @@ function renderCloud(message = '') {
 function switched() { void refreshCodes(); void refreshLetters(); void refreshMissions(); if ($('postcard-history').open) void refreshPostcards(); maybeRefreshInbox(); $('date-qr').hidden = true; $('rv-invite').hidden = true; }
 async function loadCloudPlayers(message) {
   if (!reviewerToken) { cloudPlayers = []; renderCloud(message); return; }
-  try { cloudPlayers = await admin().players(); renderCloud(message); maybeRefreshInbox(); }
+  try { cloudPlayers = await admin().players(); renderCloud(message); maybeRefreshInbox(); void loadNewbies(); }
   catch (err) { cloudPlayers = []; renderCloud(err.status === 401 ? '審核員通行碼不對，請重新登入。' : `讀不到玩家名單：${err.message}`); if (err.status === 401) { reviewerToken = ''; localStorage.removeItem(REVIEWER_KEY); renderCloud('審核員通行碼不對，請重新登入。'); } }
 }
+/* ---------- 新玩家（湘 11/26）：每天有幾支新手機第一次打開遊戲 ---------- */
+const addDays = (day, n) => new Date(Date.parse(`${day}T00:00:00Z`) + n * 86400e3).toISOString().slice(0, 10);
+function newbieView(stats, span = 14) {
+  const map = new Map((stats.days || []).map((d) => [d.day, d]));
+  const today = stats.today;
+  const days = Array.from({ length: span }, (_, i) => { const day = addDays(today, i - span + 1); const d = map.get(day); return { day, gh: d?.gh || 0, cf: d?.cf || 0, total: d?.total || 0 }; });
+  const week = days.slice(-7).reduce((n, d) => n + d.total, 0);
+  return { days, today: map.get(today)?.total || 0, week, total: stats.total || 0, since: stats.since };
+}
+function renderNewbies(stats) {
+  const v = newbieView(stats);
+  $('np-today').textContent = v.today; $('np-week').textContent = v.week; $('np-total').textContent = v.total;
+  const max = Math.max(1, ...v.days.map((d) => d.total));
+  $('np-chart').replaceChildren(...v.days.map((d, i) => {
+    const col = document.createElement('div'); col.className = `np-col${i === v.days.length - 1 ? ' is-today' : ''}`;
+    const n = document.createElement('i'); n.textContent = d.total; if (!d.total) n.classList.add('is-zero');
+    const bar = document.createElement('div'); bar.className = 'np-bar'; bar.style.height = `${d.total ? Math.max(4, (d.total / max) * 100) : 0}%`;
+    for (const k of ['gh', 'cf']) if (d[k]) { const s = document.createElement('span'); s.className = k; s.style.flex = String(d[k]); bar.append(s); }
+    col.append(n, bar); col.title = `${d.day}：${d.total} 位`; return col;
+  }));
+  $('np-days').replaceChildren(...v.days.map((d) => {
+    const s = document.createElement('span'); s.textContent = String(Number(d.day.slice(8))); return s;
+  }));
+  const md = (day) => `${Number(day.slice(5, 7))}/${Number(day.slice(8))}`;
+  $('np-range').textContent = `近 14 天（${md(v.days[0].day)}–${md(v.days.at(-1).day)}）`;
+  $('np-chart').setAttribute('aria-label', `近 14 天每日新玩家：${v.days.map((d) => `${d.day.slice(5)} ${d.total} 位`).join('、')}`);
+  $('np-since').textContent = `${v.since ? `從 ${v.since.slice(5).replace('-', '/')} 開始記錄。` : '還沒有新玩家的紀錄。'}只算「第一次在一支新手機打開遊戲」的人（台灣時間），不記任何個人資料。已經在玩的人不會補算，測試服不算。`;
+}
+async function loadNewbies() {
+  if (!reviewerToken) { $('np-body').hidden = true; $('np-status').textContent = '用審核員通行碼登入後就看得到。'; return; }
+  $('np-status').textContent = '讀取中…';
+  try { renderNewbies(await admin().newPlayers()); $('np-body').hidden = false; $('np-status').textContent = ''; }
+  catch (err) { $('np-status').textContent = `讀不到新玩家數：${err.message}`; }
+}
+$('np-refresh').addEventListener('click', () => { void loadNewbies(); });
+
 function useReviewer(token) { reviewerToken = token; try { localStorage.setItem(REVIEWER_KEY, token); } catch {} }
 
 $('rv-claim').addEventListener('click', async () => {

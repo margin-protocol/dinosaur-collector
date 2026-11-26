@@ -24,7 +24,7 @@ http.createServer(async (req, res) => {
   const chunks = []; for await (const c of req) chunks.push(c);
   const body = chunks.length ? Buffer.concat(chunks) : undefined;
   const request = new Request(`http://127.0.0.1:${port}${req.url}`, { method: req.method, headers: req.headers, body: ['GET', 'HEAD', 'OPTIONS'].includes(req.method) ? undefined : body });
-  const r = await worker.fetch(request, { DB });
+  const r = await worker.fetch(request, { DB, HELLO_ALLOW_LOCAL: '1' }); // 本機測試：讓 127.0.0.1 的遊戲也能算新玩家
   res.writeHead(r.status, Object.fromEntries(r.headers));
   res.end(Buffer.from(await r.arrayBuffer()));
 }).listen(port, () => console.log(`siang api dev on ${port}`));

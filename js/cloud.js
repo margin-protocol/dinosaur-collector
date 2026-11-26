@@ -62,6 +62,7 @@ function createSiangCloud(config) {
     async remove(path) { await call('DELETE', `/f/${enc(path)}`); },
     // 審核員專用
     async players() { return (await call('GET', '/admin/players')).json(); },
+    async newPlayers() { return (await call('GET', '/admin/new-players')).json(); },
     async addPlayer(name) { return (await call('POST', '/admin/players', { body: JSON.stringify({ name }) })).json(); },
     async playerAction(id, action, body = {}) { return (await call('POST', `/admin/players/${id}/${action}`, { body: JSON.stringify(body) })).json(); },
   };

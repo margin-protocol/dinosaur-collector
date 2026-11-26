@@ -39,6 +39,23 @@
     <div class="batch-row"><input id="batch-note" maxlength="600" autocomplete="off" placeholder="共用批註（可不填）" aria-label="共用批註：沒寫個別批註的照片用這句"><button class="btn btn--small" type="button" id="batch-approve">通過</button><button class="btn btn--quiet btn--small" type="button" id="batch-reject">退回</button></div>
   </div>
 
+  <section class="card" id="sec-newbies" data-panel="setup" hidden>
+    <div class="inbox-top"><h2>新玩家</h2><button class="btn btn--quiet btn--small" type="button" id="np-refresh">重新整理</button></div>
+    <div id="np-body" hidden>
+      <div class="np-sum">
+        <div><b id="np-today">0</b><small>今天</small></div>
+        <div><b id="np-week">0</b><small>近 7 天</small></div>
+        <div><b id="np-total">0</b><small>累計</small></div>
+      </div>
+      <p class="np-range" id="np-range">近 14 天</p>
+      <div class="np-chart" id="np-chart" role="img" aria-label="近 14 天每日新玩家"></div>
+      <div class="np-days" id="np-days" aria-hidden="true"></div>
+      <p class="np-legend"><span class="np-dot np-dot--gh"></span>舊網址 github.io<span class="np-dot np-dot--cf"></span>新網址 pages.dev</p>
+      <p class="hint" id="np-since">只算「第一次在一支新手機打開遊戲」的人（台灣時間），不記任何個人資料。已經在玩的人不會補算，測試服不算。</p>
+    </div>
+    <p class="status" id="np-status" role="status">用審核員通行碼登入後就看得到。</p>
+  </section>
+
   <section class="card" id="sec-cloud" data-panel="setup" hidden>
     <h2>玩家與雲端</h2>
     <p class="hint">所有玩家都放在「小湘雲端」：新玩家只要一組邀請碼，不用 GitHub。下面的暗號、紙條、委託，都是給目前選擇的玩家。印章所有玩家共用。</p>

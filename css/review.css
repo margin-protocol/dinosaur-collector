@@ -101,3 +101,26 @@ body.has-batch .review { padding-bottom: 150px; }
 #inbox-status:empty { min-height: 0; margin: 0; }
 .inbox .review-photo { max-height: min(46vh, 320px); }
 .inbox textarea { min-height: 44px; }
+
+/* ---------- 新玩家（湘 11/26） ---------- */
+.np-sum { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-top: 12px; }
+.np-sum div { display: grid; justify-items: center; gap: 2px; padding: 10px 4px; border: 1px solid var(--line); border-radius: 12px; background: var(--sakura-raised); }
+.np-sum b { font: 400 26px/1.1 var(--font-display); color: var(--sakura-accent); font-variant-numeric: tabular-nums; }
+.np-sum small { font-size: 12px; color: var(--pearl); letter-spacing: .08em; }
+.np-range { margin: 14px 0 0; font-size: 12px; color: var(--pearl); letter-spacing: .04em; }
+.np-chart { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); align-items: end; gap: 3px; height: 140px; margin-top: 6px; padding: 0 2px; border-bottom: 1px solid var(--line); }
+.np-col { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; min-width: 0; }
+.np-col > i { margin-bottom: 2px; font: normal 11px/1.4 var(--font-body); color: var(--pearl); font-variant-numeric: tabular-nums; }
+.np-col > i.is-zero { opacity: .45; }
+.np-bar { display: flex; flex-direction: column-reverse; width: 100%; max-width: 18px; border-radius: 4px 4px 0 0; overflow: hidden; }
+.np-bar span { display: block; }
+.np-bar .gh { background: #d68aa8; }
+.np-bar .cf { background: #914e6a; }
+.np-col.is-today > i { color: var(--sakura-accent); font-weight: 600; }
+.np-days { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 3px; padding: 4px 2px 0; }
+.np-days span { text-align: center; font-size: 10px; color: var(--pearl); font-variant-numeric: tabular-nums; }
+.np-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 6px; margin: 12px 0 6px; font-size: 12px; color: var(--pearl); }
+.np-dot { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-left: 6px; }
+.np-dot:first-child { margin-left: 0; }
+.np-dot--gh { background: #d68aa8; }
+.np-dot--cf { background: #914e6a; }
