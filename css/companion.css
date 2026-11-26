@@ -734,12 +734,16 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .candy-jar { margin:12px 0 0; padding:12px; border:1px solid var(--t-line,#6d6079); border-radius:14px; background:var(--t-raised,#302b3c); color:var(--t-text,#f8f0f6); display:grid; gap:8px; }
 .candy-jar h3 { margin:0; font:400 15px var(--font-display); }
 .candy-jar__note { margin:0; font-size:11px; line-height:1.6; color:var(--t-muted,#d6cadc); }
-.candy-jar__row { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:6px; font-size:13px; }
-.candy-jar__name b { font:400 14px var(--font-display); }
-.candy-jar__name small { margin-left:4px; font-size:11px; color:var(--t-muted,#d6cadc); }
-.candy-jar__row button { min-height:32px; border:1px solid var(--t-line,#6d6079); border-radius:10px; padding:6px 8px; background:transparent; color:var(--t-text,#f8f0f6); font:12px var(--font-display); white-space:nowrap; cursor:pointer; }
-.candy-jar__row .candy-jar__buy { border:0; background:linear-gradient(135deg,#f7b6d2,#c9a7f0); color:#3a2140; }
-.candy-jar__row button:disabled { opacity:.45; cursor:default; }
+.candy-jar__rows { display:grid; gap:8px; }
+.candy-jar__row { display:grid; gap:8px; padding:10px; border:1px solid var(--t-line,#6d6079); border-radius:12px; }
+.candy-jar__head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+.candy-jar__head b { font:400 15px var(--font-display); }
+.candy-jar__head small, .candy-jar__left { font-size:11px; color:var(--t-muted,#d6cadc); }
+.candy-jar__left { display:block; text-align:right; line-height:1.6; }
+.candy-jar__btns { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr); gap:8px; }
+.candy-jar__btns button { min-height:36px; border:1px solid var(--t-line,#6d6079); border-radius:10px; padding:6px 8px; background:transparent; color:var(--t-text,#f8f0f6); font:12px var(--font-display); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:pointer; }
+.candy-jar__btns .candy-jar__buy { border:0; background:linear-gradient(135deg,#f7b6d2,#c9a7f0); color:#3a2140; }
+.candy-jar__btns button:disabled { opacity:.45; cursor:default; }
 
 /* Daily affection is visible for the whole collection without changing residents. */
 .residents-bond-summary { margin:4px 0 12px; color:var(--t-muted); font:11px/1.7 var(--font-display); }

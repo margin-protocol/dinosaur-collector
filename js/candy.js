@@ -6,7 +6,7 @@ export const STAR_CANDY_COST = [1, 1, 2, 2, 3]; // 升到 ★1…★5 各要幾�
 export const DUP_CANDY = 1; // 重複遇見給 1 顆
 export const FULL_DUP_CANDY = 2; // 已經 ★5 的居民再遇見給 2 顆（滿星不浪費）
 export const MERGE_CANDY = 3; // 3 顆低一階 → 1 顆高一階
-export const CANDY_PRICES = { N: 5, R: 8, SR: 15, SSR: 25, UR: 40 }; // 化石交換所一顆的價錢
+export const CANDY_PRICES = { N: 25, R: 40, SR: 75, SSR: 125, UR: 200 }; // 化石交換所一顆的價錢（湘 11/26：朋友說太便宜，原本 5/8/15/25/40 改成 ×5）
 export const CANDY_WEEKLY = 3; // 化石購買：每種每週最多 3 顆
 
 export function candyOf(state) {

@@ -2904,15 +2904,18 @@ async function doExchange(offerId, no) {
 }
 // 星光糖罐（湘 11/26）：每種糖持有幾顆、3 顆合成高一階、用化石買（每種每週 3 顆）
 function renderCandyJar() {
-  $('candy-jar-note').textContent = `重複遇見居民會拿到同稀有度的糖，可以在圖鑑餵給同稀有度的居民升星。${MERGE_CANDY} 顆合成 1 顆高一階；化石購買每種每週 ${CANDY_WEEKLY} 顆。`;
+  $('candy-jar-note').textContent = `重複遇見居民會拿到同稀有度的糖，可以在圖鑑餵給同稀有度的居民升星。${MERGE_CANDY} 顆可以合成 1 顆高一階。`;
+  // 湘 11/26：原本一列塞三樣太擠 → A 一種一列：上面糖名＋持有，下面合成／買兩顆一樣大的按鈕
   $('candy-jar-rows').replaceChildren(...CANDY_TIERS.map((r, i) => {
     const have = candyCount(state, r); const top = i === CANDY_TIERS.length - 1; const left = buyLeft(state, r); const price = CANDY_PRICES[r];
     const row = el('div', 'candy-jar__row');
-    const name = el('span', 'candy-jar__name'); name.append(el('b', null, r), el('small', null, `×${have}`));
-    const merge = Object.assign(el('button', 'candy-jar__merge', top ? '最高階' : `${MERGE_CANDY} 顆 → ${CANDY_TIERS[i + 1]}`), { type: 'button', disabled: top || have < MERGE_CANDY }); merge.dataset.merge = r;
-    const buy = Object.assign(el('button', 'candy-jar__buy', left ? `${price} 化石 · 剩 ${left}` : '本週買完了'), { type: 'button', disabled: !left || state.fossils < price }); buy.dataset.buy = r;
-    row.append(name, merge, buy); return row;
+    const head = el('div', 'candy-jar__head'); head.append(el('b', null, `🍬 ${r} 糖`), el('small', null, `持有 ${have} 顆`));
+    const merge = Object.assign(el('button', 'candy-jar__merge', top ? '最高階' : `合成 ${MERGE_CANDY} → 1 ${CANDY_TIERS[i + 1]}`), { type: 'button', disabled: top || have < MERGE_CANDY }); merge.dataset.merge = r;
+    const buy = Object.assign(el('button', 'candy-jar__buy', left ? `${price} 化石買 1 顆` : '本週買完了'), { type: 'button', disabled: !left || state.fossils < price }); buy.dataset.buy = r;
+    const btns = el('div', 'candy-jar__btns'); btns.append(merge, buy);
+    row.append(head, btns); return row;
   }));
+  $('candy-jar-left').textContent = `化石購買：每種每週 ${CANDY_WEEKLY} 顆，本週還能買 ${CANDY_TIERS.map(r => `${r} ${buyLeft(state, r)}`).join('・')}`;
 }
 $('candy-jar-rows').addEventListener('click', async event => {
   const btn = event.target.closest('[data-merge],[data-buy]'); if (!btn || btn.disabled) return;
