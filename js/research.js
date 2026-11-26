@@ -1,6 +1,6 @@
 import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
 import { RECIPES } from './recipes.js';
-import { labStatuses, labStatusFor, labSlots, freeSlot, fmtLeft, LAB_SLOT_COST } from './lab.js';
+import { labStatuses, labStatusFor, labSlots, freeSlot, fmtLeft, LAB_SLOT_COST, bondReady, recipeHidden } from './lab.js';
 const asset = path => new URL(path, new URL('../', import.meta.url)).href;
 const ownedFor = state => Object.values(CHARACTERS).filter(c => state.dex?.[c.no]);
 
@@ -80,6 +80,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     const state = getState(), st = labStatusFor(state, recipe.id);
     btn.hidden = false; btn.dataset.brew = recipe.id;
     if (st) { btn.disabled = true; btn.textContent = `調配中 · 還要 ${fmtLeft(st.left)}`; }
+    else if (!bondReady(state, recipe)) { btn.disabled = true; btn.textContent = `兩位好感都到 Lv.${recipe.bond} 才能調配`; }
     else if (freeSlot(state) < 0) { btn.disabled = true; btn.textContent = labSlots(state) > 1 ? '研究室兩格都在調配' : '研究室正在調配別組'; }
     else { btn.disabled = false; btn.textContent = `🧪 放進研究室調配 ${recipe.days} 天`; }
   }
@@ -106,7 +107,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     find('[data-note-no]').textContent = 'NOTE ' + String(noteIndex + 1).padStart(2, '0');
     find('#research-note-title').textContent = note.note.title;
     find('.research-poem').textContent = note.note.poem;
-    root.querySelectorAll('[data-note]').forEach(button => { button.setAttribute('aria-pressed', String(Number(button.dataset.note) === noteIndex)); const r = RECIPES[Number(button.dataset.note)]; button.hidden = Boolean(r?.secret && !r.members.every(no => getState().dex?.[no])); }); // secret 配方：兩位都到手才出現
+    root.querySelectorAll('[data-note]').forEach(button => { button.setAttribute('aria-pressed', String(Number(button.dataset.note) === noteIndex)); const r = RECIPES[Number(button.dataset.note)]; button.hidden = recipeHidden(getState(), r); }); // secret 配方：兩位都到手才出現；bond 配方：好感也要到
     find('.research-pair-status').textContent = slots.every(Boolean) ? '搭檔就位，可以開始研究了。' : '點選兩側，邀請小湘一起研究。';
     find('.research-note-state').textContent = matched ? '線索相合' : slots.some(Boolean) ? '收集線索中' : '等待靈感';
     root.querySelectorAll('[data-clue]').forEach((clue, i) => {

@@ -343,6 +343,8 @@ const CHARACTER_TABLE = {
   'MO-009': { no: 'MO-009', name: '江湖百曉・皮寶', rarity: 'SSR', line: '「我只是稍微潤飾了一下事實！真的！」', image: 'mo-009-jianghu-pibao', series: 'studio', worldRole: '江湖百曉', quote: '天下秘聞三千卷，十卷有九卷是自己寫的。', special: true },
   'MO-010': { no: 'MO-010', name: '千機巧匠・德寶', rarity: 'SSR', line: '「可以做。但今日的內力已經用完了。」', image: 'mo-010-qianji-debao', series: 'studio', worldRole: '千機巧匠', quote: '可解天下千重機關，唯獨解不完掌櫃的需求。', special: true },
   'MO-011': { no: 'MO-011', name: '頁邊教主・湘寶', rarity: 'UR', line: '「寶寶！我突然有個小小的想法！」', image: 'mo-011-margin-chief', series: 'studio', worldRole: '頁邊教主', quote: '天下萬物皆可創造，唯獨待辦清單不可消滅。', special: true },
+  // 此生護卿（湘 11/26 選 B、自己畫立繪）：海棠新娘小湘（117／MO-002）＋墨衣護衛・聞止水 的研究室配方雙人卡，不進任何蛋池。原稿 docs/event-001/residents/MO-012-cisheng-huqing.md
+  'MO-012': { no: 'MO-012', name: '此生護卿・湘與止水', rarity: 'UR', line: '止水：「站我身後。」小湘：「不要，我要站妳旁邊！」', image: 'mo-012-cisheng-huqing', series: 'mohen', worldRole: '此生護卿', quote: '不渡厄，不換命，妳情我願。' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）

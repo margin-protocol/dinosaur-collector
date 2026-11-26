@@ -28,6 +28,9 @@ export const RECIPES = [
   // 頁邊江湖（湘 11/26）：江湖百曉・皮寶＋千機巧匠・德寶 → UR 頁邊教主・湘寶。secret：兩位都到手才出現在研究筆記
   { id: 'margin-chief', target: 'MO-011', members: ['MO-009', 'MO-010'], days: 2, secret: true, text: '江湖百曉・皮寶和千機巧匠・德寶一起放進研究室調配 2 天',
     note: { title: '不祥的金光', poem: '一支筆寫盡天下故事，一只匣造出世間萬物。兩樣放在一起，會喚醒誰？', clues: ['尋找執筆說書的夥伴', '尋找精通千機百巧的夥伴'], found: ['話本攤開了。', '齒輪轉起來了。'] } },
+  // 此生護卿（湘 11/26）：海棠新娘小湘＋聞止水 → UR 雙人卡 MO-012。secret＋bond：兩位都到手、好感都 Lv.5 才出現在研究筆記、才能調配
+  { id: 'cisheng-huqing', target: 'MO-012', members: ['117', 'MO-001'], days: 3, secret: true, bond: 5, text: '海棠新娘小湘和墨衣護衛・聞止水好感都到 Lv.5 後，一起放進研究室調配 3 天',
+    note: { title: '此生護卿', poem: '一位穿著嫁衣等人來接，一位帶著劍說要護她一生。這一次，誰也不用再逃。', clues: ['尋找穿著海棠嫁衣的夥伴', '尋找劍不離身的護衛'], found: ['海棠花開了。', '劍收進鞘裡了。'] } },
 ];
 const str = (v) => typeof v === 'string';
 

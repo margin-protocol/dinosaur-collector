@@ -123,6 +123,7 @@ export const TASTES = {
   'MO-009': { like: '濃甜', dislike: '清涼', secret: ["osmanthus", "star"] }, // 江湖百曉・皮寶：金桂＋星星糖（桂花糕是游未遲的，湘 11/26 要兩樣）；喜歡甜食，不喜歡苦（抹茶＝清涼）
   'MO-010': { like: '清涼', dislike: '刺激', secret: ["bamboo", "matcha"] }, // 千機巧匠・德寶：竹筍＋抹茶（山筍清湯是林晏洄的）；喜歡清淡，不喜歡辣
   'MO-011': { like: '濃甜', dislike: '怪味', secret: ["osmanthus", "sakura"] }, // 頁邊教主・湘寶：金桂＋櫻花蜜（海棠金冠）；喜歡甜食，不喜歡苦怪的
+  'MO-012': { like: '清涼', dislike: '刺激', secret: ["caramel", "sakura"] }, // 此生護卿：合巹酥＝焦糖（止水的布丁）＋櫻花蜜（海棠花香），各取兩人一樣
   'MO-003': { like: '濃甜', dislike: '刺激', secret: ["osmanthus", "tangyuan"] }, // 白衣仵作・游未遲：最愛桂花糕（金桂＋白玉湯圓）；喜歡甜（濃甜）、不喜歡辣（刺激）
   'MO-004': { like: '清涼', dislike: '酥脆', secret: ["matcha", "redbean"] }, // 天機閣主・徐汀云：最愛茶香點心（抹茶＋蜜紅豆）；喜歡清淡（清涼）、不喜歡油膩（酥脆）
   'MO-006': { like: '菇香', dislike: '刺激', secret: ["moon", "mushroom", "tangyuan"] }, // 無訟先生・程不言：最愛清蒸魚（月光露＋蘑菇＋湯圓）；喜歡鹹香（菇香）、不喜歡辣（刺激）

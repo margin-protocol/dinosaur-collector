@@ -4,6 +4,7 @@
 // 第二個研究欄位（湘 11/25，玩家許願）：化石交換所或研究室花 500 化石開，之後可以同時調配兩組。
 // 存檔：第一格沿用 state.lab，第二格是 state.lab2，state.labSlots 記開了幾格（沒有就是 1）。
 import { RECIPES, ensureRecipes } from './recipes.js';
+import { levelOf } from './affection.js';
 
 export const DAY_MS = 24 * 60 * 60 * 1000;
 export const LAB_SLOT_COST = 500; // 湘 11/25 定價
@@ -28,6 +29,10 @@ export const labStatuses = (state, now = Date.now()) => keysOf(state).map((_, i)
 export const labStatusFor = (state, recipeId, now = Date.now()) => LAB_KEYS.map((_, i) => labStatus(state, now, i)).find((st) => st?.recipe.id === recipeId) || null;
 export const freeSlot = (state) => keysOf(state).findIndex((k) => !state[k]);
 
+// recipe.bond（例如此生護卿 5）：兩位好感都要到這個等級才出現在研究筆記、才能調配
+export const bondReady = (state, recipe) => !recipe?.bond || recipe.members.every((no) => levelOf(state.affection?.[no]?.pts || 0) >= recipe.bond);
+// 研究筆記要不要藏起來：secret＝兩位都到手才出現；bond＝好感也要到
+export const recipeHidden = (state, recipe) => Boolean(recipe?.secret && !recipe.members.every((no) => state.dex?.[no])) || !bondReady(state, recipe);
 export const recipeDone = (state, recipe) => Boolean(state.recipes?.[recipe.id]?.done || state.dex?.[recipe.target]);
 
 // 回傳錯誤訊息字串，或 { recipe, slot }
@@ -40,6 +45,7 @@ export function startBrew(state, recipeId, { now = Date.now(), busy = new Set() 
   if (slot < 0) return labSlots(state) > 1 ? '研究室兩格都在調配，等其中一組完成再來吧。' : '研究室正在調配另一組，等她們完成再來吧。';
   if (recipeDone(state, recipe)) return '這個配方已經完成了。';
   if (!recipe.members.every((no) => state.dex?.[no])) return '還沒遇見這組配方的兩位小湘。';
+  if (!bondReady(state, recipe)) return `兩位的好感都要到 Lv.${recipe.bond}，才能一起放進研究室。`;
   const inLab = new Set(labNos(state));
   if (recipe.members.some((no) => inLab.has(no))) return '有一位小湘正在研究室調配另一組，等她完成再來吧。';
   const out = recipe.members.find((no) => busy.has(no));

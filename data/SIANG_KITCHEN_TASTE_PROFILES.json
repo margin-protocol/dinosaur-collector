@@ -1447,6 +1447,16 @@
       ]
     },
     {
+      "no": "MO-012",
+      "name": "此生護卿・湘與止水",
+      "like": "清涼",
+      "dislike": "刺激",
+      "secret_combo": [
+        "caramel",
+        "sakura"
+      ]
+    },
+    {
       "no": "MO-003",
       "name": "白衣仵作・游未遲",
       "like": "濃甜",
