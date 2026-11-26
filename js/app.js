@@ -76,6 +76,7 @@ import { REVIEW_LABEL } from './gugu-reviews.js';
 import * as guide from './guide.js';
 import * as studio from './studio-jh.js';
 import { pushState, enablePush, disablePush, refreshPush } from './push.js';
+import { playMoSsrFx } from './mo-ssr-fx.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy, recentPresenters, rememberPresenter } from './wish-presenter.js';
 
 const $ = (id) => document.getElementById(id);
@@ -1347,6 +1348,7 @@ function storyText(c, entry, now = new Date()) {
 async function hatch(expected) {
   buzz([30, 50, 30, 50, 60]);
   await runAnalysis();
+  const eggId = state.egg.id;
   const transaction = await updateState(current => {
     if (current.egg.id !== expected.id || current.egg.since !== expected.since || current.egg.warmth < EGGS[current.egg.id].warmthNeeded) return null;
     const random = isRandomEgg(current.egg);
@@ -1365,8 +1367,14 @@ async function hatch(expected) {
   if (transaction.result && !transaction.result.duplicate) welcomeResident(transaction.result.character.no, state.dex);
   if (transaction.result?.bondUp?.length) queueBondUps([{ no: transaction.result.character.no, up: transaction.result.bondUp }]);
   renderAll();
-  if (transaction.result) showReveal(transaction.result.character, transaction.result.duplicate);
-  else toast('這顆蛋已經完成孵化，進度已更新。');
+  if (transaction.result) {
+    const { character: c, duplicate } = transaction.result;
+    // 墨痕蛋出 SSR／UR：江湖出貨演出（湘 11/26）。存檔已寫好，演出只是畫面；重複的播快轉版
+    if (eggId === 'mohen' && (c.rarity === 'SSR' || c.rarity === 'UR')) {
+      try { buzz([20, 40, 90]); await playMoSsrFx({ name: c.name, image: characterSources(c.image)[0], rarity: c.rarity, fast: duplicate || reducedMotion() }); } catch { /* 演出失敗也要看到結果 */ }
+    }
+    showReveal(c, duplicate);
+  } else toast('這顆蛋已經完成孵化，進度已更新。');
 }
 
 // Skipping only ends the presentation; the shared hatch transaction still runs once.
