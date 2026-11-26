@@ -3309,7 +3309,7 @@ function renderErrands() {
     const fav = place ? info.affinity.map(sr => SERIES[sr]?.short).filter(Boolean).join('、') : '';
     const story = storyFor(errandPicked);
     $('errand-pick-hint').textContent = place
-      ? `${info.emoji} ${info.name}（${info.hours} 小時）：選 1～2 位。★ 是${fav}系列，特別喜歡這裡，帶回的東西更多。${place === 'faraway' ? '縣市小湘遠行會帶回家鄉明信片，偶爾撿到沒去過的縣市蛋。' : ''}${errandPicked.length === 2 ? (story ? (state.errands.stories[story.id] ? `（這組會發生「${story.title}」）` : '（這組好像會發生什麼事…）') : '' ) : ''}`
+      ? `${info.emoji} ${info.name}（${info.hours} 小時）：選 1～2 位。★ 是${fav}系列，特別喜歡這裡，帶回的東西更多。${place === 'faraway' ? '縣市小湘遠行會帶回家鄉明信片，偶爾撿到沒去過的縣市蛋（每天最多一顆）。' : ''}${errandPicked.length === 2 ? (story ? (state.errands.stories[story.id] ? `（這組會發生「${story.title}」）` : '（這組好像會發生什麼事…）') : '' ) : ''}`
       : `${info.emoji} ${info.name}（${info.hours} 小時）：${info.desc}。選一位。`;
     const busy = new Set([...busyNos(state), ...battle.battleNos(state), ...lab.labNos(state)]); // 研究室調配中的也不能出門
     const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);

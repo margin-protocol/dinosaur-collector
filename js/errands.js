@@ -123,9 +123,9 @@ function storyVariationFor(er, storyId, nos, rand) {
   return selected;
 }
 
-function weekOf(date) {
-  const d = new Date(date); const day = (d.getDay() + 6) % 7; d.setDate(d.getDate() - day);
-  // 用本機日期組字串：toISOString 是 UTC，台北早上 8 點前會算成前一天（週日），每週一顆縣市蛋的限制就被繞過
+// 遠行縣市蛋每天最多一顆（湘 11/26 從每週一顆放寬）。用本機日期組字串：toISOString 是 UTC，台北早上 8 點前會算成前一天
+function dayOf(date) {
+  const d = new Date(date);
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 }
 
@@ -138,7 +138,7 @@ export function ensureErrands(state) {
     stories: old.stories && typeof old.stories === 'object' ? old.stories : {},
     cards: old.cards && typeof old.cards === 'object' ? old.cards : {},
     cardDupes: Object.fromEntries(Object.entries(old.cardDupes && typeof old.cardDupes === 'object' ? old.cardDupes : {}).filter(([, n]) => Number.isSafeInteger(n) && n > 0)), // 重複的家鄉明信片（湘 11/20：可以留下或丟掉）
-    countyWeek: str(old.countyWeek) ? old.countyWeek : '',
+    countyDay: str(old.countyDay) ? old.countyDay : '', // 舊存檔的 countyWeek（每週一顆）不再使用，直接丟掉
     total: Number.isSafeInteger(old.total) ? old.total : 0,
     departed: Number.isSafeInteger(old.departed) ? old.departed : 0,
     recentLines: old.recentLines && typeof old.recentLines === 'object' && !Array.isArray(old.recentLines) ? old.recentLines : {},
@@ -180,10 +180,10 @@ export function depart(state, { place, task, nos }, now = new Date(), rand = Mat
     if (boost) loot.boost = true;
     loot.line = reportFor(er, place, nos, rand);
     if (spot.countyEgg) {
-      const week = weekOf(now);
+      const today = dayOf(now);
       const pending = new Set(state.travel?.eggs || []);
       const unmet = Object.entries(COUNTY_CHARACTER).filter(([county, no]) => !state.dex?.[no] && !pending.has(county)).map(([county]) => county);
-      if (er.countyWeek !== week && unmet.length && rand() < spot.countyEgg * (boost ? 1.5 : 1)) { loot.county = pick(unmet, rand); er.countyWeek = week; }
+      if (er.countyDay !== today && unmet.length && rand() < spot.countyEgg * (boost ? 1.5 : 1)) { loot.county = pick(unmet, rand); er.countyDay = today; }
       const homes = nos.map(homeCounty).filter(Boolean);
       if (homes.length) loot.cards = homes;
     }
@@ -252,7 +252,7 @@ export function collect(state, id, { eggs, now = new Date() } = {}) {
 }
 
 // 叫回來（湘 11/21）：還在路上的才能叫回，這趟的收穫全部不算、時間也不保留，小湘馬上回到可用狀態。
-// 遠行時若這趟抽到了縣市蛋，把本週的機會還給玩家（她沒帶回來）。
+// 遠行時若這趟抽到了縣市蛋，把當天的機會還給玩家（她沒帶回來）。
 export function recall(state, id, now = new Date()) {
   const er = ensureErrands(state);
   const i = er.active.findIndex((e) => e.id === id);
@@ -260,7 +260,7 @@ export function recall(state, id, now = new Date()) {
   const errand = er.active[i];
   if (isBack(errand, now.getTime())) return null;
   er.active.splice(i, 1);
-  if (errand.loot?.county && er.countyWeek === weekOf(errand.start || now)) er.countyWeek = '';
+  if (errand.loot?.county && er.countyDay === dayOf(errand.start || now)) er.countyDay = '';
   return errand;
 }
 
