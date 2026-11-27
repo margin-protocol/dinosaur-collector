@@ -5,6 +5,8 @@ import { createEpilogueTheater } from './chapter-epilogue.js';
 import { buildStories } from './event-theater.js';
 const EVENT_THEATER_SKIN = 'b'; // 活動劇情劇場外觀（湘選；a 劇場／b 水墨卷軸／c 說書頭像）
 buildStories(EVENT_THEATER_SKIN);
+import { buildSideStories } from './side-theater.js';
+buildSideStories();
 import { renderAtlas, renderTeamTools } from './team-ui.js';
 import { savePreset, ensureTeamBonds, effectText, teamBond } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
@@ -4453,6 +4455,7 @@ function sideLineSection(line, now, { weekly = null } = {}) {
     shelf.append(row, meter, note, scroll);
     body.push(shelf);
   }
+  if (prog.doneAt && epilogue.has(`side:${line.id}:finale`)) { const r = el('div', 'event-keepsakes__all'); r.append(epilogueButton(`side:${line.id}:finale`, `▶ 重看終章《${line.finale?.title || ''}》`)); body.push(r); }
   if (weekly?.next && weekly.next.id !== line.id) body.push(el('p', 'side-line__next', `下週：${SERIES[weekly.next.series]?.name || ''}「${weekly.next.name}」`));
   foldable(h, body, `side:${line.id}`, { summary: `${won} / ${line.stages.length}`, done: won === line.stages.length, minis: line.stages.map(s => ({ key: side.stageKey(line.id, s.id), done: Boolean(prog.stages?.[s.id]?.clears), locked: Boolean(side.stageLock(state, line.id, s.id, now)) })) });
   sec.append(hero, h, ...body);
@@ -4809,7 +4812,7 @@ function renderBattleStage() {
   $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}`;
   $('battle-enemy-name').textContent = e.name;
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;
-  $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.event && st?.clears ? [e.story.before, '── 打完後 ──', e.story.after, e.story.ending && (e.eventStage === 'mo-05' ? '── 上卷結尾 ──' : '── 尾聲 ──'), e.story.ending].filter(Boolean).join('\n') : e.story.before); // 異世活動：通關後在關卡頁可以重看整段
+  $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.side ? [`${e.code}《${e.title}》`, e.story.before, ...(st?.clears ? ['── 打完後 ──', e.story.after] : [])].join('\n') : e.event && st?.clears ? [e.story.before, '── 打完後 ──', e.story.after, e.story.ending && (e.eventStage === 'mo-05' ? '── 上卷結尾 ──' : '── 尾聲 ──'), e.story.ending].filter(Boolean).join('\n') : e.story.before); // 異世活動：通關後在關卡頁可以重看整段
   if (e.story && e.event) { // 劇情劇場：開打前隨時看；打完後要先通關
     const row = el('div', 'battle-story__play'); const base = `${e.event}:${e.eventStage}`;
     if (epilogue.has(`${base}:before`)) row.append(epilogueButton(`${base}:before`, '▶ 看開打前劇情'));
@@ -4820,6 +4823,16 @@ function renderBattleStage() {
     if (epilogue.has(`${base}:before`) && !state.events?.[e.event]?.story?.[seenKey] && !document.querySelector('dialog.epilogue[open]')) {
       epilogue.play(`${base}:before`);
       void updateState(cur => { events.progressOf(cur, e.event).story[seenKey] ||= new Date().toISOString(); }).then(t => { state = t.state; });
+    }
+  }
+  if (e.story && e.side) { // 系列支線（皮寶 11/27 劇本）：第一次點進這關自動播開打前，看過記在 state.side.seen
+    const row = el('div', 'battle-story__play'); const base = `side:${e.side}:${e.sideStage}`;
+    if (epilogue.has(`${base}:before`)) row.append(epilogueButton(`${base}:before`, '▶ 看開打前劇情'));
+    if (st?.clears && epilogue.has(`${base}:after`)) row.append(epilogueButton(`${base}:after`, '▶ 重看打完後'));
+    if (row.children.length) $('battle-story').prepend(row);
+    if (epilogue.has(`${base}:before`) && !state.side?.seen?.[`${e.sideStage}:before`] && !document.querySelector('dialog.epilogue[open]')) {
+      epilogue.play(`${base}:before`);
+      void updateState(cur => { side.ensureSide(cur).seen[`${e.sideStage}:before`] ||= new Date().toISOString(); }).then(t => { state = t.state; });
     }
   }
   $('battle-enemy-intro').textContent = e.intro;
@@ -4915,7 +4928,7 @@ async function collectBattle(id) {
   if (r.review) { guguAvatar(document.querySelector('#battle-result-review .gugu-review__avatar')); $('battle-review-label').textContent = `咕咕書評 · ${REVIEW_LABEL[r.review.kind] || ''}`; setParas($('battle-review-text'), r.review.text, 0); setParas($('battle-review-note'), r.review.note || '', 0); $('battle-review-note').hidden = !r.review.note; }
   $('battle-result-advice').hidden = !rep.advice; if (rep.advice) setParas($('battle-result-advice'), `💡 ${rep.advice.text}`, 0);
   const storyLines = [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), ...(r.story ? storyParas(`📖 ${r.story}`) : [])];
-  const evEpi = r.event?.first && !r.snapshot ? `${r.event.id}:${r.event.stage}:after` : null; // 異世活動：第一次通關播這關的「打完後」劇場
+  const evEpi = r.event?.first && !r.snapshot ? `${r.event.id}:${r.event.stage}:after` : r.side?.first && !r.snapshot && String(r.enemy).startsWith('side:') ? `${r.enemy}:after` : null; // 異世活動：第一次通關播這關的「打完後」劇場
   const epi = evEpi && epilogue.has(evEpi) ? evEpi : r.story && !r.snapshot && epilogue.has(r.enemy) ? r.enemy : null; pendingEpilogue = epi;
   pendingKeepsake = r.event?.keepsake && !r.snapshot ? { event: r.event.id, id: r.event.keepsake.id, complete: Boolean(r.event.complete) } : null; // 拾得信物：收下戰報後播演出
   const ksLines = pendingKeepsake ? [`🎐 拾得信物「${r.event.keepsake.name}」！收下戰報後打開看看。`] : null;

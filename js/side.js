@@ -4,6 +4,7 @@
 // 關卡 key＝`side:<線>:<關>`；進度存在 state.side.lines[線]
 // 上線前只有測試服（?test）看得到：SIDE_LIVE 改成 true 才對所有玩家開放。
 import { CHARACTERS } from './eggs.js';
+import { ISLAND_STORY, ISLAND_KEEPSAKE_TEXT } from './side-story.js';
 import { nextStarCost, weekKey, MAX_CANDY_STARS } from './candy.js';
 
 export const SIDE_LIVE = false;
@@ -94,6 +95,13 @@ export const WEEKLY_ANCHOR = Date.parse('2026-12-14T00:00:00+08:00');
 const WEEK_MS = 7 * 864e5;
 
 export const lineDef = (id) => SIDE_LINES[id] || null;
+// 皮寶 11/27 的劇本：每關標題（EX-01…）、開打前／打完後劇情、信物說明；終章接在最後一關打完後
+SIDE_LINES.island.stages.forEach((st, i) => {
+  const story = ISLAND_STORY[st.id]; if (!story) return;
+  Object.assign(st, { code: `EX-0${i + 1}`, title: story.title, story: { before: story.before, after: story.after } });
+  if (st.keepsake && ISLAND_KEEPSAKE_TEXT[st.keepsake.id]) st.keepsake.text = ISLAND_KEEPSAKE_TEXT[st.keepsake.id];
+});
+SIDE_LINES.island.finale = ISLAND_STORY.finale;
 export const stageDef = (lineId, stageId) => SIDE_LINES[lineId]?.stages.find((s) => s.id === stageId) || null;
 export const stageKey = (lineId, stageId) => `side:${lineId}:${stageId}`;
 export function parseSideKey(key) {
@@ -141,7 +149,8 @@ export function ensureSide(state) {
   const candy = {};
   for (const [k, n] of Object.entries(old.candy || {})) if (Number.isSafeInteger(n) && n > 0) candy[k] = n;
   const cw = old.candyWeek && typeof old.candyWeek.week === 'string' ? { week: old.candyWeek.week, n: Object.fromEntries(Object.entries(old.candyWeek.n || {}).filter(([, v]) => Number.isSafeInteger(v))) } : { week: '', n: {} };
-  state.side = { lines, countyRan: ran, candy, candyWeek: cw, ...(typeof old.worn === 'string' && lines[old.worn]?.titleAt ? { worn: old.worn } : {}) };
+  const seen = Object.fromEntries(Object.entries(old.seen || {}).filter(([k, v]) => typeof k === 'string' && typeof v === 'string'));
+  state.side = { lines, countyRan: ran, candy, candyWeek: cw, seen, ...(typeof old.worn === 'string' && lines[old.worn]?.titleAt ? { worn: old.worn } : {}) };
   NORMALIZED.add(state.side);
   return state.side;
 }
@@ -164,7 +173,7 @@ export function sideEnemy(lineId, stageId) {
   return { key: stageKey(lineId, stageId), stage: s.label, name: s.name, emoji: s.emoji, art: s.art || `side/${lineId}/${stageId}`,
     power: s.power, minutes: s.minutes, boss: Boolean(s.boss), weak: [line.series], intro: s.intro, win: s.win.split('\n')[0], winNote: s.win.split('\n').slice(1).join(' ') || null, lose: s.lose,
     weakTag: line.id === 'island' ? '島嶼守望' : '系列主場', weakHit: line.id === 'island' ? '「這是我們的家，我們自己守。」' : '「這裡是我們的主場！」',
-    side: lineId, sideStage: stageId, skill: s.skill || null, scene: s.scene || line.scene || null };
+    side: lineId, sideStage: stageId, skill: s.skill || null, scene: s.scene || line.scene || null, ...(s.story ? { story: s.story, title: s.title, code: s.code } : {}) };
 }
 
 // 戰力加成：系列居民每位加一點（島嶼不歸檔＝縣市 +20%，上限 60%）
