@@ -87,6 +87,7 @@ export const SIDE_LINES = {
     kicker: '本週支線 · 動物小湘',
     tagline: '「可是，我們不是為了你才存在的呀。」',
     intro: '頁間世界的深處，有一座「萬物森」，各種動物小湘在這裡生活：有的喜歡曬太陽，有的喜歡躲樹洞，有的每天除了吃飯就是睡覺。直到「萬物管理局」進駐森林，說所有生命都要有明確的價格、用途與管理標準。動物小湘們決定站出來，守護那些無法替自己說話的生命。',
+    keyArt: 'assets/events/side/animals-key.webp', // 湘 11/27 主視覺
     scene: 'assets/places/park.webp',
     seriesBonus: { per: 0.2, cap: 0.6 },
     reward: { first: 10, firstBoss: 25, repeat: 2, repeatBoss: 4 },
