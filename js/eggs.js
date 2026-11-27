@@ -346,6 +346,8 @@ const CHARACTER_TABLE = {
   // 此生護卿（湘 11/26 選 B、自己畫立繪）：海棠新娘小湘（117／MO-002）＋墨衣護衛・聞止水 的研究室配方雙人卡，不進任何蛋池。原稿 docs/event-001/residents/MO-012-cisheng-huqing.md
   'MO-012': { no: 'MO-012', name: '此生護卿・湘與止水', rarity: 'UR', line: '止水：「站我身後。」小湘：「不要，我要站妳旁邊！」', image: 'mo-012-cisheng-huqing', series: 'mohen', worldRole: '此生護卿', quote: '不渡厄，不換命，妳情我願。' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
+  // 島嶼守望・小湘（湘 11/27 畫）：系列支線「島嶼不歸檔」五關全通的獎勵，不進任何蛋池。文案暫稿（德寶），皮寶可改。
+  '118': { no: '118', name: '島嶼守望・小湘', rarity: 'SSR', line: '「這裡不是誰遺失的一頁。這裡是我們自己寫成的故事。」', image: 'siang-118-island-watch', series: 'county', sidePreview: true },
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
   '091': { no: '091', name: '未完待續小湘', rarity: 'SSR', line: "「考上了也好，沒考上也好……嘿嘿，我的故事又還沒寫完！」", image: 'siang-091-to-be-continued', series: 'recipe', special: true },
@@ -354,6 +356,8 @@ const CHARACTER_TABLE = {
 // 101 以後的編號是「整數樣子」的 key，JS 列舉物件時會把它們排到 001 前面，
 // 圖鑑、入住、許願對象等列表就會讓 101+ 跑到最前面。這裡讓 Object.keys／values／entries
 // 一律照編號由小到大列出，以後新增 117、118… 也不用再處理。
+// 支線還沒正式開（js/side.js SIDE_LIVE）前，sidePreview 的居民只在測試服（?test）存在，正式版圖鑑看不到。正式開支線時把 sidePreview 拿掉。
+if (!globalThis.__SIANG_TEST__) for (const [no, c] of Object.entries(CHARACTER_TABLE)) if (c.sidePreview) delete CHARACTER_TABLE[no];
 const byNo = (a, b) => (typeof a === 'string' && typeof b === 'string' ? Number(a) - Number(b) || a.localeCompare(b) : 0);
 export const CHARACTERS = new Proxy(CHARACTER_TABLE, {
   ownKeys: (t) => Reflect.ownKeys(t).sort(byNo),

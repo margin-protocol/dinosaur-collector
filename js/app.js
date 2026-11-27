@@ -1359,6 +1359,7 @@ function storyText(c, entry, now = new Date()) {
     : st.from?.startsWith('recipe:') ? '兩位小湘在研究室一起調配出來的紀念蛋'
     : st.from?.startsWith('devteam:') ? '開發團隊悄悄送來的紀念蛋'
     : st.from?.startsWith('studio:') ? '頁邊茶肆悄悄送來的紀念蛋'
+    : st.from?.startsWith('side:') ? `打通「${side.SIDE_LINES[st.from.slice(5)]?.name || '支線'}」收到的紀念蛋`
     : st.from === 'taiwan' ? '走遍臺灣時收到的紀念蛋'
     : st.from === 'code' ? '湘藏在暗號裡的蛋'
     : st.from === 'letter' ? '湘夾在紙條裡的蛋'
@@ -2244,6 +2245,8 @@ function howToGet(c) {
   if (c.no === '001') return '從小湘本源蛋孵出';
   if (c.county) return `到${c.county}探索，收到縣市蛋後孵出`;
   if (c.no === TAIWAN_NO) return '集滿 19 位縣市小湘時收到紀念蛋';
+  const sideLine = Object.values(side.SIDE_LINES).find(l => l.resident === c.no);
+  if (sideLine) return `討伐「副本」的「${sideLine.name}」五關全部打贏、五件信物收齊時收到紀念蛋`;
   const ev = EVENTS.find(x => x.no === c.no);
   if (ev) return `${ev.when} 打開遊戲收到紀念蛋；${CHARACTERS[c.no].poolFrom ? `${CHARACTERS[c.no].poolFrom.slice(5).replace('-', '/')} 起普通蛋也孵得到` : ''}`;
   const h = HOLIDAYS.find(x => x.no === c.no);

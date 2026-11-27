@@ -43,6 +43,7 @@ export const SIDE_LINES = {
     scene: 'assets/scene/side/island-harbor.webp', // 湘 11/27 畫的漁港燈塔（原檔 /mnt/project-files/side-quest/island/originals/）
     countyBonus: { per: 0.2, cap: 0.6 }, // 縣市居民每位 +20%，最多 +60%；其他居民也能上
     reward: { first: 10, firstBoss: 25, repeat: 2, repeatBoss: 4 },
+    resident: '118', // 湘 11/27 畫的 SSR 島嶼守望・小湘：五關全通（＝五件信物都拿到）送紀念蛋，不進任何蛋池
     stages: [
       { id: 'isl-1', scene: 'assets/scene/side/island-harbor.webp', label: '★', name: '正名將軍・朱筆', emoji: '🖍️', power: 60, minutes: 45, skill: 'rename',
         intro: '「妳們可以存在，但只能用本將軍批准的名字存在。」',
@@ -253,11 +254,18 @@ export function recordSideRun(state, lineId, stageId, report, nos, { now = new D
   if (lineId === 'island') { const ran = new Set(ensureSide(state).countyRan); for (const no of nos) if (MAIN_COUNTY.includes(no)) ran.add(no); state.side.countyRan = [...ran]; }
   const done = line.stages.every((x) => prog.stages[x.id]?.clears);
   let complete = false;
-  if (done && !prog.doneAt) { prog.doneAt = now.toISOString(); complete = true; }
+  let resident = null;
+  if (done && !prog.doneAt) {
+    prog.doneAt = now.toISOString(); complete = true;
+    const no = line.resident; const allKs = line.stages.every((x) => !x.keepsake || prog.keepsakes[x.keepsake.id]);
+    if (no && CHARACTERS[no] && allKs && state.gifts && !state.dex?.[no] && !state.gifts.eggs?.some((g) => g.character === no)) {
+      (state.gifts.eggs ||= []).push({ egg: 'keepsake', character: no, from: `side:${lineId}`, at: now.toISOString() }); resident = no;
+    }
+  }
   // 稱號：全線三星
   let title = null;
   if (line.title && !prog.titleAt && line.stages.every((x) => (prog.stages[x.id]?.stars | 0) >= 3)) { prog.titleAt = now.toISOString(); title = line.title; }
-  return { first, fossils, keepsake, complete, lineName: line.name, candy, series: line.series, title };
+  return { first, fossils, keepsake, complete, lineName: line.name, candy, series: line.series, title, resident };
 }
 
 export const lineCleared = (state, lineId) => Boolean(state.side?.lines?.[lineId]?.doneAt);
