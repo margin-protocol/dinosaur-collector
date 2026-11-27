@@ -57,6 +57,7 @@ import { CHARACTER_REPORTS, SERIES_REPORTS } from './errand-copy.js';
 import { PLACES, HOME_TASKS, STORIES, errandSlots, errandSlotHint, depart, collect, recall, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer, serverTime } from './updates.js';
 import * as events from './events.js';
+import * as side from './side.js';
 const { noteServerTime } = events;
 // 自動化測試才用：在載入前指定活動開始時間（玩家的瀏覽器不會走這裡）
 // 測試服（?test）：活動當作已經開跑 73 小時，上卷、下卷都能直接進去
@@ -4263,7 +4264,7 @@ function renderBattle() {
     const shopFor = eventView && evList.find(x => x.def.id === eventView.id && x.sch.state !== 'archived' && x.sch.state !== 'upcoming');
     if (eventView && !shopFor) eventView = null;
     if (shopFor) { $('battle-map').replaceChildren(eventShop(shopFor.def, evNow)); return; }
-    $('battle-map').replaceChildren(siangRoster(), ...evList.map(x => eventHub(x.def, x.sch, evNow)), wildSec, ...battle.CHAPTERS.map(ch => {
+    const chapterSecs = battle.CHAPTERS.map(ch => {
       const sec = document.createElement('section'); sec.className = 'battle-chapter';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = `第 ${ch.id} 章 · ${ch.name}`;
       const chScene = sceneOf(ch); if (chScene) { sec.classList.add('has-scene'); sec.style.setProperty('--scene', `url("${chScene}")`); }
@@ -4285,7 +4286,12 @@ function renderBattle() {
       sec.dataset.group = 'story';
       foldable(h, grid, `chapter:${ch.id}`, { summary: clears ? `${clears} / ${ch.stages.length} · ★${stars}` : `0 / ${ch.stages.length}`, done: clears === ch.stages.length, minis: ch.stages.map(id => ({ key: id, done: Boolean(b.stages[id]?.clears), locked: !battle.unlocked(state, id) })) });
       sec.append(h, grid); return sec;
-    }));
+    });
+    // 系列支線（湘 11/27 選 A 膠囊分頁）：主線＝章節＋EX；副本＝本週支線、常駐支線、異世活動、野外巡邏
+    const tab = side.sideOn() ? battleTab() : null;
+    if (!tab) $('battle-map').replaceChildren(siangRoster(), ...evList.map(x => eventHub(x.def, x.sch, evNow)), wildSec, ...chapterSecs);
+    else if (tab === 'side') { $('battle-map').replaceChildren(battleTabs(tab), siangRoster(), ...sideSections(evNow), ...evList.map(x => eventHub(x.def, x.sch, evNow)), wildSec); return; }
+    else $('battle-map').replaceChildren(battleTabs(tab), siangRoster(), ...chapterSecs);
     // 特殊關卡（EX）：還沒解鎖時整區不出現，避免劇透
     for (const x of battle.EXTRA_STAGES) {
       if (!battle.unlocked(state, x.id)) continue;
@@ -4306,6 +4312,84 @@ function renderBattle() {
     }
   }
   if (inStage) renderBattleStage();
+}
+// 預估列上的將軍技能狀態
+function sideSkillShort(skill, eff) {
+  const k = side.SKILL_INFO[skill]; if (!k) return '';
+  if (eff.countered) return `✦ ${k.name}已破解`;
+  if (skill === 'rumor' && eff.out) return `📢 ${CHARACTERS[eff.out].name}會被謠言帶走`;
+  return `⚔️ ${k.name}${skill === 'rename' ? ' −10%' : skill === 'noBond' ? '：羈絆不算' : skill === 'sanction' ? '：掉落減半' : '：技能料理信物不算'}`;
+}
+// ── 主線／副本分頁（湘 11/27 選 A）。停在哪一頁只存在這支手機
+const BATTLE_TAB_KEY = 'siang-collector:battle-tab:v1';
+function battleTab() { try { return localStorage.getItem(BATTLE_TAB_KEY) === 'side' ? 'side' : 'main'; } catch { return 'main'; } }
+function battleTabs(cur) {
+  const bar = el('div', 'battle-tabs'); bar.setAttribute('role', 'tablist');
+  const now = events.eventNow(structuredClone({ clock: state.clock }));
+  for (const [id, label] of [['main', '📖 主線'], ['side', '🗺️ 副本']]) {
+    const b = el('button', null, label); b.type = 'button'; b.setAttribute('role', 'tab'); b.dataset.battleTab = id; b.setAttribute('aria-selected', String(cur === id));
+    if (id === 'side' && sideNews(now)) b.append(el('i', 'battle-tabs__dot'));
+    b.addEventListener('click', () => { try { localStorage.setItem(BATTLE_TAB_KEY, id); } catch {} renderBattle(); });
+    bar.append(b);
+  }
+  return bar;
+}
+// 副本有還沒打贏、已經解鎖的支線關卡＝分頁亮小紅點
+function sideNews(now) {
+  const lines = [side.weeklyNow(now)?.line, ...Object.values(side.SIDE_LINES).filter(l => l.permanent)].filter(Boolean);
+  return lines.some(l => l.stages.some(s => !side.stageWon(state, l.id, s.id) && !side.stageLock(state, l.id, s.id, now)));
+}
+function sideFaces(series) {
+  const nos = Object.keys(CHARACTERS).filter(no => CHARACTERS[no].series === series);
+  const box = el('div', 'side-faces');
+  for (const no of nos) { const w = el('span', state.dex[no] ? '' : 'is-off'); const img = document.createElement('img'); img.src = `assets/characters/${CHARACTERS[no].image}.webp`; img.alt = state.dex[no] ? CHARACTERS[no].name : '還沒遇見'; img.loading = 'lazy'; w.append(img); box.append(w); }
+  return box;
+}
+function sideLineSection(line, now, { weekly = null } = {}) {
+  const sec = el('section', 'battle-chapter side-line'); sec.dataset.group = 'side'; sec.dataset.sideLine = line.id;
+  const hero = el('div', 'side-line__hero'); if (line.scene) hero.style.setProperty('--scene', `url("${new URL(line.scene, document.baseURI).href}")`);
+  const time = weekly ? `剩 ${leftText(weekly.endsMs - now)} · 每週一換系列` : '常駐 · 隨時都能打';
+  hero.append(el('small', null, line.kicker), el('b', null, line.name), el('span', null, time));
+  if (line.disclaimer) hero.append(el('em', 'side-line__note', line.disclaimer));
+  const prog = state.side?.lines?.[line.id] || {}; const won = line.stages.filter(s => prog.stages?.[s.id]?.clears).length;
+  const h = el('h3', 'egg-choices__heading', line.permanent ? '五位將軍' : '本週關卡');
+  const body = [];
+  const intro = el('p', 'residents-intro side-line__intro', line.intro || line.tagline || ''); body.push(intro);
+  const sn = SERIES[line.series]?.short || '';
+  const bonus = line.countyBonus || line.seriesBonus;
+  const box = el('div', 'side-line__bonus'); box.append(el('span', null, `🏝️ ${sn}小湘出戰：每位戰力 +${Math.round(bonus.per * 100)}%（最多 +${Math.round(bonus.cap * 100)}%），其他居民也能上`), sideFaces(line.series)); body.push(box);
+  const grid = el('div', 'battle-stages');
+  for (const s of line.stages) {
+    const key = side.stageKey(line.id, s.id); const lock = side.stageLock(state, line.id, s.id, now); const st = prog.stages?.[s.id];
+    const btn = el('button', `battle-stage-card${s.boss ? ' is-boss' : ''}${lock ? ' is-locked' : ''}`); btn.type = 'button'; btn.disabled = Boolean(lock); btn.dataset.sideStage = s.id;
+    btn.append(enemyArt(key));
+    const info = el('div', 'battle-stage-card__info'); info.innerHTML = '<small></small><b></b><span></span>';
+    info.querySelector('small').textContent = `${s.label}${s.boss ? ' · BOSS' : ''}${s.skill ? ` · ${side.SKILL_INFO[s.skill].name}` : ''}`;
+    info.querySelector('b').textContent = lock && !st?.clears ? '？？？' : s.name;
+    info.querySelector('span').textContent = lock ? (/第 2 章/.test(lock) ? '🔒 打完第 2 章開放' : '🔒 先打贏前一關') : st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${s.power}`;
+    btn.append(info);
+    if (!lock) stageFight(btn, info, key);
+    btn.addEventListener('click', () => { battleEnemy = key; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
+    grid.append(btn);
+  }
+  body.push(grid);
+  const kss = line.stages.filter(s => s.keepsake);
+  if (kss.length) {
+    const shelf = el('div', 'side-line__keepsakes'); shelf.append(el('small', null, `信物 ${kss.filter(s => prog.keepsakes?.[s.keepsake.id]).length} / ${kss.length}`));
+    for (const s of kss) { const got = prog.keepsakes?.[s.keepsake.id]; const b = el('button', `side-ks${got ? ' is-got' : ''}`, got ? s.keepsake.name : '？？？'); b.type = 'button'; b.disabled = !got; if (got) b.addEventListener('click', () => toast(`${s.keepsake.name}：${s.keepsake.text}`)); shelf.append(b); }
+    body.push(shelf);
+  }
+  if (weekly?.next && weekly.next.id !== line.id) body.push(el('p', 'side-line__next', `下週：${SERIES[weekly.next.series]?.name || ''}「${weekly.next.name}」`));
+  foldable(h, body, `side:${line.id}`, { summary: `${won} / ${line.stages.length}`, done: won === line.stages.length, minis: line.stages.map(s => ({ key: side.stageKey(line.id, s.id), done: Boolean(prog.stages?.[s.id]?.clears), locked: Boolean(side.stageLock(state, line.id, s.id, now)) })) });
+  sec.append(hero, h, ...body);
+  return sec;
+}
+function sideSections(now) {
+  const out = [];
+  const wk = side.weeklyNow(now);
+  if (wk) out.push(sideLineSection(wk.line, now, { weekly: wk }));
+  for (const l of Object.values(side.SIDE_LINES)) if (l.permanent) out.push(sideLineSection(l, now));
+  return out;
 }
 // ── 討伐頁收合（湘 11/25：頁面太長）。收合狀態只存在這支手機
 // 湘 11/25 選 C：收起來留一排小怪圖示（打過的有勾），點圖示直接進那一關；全部打完的區塊預設收起
@@ -4334,7 +4418,7 @@ function foldable(head, body, key, { summary = '', done = false, minis = null } 
 let eventView = null; // null＝關卡；{ id, view: 'shop' }＝墨玉閣
 const tpeDate = ms => new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(ms);
 const leftText = ms => { const m = Math.max(1, Math.ceil(ms / 60e3)); const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60); return d ? `${d} 天 ${h} 小時` : h ? `${h} 小時 ${m % 60} 分` : `${m} 分鐘`; };
-function eventScene(e) { const s = events.eventDef(e.event)?.stages[e.eventStage]; return s?.scene ? new URL(s.scene, document.baseURI).href : null; }
+function eventScene(e) { if (e?.side) { const sc = side.lineDef(e.side)?.scene; return sc ? new URL(sc, document.baseURI).href : null; } const s = events.eventDef(e.event)?.stages[e.eventStage]; return s?.scene ? new URL(s.scene, document.baseURI).href : null; }
 function eventStageCard(def, stageId, now) {
   const key = events.stageKey(def.id, stageId); const e = events.eventEnemy(def.id, stageId);
   const st = state.events?.[def.id]?.stages?.[stageId]; const lock = events.stageLock(state, def, stageId, now);
@@ -4644,8 +4728,8 @@ function chapterScene(id) { return sceneOf(battle.CHAPTERS.find(c => c.stages.in
 function renderBattleStage() {
   const id = battleEnemy; const e = battle.enemyFor(state, id);
   if (!e) { battleEnemy = null; renderBattle(); return; }
-  const st = e.wild ? null : e.event ? state.events?.[e.event]?.stages?.[e.eventStage] : state.battle.stages[id];
-  const bigArt = enemyArt(id, 'is-big'); const scene = e.wild ? null : e.event ? eventScene(e) : chapterScene(id);
+  const st = e.wild ? null : e.event ? state.events?.[e.event]?.stages?.[e.eventStage] : e.side ? side.stageProgress(state, e.side, e.sideStage) : state.battle.stages[id];
+  const bigArt = enemyArt(id, 'is-big'); const scene = e.wild ? null : e.event || e.side ? eventScene(e) : chapterScene(id);
   if (scene) { bigArt.classList.add('has-scene'); bigArt.style.setProperty('--scene', `url("${scene}")`); }
   $('battle-enemy-art').replaceChildren(bigArt);
   $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}`;
@@ -4665,7 +4749,9 @@ function renderBattleStage() {
     }
   }
   $('battle-enemy-intro').textContent = e.intro;
-  $('battle-gift-hint').hidden = Boolean(e.wild || e.event); if (!e.wild && !e.event) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
+  $('battle-gift-hint').hidden = Boolean(e.wild || e.event || (e.side && !e.skill));
+  if (e.side && e.skill) { const k = side.SKILL_INFO[e.skill]; $('battle-gift-hint').textContent = `⚔️ 將軍技能「${k.name}」：${k.text}。破解：${k.counter}`; }
+  if (!e.wild && !e.event && !e.side) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
   const busy = allBusy(); const now = Date.now();
   const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
   // 可以出戰的排前面（照戰力），休息、忙碌的放後面，進關卡就能直接挑還在家的
@@ -4688,7 +4774,7 @@ function renderBattleStage() {
   const fc = battlePicked.length ? battle.forecast(state, battlePicked, id) : null;
   $('battle-forecast').innerHTML = '';
   if (fc) {
-    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}${fc.foodPower ? `（+${fc.foodPower}）` : ''}`, fc.keepsakes?.list.length && `信物 +${Math.round(fc.keepsakes.power * 100)}%（${fc.keepsakes.list.map(k => k.name).join('、')}）`].filter(Boolean).join(' · ');
+    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}${fc.foodPower ? `（+${fc.foodPower}）` : ''}`, fc.keepsakes?.list.length && `信物 +${Math.round(fc.keepsakes.power * 100)}%（${fc.keepsakes.list.map(k => k.name).join('、')}）`, fc.sideBonus?.n && `🏝️ 主場 +${Math.round(fc.sideBonus.power * 100)}%`, fc.sideSkill && e.skill && sideSkillShort(e.skill, fc.sideSkill)].filter(Boolean).join(' · ');
     $('battle-forecast').innerHTML = `<b></b><span></span>`;
     $('battle-forecast').querySelector('b').textContent = `隊伍戰力 ${fc.total} vs ${e.power} · ${fc.label}`;
     $('battle-forecast').querySelector('span').textContent = bonus || '沒有加成（帶 ✦ 的小湘有剋制效果）';

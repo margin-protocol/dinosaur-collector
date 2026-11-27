@@ -101,3 +101,9 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.dex-taste__row) { border-color:var(--t-line); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .kitchen-result .kitchen-learned { background:var(--t-raised); color:var(--t-text); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.dex-taste__hint,.dex-taste__unknown,.dex-taste__head small,.dex-taste__ings,.dex-taste__row > b) { color:var(--t-muted); opacity:1; }
+/* 主線／副本分頁、系列支線（11/27） */
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-tabs { background:var(--t-raised); border:1px solid var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-tabs button { color:var(--t-text); opacity:.75; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-tabs button[aria-selected="true"] { background:var(--t-selected); color:var(--t-accent); opacity:1; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.side-line__bonus,.side-ks) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .side-ks.is-got { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); }

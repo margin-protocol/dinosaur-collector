@@ -3,6 +3,7 @@ import { levelOf, MAX_LEVEL } from './affection.js';
 import { inkCount, INKS } from './studio-jh.js';
 import { siangMailCount } from './letters.js';
 import { MAIN_ISLAND } from './geo.js';
+import { sideOn, stageWon, lineCleared, MAIN_COUNTY } from './side.js';
 import { dishById, recipesFound, secretsFound } from './kitchen.js';
 const darkDish = (id) => dishById(id)?.dark;
 // 成就：由進度直接推算是否達成；領取獎勵的紀錄存在 state.achievements.claimed
@@ -76,6 +77,16 @@ export const ACHIEVEMENTS = [
   { id: 'jh-chief', group: '隱藏', title: '教主竟是我老闆', hint: '？？？', reveal: '讓江湖百曉・皮寶和千機巧匠・德寶一起孵出頁邊教主・湘寶', goal: 1, value: (s) => (s.dex?.['MO-011'] ? 1 : 0), reward: 100, secret: true },
   { id: 'jh-branch', group: '隱藏', title: '頁邊江湖分舵', hint: '？？？', reveal: '皮寶、德寶、湘寶三位的好感都到 Lv.5', goal: 3, value: (s) => ['MO-009', 'MO-010', 'MO-011'].filter((no) => s.dex?.[no] && levelOf(s.affection?.[no]?.pts || 0) >= MAX_LEVEL).length, reward: 100, secret: true },
   { id: 'fossil', group: '隱藏', title: '化石獵人', hint: '？？？', reveal: '收集 30 個化石碎片', goal: 30, value: (s) => s.fossils || 0, reward: 30, secret: true },
+  // 常駐支線「島嶼不歸檔」的隱藏成就（湘 11/27；島嶼大團結＝本島 19 位縣市小湘出戰過這條線）。上線前只有測試服有
+  ...(sideOn() ? [
+    { id: 'isl-1', group: '隱藏', title: '我的名字我決定', hint: '？？？', reveal: '擊敗正名將軍・朱筆', goal: 1, value: (s) => (stageWon(s, 'island', 'isl-1') ? 1 : 0), reward: 30, secret: true },
+    { id: 'isl-2', group: '隱藏', title: '朋友自己交', hint: '？？？', reveal: '擊敗斷交將軍・絕信', goal: 1, value: (s) => (stageWon(s, 'island', 'isl-2') ? 1 : 0), reward: 30, secret: true },
+    { id: 'isl-3', group: '隱藏', title: '不買拉倒', hint: '？？？', reveal: '擊敗封市將軍・斂財', goal: 1, value: (s) => (stageWon(s, 'island', 'isl-3') ? 1 : 0), reward: 30, secret: true },
+    { id: 'isl-4', group: '隱藏', title: '先查證再轉傳', hint: '？？？', reveal: '擊敗惑心將軍・千聲', goal: 1, value: (s) => (stageWon(s, 'island', 'isl-4') ? 1 : 0), reward: 30, secret: true },
+    { id: 'isl-5', group: '隱藏', title: '誰跟你一家親', hint: '？？？', reveal: '擊敗歸冊大將軍・一統', goal: 1, value: (s) => (stageWon(s, 'island', 'isl-5') ? 1 : 0), reward: 50, secret: true },
+    { id: 'isl-unite', group: '隱藏', title: '島嶼大團結', hint: '？？？', reveal: '本島 19 縣市的小湘都在「島嶼不歸檔」出戰過', goal: 19, value: (s) => (s.side?.countyRan || []).filter((no) => MAIN_COUNTY.includes(no)).length, reward: 100, secret: true },
+    { id: 'isl-all', group: '隱藏', title: '本頁拒絕裝訂', hint: '？？？', reveal: '完成整條「島嶼不歸檔」', goal: 1, value: (s) => (lineCleared(s, 'island') ? 1 : 0), reward: 100, secret: true },
+  ] : []),
 ];
 
 export function ensureAchievements(state) {
