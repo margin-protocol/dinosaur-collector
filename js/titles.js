@@ -7,8 +7,8 @@ import { CHARACTERS, SERIES } from './eggs.js';
 import { ACHIEVEMENTS } from './achievements.js';
 import { candyOf } from './candy.js';
 
-const ACH_GROUP = { 孵化: '孵化', 收藏: '收藏', 願望: '願望', 旅行: '旅行', 陪伴: '陪伴', 廚房: '廚房', 隱藏: '隱藏' };
-export const TITLE_GROUPS = ['限定', '孵化', '收藏', '願望', '旅行', '陪伴', '廚房', '隱藏', '活動', '系列支線', '特別'];
+const ACH_GROUP = { 孵化: '孵化', 收藏: '收藏', 願望: '願望', 旅行: '旅行', 陪伴: '陪伴', 廚房: '廚房', 討伐: '討伐', 隱藏: '隱藏' };
+export const TITLE_GROUPS = ['限定', '孵化', '收藏', '願望', '旅行', '陪伴', '廚房', '討伐', '隱藏', '活動', '系列支線', '特別'];
 // 限定稱號：畫面上本來就寫「稱號「…」」的成就
 const LIMITED = new Set(['tsukimi-5', 'law-ti-2']);
 // C：集稱號獎勵（湘 11/27）
@@ -23,7 +23,7 @@ const SPECIAL = { collector: '稱號收藏家' };
 // B：戴著才有效（湘 11/27 OK）。一次只戴一個，不疊加。buff 存在 state.title.buff，其他模組直接讀，不用再 import 這裡
 const GROUP_BUFF = {
   孵化: { passive: 1, text: '自動保溫每小時 +1' }, 收藏: { power: 0.03, text: '討伐戰力 +3%' }, 旅行: { errand: 0.05, text: '出門時間 −5%' },
-  願望: { wish: 0.1, text: '完成願望的能量 +10%' }, 陪伴: { bond: 1, text: '摸頭、打招呼的好感 +1' }, 廚房: { food: 0.02, text: '料理的戰力加成 +2%' },
+  願望: { wish: 0.1, text: '完成願望的能量 +10%' }, 陪伴: { bond: 1, text: '摸頭、打招呼的好感 +1' }, 廚房: { food: 0.02, text: '料理的戰力加成 +2%' }, 討伐: { power: 0.03, text: '討伐戰力 +3%' },
   限定: { power: 0.05, text: '討伐戰力 +5%' }, 隱藏: { power: 0.05, text: '討伐戰力 +5%' }, 特別: { power: 0.05, text: '討伐戰力 +5%' },
 };
 const EVENT_BUFF = { 'mo:mo-pen': { eventPower: 0.05, event: 'mo', text: '墨痕江湖關卡戰力 +5%' }, 'mo:mo-unwed': { eventPower: 0.08, event: 'mo', text: '墨痕江湖關卡戰力 +8%' } };

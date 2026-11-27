@@ -7,6 +7,7 @@ import { sideOn, stageWon, lineCleared, MAIN_COUNTY, hasFeat, lineRan } from './
 import { CHARACTERS as SIDE_CHARS } from './eggs.js';
 const ANIMAL_ALL = Object.keys(SIDE_CHARS).filter((no) => SIDE_CHARS[no].series === 'animals' && !SIDE_CHARS[no].sidePreview && no !== '119'); // 企劃定 14 位；通關送的 119 不算
 import { dishById, recipesFound, secretsFound } from './kitchen.js';
+import { CHAPTERS as BATTLE_CHAPTERS } from './battle.js';
 const darkDish = (id) => dishById(id)?.dark;
 // 成就：由進度直接推算是否達成；領取獎勵的紀錄存在 state.achievements.claimed
 const dexCount = (s) => Object.keys(s.dex || {}).length;
@@ -21,7 +22,12 @@ const t = (s, k) => s.bonus?.total?.[k] || 0;
 export const TSUKIMI = ['110', '111', '112', '113', '114'];
 export const LAW_TI = ['115', '116'];
 
-export const ACHIEVEMENT_GROUPS = ['孵化', '收藏', '願望', '旅行', '陪伴', '廚房', '隱藏'];
+export const ACHIEVEMENT_GROUPS = ['孵化', '收藏', '願望', '旅行', '陪伴', '廚房', '討伐', '隱藏'];
+// 11/28 湘「都上」：第二批成就，全部用本來就有記的數字算（舊存檔直接算進去）
+const bond5 = (s) => Object.values(s.affection || {}).filter((a) => a && levelOf(a.pts || 0) >= MAX_LEVEL).length;
+const rarityCount = (s, chars, r) => Object.keys(s.dex || {}).filter((no) => chars[no]?.rarity === r).length;
+const mainStages = () => BATTLE_CHAPTERS.flatMap((c) => c.stages);
+const mainStars = (s) => mainStages().reduce((n, id) => n + Math.min(3, s.battle?.stages?.[id]?.stars || 0), 0);
 export const ACHIEVEMENTS = [
   { id: 'hatch-1', group: '孵化', title: '初次破殼', hint: '孵化 1 顆蛋', goal: 1, value: (s) => s.hatched || 0, reward: 20 },
   { id: 'hatch-10', group: '孵化', title: '熟練的飼養員', hint: '孵化 10 顆蛋', goal: 10, value: (s) => s.hatched || 0, reward: 40 },
@@ -37,6 +43,9 @@ export const ACHIEVEMENTS = [
   { id: 'series-1', group: '收藏', title: '整套收藏', hint: '集滿任何一個系列', goal: 1, value: seriesDone, reward: 50 },
   { id: 'ssr', group: '收藏', title: '閃閃發光', hint: '遇見一位 SSR 小湘', goal: 1, value: (s, c) => (rarityOwned(s, c, 'SSR') ? 1 : 0), reward: 50 },
   { id: 'ur', group: '收藏', title: '奇蹟', hint: '遇見一位 UR 小湘', goal: 1, value: (s, c) => (rarityOwned(s, c, 'UR') ? 1 : 0), reward: 100 },
+  { id: 'dex-60', group: '收藏', title: '熱鬧的書頁', hint: '收集 60 位居民', goal: 60, value: dexCount, reward: 100 },
+  { id: 'dex-100', group: '收藏', title: '百人圖鑑', hint: '收集 100 位居民', goal: 100, value: dexCount, reward: 150 },
+  { id: 'ssr-10', group: '收藏', title: '星光滿室', hint: '擁有 10 位 SSR 居民', goal: 10, value: (s, c) => rarityCount(s, c, 'SSR'), reward: 80 },
   // 月見町花街五階集齊（湘 11/21）：限定稱號＋共同事件《月見町的最後一盞燈》，領取時播放、之後點成就可重看
   { id: 'tsukimi-5', group: '收藏', title: '月見町的五朵花', hint: '集齊月見町系列的五位小湘', goal: 5, value: (s) => TSUKIMI.filter((no) => s.dex?.[no]).length, reward: 100,
     storyTitle: '月見町的最後一盞燈', storyArt: 'siang-114-oiran', story: "禿小湘：「花魁大人！！！！點心來了！！」\n番頭新造小湘：「等一下！妳先確認數量！！」\n太鼓新造小湘：「咚咚咚！！開宴啦！！」\n振袖新造小湘：「請大家先站好位置……」\n花魁小湘：「……呵呵。今日也真是熱鬧呢。」\n月見町一年一度的夜宴即將開始。禿小湘負責跑腿，番頭新造小湘負責安排，太鼓新造小湘負責演奏，振袖新造小湘負責舞蹈，花魁小湘則主持最後一場表演。\n所有人都非常忙碌。直到宴席結束，月見町的燈籠慢慢熄滅，五隻小湘終於坐在一起。\n禿小湘累得趴在桌上。番頭新造小湘闔上工作冊。太鼓新造小湘抱著鼓棒打哈欠。振袖新造小湘慢慢鬆開髮飾。花魁小湘則替大家倒了一杯茶。\n「今日辛苦了。」\n五隻小湘安靜了一會兒，然後突然一起笑了。\n因為她們發現，原來月見町最美好的時刻，不一定是燈火最明亮、宴席最熱鬧的時候。也可能是所有人終於卸下工作，坐在一起，好好休息的那一刻。" },
@@ -50,20 +59,35 @@ export const ACHIEVEMENTS = [
   { id: 'wish-50', group: '願望', title: '願望守護者', hint: '完成 50 個每日願望', goal: 50, value: (s) => s.player?.stats?.wishes || 0, reward: 60 },
   { id: 'wish-days-7', group: '願望', title: '七天的約定', hint: '在 7 個不同的日子完成全部三個願望（不必連續）', goal: 7, value: (s) => s.wishEgg?.days?.length || 0, reward: 60 },
   { id: 'snap-30', group: '願望', title: '生活觀察家', hint: '隨手收藏 30 張照片', goal: 30, value: (s) => t(s, 'snaps'), reward: 40 },
+  { id: 'wish-200', group: '願望', title: '願望收集簿', hint: '完成 200 個每日願望', goal: 200, value: (s) => s.player?.stats?.wishes || 0, reward: 100 },
+  { id: 'wish-days-30', group: '願望', title: '一個月的約定', hint: '在 30 個不同的日子完成全部三個願望（不必連續）', goal: 30, value: (s) => s.wishEgg?.days?.length || 0, reward: 120 },
+  { id: 'checkin-100', group: '願望', title: '天天見', hint: '累計簽到 100 天', goal: 100, value: (s) => s.checkin?.total || 0, reward: 100 },
   { id: 'travel-1', group: '旅行', title: '出發！', hint: '第一次探索', goal: 1, value: (s) => Object.keys(s.travel?.visits || {}).length, reward: 20 },
   { id: 'travel-5', group: '旅行', title: '小旅行', hint: '探索 5 個地方', goal: 5, value: (s) => Object.keys(s.travel?.visits || {}).length, reward: 50 },
   { id: 'travel-19', group: '旅行', title: '環島', hint: '探索本島 19 個縣市', goal: 19, value: (s) => Object.keys(s.travel?.visits || {}).filter((k) => MAIN_ISLAND.has(k)).length, reward: 150 },
   { id: 'rain', group: '旅行', title: '雨中漫步', hint: '在下雨天撿到天氣蛋', goal: 1, value: (s) => (s.weather?.rained && s.weather.granted === s.weather.rained ? 1 : 0), reward: 30 },
   { id: 'island', group: '旅行', title: '出海', hint: '去一趟綠島', goal: 1, value: (s) => (s.travel?.visits?.['綠島'] ? 1 : 0), reward: 50 },
   { id: 'island-hop', group: '旅行', title: '跳島', hint: '澎湖、金門、馬祖都去過', goal: 3, value: (s) => ['澎湖縣', '金門縣', '連江縣'].filter((k) => s.travel?.visits?.[k]).length, reward: 100 },
+  { id: 'errand-100', group: '旅行', title: '跑腿達人', hint: '派小湘出門 100 次', goal: 100, value: (s) => s.errands?.total || 0, reward: 60 },
+  { id: 'errand-500', group: '旅行', title: '說走就走', hint: '派小湘出門 500 次', goal: 500, value: (s) => s.errands?.total || 0, reward: 150 },
+  { id: 'story-30', group: '旅行', title: '旅行故事集', hint: '發現 30 個旅行故事', goal: 30, value: (s) => Object.keys(s.errands?.stories || {}).length, reward: 80 },
   { id: 'pet-30', group: '陪伴', title: '摸頭大師', hint: '摸摸頭 30 次', goal: 30, value: (s) => t(s, 'pets'), reward: 30 },
   { id: 'snack-20', group: '陪伴', title: '布丁時間', hint: '餵小湘 20 次布丁', goal: 20, value: (s) => t(s, 'snacks'), reward: 30 },
   { id: 'greet-30', group: '陪伴', title: '打招呼', hint: '跟小湘打招呼 30 次', goal: 30, value: (s) => t(s, 'greets'), reward: 30 },
   { id: 'task-10', group: '陪伴', title: '小恐龍的好朋友', hint: '完成 10 個小恐龍的委託', goal: 10, value: (s) => t(s, 'tasks'), reward: 40 },
+  { id: 'pet-500', group: '陪伴', title: '摸頭之神', hint: '摸摸頭 500 次', goal: 500, value: (s) => t(s, 'pets'), reward: 60 },
+  { id: 'greet-365', group: '陪伴', title: '每天都說早安', hint: '跟小湘打招呼 365 次', goal: 365, value: (s) => t(s, 'greets'), reward: 80 },
+  { id: 'bond5-10', group: '陪伴', title: '十位知心好友', hint: '讓 10 位居民的好感升到 Lv.5', goal: 10, value: bond5, reward: 100 },
+  { id: 'bond5-30', group: '陪伴', title: '三十位家人', hint: '讓 30 位居民的好感升到 Lv.5', goal: 30, value: bond5, reward: 200 },
   { id: 'cook-dark', group: '廚房', title: '勇氣可嘉', hint: '第一次煮出黑暗料理', goal: 1, value: (s) => Object.keys(s.kitchen?.known || {}).filter((id) => darkDish(id)).length, reward: 20 },
   { id: 'cook-recipes', group: '廚房', title: '小湘的私房菜', hint: '做出全部 8 道特色料理', goal: 8, value: (s) => recipesFound(s), reward: 80 },
   { id: 'cook-secrets', group: '廚房', title: '懂她的胃', hint: '找到 10 位小湘的秘密最愛', goal: 10, value: (s) => secretsFound(s), reward: 80 },
   { id: 'cook-dark-30', group: '廚房', title: '黑暗料理界的傳說', hint: '餵小湘吃 30 次黑暗料理', goal: 30, value: (s) => s.kitchen?.darkFed || 0, reward: 50 },
+  { id: 'cook-100', group: '廚房', title: '小湘御廚', hint: '累計煮 100 道料理', goal: 100, value: (s) => s.kitchen?.cooked || 0, reward: 80 },
+  { id: 'win-10', group: '討伐', title: '初陣', hint: '討伐打贏 10 場', goal: 10, value: (s) => s.battle?.wins || 0, reward: 30 },
+  { id: 'win-100', group: '討伐', title: '百戰', hint: '討伐打贏 100 場', goal: 100, value: (s) => s.battle?.wins || 0, reward: 80 },
+  { id: 'win-500', group: '討伐', title: '常勝軍', hint: '討伐打贏 500 場', goal: 500, value: (s) => s.battle?.wins || 0, reward: 150 },
+  { id: 'stars-all', group: '討伐', title: '滿天星', hint: '主線討伐關卡全部拿到三星', goal: () => mainStages().length * 3, value: mainStars, reward: 100 },
   { id: 'unlucky-10', group: '收藏', title: '希望尚存', hint: '累計孵到重複的小湘 10 次（普通非酋小湘會來找你）', goal: 10, value: (s) => s.dupTotal || 0, reward: 30 },
   { id: 'unlucky-50', group: '收藏', title: '希望崩塌', hint: '累計孵到重複的小湘 50 次（中級非酋小湘會來找你）', goal: 50, value: (s) => s.dupTotal || 0, reward: 60 },
   { id: 'unlucky-100', group: '收藏', title: '非酋之道', hint: '累計孵到重複的小湘 100 次（究級非酋小湘會來找你）', goal: 100, value: (s) => s.dupTotal || 0, reward: 100 },
