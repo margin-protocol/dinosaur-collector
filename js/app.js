@@ -4265,7 +4265,7 @@ function renderBattle() {
     const row = document.createElement('div'); const back = battle.isBack(a, now); row.className = `errand-trip${back ? ' is-back' : ''}`;
     const who = document.createElement('div'); who.className = 'errand-trip__who'; who.append(enemyArt(a.enemy, 'is-mini'));
     const text = document.createElement('div'); const t = document.createElement('b'); const sm = document.createElement('small');
-    t.textContent = `討伐 ${(battle.enemyFor(state, a.enemy) || battle.ENEMIES[a.enemy]).name}`; sm.textContent = back ? '回來了！看戰報' : `還要 ${battle.fmtMinutes(Date.parse(a.until) - now)} · ${a.nos.map(no => CHARACTERS[no].name).join('、')}`;
+    t.textContent = `${a.night ? '🌙 連戰' : '討伐'} ${(battle.enemyFor(state, a.enemy) || battle.ENEMIES[a.enemy]).name}`; sm.textContent = back ? '回來了！看戰報' : `還要 ${battle.fmtMinutes(Date.parse(a.until) - now)} · ${a.nos.map(no => CHARACTERS[no].name).join('、')}`;
     text.append(t, sm); row.append(who, text);
     if (back) { const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.textContent = '戰報'; btn.addEventListener('click', () => void collectBattle(a.id)); row.append(btn); }
     return row;
@@ -4906,8 +4906,42 @@ function renderBattleStage() {
     onDelete:async slot=>{state=(await updateState(current=>{ensureTeamBonds(current).presets[slot]=null;})).state;renderBattleStage();}
   });
   const full = battle.slotFull(state, id);
+  const night = renderBattleNight(id, e, fc, full);
   $('battle-go').disabled = !battlePicked.length || full;
-  $('battle-go').textContent = full ? '隊伍都派出去了' : `出發討伐${fc ? (IS_TEST ? `（測試服 15 秒・正式 ${fc.minutes} 分鐘）` : `（約 ${fc.minutes} 分鐘）`) : ''}`;
+  $('battle-go').textContent = full ? '隊伍都派出去了' : night ? `🌙 出發連戰 8 小時` : `出發討伐${fc ? (IS_TEST ? `（測試服 15 秒・正式 ${fc.minutes} 分鐘）` : `（約 ${fc.minutes} 分鐘）`) : ''}`;
+}
+// 連戰到天亮（湘 11/28 選 A）：打贏過的主線／活動關卡，一天一次。回傳這次出發是不是連戰
+let battleNight = null; // 開著連戰的關卡 id
+const NIGHT_STYLE = new URLSearchParams(location.search).get('night-style') || 'A'; // 樣式預覽用，湘選完會拿掉
+function renderBattleNight(id, e, fc, full) {
+  const box = $('battle-night'); box.dataset.style = NIGHT_STYLE;
+  if (NIGHT_STYLE === 'C') $('battle-go').after(box); else $('battle-go').before(box);
+  if (e.wild || e.side) { box.hidden = true; battleNight = null; return false; }
+  const ns = battle.nightStatus(state, id);
+  if (!ns.ok && battleNight === id) battleNight = null;
+  const on = battleNight === id;
+  const runs = fc ? battle.nightRuns(fc.minutes) : null;
+  const note = ns.ok ? `🎫 用 1 張夜戰券・8 小時自動打${runs ? `約 ${runs} 場` : '好幾場'}・獎勵 5 折・回來休息 2 小時` : ns.reason;
+  box.hidden = false; box.classList.toggle('is-on', on); box.classList.toggle('is-off', !ns.ok); box.replaceChildren();
+  const toggle = (v) => { battleNight = v ? id : null; renderBattleStage(); };
+  if (NIGHT_STYLE === 'B') {
+    const seg = el('div', 'battle-night__seg'); seg.setAttribute('role', 'radiogroup'); seg.setAttribute('aria-label', '討伐方式');
+    for (const [v, label, sub] of [[false, '⚔️ 打一場', fc ? `約 ${fc.minutes} 分鐘` : '一般討伐'], [true, '🌙 連戰到天亮', '8 小時']]) {
+      const b = el('button'); b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(on === v)); b.disabled = v && !ns.ok;
+      b.append(el('b', null, label), el('small', null, sub)); b.addEventListener('click', () => toggle(v)); seg.append(b);
+    }
+    box.append(seg, el('p', 'battle-night__note', note));
+  } else if (NIGHT_STYLE === 'C') {
+    const b = el('button', 'battle-night__go'); b.type = 'button'; b.disabled = !ns.ok || !battlePicked.length || full;
+    b.append(el('b', null, '🌙 睡前派出去：連戰到天亮'), el('small', null, note));
+    b.addEventListener('click', () => void goBattle(true)); box.append(b);
+    return false;
+  } else {
+    const b = el('button', 'battle-night__card'); b.type = 'button'; b.setAttribute('role', 'switch'); b.setAttribute('aria-checked', String(on)); b.disabled = !ns.ok;
+    const txt = el('span', 'battle-night__text'); txt.append(el('b', null, '🌙 連戰到天亮'), el('small', null, note));
+    b.append(txt, el('i', 'battle-night__switch')); b.addEventListener('click', () => toggle(!on)); box.append(b);
+  }
+  return on;
 }
 $('battle-back').addEventListener('click', () => { battleEnemy = null; renderBattle(); });
 // 野生小怪的戰報：那一天的名單可能已經換掉，用出發時存下的資料畫
@@ -4920,16 +4954,17 @@ function wildArtFrom(snapshot) {
   box.append(img, Object.assign(document.createElement('i'), { className: 'enemy-art__trait', textContent: e.trait.icon }));
   return box;
 }
-$('battle-go').addEventListener('click', async () => {
+$('battle-go').addEventListener('click', () => void goBattle(NIGHT_STYLE !== 'C' && battleNight === battleEnemy));
+async function goBattle(night) {
   if (!battleEnemy || !battlePicked.length) return;
   const id = battleEnemy; const nos = [...battlePicked];
-  const t = await updateState(current => { const r = battle.startBattle(current, id, nos, { busy: new Set([...busyNos(current), ...battle.battleNos(current), ...lab.labNos(current)]) }); return typeof r === 'string' ? { error: r } : { battle: r }; });
+  const t = await updateState(current => { const r = battle.startBattle(current, id, nos, { night, busy: new Set([...busyNos(current), ...battle.battleNos(current), ...lab.labNos(current)]) }); return typeof r === 'string' ? { error: r } : { battle: r }; });
   state = t.state;
   if (t.result.error) { $('battle-status').textContent = t.result.error; return; }
-  battleEnemy = null; battlePicked = [];
+  battleEnemy = null; battlePicked = []; battleNight = null;
   renderAll(); renderBattle();
-  toast(`出發討伐${battle.enemyFor(state, id).name}！${battle.fmtMinutes(Date.parse(t.result.battle.until) - Date.now())}後回來。`);
-});
+  toast(`${night ? '🌙 連戰' : '出發討伐'}${battle.enemyFor(state, id).name}！${battle.fmtMinutes(Date.parse(t.result.battle.until) - Date.now())}後回來。${night ? '晚安～' : ''}`);
+}
 const battleTheater = createBattleTheater({root:$('battle-theater'),details:$('battle-result-details'),dialog:$('battle-result'),replay:$('battle-replay'),onActivity:syncRoomActivity});
 // 章節尾聲劇場：第一次打倒章節 Boss，收下戰報後自動播；故事檔案館可以重看（只演出，不動存檔）
 const epilogue = createEpilogueTheater({dialog:$('chapter-epilogue'),onActivity:syncRoomActivity});

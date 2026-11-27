@@ -257,7 +257,14 @@ export function recordEventRun(state, eventId, stageId, report, { now = new Date
   st.tries += 1; prog.runs += 1;
   if (report.win) { st.clears += 1; prog.wins += 1; st.stars = Math.max(st.stars, report.stars | 0); if (!st.firstAt) st.firstAt = now.toISOString(); }
   if ((report.score | 0) > st.best) st.best = report.score | 0;
-  const out = { tokens: tokenDrop(def, stageId, { win: report.win, first, nos, worldOf, owned: prog.keepsakes }), first, story: null, keepsake: null, complete: false };
+  let tokens = tokenDrop(def, stageId, { win: report.win, first, nos, worldOf, owned: prog.keepsakes });
+  if (report.night?.runs > 1) {
+    // 連戰到天亮：每一場的墨玉合計後打折（首勝、信物只算一次，在下面）
+    const n = report.night; const extraWins = Math.max(0, n.wins - (report.win ? 1 : 0)); const extraLose = n.runs - 1 - extraWins;
+    const one = (win) => tokenDrop(def, stageId, { win, first: false, nos, worldOf, owned: prog.keepsakes });
+    tokens = Math.round((tokens + extraWins * one(true) + extraLose * one(false)) * (n.mult ?? 0.5));
+  }
+  const out = { tokens, first, story: null, keepsake: null, complete: false };
   addTokens(prog, out.tokens);
   if (report.win && dailyWinReady(prog, def, now)) { prog.dailyWinDay = localDay(now); out.daily = def.dailyWin; addTokens(prog, def.dailyWin); }
   // 首次通關解鎖劇情（故事冊之後做，但解鎖資格現在就記）
