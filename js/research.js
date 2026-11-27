@@ -1,4 +1,4 @@
-import { CHARACTERS, characterSources, loadWithFallback } from './eggs.js';
+import { CHARACTERS, SERIES, characterSources, loadWithFallback } from './eggs.js';
 import { RECIPES } from './recipes.js';
 import { labStatuses, labStatusFor, labSlots, freeSlot, fmtLeft, LAB_SLOT_COST, bondReady, recipeHidden } from './lab.js';
 const asset = path => new URL(path, new URL('../', import.meta.url)).href;
@@ -25,7 +25,7 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
       <p class="research-disclaimer">${onStudy ? "研究不消耗能量或蛋。找到配方後，把兩位小湘放進研究室調配，時間到就會送來紀念蛋。" : "這是獨立示範，不消耗能量或蛋，也不發放角色。"}</p>
       <section class="research-history" ${onStudy ? "" : "hidden"}><h2>研究紀錄 <span class="research-history-count"></span></h2><p class="research-history-intro">每一組搭檔都能留下線索；同一組重新研究不會重複新增紀錄。</p><ol class="research-history-list"></ol></section>
     </div>
-    <dialog class="sheet residents-dialog research-picker" aria-labelledby="research-picker-title"><div class="drawer-heading"><div><small>CHOOSE A RESEARCH PARTNER</small><h2 id="research-picker-title">邀請一位夥伴</h2></div><button type="button" class="close-button" data-close-picker aria-label="關閉搭檔選擇">×</button></div><p class="research-picker-copy">只列出你已收集的小湘，同一位只能選一次。</p><div class="research-partner-list"></div><button class="research-text-button" type="button" data-clear>清除此位置</button></dialog>
+    <dialog class="sheet residents-dialog research-picker" aria-labelledby="research-picker-title"><div class="drawer-heading"><div><small>CHOOSE A RESEARCH PARTNER</small><h2 id="research-picker-title">邀請一位夥伴</h2></div><button type="button" class="close-button" data-close-picker aria-label="關閉搭檔選擇">×</button></div><p class="research-picker-copy">只列出你已收集的小湘，同一位只能選一次。</p><div class="research-picker-tools"><input class="presenter-search research-search" type="search" placeholder="找小湘：名字、編號或稀有度" autocomplete="off" enterkeyhint="search" aria-label="搜尋小湘"></div><div class="research-partner-list"></div><button class="research-text-button" type="button" data-clear>清除此位置</button></dialog>
     <dialog class="sheet research-result" aria-labelledby="research-result-title"><span class="research-preview-tag">${onStudy ? "研究記錄" : "研究結果預覽"}</span><img class="research-result-image" alt=""><p class="research-result-eyebrow"></p><h2 id="research-result-title"></h2><p class="research-result-copy"></p><p class="research-result-safe">${onStudy ? "研究筆記已保存。找到配方的話，把兩位放進研究室調配，時間到才會送來紀念蛋。" : "這是示範結果，收藏與遊戲進度不會改變。"}</p><button type="button" class="research-primary research-brew" data-brew hidden></button><p class="research-brew-status" role="status"></p><button type="button" class="research-primary" data-close-result>回到研究筆記</button></dialog>`;
   const find = selector => root.querySelector(selector);
   const picker = find('.research-picker'), result = find('.research-result');
@@ -172,17 +172,50 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     setBrew(recipe, discovered);
     if (!result.open) result.showModal();
   }
+  // 邀請搭檔：搜尋＋依系列分組的四欄格子，系列可收合並記住（11/28 湘選 C：原本一位一大列，一百多位要一直滑）
+  const FOLD_KEY = 'siang-collector:research-fold:v1';
+  let folded = (() => { try { return JSON.parse(localStorage.getItem(FOLD_KEY)) || []; } catch { return []; } })();
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
+  function partnerTile(character, tried) {
+    const button = el('button', 'research-partner'); button.type = 'button'; button.dataset.partner = character.no;
+    const other = slots[1 - editing] === character.no, mine = slots[editing] === character.no;
+    button.disabled = other;
+    button.setAttribute('aria-pressed', String(mine));
+    const image = new Image(); image.loading = 'lazy'; image.decoding = 'async'; portrait(image, character);
+    const rarity = el('i', 'research-partner__rarity', character.rarity); rarity.dataset.rarity = character.rarity;
+    button.append(image, el('span', 'research-partner__name', character.name.replace(/小湘$/, '') || character.name), rarity);
+    const note = other ? '另一側' : mine ? '✓ 已選' : tried ? '試過' : '';
+    if (note) button.append(el('small', `research-partner__note${tried && !other && !mine ? ' is-tried' : ''}`, note));
+    button.setAttribute('aria-label', `${character.name}，${character.rarity}${other ? '，已在另一側' : mine ? '，已選擇' : tried ? '，和另一位研究過' : ''}`);
+    return button;
+  }
   function renderPicker() {
     find('#research-picker-title').textContent = `邀請搭檔 ${editing + 1}`;
-    find('.research-partner-list').replaceChildren(...ownedFor(getState()).map(character => {
-      const button = document.createElement('button'); button.type = 'button'; button.className = 'research-partner'; button.dataset.partner = character.no;
-      button.disabled = slots[1 - editing] === character.no;
-      button.setAttribute('aria-pressed', String(slots[editing] === character.no));
-      const image = new Image(); portrait(image, character);
-      const name = document.createElement('span'); name.textContent = character.name;
-      const note = document.createElement('small'); note.textContent = button.disabled ? '已在另一側' : slots[editing] === character.no ? '✓ 已選擇' : '邀請她';
-      button.append(image, name, note); return button;
-    }));
+    const state = getState(), owned = ownedFor(state);
+    // 另一側已經選好時，標出跟她研究過的人（省得重複試）
+    const partnerOf = slots[1 - editing], tried = new Set();
+    for (const t of Array.isArray(state.research?.trials) ? state.research.trials : []) if (partnerOf && t?.members?.includes(partnerOf)) t.members.forEach(no => tried.add(no));
+    const tile = c => partnerTile(c, tried.has(c.no));
+    const groups = Object.keys(SERIES).map(id => [id, owned.filter(c => c.series === id)]).filter(([, l]) => l.length);
+    const search = find('.research-search');
+    const query = search.value.trim().toLowerCase().replace(/^no\.?/, '');
+    find('.research-picker-tools').hidden = owned.length < 9;
+    const grid = list => { const g = el('div', 'research-partner-grid'); g.append(...list.map(tile)); return g; };
+    const out = [];
+    if (query) {
+      const hits = owned.filter(c => c.name.toLowerCase().includes(query) || c.no.toLowerCase().includes(query) || (SERIES[c.series]?.name || '').includes(query) || c.rarity.toLowerCase() === query);
+      out.push(hits.length ? grid(hits) : el('p', 'presenter-empty', `找不到「${search.value.trim()}」，換個字試試看。`));
+    } else if (groups.length === 1) {
+      out.push(grid(owned));
+    } else {
+      for (const [id, list] of groups) {
+        const open = !folded.includes(id), picked = list.some(c => slots.includes(c.no));
+        const head = el('button', 'research-series'); head.type = 'button'; head.dataset.foldSeries = id; head.setAttribute('aria-expanded', String(open));
+        head.append(el('span', null, `${SERIES[id].name} · ${list.length}`), ...(picked ? [el('em', null, '✓')] : []), el('i', null, open ? '收起 ▾' : '展開 ▸'));
+        out.push(head); if (open) out.push(grid(list));
+      }
+    }
+    find('.research-partner-list').replaceChildren(...out);
     find('[data-clear]').disabled = !slots[editing];
   }
   function closePicker() { picker.close(); find(`[data-slot="${editing}"]`).focus({preventScroll:true}); }
@@ -208,8 +241,14 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     }
     if (button.matches('[data-trial]')) { const trial = (getState().research?.trials || [])[Number(button.dataset.trial)]; if (trial?.members?.length === 2) showTrial(trial); return; }
     if (button.matches('[data-note]')) { const i = Number(button.dataset.note); noteIndex = RECIPES[i] ? i : 0; update(); }
-    if (button.matches('[data-slot]')) { if (ownedFor(getState()).length < 3) { update(); return; } editing = Number(button.dataset.slot); renderPicker(); picker.showModal(); }
+    if (button.matches('[data-slot]')) { if (ownedFor(getState()).length < 3) { update(); return; } editing = Number(button.dataset.slot); find('.research-search').value = ''; renderPicker(); picker.showModal(); find('.research-partner-list').scrollTop = 0; picker.scrollTop = 0; }
     if (button.matches('[data-close-picker]')) closePicker();
+    if (button.matches('[data-fold-series]')) {
+      const id = button.dataset.foldSeries;
+      folded = folded.includes(id) ? folded.filter(x => x !== id) : [...folded, id];
+      try { localStorage.setItem(FOLD_KEY, JSON.stringify(folded)); } catch {}
+      renderPicker(); find(`[data-fold-series="${id}"]`)?.focus({ preventScroll: true }); return;
+    }
     if (button.matches('[data-clear]')) { slots[editing] = null; closePicker(); update(); }
     if (button.matches('[data-partner]')) {
       const owned = ownedFor(getState());
@@ -268,6 +307,8 @@ export function createResearch({ root, getState, onCollect = () => {}, onStudy =
     if (button.matches('[data-close-result]')) { result.close(); if (!root.contains(document.activeElement)) find('[data-preview]').focus({preventScroll:true}); }
   };
   root.addEventListener('click', click);
+  const typed = event => { if (event.target.matches('.research-search')) renderPicker(); };
+  root.addEventListener('input', typed);
   update();
-  return { update, destroy() { picker.close(); result.close(); root.removeEventListener('click', click); root.replaceChildren(); } };
+  return { update, destroy() { picker.close(); result.close(); root.removeEventListener('click', click); root.removeEventListener('input', typed); root.replaceChildren(); } };
 }

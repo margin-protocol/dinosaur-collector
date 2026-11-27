@@ -26,8 +26,8 @@
 .research-locked { padding:38px 4px; text-align:center; }.research-lock-mark { display:grid; place-items:center; width:100px; height:120px; border:1px dashed #a58aae66; border-radius:50px 50px 18px 18px; margin:0 auto 28px; font:300 36px var(--font-body); color:#b7a0c5; }
 .research-locked h2 { font:400 22px var(--font-display); }.research-unlock-copy { font:12px/1.9 var(--font-display); color:var(--pearl); margin:16px 0 28px; }
 .research-picker { max-height:85svh; overflow-y:auto; }.research-picker .drawer-heading h2 { font-size:22px; }.research-picker-copy { font:12px/1.8 var(--font-display); color:var(--pearl); }
-.research-partner-list { display:grid; gap:9px; }.research-partner { display:grid; grid-template-columns:55px minmax(0,1fr) auto; align-items:center; gap:9px; padding:8px 12px; min-height:76px; border:1px solid #a88db44d; border-radius:10px; background:#292431; text-align:left; font:13px var(--font-display); }
-.research-partner img { width:55px; height:60px; object-fit:contain; }.research-partner small { font:10px var(--font-display); color:var(--silver); }.research-partner[aria-pressed="true"] { border-color:#c4a4d1; background:#44344e; }.research-partner:disabled { opacity:.45; cursor:default; }
+.research-partner-list { display:grid; gap:0; }
+.research-partner:disabled { opacity:.45; cursor:default; }
 .research-text-button { display:block; min-height:44px; margin:14px auto 0; padding:8px 14px; border:0; background:none; font:12px var(--font-display); color:var(--pearl); }
 .research-text-button:disabled { opacity:.4; }
 .research-result { padding:26px 22px 20px; max-height:calc(100svh - 32px - var(--safe-top) - var(--safe-bottom)); overflow-y:auto; background:radial-gradient(ellipse at 50% 32%,#443348,#24222e 68%); border:1px solid #a68aaf66; border-radius:22px; color:var(--ivory); }
@@ -35,7 +35,7 @@
 .research-result-eyebrow { font:9px var(--font-body); letter-spacing:.16em; color:#cfb0d6; }.research-result h2 { font:400 25px var(--font-display); margin:12px 0; }
 .research-result-copy { font:13px/1.9 var(--font-display); color:var(--pearl); }.research-result-safe { font:10px/1.8 var(--font-display); color:var(--silver); margin:14px 0 20px; }
 body[data-view="research"] .game-footer { min-height:70px; padding-top:8px; padding-bottom:calc(var(--safe-bottom) + 18px); }
-@media(max-width:374px) { .research-heading{font-size:25px}.research-slot-art{width:185px;height:185px}.research-specimen{width:106px}.research-specimen img{width:285px;height:285px}.research-partner{padding:8px;grid-template-columns:45px minmax(0,1fr) auto}.research-partner img{width:45px} }
+@media(max-width:374px) { .research-heading{font-size:25px}.research-slot-art{width:185px;height:185px}.research-specimen{width:106px}.research-specimen img{width:285px;height:285px}.research-partner img{width:52px;height:52px} }
 
 /* 研究室 1.0：兩則可切換的配方筆記與持久研究紀錄 */
 .research-note-tabs {display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:6px 0 14px}
@@ -82,3 +82,23 @@ body[data-view="research"] .game-footer { min-height:70px; padding-top:8px; padd
 .research-lab__buy:active:not(:disabled) { transform:scale(.97); }
 .research-lab__status:empty { display:none; }
 .research-lab__status { margin:6px 0 0; font:11px/1.6 var(--font-display); color:var(--silver); }
+
+/* 邀請搭檔：四欄格子＋搜尋／系列（11/28） */
+.research-picker-tools { display:grid; gap:8px; margin:4px 0 6px; }
+.research-picker-tools[hidden] { display:none; }
+.research-partner-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin:6px 0 4px; }
+.research-partner { position:relative; display:grid; justify-items:center; align-content:start; gap:2px; min-width:0; padding:8px 2px 6px; border:1px solid var(--t-line, #a88db44d); border-radius:12px; background:#292431; color:var(--t-text, inherit); font:11px/1.35 var(--font-display); text-align:center; }
+.research-partner img { width:58px; height:58px; object-fit:contain; }
+.research-partner__name { max-width:100%; padding:0 2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.research-partner__rarity { position:absolute; top:3px; left:4px; padding:0 3px; border-radius:4px; background:var(--t-raised, #292431); font:normal 9px/14px var(--font-body); letter-spacing:.02em; color:var(--t-muted, var(--silver)); }
+.research-partner__rarity:is([data-rarity="SSR"],[data-rarity="UR"]) { color:#c9902b; font-weight:700; }
+.research-partner__rarity[data-rarity="SR"] { color:var(--t-accent, #c4a4d1); font-weight:700; }
+.research-partner__note { position:absolute; top:3px; right:3px; padding:0 4px; border-radius:6px; background:var(--t-accent, #c4a4d1); color:#fff; font:normal 9px/14px var(--font-body); }
+.research-partner__note.is-tried { background:none; border:1px solid var(--t-line, #a88db44d); color:var(--t-muted, var(--silver)); line-height:12px; }
+.research-partner[aria-pressed="true"] { border-color:var(--t-accent, #c4a4d1); background:var(--t-selected, #44344e); }
+.research-partner:active:not(:disabled) { transform:scale(.97); }
+.research-series { display:flex; align-items:center; gap:8px; width:100%; min-height:38px; margin:8px 0 0; padding:4px 12px; border:1px solid var(--t-line, #ffffff14); border-radius:10px; background:var(--t-raised, #ffffff08); color:var(--t-text, inherit); font:13px/1.3 var(--font-display); text-align:left; }
+.research-series span { flex:1; }
+.research-series em { font-style:normal; font-size:12px; color:var(--t-accent, #c4a4d1); }
+.research-series i { font-style:normal; font-size:11px; color:var(--t-muted, var(--silver)); }
+@media(max-width:374px) { .research-partner-grid { gap:5px; } .research-partner { font-size:10.5px; } }
