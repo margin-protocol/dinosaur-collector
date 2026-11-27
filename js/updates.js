@@ -35,10 +35,12 @@ export function unseen(list, { returning = false, storage = localStorage } = {})
   if (!list.length) return [];
   let seen = null; try { seen = storage.getItem(SEEN_KEY); } catch {}
   if (seen === NEW_PLAYER || (!seen && !returning)) { markSeen(list, storage); return []; }
-  if (!seen) return list.slice(0, 1);
+  if (!seen) return list.filter(visibleEntry).slice(0, 1);
   const i = list.findIndex((e) => e.version === seen);
-  return (i < 0 ? list : list.slice(0, i)).slice(0, 3);
+  return (i < 0 ? list : list.slice(0, i)).filter(visibleEntry).slice(0, 3);
 }
+// 湘 11/27：只有測試服（?test）看得到的更新寫 "test": true，一般玩家的更新公告和更新紀錄都不顯示；正式開放時再另寫一筆
+export const visibleEntry = (e) => !e.test || Boolean(globalThis.__SIANG_TEST__);
 export function markSeen(list, storage = localStorage) { try { if (list[0]) storage.setItem(SEEN_KEY, list[0].version); } catch {} }
 
 export function watchForUpdates(onUpdate) {

@@ -57,7 +57,7 @@ import { DAILY_XP, GROWTH_XP, GROWTH_ENERGY, XP_PER_LEVEL, playerLevel, rankTitl
 import * as install from './install.js';
 import { CHARACTER_REPORTS, SERIES_REPORTS } from './errand-copy.js';
 import { PLACES, HOME_TASKS, STORIES, errandSlots, errandSlotHint, depart, collect, recall, busyNos, awayNos, returned, isBack, hasAffinity, storyFor, fmtLeft, tossCard, CARD_RECYCLE } from './errands.js';
-import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer, serverTime } from './updates.js';
+import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer, serverTime, visibleEntry } from './updates.js';
 import * as events from './events.js';
 import * as side from './side.js';
 import * as titles from './titles.js';
@@ -3749,7 +3749,7 @@ $('open-updates').addEventListener('click', async () => {
   try { list = await loadChangelog(); } catch {}
   if (!$('whats-new').open) return;
   const fresh = new Set(unseen(list, { returning: isReturning() }).map(e => e.version));
-  if (list.length) fillWhatsNew(list, fresh);
+  if (list.length) fillWhatsNew(list.filter(visibleEntry), fresh);
   else $('whats-new-list').replaceChildren(Object.assign(document.createElement('p'), { textContent: '更新紀錄暫時讀不到，等一下再試試看。' }));
   const done = () => { if (list.length) markSeen(list); $('updates-new').hidden = true; };
   $('whats-new-ok').onclick = () => { done(); $('whats-new').close(); };
