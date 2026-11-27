@@ -19,7 +19,7 @@
 .lfx__spark { position:absolute; width:var(--s); height:var(--s); opacity:0; background:var(--acc); clip-path:polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); animation:lfx-twinkle calc(1.1s * var(--t)) ease-in-out calc((var(--egg-at) + var(--w)) * var(--t)) infinite; }
 .lfx[data-secret="1"] .lfx__spark, :root:is([data-theme="night"],[data-theme="forest"]) .lfx__spark { background:var(--gold); }
 @keyframes lfx-twinkle { 0%,100% { opacity:0; transform:scale(.3) rotate(0); } 50% { opacity:1; transform:scale(1) rotate(45deg); } }
-.lfx__glow { position:absolute; inset:0; opacity:0; z-index:1; background:radial-gradient(48% 34% at 50% 47%, #fff 0, color-mix(in srgb, var(--acc2) 70%, #fff) 40%, transparent 72%); }
+.lfx__glow { position:absolute; inset:0; opacity:0; z-index:1; background:radial-gradient(48% 34% at 50% 47%, #fff 0, var(--acc2) 40%, transparent 72%); }
 @keyframes lfx-glow { 0% { opacity:0; transform:scale(.3); } 45% { opacity:1; transform:scale(1.5); } 100% { opacity:.45; transform:scale(1.3); } }
 .lfx__flash { position:absolute; inset:0; z-index:20; background:#fff; opacity:0; pointer-events:none; }
 @keyframes lfx-flash { 0% { opacity:0; } 25% { opacity:.75; } 100% { opacity:0; } }
@@ -48,7 +48,7 @@
 @keyframes lfx-c-in-r { from { opacity:0; transform:translateX(62vw) rotate(10deg); } to { opacity:1; transform:none; } }
 @keyframes lfx-c-open-l { from { opacity:1; transform:none; } to { opacity:0; transform:rotateY(-105deg); } }
 @keyframes lfx-c-open-r { from { opacity:1; transform:none; } to { opacity:0; transform:rotateY(105deg); } }
-.lfx--c .lfx__page-face { position:absolute; inset:0; overflow:hidden; background:repeating-linear-gradient(#0000 0 27px, color-mix(in srgb, var(--t-line, #b98094) 26%, transparent) 27px 28px), #fffaf3; box-shadow:0 10px 24px #0000002a; }
+.lfx--c .lfx__page-face { position:absolute; inset:0; overflow:hidden; background:repeating-linear-gradient(#0000 0 27px, #b980943d 27px 28px), #fffaf3; box-shadow:0 10px 24px #0000002a; }
 .lfx--c .is-l .lfx__page-face { border-radius:6px 0 0 6px; box-shadow:0 10px 24px #0000002a, inset -14px 0 18px -12px #0000003a; }
 .lfx--c .is-r .lfx__page-face { border-radius:0 6px 6px 0; box-shadow:0 10px 24px #0000002a, inset 14px 0 18px -12px #0000003a; }
 .lfx--c .lfx__page-face img { position:absolute; left:50%; bottom:19%; width:134%; max-width:none; aspect-ratio:1; translate:-50% 0; object-fit:contain; }
