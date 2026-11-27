@@ -44,6 +44,7 @@ python3 tools/resident-art.py 原圖.jpg 輸出.webp --white   # 白底原圖
 | js/taste-profiles.js | like、dislike（要是食材的口味標籤）、secret（2～3 種食材 id） |
 | data/SIANG_KITCHEN_TASTE_PROFILES.json | profiles 加一筆，內容跟 taste-profiles.js 一樣 |
 | js/errand-copy.js | CHARACTER_REPORTS：conv、park、market、mountain、faraway 各一組 |
+| js/world-voice.js（只有異世居民） | MO_PET_LINES 摸頭、MO_POKE_LINES 戳太多、MO_SNACK_LINES 餵布丁、MO_HOME_REPORTS（help 在家幫忙／guard／note／dino）、MO_NOTE_TEXTS 紙條；kitchen-lines.js 也要填 dark 奇怪料理。沒填會說小湘的通用句（湘 11/27） |
 | docs/SIANG_118_英文名.md | 稿子裡沒接進遊戲的文案（待機、願望十組、觀察日誌、彩蛋、Lv.5 事件…），口頭禪也照規則刪好 |
 
 稿子的 `**粗體**` 要拿掉（檢查會擋）。台詞裡的 `{name}` 會換成角色名。

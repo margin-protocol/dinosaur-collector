@@ -1,6 +1,7 @@
 // 派小湘出門：跑腿、系列加成、遠行帶回縣市蛋、在家幫忙、兩隻一起出門的隱藏故事
 // 出發時就決定好帶回什麼（存進存檔），重新整理不會重抽。
 import { CHARACTERS, COUNTY_CHARACTER } from './eggs.js';
+import { isMoVoice, MO_SERIES_REPORTS, MO_HOME_REPORTS, MO_NOTE_TEXTS } from './world-voice.js';
 import { PLACE_REPORTS, SERIES_REPORTS, CHARACTER_REPORTS, HOME_REPORTS, HOME_SERIES_REPORTS, NOTE_TEXTS, PAIR_STORY_VARIANTS } from './errand-copy.js';
 
 export const ERRAND_SLOTS = 3; // 同時最多三趟（第 3 趟要收集 ERRAND_SLOT_DEX 位）
@@ -101,14 +102,17 @@ function chooseLine(er, key, base, series, personal, rand) {
 }
 function reportFor(er, place, nos, rand) {
   const participants = nos.map((no) => CHARACTERS[no]).filter(Boolean);
-  const series = [...new Set(participants.map((c) => c.series))].flatMap((s) => SERIES_REPORTS[s]?.[place] || []);
+  const series = [...new Set(participants.map((c) => c.series))].flatMap((s) => (MO_SERIES_REPORTS[s] || SERIES_REPORTS[s])?.[place] || []);
   // 單人出門才使用個人主角台詞，避免兩位一起出門時主詞不明。
   const personal = nos.length === 1 ? (CHARACTER_REPORTS[nos[0]]?.[place] || []) : [];
   const key = `place:${place}:${[...nos].sort().join('-')}`;
-  return chooseLine(er, key, PLACE_REPORTS[place] || [], series, personal, rand);
+  // 有異世居民同行時不用小湘的通用回報（便利商店、微波爐、「她」……）
+  return chooseLine(er, key, nos.some(isMoVoice) ? [] : PLACE_REPORTS[place] || [], series, personal, rand);
 }
 function homeReportFor(er, task, no, rand) {
   const series = HOME_SERIES_REPORTS[CHARACTERS[no]?.series]?.[task] || [];
+  const mine = MO_HOME_REPORTS[no]; // 異世居民只說自己的話
+  if (isMoVoice(no) && mine) return chooseLine(er, `home:${task}:${no}`, [], [], [mine[task], mine.help].filter(Boolean), rand);
   return chooseLine(er, `home:${task}:${no}`, HOME_REPORTS[task] || [], series, [], rand);
 }
 function storyVariationFor(er, storyId, nos, rand) {
@@ -190,7 +194,7 @@ export function depart(state, { place, task, nos }, now = new Date(), rand = Mat
     const story = storyFor(nos);
     if (story) { loot.story = story.id; loot.storyVariant = storyVariationFor(er, story.id, nos, rand); }
   } else if (task === 'guard') { loot.warmth = 20; loot.line = homeReportFor(er, task, nos[0], rand); }
-  else if (task === 'note') { loot.note = pickFresh(er.recentLines, `paper:${nos[0]}`, NOTE_TEXTS, rand, 6); loot.line = homeReportFor(er, task, nos[0], rand); }
+  else if (task === 'note') { loot.note = pickFresh(er.recentLines, `paper:${nos[0]}`, (isMoVoice(nos[0]) && MO_NOTE_TEXTS[nos[0]]) || NOTE_TEXTS, rand, 6); loot.line = homeReportFor(er, task, nos[0], rand); }
   else if (task === 'dino') { loot.energy = 15; loot.dino = true; loot.line = homeReportFor(er, task, nos[0], rand); }
 
   const errand = { id: `${now.getTime().toString(36)}-${nos.join('')}`, ...(spot ? { place } : { task }), nos, start: now.toISOString(), until: new Date(now.getTime() + hours * HOUR).toISOString(), loot };
@@ -211,7 +215,7 @@ export function collect(state, id, { eggs, now = new Date() } = {}) {
   if (loot.energy) { state.energy += loot.energy; gains.push(`+${loot.energy} 能量`); }
   if (loot.fossils) { state.fossils = (state.fossils || 0) + loot.fossils; gains.push(`+${loot.fossils} 化石`); }
   if (loot.snack && state.bonus?.snacks?.count > 0) { state.bonus.snacks.count -= 1; gains.push('布丁 +1（今天可以多餵一次）'); }
-  else if (loot.snack) gains.push('一個布丁（她自己先吃掉了）');
+  else if (loot.snack) gains.push(`一個布丁（${names}自己先吃掉了）`);
   if (loot.egg === 'wish') { state.wishEgg.stock += 1; gains.push('一顆願望蛋'); }
   if (loot.county) { state.travel.eggs.push(loot.county); gains.push(`一顆${loot.county}的縣市蛋`); }
   if (loot.warmth) {
@@ -221,7 +225,7 @@ export function collect(state, id, { eggs, now = new Date() } = {}) {
     else { state.energy += loot.warmth; gains.push(`+${loot.warmth} 能量（蛋已經暖好了）`); }
   }
   if (loot.note) {
-    state.letters.mail.push({ id: `siang-${errand.id}`, title: `${names}的紙條`, body: loot.note, at: now.toISOString() });
+    state.letters.mail.push({ id: `siang-${errand.id}`, title: `${names}的紙條`, body: loot.note, at: now.toISOString(), by: [...errand.nos] });
     gains.push('一張紙條');
   }
   if (loot.dino) { state.dino.double = true; gains.push('下一個小恐龍委託獎勵加倍'); }

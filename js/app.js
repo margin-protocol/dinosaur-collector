@@ -75,6 +75,7 @@ import { siangStatuses, statusCounts } from './siang-status.js';
 import * as kitchen from './kitchen.js';
 import { talkFor } from './luck-talk.js';
 import { residentLine } from './resident-lines.js';
+import { isMoVoice, MO_PET_LINES, MO_POKE_LINES, MO_SNACK_LINES } from './world-voice.js';
 import { SCENES as UNLUCKY_SCENES, unluckyDue, grantUnlucky } from './unlucky.js';
 import { CHECKIN_REWARDS, ensureCheckin, checkIn as monthlyCheckIn, checkedToday, daysInMonth } from './checkin.js';
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
@@ -155,6 +156,7 @@ function homeAmbience() {
   return { rain: rainingToday(state, todayKey()), night: h >= 19 || h < 6, holiday: activeHolidays()[0]?.id || null };
 }
 const PET_LINES = ['好舒服～', '再摸一下嘛！', '嘿嘿，好害羞……', '最喜歡被你摸頭了！', '呼嚕呼嚕～'];
+const petLine = (no) => { const list = MO_PET_LINES[no] || PET_LINES; return list[Math.floor(Math.random() * list.length)]; }; // 異世居民有自己的摸頭台詞（world-voice.js）
 // 狂戳小湘：3 秒內戳到第 5 下就會抗議，抗議期間的戳戳不算數（愛要緩慢給予）
 const POKE_WINDOW = 3000, POKE_LIMIT = 5, POKE_COOLDOWN = 2500;
 const pokes = new Map();
@@ -192,7 +194,7 @@ const room = createRoom($('resident-lanes'), character => {
     if (line && streak > 1) return; // 連戳時只說戳戳台詞
   } else if (poke) {
     room.squish(character.no);
-    if (poke === 'angry') { room.bubble(character.no, '不要戳啦！！！小湘要扁掉了૮₍˃⤙˂₎ა\n愛要緩慢給予！', 3200); buzz([30, 40, 30]); }
+    if (poke === 'angry') { room.bubble(character.no, MO_POKE_LINES[character.no] || '不要戳啦！！！小湘要扁掉了૮₍˃⤙˂₎ა\n愛要緩慢給予！', 3200); buzz([30, 40, 30]); }
     return;
   }
   const talk = talkFor(character.no, room.residents());
@@ -215,7 +217,7 @@ const room = createRoom($('resident-lanes'), character => {
     if (task?.type === 'greet' && task.accepted !== false && task.target === character.no) void finishTask();
   });
 }, character => {
-  room.bubble(character.no, PET_LINES[Math.floor(Math.random() * PET_LINES.length)]);
+  room.bubble(character.no, petLine(character.no));
   void updateState(current => ({ energy: pet(current, todayKey()), bond: gainBond(current, character.no, 'pet', todayKey()) })).then(t => {
     state = t.state;
     const { energy, bond } = t.result; const heart = bond.added ? ` · ♡+${bond.added}` : '';
@@ -2469,7 +2471,7 @@ function setLetterTab(tab) {
   renderLetterList();
 }
 const letterSub = (letter) => letter.kind === 'mail' ? `${letter.all ? '湘寄給大家的' : '湘寄來的'} · ${new Date(letter.at).toLocaleDateString('zh-TW')}`
-  : letter.kind === 'note' ? `小湘寫的 · ${new Date(letter.at).toLocaleDateString('zh-TW')}`
+  : letter.kind === 'note' ? `${Array.isArray(letter.by) && letter.by.some(isMoVoice) ? `${letter.by.map(no => CHARACTERS[no]?.name || no).join('和')}寫的` : '小湘寫的'} · ${new Date(letter.at).toLocaleDateString('zh-TW')}`
   : letter.kind === 'intro' ? '最初的紙條' : `里程碑 · ${letter.hint}`;
 function renderLetterList() {
   const read = state.letters.read;
@@ -3357,7 +3359,7 @@ attachSnackDrag($('snack'), {
     state = t.state; renderAll();
     if (!t.result.energy) { toast('今天的布丁吃完了，明天再來～'); return; }
     if (t.result.bond?.up.length) queueBondUps([{ no, up: t.result.bond.up }]);
-    room.happy(no); room.hearts(no, 6); room.bubble(no, ['布丁好好吃！謝謝你～', '是我最喜歡的焦糖口味！', '再一口……就一口！'][Math.floor(Math.random() * 3)]);
+    room.happy(no); room.hearts(no, 6); room.bubble(no, MO_SNACK_LINES[no] || ['布丁好好吃！謝謝你～', '是我最喜歡的焦糖口味！', '再一口……就一口！'][Math.floor(Math.random() * 3)]);
     restart($('chip-energy'), 'is-bump'); toast(`${CHARACTERS[no].name}吃得好開心！+${t.result.energy} 能量${t.result.bond?.added ? ` · ♡+${t.result.bond.added}` : ''}`);
   },
 });

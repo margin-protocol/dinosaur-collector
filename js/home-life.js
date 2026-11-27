@@ -1,4 +1,6 @@
 // 首頁的生活感：跟著真實天氣、時間、節日變化的場景，以及入住小湘之間的對話
+import { isMoVoice, MO_CHATS, MO_RAIN_CHATS, MO_NIGHT_CHATS, CROSS_CHATS, CROSS_RAIN_CHATS, CROSS_NIGHT_CHATS } from './world-voice.js';
+
 const reduceMotion = () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
 const PARTICLES = {
@@ -60,17 +62,31 @@ const CHATS = [
 const RAIN_CHATS = [['外面在下雨耶。', '雨傘小湘一定很開心。'], ['下雨天好適合窩在家裡。', '那我們一起窩著吧～']];
 const NIGHT_CHATS = [['好睏喔……', '再撐一下，等飼養員說晚安。'], ['星星出來了！', '幫我許一個願好不好？']];
 
+// 誰跟誰聊、聊哪一組：兩位小湘用 CHATS；兩位異世居民用 MO_CHATS；一位異世一位小湘用 CROSS_CHATS（異世居民先開口）
+// 此生護卿（MO-012）是兩個人的卡，不參加首頁閒聊
+export function chatPick(ids, ctx = {}, rand = Math.random) {
+  const talkers = ids.filter((n) => n !== 'MO-012');
+  if (talkers.length < 2) return null;
+  let a = talkers[Math.floor(rand() * talkers.length)];
+  let b = talkers.filter((n) => n !== a)[Math.floor(rand() * (talkers.length - 1))];
+  const moA = isMoVoice(a), moB = isMoVoice(b);
+  let kind = 'origin';
+  if (moA && moB) kind = 'mo';
+  else if (moA || moB) { kind = 'cross'; if (!moA) [a, b] = [b, a]; }
+  const sets = { origin: [CHATS, RAIN_CHATS, NIGHT_CHATS], mo: [MO_CHATS, MO_RAIN_CHATS, MO_NIGHT_CHATS], cross: [CROSS_CHATS, CROSS_RAIN_CHATS, CROSS_NIGHT_CHATS] }[kind];
+  const pool = [...sets[0], ...(ctx.rain ? sets[1] : []), ...(ctx.night ? sets[2] : [])];
+  return { a, b, kind, pool };
+}
+
 export function startChats(room, getContext, { every = 18000 } = {}) {
-  let last = -1;
+  const last = {};
   return setInterval(() => {
     const ctx = getContext();
     if (!ctx || !room.isActive() || document.hidden || document.querySelector('dialog[open]')) return;
-    const ids = room.residents();
-    if (ids.length < 2) return;
-    const a = ids[Math.floor(Math.random() * ids.length)];
-    const b = ids.filter((n) => n !== a)[Math.floor(Math.random() * (ids.length - 1))];
-    const pool = [...CHATS, ...(ctx.rain ? RAIN_CHATS : []), ...(ctx.night ? NIGHT_CHATS : [])];
-    let i = Math.floor(Math.random() * pool.length); if (i === last) i = (i + 1) % pool.length; last = i;
+    const pick = chatPick(room.residents(), ctx);
+    if (!pick) return;
+    const { a, b, kind, pool } = pick;
+    let i = Math.floor(Math.random() * pool.length); if (i === last[kind]) i = (i + 1) % pool.length; last[kind] = i;
     room.bubble(a, pool[i][0], 2600);
     setTimeout(() => room.bubble(b, pool[i][1], 2800), 1800);
   }, every);

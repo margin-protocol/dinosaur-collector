@@ -8,6 +8,7 @@ import { SIANG_API } from './cloud.js';
 import { CHARACTERS } from './eggs.js';
 import { PLACES, HOME_TASKS } from './errands.js';
 import { ENEMIES } from './battle.js';
+import { isMoVoice, MO_PUSH } from './world-voice.js';
 
 export const TIMER_PREFS_KEY = 'siang-collector:timer-push:v1';
 export const MERGE_MS = 10 * 60e3;
@@ -58,13 +59,14 @@ export function quietShift(at) {
 }
 
 function single(ev) {
+  const mo = isMoVoice(ev.nos[0]); // 異世居民帶頭時用江湖口吻（world-voice.js）
   if (ev.kind === 'battle') {
     const lead = nameOf(ev.nos[0]);
-    return { title: `${ev.team}打完了 ⚔️`, body: `${lead}：${pick(BATTLE_LINES, ev.id)}` };
+    return { title: `${ev.team}打完了 ⚔️`, body: `${lead}：${pick(mo ? MO_PUSH.battle : BATTLE_LINES, ev.id)}` };
   }
-  const who = ev.nos.length > 1 ? `${nameOf(ev.nos[0])}她們` : nameOf(ev.nos[0]);
-  if (ev.task) return { title: `${who}忙完了`, body: pick(HELP_LINES, ev.id)(ev.task) };
-  return { title: `${who}回來囉`, body: pick(HOME_LINES, ev.id)(ev.where || '外面') };
+  const who = ev.nos.length > 1 ? `${nameOf(ev.nos[0])}${ev.nos.some(isMoVoice) ? '一行人' : '她們'}` : nameOf(ev.nos[0]);
+  if (ev.task) return { title: `${who}忙完了`, body: pick(mo ? MO_PUSH.help : HELP_LINES, ev.id)(ev.task) };
+  return { title: `${who}回來囉`, body: pick(mo ? MO_PUSH.home : HOME_LINES, ev.id)(ev.where || '外面') };
 }
 function merged(group, quiet) {
   const homes = group.filter((e) => e.kind === 'home'); const fights = group.filter((e) => e.kind === 'battle');
@@ -72,8 +74,9 @@ function merged(group, quiet) {
   const parts = [];
   if (people.length) parts.push(people.length <= 2 ? `${people.map(nameOf).join('、')}回家了` : `${nameOf(people[0])}等 ${people.length} 位回家了`);
   if (fights.length) parts.push(fights.length === 1 ? `${fights[0].team}也打完了` : `${fights.length} 隊都打完了`);
-  if (quiet) return { title: '早安 ☀️', body: `昨晚${parts.join('，')}，她們乖乖等你起床喔。` };
-  return { title: '大家都回來了 ♡', body: `${parts.join('，')}！快來收下她們帶回來的東西～` };
+  const they = group.some((e) => e.nos.some(isMoVoice)) ? '大家' : '她們';
+  if (quiet) return { title: '早安 ☀️', body: `昨晚${parts.join('，')}，${they}乖乖等你起床喔。` };
+  return { title: '大家都回來了 ♡', body: `${parts.join('，')}！快來收下${they}帶回來的東西～` };
 }
 
 // 排出要推的通知：[{at, title, body, tag}]，最多 8 則

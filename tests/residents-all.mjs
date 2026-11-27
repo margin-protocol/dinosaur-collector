@@ -14,6 +14,7 @@ import { KITCHEN_LINES } from '../js/kitchen-lines.js';
 import { CHARACTER_REPORTS } from '../js/errand-copy.js';
 import { ING } from '../js/kitchen.js';
 import { PLACES } from '../js/errands.js';
+import { isMoVoice, MO_PET_LINES, MO_POKE_LINES, MO_SNACK_LINES, MO_HOME_REPORTS, MO_NOTE_TEXTS } from '../js/world-voice.js';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
 const range = (a, b) => Array.from({ length: b - a + 1 }, (_, i) => String(a + i).padStart(3, '0'));
@@ -80,6 +81,15 @@ for (const [no, c] of Object.entries(CHARACTERS)) {
   for (const [k, v] of reports) {
     need(PLACE_KEYS.has(k), `errand-copy.js CHARACTER_REPORTS 地點 ${k} 不存在`);
     need(Array.isArray(v) && v.length && v.every(filled), `errand-copy.js CHARACTER_REPORTS ${k} 是空的`);
+  }
+  // 異世居民：首頁摸頭／戳太多／餵布丁、在家幫忙、紙條、奇怪料理都要有自己的話，不然會說小湘的通用句（湘 11/27）
+  if (isMoVoice(no)) {
+    need(Array.isArray(MO_PET_LINES[no]) && MO_PET_LINES[no].length && MO_PET_LINES[no].every(filled), 'world-voice.js MO_PET_LINES 摸頭');
+    need(filled(MO_POKE_LINES[no]), 'world-voice.js MO_POKE_LINES 戳太多');
+    need(filled(MO_SNACK_LINES[no]), 'world-voice.js MO_SNACK_LINES 餵布丁');
+    for (const k of ['help', 'guard', 'note', 'dino']) need(filled(MO_HOME_REPORTS[no]?.[k]), `world-voice.js MO_HOME_REPORTS ${k}`);
+    need(Array.isArray(MO_NOTE_TEXTS[no]) && MO_NOTE_TEXTS[no].length && MO_NOTE_TEXTS[no].every(filled), 'world-voice.js MO_NOTE_TEXTS 紙條');
+    need(filled(KITCHEN_LINES[no]?.dark), 'kitchen-lines.js dark 奇怪料理');
   }
   // 文案不能留皮寶稿子的 Markdown 粗體
   const copy = JSON.stringify([c.line, INTROS[no], MYSTERY_INTROS[no], BOND_STORIES[no], BOND_LINES[no], EXTRA_LINES[no], WISH_VOICE_LATE[no], KITCHEN_LINES[no], CHARACTER_REPORTS[no]]);
