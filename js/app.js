@@ -4400,7 +4400,10 @@ function sideSkillShort(skill, eff) {
   const k = side.SKILL_INFO[skill]; if (!k) return '';
   if (eff.countered) return `✦ ${k.name}已破解`;
   if (skill === 'rumor' && eff.out) return `📢 ${CHARACTERS[eff.out].name}會被謠言帶走`;
-  return `⚔️ ${k.name}${skill === 'rename' ? ' −10%' : skill === 'noBond' ? '：羈絆不算' : skill === 'sanction' ? '：掉落減半' : '：技能料理信物不算'}`;
+  if (skill === 'evaluate' && eff.low) return `📗 ${CHARACTERS[eff.low].name}會被評為沒價值`;
+  const cutN = Object.keys(eff.cut || {}).length;
+  const short = { rename: ' −10%', noBond: '：羈絆不算', sanction: '：掉落減半', silence: '：技能料理信物不算', price: `：${cutN} 位 −30%`, selective: `：${cutN} 位 −20%`, fad: `：${cutN} 位不算戰力`, clearcut: '：同系列、羈絆不算' };
+  return `⚔️ ${k.name}${short[skill] || ''}`;
 }
 // ── 主線／副本分頁（湘 11/27 選 A）。停在哪一頁只存在這支手機
 const BATTLE_TAB_KEY = 'siang-collector:battle-tab:v1';

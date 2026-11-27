@@ -232,7 +232,8 @@ export function teamPower(state, nos, enemyId) {
   // 系列支線：將軍技能（rumor＝最強、沒吃料理也不是 Lv.5 的那位不算戰力）與系列居民加成
   const sideSkill = enemy?.side && enemy.skill ? skillEffect(enemy.skill, nos, { level: (no) => levelOf(state.affection?.[no]?.pts || 0), fed: (no) => Boolean(state.kitchen?.buffs?.[no]), power: (no) => siangPower(state, no)?.power || 0 }) : null;
   const sideBonus = enemy?.side ? lineSeriesBonus(enemy.side, nos) : { n: 0, power: 0 };
-  const rumorOut = sideSkill?.out ? members.find((m) => m.no === sideSkill.out)?.power || 0 : 0;
+  const cut = sideSkill?.cut || (sideSkill?.out ? { [sideSkill.out]: 1 } : null);
+  const rumorOut = cut ? members.reduce((n, m) => n + m.power * (cut[m.no] || 0), 0) : 0;
   const bond = sideSkill?.noBond ? null : teamBond(state, nos);
   const food = sideSkill?.noBuffs ? null : teamFood(state, nos); // 小湘廚房：一隊最多用一份料理加成
   const skills = sideSkill?.noBuffs ? { speed: 0, power: 0, list: [] } : teamSkills(nos, { level: (no) => levelOf(state.affection?.[no]?.pts || 0), world: worldNo }); // 居民專屬技能（2.0）
@@ -243,11 +244,11 @@ export function teamPower(state, nos, enemyId) {
   const tb = sideSkill?.noBuffs ? null : state.title?.buff;
   const titlePower = (Number(tb?.power) || 0) + (tb?.event && enemy?.event === tb.event ? Number(tb.eventPower) || 0 : 0);
   const foodV = food?.kind === 'power' ? food.value + (Number(tb?.food) || 0) : 0;
-  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty && !sideSkill?.noBond ? HERO_PARTY_BONUS : 0)) * (1 + foodV) * (1 + titlePower) * (1 + skills.power) * (1 + keepsakes.power) * (1 + sideBonus.power) * (sideSkill?.mult ?? 1);
+  const mult = (1 + (sameSeries && !sideSkill?.noSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty && !sideSkill?.noBond ? HERO_PARTY_BONUS : 0)) * (1 + foodV) * (1 + titlePower) * (1 + skills.power) * (1 + keepsakes.power) * (1 + sideBonus.power) * (sideSkill?.mult ?? 1);
   const total = Math.round((raw - rumorOut) * mult * 10) / 10;
   // 料理多加了幾點戰力（拿掉料理那一層算一次，差多少就是料理的功勞）
   const foodPower = food?.kind === 'power' ? Math.round((total - Math.round((raw - rumorOut) * mult / (1 + foodV) * 10) / 10) * 10) / 10 : 0;
-  return { members, raw: Math.round(raw * 10) / 10, total, sameSeries, weakHit, heroParty: heroParty && !sideSkill?.noBond, bond, food, foodPower, skills, keepsakes, sideSkill, sideBonus, titlePower };
+  return { members, raw: Math.round(raw * 10) / 10, total, sameSeries: sameSeries && !sideSkill?.noSeries, weakHit, heroParty: heroParty && !sideSkill?.noBond, bond, food, foodPower, skills, keepsakes, sideSkill, sideBonus, titlePower };
 }
 
 // 預估：勝率與評語

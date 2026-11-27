@@ -27,7 +27,17 @@ export const SKILL_INFO = {
   sanction: { name: '經濟制裁', text: '打贏拿到的能量、化石減半', counter: '三位都是縣市小湘：島嶼市集開張，照常拿' },
   rumor: { name: '消息污染', text: '隊上戰力最高的一位被謠言帶走，不算戰力', counter: '吃過料理或好感 Lv.5 的小湘不會被帶走' },
   silence: { name: '不容異議', text: '居民技能、料理、信物加成都不算', counter: '三位都是縣市小湘：島嶼一起發聲，加成恢復' },
+  // 萬物不標價（皮寶 11/27 企劃；技能是德寶提的草案，等湘確認）
+  price: { name: '看臉打折', text: 'N、R 居民被標成「普通款」，戰力 −30%', counter: '隊上 2 位以上動物小湘：價籤撕掉，不打折' },
+  selective: { name: '選擇性愛心', text: '不是貓狗的居民被晾在一邊，戰力 −20%', counter: '隊上有爬蟲類小湘：「原來蜥蜴也是動物！」' },
+  fad: { name: '退流行', text: '好感還沒到 Lv.3 的居民被嫌「退流行」，不算戰力', counter: '好感 Lv.3 以上的居民不會被嫌（喜歡不是一時興起）' },
+  clearcut: { name: '剷平森林', text: '同系列、羈絆加成都不算', counter: '三位都是動物小湘：這裡有人住，森林不是空地' },
+  evaluate: { name: '效益評鑑', text: '隊上戰力最低的那位被評為「沒有價值」，不算戰力', counter: '三位都是動物小湘：一起拒絕評鑑' },
 };
+// 動物小湘分類（萬物不標價的技能、成就用）
+export const ANIMAL_CATS = ['044', '095']; // 貓咪小湘、Koda 小湘（Koda 是虎斑貓）
+export const ANIMAL_DOGS = ['048'];
+export const ANIMAL_REPTILES = ['051', '052', '096']; // 恐龍、守宮、爬爬（恐龍算不算等湘確認）
 
 export const SIDE_LINES = {
   island: {
@@ -68,23 +78,37 @@ export const SIDE_LINES = {
         keepsake: { id: 'island-seal', art: 'assets/keepsakes/side/island/island-seal.webp', name: '島嶼自主之印', text: '一枚小小的印章，蓋下去的是「這一頁，我們自己寫」。' } },
     ],
   },
-  // 本週支線：圖、劇情還沒交，先用 emoji 和暫定文字讓測試服看得到
+  // 本週支線：萬物不標價（皮寶 11/27 企劃）。圖還沒交，先用 emoji；劇情等皮寶寫
   animals: {
     id: 'animals',
     series: 'animals',
-    name: '迷路的森林郵差',
-    title: '森林守護者',
+    name: '萬物不標價',
+    title: '萬物守護者',
     kicker: '本週支線 · 動物小湘',
-    tagline: '森林郵差掉了一整袋信，動物小湘們決定幫忙送回去。',
+    tagline: '「可是，我們不是為了你才存在的呀。」',
+    intro: '頁間世界的深處，有一座「萬物森」，各種動物小湘在這裡生活：有的喜歡曬太陽，有的喜歡躲樹洞，有的每天除了吃飯就是睡覺。直到「萬物管理局」進駐森林，說所有生命都要有明確的價格、用途與管理標準。動物小湘們決定站出來，守護那些無法替自己說話的生命。',
     scene: 'assets/places/park.webp',
-    seriesBonus: { per: 0.1, cap: 0.3 },
+    seriesBonus: { per: 0.2, cap: 0.6 },
     reward: { first: 10, firstBoss: 25, repeat: 2, repeatBoss: 4 },
+    resident: '119', // SSR 萬物共生・小湘（等湘的圖）；表裡還沒有 119 時不送
     draft: true,
     stages: [
-      { id: 'ani-1', label: 'SD-1', name: '搶松果的松鼠團', emoji: '🐿️', power: 60, minutes: 45, intro: '「松果是我們的！信也是我們的！」', win: '「好啦好啦，信還你們……松果可以留著嗎？」', lose: '「嘿嘿，追不到吧！」' },
-      { id: 'ani-2', label: 'SD-2', name: '霸佔水池的河馬', emoji: '🦛', power: 80, minutes: 45, intro: '「這個水池今天本河馬包場了。」', win: '「噗嚕……信濕掉了不是我的錯喔。」', lose: '「噗嚕噗嚕，下次請早。」' },
-      { id: 'ani-3', label: 'SD-3', name: '迷霧貓頭鷹', emoji: '🦉', power: 105, minutes: 60, intro: '「咕……地址？什麼地址？霧太大了看不見。」', win: '「咕！霧散了，原來信封背面有寫地址！」', lose: '「咕……妳們也迷路了吧。」' },
-      { id: 'ani-4', label: 'SD-4', name: '撕信的大野狼', emoji: '🐺', power: 135, minutes: 90, boss: true, intro: '「沒有人會寫信給我，所以我也不讓別人收到信！」', win: '「……這封，是寫給我的？」', lose: '「嗷嗚——信全部都是我的了！」' },
+      { id: 'ani-1', code: 'EX-01', title: '我不是商品', label: '★', name: '標價商人・金秤', emoji: '⚖️', power: 60, minutes: 45, skill: 'price',
+        intro: '「長得普通的，今天打五折！」', win: '「價、價籤怎麼撕下來了？！沒有價錢要怎麼賣啦！」', lose: '「看吧，普通款就是普通款。」',
+        keepsake: { id: 'price-tag', name: '撕下的價籤', text: '生命的價值，不是由價格決定。' } },
+      { id: 'ani-2', code: 'EX-02', title: '善意的代價', label: '★★', name: '施食師・善善', emoji: '🥣', power: 85, minutes: 60, skill: 'selective',
+        intro: '「我只是太有愛心了，有什麼錯？」', win: '「……我、我只是想拍一張餵食的照片而已嘛。」', lose: '「沒關係，我明天再多倒一點飼料就好！」',
+        keepsake: { id: 'food-bowl', name: '未盡的食碗', text: '善意不該只停留在自己感到善良的那一刻。' } },
+      { id: 'ani-3', code: 'EX-03', title: '喜歡不是一時興起', label: '★★★', name: '收藏家・滿櫃', emoji: '🔍', power: 115, minutes: 60, skill: 'fad',
+        intro: '「這隻已經退流行了！」', win: '「怎麼會……這些舊的，還記得我？」', lose: '「下一隻、下一隻！櫃子還有位子！」',
+        keepsake: { id: 'adoption-form', name: '空白的認養書', text: '喜歡只需要一瞬間，照顧卻需要一生。' } },
+      { id: 'ani-4', code: 'EX-04', title: '森林不是空地', label: '★★★★', name: '築牆者・無林', emoji: '📐', power: 150, minutes: 75, skill: 'clearcut',
+        intro: '「這裡什麼都沒有，太浪費了！」', win: '「藍圖上……什麼時候多了這麼多住戶？」', lose: '「很好，明天就開工。」',
+        keepsake: { id: 'new-seed', name: '新生的種子', text: '對某些生命而言，一片草地就是整個世界。' } },
+      { id: 'ani-5', code: 'EX-05', title: '活著就很好', label: '★★★★★', name: '萬物局長・唯用', emoji: '📗', power: 190, minutes: 90, boss: true, skill: 'evaluate',
+        intro: '「請先證明妳的存在價值。」\n動物小湘：「可是，我們不是為了你才存在的呀。」',
+        win: '「評鑑冊……怎麼全是空白的？」\n系統提示：萬物管理局已撤出萬物森。', lose: '「不及格。下一位。」',
+        keepsake: { id: 'life-heart', name: '無價的生命之心', text: '活著，本身就不需要理由。' } },
     ],
   },
 };
@@ -150,7 +174,10 @@ export function ensureSide(state) {
   for (const [k, n] of Object.entries(old.candy || {})) if (Number.isSafeInteger(n) && n > 0) candy[k] = n;
   const cw = old.candyWeek && typeof old.candyWeek.week === 'string' ? { week: old.candyWeek.week, n: Object.fromEntries(Object.entries(old.candyWeek.n || {}).filter(([, v]) => Number.isSafeInteger(v))) } : { week: '', n: {} };
   const seen = Object.fromEntries(Object.entries(old.seen || {}).filter(([k, v]) => typeof k === 'string' && typeof v === 'string'));
-  state.side = { lines, countyRan: ran, candy, candyWeek: cw, seen, ...(typeof old.worn === 'string' && lines[old.worn]?.titleAt ? { worn: old.worn } : {}) };
+  const lineRan = {};
+  for (const [k, v] of Object.entries(old.ran || {})) if (SIDE_LINES[k] && Array.isArray(v)) lineRan[k] = [...new Set(v.filter((no) => typeof no === 'string'))];
+  const feats = Array.isArray(old.feats) ? [...new Set(old.feats.filter((f) => typeof f === 'string'))] : [];
+  state.side = { lines, countyRan: ran, candy, candyWeek: cw, seen, ...(Object.keys(lineRan).length ? { ran: lineRan } : {}), ...(feats.length ? { feats } : {}), ...(typeof old.worn === 'string' && lines[old.worn]?.titleAt ? { worn: old.worn } : {}) };
   NORMALIZED.add(state.side);
   return state.side;
 }
@@ -188,6 +215,19 @@ export function lineSeriesBonus(lineId, nos) {
 export function skillEffect(skill, nos, { level = () => 1, fed = () => false, power = () => 0 } = {}) {
   const county = nos.filter((no) => CHARACTERS[no]?.series === 'county').length;
   const all = nos.length > 0 && county === nos.length && nos.length >= 3;
+  const animals = nos.filter((no) => CHARACTERS[no]?.series === 'animals').length;
+  const allAnimals = nos.length >= 3 && animals === nos.length;
+  // cut：{居民: 扣掉幾成戰力}（1＝整位不算）
+  const cutOf = (list, f) => (list.length ? { cut: Object.fromEntries(list.map((no) => [no, f])), mult: 1 } : { countered: true, mult: 1 });
+  if (skill === 'price') return animals >= 2 ? { countered: true, mult: 1 } : cutOf(nos.filter((no) => ['N', 'R'].includes(CHARACTERS[no]?.rarity)), 0.3);
+  if (skill === 'selective') return nos.some((no) => ANIMAL_REPTILES.includes(no)) ? { countered: true, mult: 1 } : cutOf(nos.filter((no) => !ANIMAL_CATS.includes(no) && !ANIMAL_DOGS.includes(no)), 0.2);
+  if (skill === 'fad') return cutOf(nos.filter((no) => level(no) < 3), 1);
+  if (skill === 'clearcut') return allAnimals ? { countered: true, mult: 1 } : { noBond: true, noSeries: true, mult: 1 };
+  if (skill === 'evaluate') {
+    if (allAnimals || !nos.length) return { countered: true, mult: 1 };
+    const low = nos.reduce((a, b) => (power(b) < power(a) ? b : a));
+    return { cut: { [low]: 1 }, low, mult: 1 };
+  }
   if (skill === 'rename') return county >= 2 ? { countered: true, mult: 1 } : { mult: 0.9 };
   if (skill === 'noBond') return { noBond: true, mult: 1 };
   if (skill === 'sanction') return all ? { countered: true, mult: 1 } : { lootHalf: true, mult: 1 };
@@ -211,6 +251,12 @@ export function skillLines(skill, eff, nos) {
   if (skill === 'sanction') return eff.countered ? [`💰 ${info.name}｜帝國不買了……`, '✦ 縣市小湘聯手開了一場超大型島嶼市集，照樣有收入！'] : [`💰 ${info.name}｜這場拿到的能量、化石減半`];
   if (skill === 'rumor') return eff.countered ? [`📢 ${info.name}｜傳單滿天飛……`, '✦ 大家先查證再轉傳，沒有人被帶走！'] : [`📢 ${info.name}｜「聽說${name(eff.out)}早就投靠帝國了！」${name(eff.out)}被謠言帶走，這場不算戰力`];
   if (skill === 'silence') return eff.countered ? [`📕 ${info.name}｜「不准發言！」`, '✦ 三位縣市小湘一起開口：「島嶼一起發聲！」加成全部恢復！'] : [`📕 ${info.name}｜居民技能、料理、信物加成都被封住了`];
+  const cutNames = Object.keys(eff.cut || {}).map(name).join('、');
+  if (skill === 'price') return eff.countered ? [`⚖️ ${info.name}｜金秤拿出一疊價籤……`, '✦ 動物小湘把價籤撕了：「我們不是商品！」'] : [`⚖️ ${info.name}｜${cutNames}被貼上「普通款・五折」（戰力 −30%）`];
+  if (skill === 'selective') return eff.countered ? [`🥣 ${info.name}｜善善只倒飼料給貓狗……`, '✦ 爬蟲類小湘爬了出來：「原來蜥蜴也是動物！」大家都被看見了！'] : [`🥣 ${info.name}｜${cutNames}被晾在一邊（戰力 −20%）`];
+  if (skill === 'fad') return eff.countered ? [`🔍 ${info.name}｜滿櫃拿著放大鏡挑來挑去……`, '✦ 「我們一起很久了，才不是一時興起！」沒有人被嫌退流行！'] : [`🔍 ${info.name}｜「這隻已經退流行了！」${cutNames}這場不算戰力`];
+  if (skill === 'clearcut') return eff.countered ? [`📐 ${info.name}｜無林攤開開發藍圖……`, '✦ 三位動物小湘站成一排：「這裡有人住！」森林保住了！'] : [`📐 ${info.name}｜森林被畫成空地，同系列、羈絆加成不算`];
+  if (skill === 'evaluate') return eff.countered ? [`📗 ${info.name}｜「請先證明妳的存在價值。」`, '✦ 三位動物小湘一起搖頭：「我們不是為了你才存在的呀。」評鑑作廢！'] : [`📗 ${info.name}｜${name(eff.low)}被評為「沒有價值」，這場不算戰力`];
   return [];
 }
 
@@ -261,6 +307,15 @@ export function recordSideRun(state, lineId, stageId, report, nos, { now = new D
     if (candy) sd.candy[line.series] = (sd.candy[line.series] | 0) + candy;
   }
   if (lineId === 'island') { const ran = new Set(ensureSide(state).countyRan); for (const no of nos) if (MAIN_COUNTY.includes(no)) ran.add(no); state.side.countyRan = [...ran]; }
+  else if (line.series) { const sd = ensureSide(state); const ran = new Set(sd.ran?.[lineId] || []); for (const no of nos) if (CHARACTERS[no]?.series === line.series) ran.add(no); (sd.ran ||= {})[lineId] = [...ran]; }
+  // 特殊打法成就（萬物不標價）：打贏時隊上有誰
+  if (report.win && lineId === 'animals') {
+    const sd = ensureSide(state); const f = new Set(sd.feats || []);
+    if (stageId === 'ani-2' && nos.some((no) => ANIMAL_REPTILES.includes(no))) f.add('ani-reptile');
+    if (stageId === 'ani-5' && nos.some((no) => ANIMAL_CATS.includes(no))) f.add('ani-cat');
+    if (stageId === 'ani-5' && nos.some((no) => CHARACTERS[no]?.series === 'animals' && CHARACTERS[no]?.rarity === 'N')) f.add('ani-n');
+    if (f.size) sd.feats = [...f];
+  }
   const done = line.stages.every((x) => prog.stages[x.id]?.clears);
   let complete = false;
   let resident = null;
@@ -279,4 +334,6 @@ export function recordSideRun(state, lineId, stageId, report, nos, { now = new D
 
 export const lineCleared = (state, lineId) => Boolean(state.side?.lines?.[lineId]?.doneAt);
 export const keepsakeCount = (state, lineId) => Object.keys(state.side?.lines?.[lineId]?.keepsakes || {}).length;
+export const hasFeat = (state, id) => Boolean(state.side?.feats?.includes(id));
+export const lineRan = (state, lineId) => state.side?.ran?.[lineId] || [];
 export const stageWon = (state, lineId, stageId) => Boolean(state.side?.lines?.[lineId]?.stages?.[stageId]?.clears);
