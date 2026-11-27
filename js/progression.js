@@ -8,7 +8,7 @@ import { ensureTravel } from './travel.js';
 import { ensureWeather } from './weather.js';
 import { ensureGifts } from './gifts.js';
 import { ensureShelf, CHARACTERS } from './eggs.js';
-import { ensureErrands } from './errands.js';
+import { ensureErrands, STORIES as ERRAND_STORIES } from './errands.js';
 import { ensureWheel } from './wheel.js';
 import { ensureAffection, levelOf, MAX_LEVEL as BOND_MAX } from './affection.js';
 import { ensureBattle, CHAPTERS as BATTLE_CHAPTERS } from './battle.js';
@@ -147,7 +147,7 @@ export function growthGoals(level) {
     { name: '環島的路上', reward: { energy: 100 }, goals: [goal('五個地方', '在 5 個不同縣市按「探索附近」', 'counties', 5, 'home'), goal('八張明信片', '收到 8 張家鄉明信片', 'cards', 8, 'errands'), goal('六十趟旅行', '累計派小湘出門 60 次', 'errands', 60, 'errands')] },
     { name: '拿手好菜', reward: { egg: 'wish' }, goals: [goal('廚房常客', '在小湘廚房做料理 40 次', 'cooked', 40, 'kitchen'), goal('六道特色料理', '解開 6 道特色料理', 'recipes', 6, 'kitchen'), goal('隨手收藏家', '累計隨手拍 80 張', 'snaps', 80, 'daily')] },
     { name: '三十天的日常', reward: { egg: 'weather' }, goals: [goal('三十天', '在 30 個不同日子完成願望', 'days', 30, 'daily'), goal('一百個小願望', '累計完成 100 個每日願望', 'wishes', 100, 'daily'), goal('五十五位夥伴', '收集 55 位不同的小湘', 'dex', 55, 'dex')] },
-    { name: '一起寫的故事', reward: { egg: 'wish', weather: 1, fossils: 40, energy: 100 }, goals: [goal('五位知心好友', '讓 5 位小湘的好感度升到 Lv.5', 'bond5', 5, 'dex'), goal('十二個故事', '發現 12 個旅行故事', 'stories', 12, 'errands'), goal('二十五次相遇', '累計孵化 25 顆蛋', 'hatched', 25, 'incubate')] },
+    { name: '一起寫的故事', reward: { egg: 'wish', weather: 1, fossils: 40, energy: 100 }, goals: [goal('五位知心好友', '讓 5 位小湘的好感度升到 Lv.5', 'bond5', 5, 'dex'), goal('全部的故事', `發現全部 ${ERRAND_STORIES.length} 個旅行故事`, 'stories', ERRAND_STORIES.length, 'errands'), goal('二十五次相遇', '累計孵化 25 顆蛋', 'hatched', 25, 'incubate')] },
     { name: '星星收集家', reward: { egg: 'wish' }, goals: [goal('滿天星星', '對戰關卡累計拿到 24 顆星', 'stars', 24, 'battle'), goal('全部通關', '通關全部 12 個對戰關卡', 'battles', 12, 'battle'), goal('可靠的助手', '完成小恐龍的委託 50 次', 'tasks', 50, 'home')] },
     { name: '滿滿的回憶', reward: { fossils: 30 }, goals: [goal('四十張合照', '累計和小湘外出合照 40 次', 'photos', 40, 'home'), goal('三十個成就', '領取 30 個成就', 'achievements', 30, 'achievements'), goal('六十五位夥伴', '收集 65 位不同的小湘', 'dex', 65, 'dex')] },
     { name: '走遍台灣', reward: { egg: 'weather' }, goals: [goal('六個地方', '在 6 個不同縣市按「探索附近」', 'counties', 6, 'home'), goal('十二張明信片', '收到 12 張家鄉明信片', 'cards', 12, 'errands'), goal('一百趟旅行', '累計派小湘出門 100 次', 'errands', 100, 'errands')] },

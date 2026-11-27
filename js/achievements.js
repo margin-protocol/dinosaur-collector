@@ -8,6 +8,7 @@ import { CHARACTERS as SIDE_CHARS } from './eggs.js';
 const ANIMAL_ALL = Object.keys(SIDE_CHARS).filter((no) => SIDE_CHARS[no].series === 'animals' && !SIDE_CHARS[no].sidePreview && no !== '119'); // 企劃定 14 位；通關送的 119 不算
 import { dishById, recipesFound, secretsFound } from './kitchen.js';
 import { CHAPTERS as BATTLE_CHAPTERS } from './battle.js';
+import { STORIES } from './errands.js';
 const darkDish = (id) => dishById(id)?.dark;
 // 成就：由進度直接推算是否達成；領取獎勵的紀錄存在 state.achievements.claimed
 const dexCount = (s) => Object.keys(s.dex || {}).length;
@@ -70,7 +71,7 @@ export const ACHIEVEMENTS = [
   { id: 'island-hop', group: '旅行', title: '跳島', hint: '澎湖、金門、馬祖都去過', goal: 3, value: (s) => ['澎湖縣', '金門縣', '連江縣'].filter((k) => s.travel?.visits?.[k]).length, reward: 100 },
   { id: 'errand-100', group: '旅行', title: '跑腿達人', hint: '派小湘出門 100 次', goal: 100, value: (s) => s.errands?.total || 0, reward: 60 },
   { id: 'errand-500', group: '旅行', title: '說走就走', hint: '派小湘出門 500 次', goal: 500, value: (s) => s.errands?.total || 0, reward: 150 },
-  { id: 'story-30', group: '旅行', title: '旅行故事集', hint: '發現 30 個旅行故事', goal: 30, value: (s) => Object.keys(s.errands?.stories || {}).length, reward: 80 },
+  { id: 'story-30', group: '旅行', title: '旅行故事集', hint: `發現全部 ${STORIES.length} 個旅行故事`, goal: () => STORIES.length, value: (s) => Object.keys(s.errands?.stories || {}).length, reward: 80 },
   { id: 'pet-30', group: '陪伴', title: '摸頭大師', hint: '摸摸頭 30 次', goal: 30, value: (s) => t(s, 'pets'), reward: 30 },
   { id: 'snack-20', group: '陪伴', title: '布丁時間', hint: '餵小湘 20 次布丁', goal: 20, value: (s) => t(s, 'snacks'), reward: 30 },
   { id: 'greet-30', group: '陪伴', title: '打招呼', hint: '跟小湘打招呼 30 次', goal: 30, value: (s) => t(s, 'greets'), reward: 30 },
