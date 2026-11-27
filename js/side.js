@@ -4,6 +4,7 @@
 // 關卡 key＝`side:<線>:<關>`；進度存在 state.side.lines[線]
 // 上線前只有測試服（?test）看得到：SIDE_LIVE 改成 true 才對所有玩家開放。
 import { CHARACTERS } from './eggs.js';
+import { nextStarCost, weekKey, MAX_CANDY_STARS } from './candy.js';
 
 export const SIDE_LIVE = false;
 export const sideOn = () => SIDE_LIVE || Boolean(globalThis.__SIANG_TEST__);
@@ -33,11 +34,12 @@ export const SIDE_LINES = {
     permanent: true,
     series: 'county',
     name: '島嶼不歸檔',
+    title: '島嶼守望隊', // 全線三星的稱號
     kicker: '常駐支線 · 縣市小湘',
     tagline: '「我們住在這裡，不是因為誰允許我們住在這裡。」',
     disclaimer: '本故事純屬虛構',
     intro: '頁間世界的東方海域，有一座由各縣市居民一起生活的島。海峽另一端的「赤印帝國」發布《天下頁籍統一令》，說這座島是帝國書冊裡遺失的一頁，派出五位將軍，要把島嶼重新裝訂進去。於是，各縣市小湘組成了「島嶼居民守望隊」。',
-    scene: 'assets/places/beach.webp', // 湘的場景圖還沒來，先借海邊
+    scene: 'assets/scene/side/island-harbor.webp', // 湘 11/27 畫的漁港燈塔（原檔 /mnt/project-files/side-quest/island/originals/）
     countyBonus: { per: 0.2, cap: 0.6 }, // 縣市居民每位 +20%，最多 +60%；其他居民也能上
     reward: { first: 10, firstBoss: 25, repeat: 2, repeatBoss: 4 },
     stages: [
@@ -68,6 +70,7 @@ export const SIDE_LINES = {
     id: 'animals',
     series: 'animals',
     name: '迷路的森林郵差',
+    title: '森林守護者',
     kicker: '本週支線 · 動物小湘',
     tagline: '森林郵差掉了一整袋信，動物小湘們決定幫忙送回去。',
     scene: 'assets/places/park.webp',
@@ -119,7 +122,9 @@ export function weeklyNow(nowMs) {
 // 線現在開著嗎：常駐一直開；本週支線只有輪到的那週開（已經派出去的隊伍照樣能回來領）
 export const lineOpen = (lineId, nowMs) => Boolean(SIDE_LINES[lineId]?.permanent) || weeklyNow(nowMs)?.line?.id === lineId;
 
+const NORMALIZED = new WeakSet(); // 同一個存檔物件只整理一次，避免中途換掉 state.side 讓手上的參照失效
 export function ensureSide(state) {
+  if (state.side && NORMALIZED.has(state.side)) return state.side;
   const old = state.side && typeof state.side === 'object' ? state.side : {};
   const lines = {};
   for (const [id, v] of Object.entries(old.lines || {})) {
@@ -128,10 +133,14 @@ export function ensureSide(state) {
     for (const [sid, s] of Object.entries(v.stages || {})) if (stageDef(id, sid) && s) stages[sid] = { stars: s.stars | 0, best: s.best | 0, clears: s.clears | 0, tries: s.tries | 0, ...(typeof s.firstAt === 'string' ? { firstAt: s.firstAt } : {}) };
     const keepsakes = {};
     for (const [k, at] of Object.entries(v.keepsakes || {})) if (typeof at === 'string') keepsakes[k] = at;
-    lines[id] = { stages, keepsakes, ...(typeof v.doneAt === 'string' ? { doneAt: v.doneAt } : {}) };
+    lines[id] = { stages, keepsakes, ...(typeof v.doneAt === 'string' ? { doneAt: v.doneAt } : {}), ...(typeof v.titleAt === 'string' ? { titleAt: v.titleAt } : {}) };
   }
   const ran = Array.isArray(old.countyRan) ? [...new Set(old.countyRan.filter((no) => typeof no === 'string'))] : [];
-  state.side = { lines, countyRan: ran };
+  const candy = {};
+  for (const [k, n] of Object.entries(old.candy || {})) if (Number.isSafeInteger(n) && n > 0) candy[k] = n;
+  const cw = old.candyWeek && typeof old.candyWeek.week === 'string' ? { week: old.candyWeek.week, n: Object.fromEntries(Object.entries(old.candyWeek.n || {}).filter(([, v]) => Number.isSafeInteger(v))) } : { week: '', n: {} };
+  state.side = { lines, countyRan: ran, candy, candyWeek: cw, ...(typeof old.worn === 'string' && lines[old.worn]?.titleAt ? { worn: old.worn } : {}) };
+  NORMALIZED.add(state.side);
   return state.side;
 }
 export const lineProgress = (state, lineId) => { const s = ensureSide(state); return (s.lines[lineId] ||= { stages: {}, keepsakes: {} }); };
@@ -195,7 +204,25 @@ export function skillLines(skill, eff, nos) {
 }
 
 // 打完一場：記進度、算化石、首勝掉信物；回傳要顯示的獎勵
-export function recordSideRun(state, lineId, stageId, report, nos, { now = new Date(), lootHalf = false } = {}) {
+// ── 系列星光糖（湘 11/27 推薦版）：只有那個系列的居民能吃；N～SR 一顆抵一顆普通糖，SSR／UR 兩顆抵一顆
+export const SERIES_CANDY_MULT = { N: 1, R: 1, SR: 1, SSR: 2, UR: 2 };
+export const CANDY_FIRST = 1, CANDY_FIRST_BOSS = 2; // 首勝必給
+export const CANDY_CHANCE = 0.25, CANDY_CHANCE_BOSS = 0.4, CANDY_FULL_TEAM = 0.15; // 重複打贏的機率；三位都是該系列再 +15%
+export const CANDY_WEEKLY_CAP = 6; // 重複打贏掉的糖，每條線每週最多
+export const seriesCandyCount = (state, series) => Math.max(0, state.side?.candy?.[series] | 0);
+export function seriesCandyCost(state, no) {
+  const c = CHARACTERS[no]; const entry = state.dex?.[no]; if (!c || !entry) return 0;
+  const stars = Math.min(MAX_CANDY_STARS, entry.dup || 0); const base = nextStarCost(stars);
+  return base ? base * (SERIES_CANDY_MULT[c.rarity] || 1) : 0;
+}
+export function feedSeriesCandy(state, no) {
+  const c = CHARACTERS[no]; const cost = seriesCandyCost(state, no); if (!cost) return null;
+  const side = ensureSide(state); if ((side.candy[c.series] | 0) < cost) return null;
+  side.candy[c.series] -= cost; const entry = state.dex[no]; entry.dup = Math.min(MAX_CANDY_STARS, entry.dup || 0) + 1;
+  return { no, cost, stars: entry.dup, left: side.candy[c.series], series: c.series };
+}
+
+export function recordSideRun(state, lineId, stageId, report, nos, { now = new Date(), lootHalf = false, rand = Math.random } = {}) {
   const line = SIDE_LINES[lineId]; const s = stageDef(lineId, stageId); if (!line || !s) return null;
   const prog = lineProgress(state, lineId);
   const st = (prog.stages[stageId] ||= { stars: 0, best: 0, clears: 0, tries: 0 });
@@ -210,11 +237,26 @@ export function recordSideRun(state, lineId, stageId, report, nos, { now = new D
   // 常駐線：第一次打贏該將軍就拿到信物（不靠機率）
   let keepsake = null;
   if (report.win && s.keepsake && !prog.keepsakes[s.keepsake.id]) { prog.keepsakes[s.keepsake.id] = now.toISOString(); keepsake = s.keepsake; }
+  // 系列糖
+  let candy = 0;
+  if (report.win) {
+    const sd = ensureSide(state); const wk = weekKey(now);
+    if (sd.candyWeek.week !== wk) sd.candyWeek = { week: wk, n: {} };
+    if (first) candy = s.boss ? CANDY_FIRST_BOSS : CANDY_FIRST;
+    else if ((sd.candyWeek.n[lineId] | 0) < CANDY_WEEKLY_CAP) {
+      const full = nos.length >= 3 && nos.every((no) => CHARACTERS[no]?.series === line.series);
+      if (rand() < (s.boss ? CANDY_CHANCE_BOSS : CANDY_CHANCE) + (full ? CANDY_FULL_TEAM : 0)) { candy = 1; sd.candyWeek.n[lineId] = (sd.candyWeek.n[lineId] | 0) + 1; }
+    }
+    if (candy) sd.candy[line.series] = (sd.candy[line.series] | 0) + candy;
+  }
   if (lineId === 'island') { const ran = new Set(ensureSide(state).countyRan); for (const no of nos) if (MAIN_COUNTY.includes(no)) ran.add(no); state.side.countyRan = [...ran]; }
   const done = line.stages.every((x) => prog.stages[x.id]?.clears);
   let complete = false;
   if (done && !prog.doneAt) { prog.doneAt = now.toISOString(); complete = true; }
-  return { first, fossils, keepsake, complete, lineName: line.name };
+  // 稱號：全線三星
+  let title = null;
+  if (line.title && !prog.titleAt && line.stages.every((x) => (prog.stages[x.id]?.stars | 0) >= 3)) { prog.titleAt = now.toISOString(); title = line.title; }
+  return { first, fossils, keepsake, complete, lineName: line.name, candy, series: line.series, title };
 }
 
 export const lineCleared = (state, lineId) => Boolean(state.side?.lines?.[lineId]?.doneAt);

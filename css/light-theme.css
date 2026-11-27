@@ -107,3 +107,5 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-tabs button[aria-selected="true"] { background:var(--t-selected); color:var(--t-accent); opacity:1; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.side-line__bonus,.side-ks) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .side-ks.is-got { background:var(--t-selected); color:var(--t-accent); border-color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.title-chip,.title-pill) { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.title-chip:not(.is-empty),.title-pill[aria-pressed="true"]) { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }

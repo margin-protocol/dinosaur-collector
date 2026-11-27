@@ -58,6 +58,7 @@ import { PLACES, HOME_TASKS, STORIES, errandSlots, errandSlotHint, depart, colle
 import { watchForUpdates, loadChangelog, unseen, markSeen, noteNewPlayer, serverTime } from './updates.js';
 import * as events from './events.js';
 import * as side from './side.js';
+import * as titles from './titles.js';
 const { noteServerTime } = events;
 // 自動化測試才用：在載入前指定活動開始時間（玩家的瀏覽器不會走這裡）
 // 測試服（?test）：活動當作已經開跑 73 小時，上卷、下卷都能直接進去
@@ -467,8 +468,15 @@ function say(text, mood, ms = 2200, mode) {
 function renderPlayer() {
   const level = playerLevel(state);
   const xp = state.player.xp % XP_PER_LEVEL;
+  if (side.sideOn()) { // 稱號櫃（湘 11/27）：戴著的稱號變成小膠囊，點一下打開稱號櫃
+    const worn = titles.wornTitle(state); const any = titles.ownedTitles(state).some(t => t.owned);
+    const chip = document.createElement('button'); chip.className = `title-chip${worn ? '' : ' is-empty'}`; chip.textContent = worn ? worn.name : any ? '戴稱號' : '稱號櫃'; chip.type = 'button'; chip.id = 'title-chip';
+    chip.addEventListener('click', openTitleSheet);
+    $('player-rank').replaceChildren(`Lv.${level} ${rankTitle(level)}`, chip);
+  } else {
   const worn = events.wornTitle(state);
   $('player-rank').textContent = `Lv.${level} ${rankTitle(level)}${worn ? `｜${worn.name}` : ''}`;
+  }
   $('player-xp').textContent = `${xp} / ${XP_PER_LEVEL} XP`;
   $('xp-fill').style.width = `${xp / XP_PER_LEVEL * 100}%`;
   $('xp-track').setAttribute('aria-valuenow', xp);
@@ -2272,6 +2280,22 @@ function renderDexCandy(no, owned) {
   btn.disabled = have < cost;
   btn.textContent = have < cost ? `還差 ${cost - have} 顆` : `餵 ${cost} 顆 → ★${stars + 1}`;
 }
+// 系列星光糖（只限該系列居民）：有支線的系列、手上有糖才出現
+function renderSeriesCandy(no, owned) {
+  const box = $('dex-series-candy'); const c = CHARACTERS[no];
+  const cost = owned && side.sideOn() ? side.seriesCandyCost(state, no) : 0; const have = cost ? side.seriesCandyCount(state, c.series) : 0;
+  box.hidden = !cost || !have; if (box.hidden) return;
+  $('dex-series-candy-have').textContent = `🍬 ${SERIES[c.series]?.short || ''}糖 ×${have}`;
+  const btn = $('dex-series-candy-feed'); btn.dataset.no = no; btn.disabled = have < cost;
+  btn.textContent = have < cost ? `還差 ${cost - have} 顆` : `餵 ${cost} 顆 → ★${Math.min(battle.MAX_STARS, state.dex[no]?.dup || 0) + 1}`;
+}
+$('dex-series-candy-feed').addEventListener('click', async () => {
+  const no = $('dex-series-candy-feed').dataset.no; if (!no) return;
+  const t = await updateState(current => side.feedSeriesCandy(current, no)); state = t.state;
+  if (!t.result) { toast('系列糖不夠喔。'); renderSeriesCandy(no, Boolean(state.dex[no])); return; }
+  buzz([20, 30, 40]); toast(`${CHARACTERS[no].name} 升到 ${starText(t.result.stars)}！（${SERIES[t.result.series]?.short || ''}糖剩 ${t.result.left} 顆）`);
+  renderAll(); openDexDetail(no);
+});
 $('dex-candy-feed').addEventListener('click', async () => {
   const no = $('dex-candy-feed').dataset.no; if (!no) return;
   const t = await updateState(current => feedCandy(current, CHARACTERS, no));
@@ -2292,7 +2316,7 @@ function openDexDetail(no) {
   const stars = owned ? state.dex[no]?.dup || 0 : 0;
   $('dex-detail-stars').hidden = !owned;
   $('dex-detail-stars').replaceChildren(Object.assign(document.createElement('b'), { textContent: starText(stars) }), Object.assign(document.createElement('span'), { textContent: stars >= battle.MAX_STARS ? `星級 ${stars} / ${battle.MAX_STARS} · 已滿星！討伐戰力 +${stars * 10}%` : `星級 ${stars} / ${battle.MAX_STARS} · 再孵到她一次或餵星光糖 +1 星${stars ? `（目前討伐戰力 +${stars * 10}%）` : '（每星討伐戰力 +10%）'}` }));
-  renderDexCandy(no, owned);
+  renderDexCandy(no, owned); renderSeriesCandy(no, owned);
   $('dex-detail-name').textContent = owned ? c.name : '???';
   $('dex-detail-line').textContent = owned ? c.line : '';
   $('dex-detail-line').hidden = !owned;
@@ -4313,6 +4337,33 @@ function renderBattle() {
   }
   if (inStage) renderBattleStage();
 }
+// ── 稱號櫃＋圖鑑系列徽章（湘 11/27 A＋B）
+const BADGE_ICON = { county: '🗺️', animals: '🐾', weather: '☁️', holiday: '🎄', friends: '💌', recipe: '🍰', tsukimi: '🌙' };
+function openTitleSheet() {
+  let d = $('title-sheet');
+  if (!d) { d = el('dialog', 'residents-dialog sheet title-sheet'); d.id = 'title-sheet'; d.setAttribute('aria-labelledby', 'title-sheet-h'); document.body.append(d); d.addEventListener('click', ev => { if (ev.target === d) d.close(); }); }
+  const close = el('button', 'close-button', '×'); close.type = 'button'; close.setAttribute('aria-label', '關閉'); close.addEventListener('click', () => d.close());
+  const h = el('h2', null, '我的稱號'); h.id = 'title-sheet-h';
+  const worn = titles.wornTitle(state); const list = titles.ownedTitles(state);
+  const body = [close, h, el('p', 'residents-intro', '點一下戴上，再點一次拿下來。戴著的稱號會顯示在研究者等級旁邊。')];
+  for (const g of ['系列支線', '活動']) {
+    const items = list.filter(t => t.group === g); if (!items.length) continue;
+    body.push(el('small', 'title-sheet__group', g)); const row = el('div', 'title-sheet__list');
+    for (const t of items) {
+      const b = el('button', `title-pill${t.owned ? '' : ' is-off'}`, t.owned ? t.name : '？？？'); b.type = 'button'; b.setAttribute('aria-pressed', String(worn?.key === t.key)); b.title = t.how;
+      if (!t.owned) b.addEventListener('click', () => toast(`怎麼拿：${t.how}`));
+      else b.addEventListener('click', () => void updateState(cur => ({ name: titles.wearTitle(cur, worn?.key === t.key ? null : t.key) })).then(r => { state = r.state; toast(r.result.name ? `戴上稱號「${r.result.name}」` : '拿下稱號了'); renderPlayer(); openTitleSheet(); }));
+      row.append(b);
+    }
+    body.push(row);
+  }
+  const badges = titles.seriesBadges(state);
+  body.push(el('small', 'title-sheet__group', `圖鑑系列徽章 · ${badges.filter(x => x.lit).length} / ${badges.length}`));
+  const grid = el('div', 'title-sheet__badges');
+  for (const x of badges) { const b = el('div', `series-badge${x.lit ? ' is-lit' : ''}${x.gold ? ' is-gold' : ''}`); b.append(el('i', null, BADGE_ICON[x.series] || '✦'), el('span', null, x.name)); grid.append(b); }
+  body.push(grid, el('p', 'residents-intro', '亮＝打通那個系列的支線；金框＝系列居民也收齊了'));
+  d.replaceChildren(...body); if (!d.open) d.showModal();
+}
 // 預估列上的將軍技能狀態
 function sideSkillShort(skill, eff) {
   const k = side.SKILL_INFO[skill]; if (!k) return '';
@@ -4446,7 +4497,7 @@ function titleRow(def, prog) {
   for (const id of prog.titles) {
     const name = def.titles[id]; if (!name) continue;
     const b = el('button', 'event-title', `「${name}」`); b.type = 'button'; b.dataset.title = id; b.setAttribute('aria-pressed', String(prog.wornTitle === id));
-    b.addEventListener('click', () => void updateState(cur => ({ worn: events.wearTitle(cur, def.id, prog.wornTitle === id ? null : id) })).then(t => { state = t.state; toast(t.result.worn ? `戴上稱號「${t.result.worn}」` : '拿下稱號了'); renderAll(); renderBattle(); }));
+    b.addEventListener('click', () => void updateState(cur => ({ worn: titles.wearTitle(cur, prog.wornTitle === id ? null : `event:${def.id}:${id}`) })).then(t => { state = t.state; toast(t.result.worn ? `戴上稱號「${t.result.worn}」` : '拿下稱號了'); renderAll(); renderBattle(); }));
     row.append(b);
   }
   return row;

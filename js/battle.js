@@ -392,7 +392,7 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   countBondRuns(state, battle.nos);
   if (isSide) {
     // 系列支線：進度記在 state.side
-    sideGain = recordSideRun(state, enemy.side, enemy.sideStage, r, battle.nos, { now, lootHalf: Boolean(r.lootHalf) });
+    sideGain = recordSideRun(state, enemy.side, enemy.sideStage, r, battle.nos, { now, rand, lootHalf: Boolean(r.lootHalf) });
     st = state.side?.lines?.[enemy.side]?.stages?.[enemy.sideStage] || { best: 0, clears: 0 };
   } else if (isEvent) {
     // 異世活動：進度記在 state.events，不寫進 battle.stages
@@ -424,7 +424,7 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const restUntil = iso(new Date(now.getTime() + (IS_TEST ? 0 : REST_MINUTES * 60e3))); // 測試服不用休息
   for (const no of battle.nos) b.rest[no] = restUntil;
   b.total += 1; if (r.win) b.wins += 1;
-  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.daily && `☀️ 今日首勝：${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.daily}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`, evGain?.title && `五件信物收齊：稱號「${EVENT_DEFS[enemy.event]?.titles?.[evGain.title] || ''}」`, sideGain?.fossils && `+${sideGain.fossils} 化石${sideGain.first ? '（首勝）' : ''}`, r.lootHalf && '💰 經濟制裁：能量、化石減半', sideGain?.keepsake && `信物「${sideGain.keepsake.name}」`, sideGain?.complete && `「${sideGain.lineName}」全線通關！`].filter(Boolean);
+  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.daily && `☀️ 今日首勝：${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.daily}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`, evGain?.title && `五件信物收齊：稱號「${EVENT_DEFS[enemy.event]?.titles?.[evGain.title] || ''}」`, sideGain?.fossils && `+${sideGain.fossils} 化石${sideGain.first ? '（首勝）' : ''}`, r.lootHalf && '💰 經濟制裁：能量、化石減半', sideGain?.candy && `🍬 ${SERIES[sideGain.series]?.short || ''}星光糖 +${sideGain.candy}`, sideGain?.keepsake && `信物「${sideGain.keepsake.name}」`, sideGain?.title && `全線三星：稱號「${sideGain.title}」`, sideGain?.complete && `「${sideGain.lineName}」全線通關！`].filter(Boolean);
   const firstClear = r.win && st.clears === 1;
   // 異世活動：第一次通關才在戰報播「打完後」（MO-05 再接上卷結尾）；解鎖紀錄在 state.events[id].story
   const ksDef = isEvent ? EVENT_DEFS[enemy.event]?.keepsakes : null; // 拿到信物＝播那件的小劇情；收齊再接「收齊」
