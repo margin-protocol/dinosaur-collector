@@ -1,9 +1,9 @@
 // 星光糖（湘 11/26 選 B：遞增＋合糖、介面 A 膠囊）
-// 重複遇見居民會拿到同稀有度的星光糖；同稀有度的任何居民都能吃來升星（最高 ★5）
+// 已經 ★5 的居民再遇見才會拿到同稀有度的星光糖；同稀有度的任何居民都能吃來升星（最高 ★5）
 export const CANDY_TIERS = ['N', 'R', 'SR', 'SSR', 'UR'];
 export const MAX_CANDY_STARS = 5;
 export const STAR_CANDY_COST = [1, 1, 2, 2, 3]; // 升到 ★1…★5 各要幾顆，0→★5 共 9 顆
-export const DUP_CANDY = 1; // 重複遇見給 1 顆
+export const DUP_CANDY = 0; // 還沒滿星的重複只升星、不給糖（湘 11/27 改：滿星後才給，原本給 1 顆）
 export const FULL_DUP_CANDY = 2; // 已經 ★5 的居民再遇見給 2 顆（滿星不浪費）
 export const MERGE_CANDY = 3; // 3 顆低一階 → 1 顆高一階
 export const CANDY_PRICES = { N: 25, R: 40, SR: 75, SSR: 125, UR: 200 }; // 化石交換所一顆的價錢（湘 11/26：朋友說太便宜，原本 5/8/15/25/40 改成 ×5）

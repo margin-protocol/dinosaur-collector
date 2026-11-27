@@ -2320,7 +2320,7 @@ function openDexDetail(no) {
   $('dex-detail-no').textContent = `${noLabel(c.no)} · ${owned ? c.rarity : '?'} · ${worldOf(c) === 'origin' ? (SERIES[c.series]?.name || '') : worldLabel(worldOf(c))}`;
   const stars = owned ? state.dex[no]?.dup || 0 : 0;
   $('dex-detail-stars').hidden = !owned;
-  $('dex-detail-stars').replaceChildren(Object.assign(document.createElement('b'), { textContent: starText(stars) }), Object.assign(document.createElement('span'), { textContent: stars >= battle.MAX_STARS ? `星級 ${stars} / ${battle.MAX_STARS} · 已滿星！討伐戰力 +${stars * 10}%` : `星級 ${stars} / ${battle.MAX_STARS} · 再孵到她一次或餵星光糖 +1 星${stars ? `（目前討伐戰力 +${stars * 10}%）` : '（每星討伐戰力 +10%）'}` }));
+  $('dex-detail-stars').replaceChildren(Object.assign(document.createElement('b'), { textContent: starText(stars) }), Object.assign(document.createElement('span'), { textContent: stars >= battle.MAX_STARS ? `星級 ${stars} / ${battle.MAX_STARS} · 已滿星！討伐戰力 +${stars * 10}%，再遇見她會變成 2 顆 ${c.rarity} 星光糖` : `星級 ${stars} / ${battle.MAX_STARS} · 再孵到她一次或餵星光糖 +1 星${stars ? `（目前討伐戰力 +${stars * 10}%）` : '（每星討伐戰力 +10%）'}` }));
   renderDexCandy(no, owned); renderSeriesCandy(no, owned);
   $('dex-detail-name').textContent = owned ? c.name : '???';
   $('dex-detail-line').textContent = owned ? c.line : '';
@@ -3032,7 +3032,7 @@ async function doExchange(offerId, no) {
 }
 // 星光糖罐（湘 11/26）：每種糖持有幾顆、3 顆合成高一階、用化石買（每種每週 3 顆）
 function renderCandyJar() {
-  $('candy-jar-note').textContent = `重複遇見居民會拿到同稀有度的糖，可以在圖鑑餵給同稀有度的居民升星。${MERGE_CANDY} 顆可以合成 1 顆高一階。`;
+  $('candy-jar-note').textContent = `已經 ★5 的居民再遇見，會變成 2 顆同稀有度的糖，可以在圖鑑餵給同稀有度的居民升星。${MERGE_CANDY} 顆可以合成 1 顆高一階。`;
   // 湘 11/26：原本一列塞三樣太擠 → A 一種一列：上面糖名＋持有，下面合成／買兩顆一樣大的按鈕
   $('candy-jar-rows').replaceChildren(...CANDY_TIERS.map((r, i) => {
     const have = candyCount(state, r); const top = i === CANDY_TIERS.length - 1; const left = buyLeft(state, r); const price = CANDY_PRICES[r];

@@ -12,7 +12,7 @@ const unit=await p.evaluate(async()=>{const m=await import('/js/candy.js');const
  const now=new Date(2026,10,26,12);const buys=[];for(let i=0;i<4;i++)buys.push(Boolean(m.buyCandy(s,'SR',now)));
  const nextWeek=Boolean(m.buyCandy(s,'SR',new Date(2026,11,1,9)));
  return {g1,g5,costs,stars:s.dex['116'].dup,ssrLeft:s.candy.SSR,mg:Boolean(mg),mgUR,N:s.candy.N,R:s.candy.R,buys,nextWeek,fossils:s.fossils,wk:m.weekKey(now)};});
-assert.equal(unit.g1,1);assert.equal(unit.g5,2,'滿星重複給 2 顆');
+assert.equal(unit.g1,0,'沒滿星的重複不給糖（湘 11/27）');assert.equal(unit.g5,2,'滿星重複給 2 顆');
 assert.deepEqual(unit.costs,[1,1,2,2,3,null],'升星 1/1/2/2/3，滿星不能再餵');assert.equal(unit.stars,5);assert.equal(unit.ssrLeft,0);
 assert(unit.mg);assert.equal(unit.mgUR,null);assert.equal(unit.N,4);assert.equal(unit.R,1);
 assert.deepEqual(unit.buys,[true,true,true,false],'每週 3 顆');assert(unit.nextWeek,'下週可以再買');assert.equal(unit.fossils,1000-75*4);assert.equal(unit.wk,'2026-11-23');
