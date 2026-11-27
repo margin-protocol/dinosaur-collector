@@ -15,6 +15,7 @@
   <nav class="tabs" role="tablist" aria-label="審核室分頁">
     <button type="button" role="tab" id="tab-inbox" data-tab="inbox" aria-selected="true">審核<span class="tab-count" id="inbox-count" hidden></span></button>
     <button type="button" role="tab" id="tab-make" data-tab="make" aria-selected="false">出題</button>
+    <button type="button" role="tab" id="tab-all" data-tab="all" aria-selected="false">全服</button>
     <button type="button" role="tab" id="tab-setup" data-tab="setup" aria-selected="false">設定</button>
   </nav>
 
@@ -38,6 +39,41 @@
     <div class="batch-row"><b id="batch-count">已選 0 張</b><button type="button" class="link" id="batch-all">全選</button><button type="button" class="link" id="batch-clear">取消選取</button></div>
     <div class="batch-row"><input id="batch-note" maxlength="600" autocomplete="off" placeholder="共用批註（可不填）" aria-label="共用批註：沒寫個別批註的照片用這句"><button class="btn btn--small" type="button" id="batch-approve">通過</button><button class="btn btn--quiet btn--small" type="button" id="batch-reject">退回</button></div>
   </div>
+
+
+  <p class="hint all-locked" id="all-locked" data-panel="all" hidden>要先到「設定」登入審核員通行碼、準備好印章，才能發全服信和兌換碼。</p>
+  <section class="card" id="sec-broadcast" data-panel="all" hidden>
+    <h2>全服信箱 · 寄給所有人</h2>
+    <p class="hint">所有玩家（不用邀請碼）打開遊戲都會收到，收在首頁的紙條裡，拆開時領禮物。每份存檔只能領一次。</p>
+    <form id="bc-form" class="form">
+      <label>標題<input id="bc-title" maxlength="40" placeholder="例如：謝謝大家一起闖江湖"></label>
+      <label>內容<textarea id="bc-body" class="letter-text" rows="6" maxlength="3000" placeholder="各位飼養員：&#10;&#10;……&#10;&#10;—— 湘 ♡"></textarea></label>
+      <fieldset class="gift-grid" id="bc-gifts"><legend>附上禮物（都可以不填）</legend></fieldset>
+      <label>收信期限（可不填；過了期限，還沒收到的人就不會再收到）<input id="bc-expires" type="date"></label>
+      <p class="gift-preview" id="bc-preview"></p>
+      <button class="btn" type="submit" id="bc-send">蓋章並寄給所有人</button>
+    </form>
+    <p class="status" id="bc-status" role="status"></p>
+    <div class="inbox-top"><h3>寄過的全服信</h3><button class="btn btn--quiet btn--small" type="button" id="bc-refresh">重新整理</button></div>
+    <ul class="list" id="bc-list"></ul>
+  </section>
+  <section class="card" id="sec-giftcode" data-panel="all" hidden>
+    <h2>兌換碼 · 公布給大家</h2>
+    <p class="hint">在脆或 LINE 公布，玩家到「研究者手記 → 兌換碼・暗號」輸入。每份存檔只能領一次；可以設名額，先搶先贏。</p>
+    <form id="gc-form" class="form">
+      <label>兌換碼<span class="inline"><input id="gc-phrase" autocomplete="off" maxlength="40" placeholder="例如：墨痕江湖開跑"><button class="btn btn--quiet" type="button" id="gc-random">隨機</button></span></label>
+      <fieldset class="gift-grid" id="gc-gifts"><legend>兌換到的禮物（至少一樣）</legend></fieldset>
+      <div class="gift-pair">
+        <label>期限（可不填）<input id="gc-expires" type="date"></label>
+        <label>名額（可不填＝不限）<input id="gc-limit" type="number" min="1" max="100000" inputmode="numeric" placeholder="不限"></label>
+      </div>
+      <p class="gift-preview" id="gc-preview"></p>
+      <button class="btn" type="submit" id="gc-create">蓋章並建立</button>
+    </form>
+    <p class="status" id="gc-status" role="status"></p>
+    <div class="inbox-top"><h3>建立過的兌換碼</h3><button class="btn btn--quiet btn--small" type="button" id="gc-refresh">重新整理</button></div>
+    <ul class="list" id="gc-list"></ul>
+  </section>
 
   <section class="card" id="sec-newbies" data-panel="setup" hidden>
     <div class="inbox-top"><h2>新玩家</h2><button class="btn btn--quiet btn--small" type="button" id="np-refresh">重新整理</button></div>

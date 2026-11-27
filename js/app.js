@@ -32,10 +32,10 @@ import * as lab from './lab.js';
 import { ensureBingo, bingoStatus, bingoReady, claimBingo, REWARDS as BINGO_REWARDS } from './bingo.js';
 import { PASSIVE, SNAP, DAILY_GIFT, accruePassive, giftReady, claimGift, snapsToday, takeSnap, greet, pet, feedSnack, snacksLeft, PET, SNACK, photoSeen, rememberPhoto } from './energy.js';
 import { checkIn } from './travel.js';
-import { cloudConfig, saveCloudConfig, createCloud, isInvite } from './cloud.js';
+import { cloudConfig, saveCloudConfig, createCloud, isInvite, publicApi } from './cloud.js';
 import { verifySigned, normalizeCode, sha256Hex } from './sign.js';
 import { REVIEWER_PUBLIC_JWK } from './reviewer-key.js';
-import { applyReward, validReward, describeReward } from './gifts.js';
+import { applyReward, validReward, describeReward, rewardList, rewardIsEgg } from './gifts.js';
 import { WEATHER_LINES } from './weather-lines.js';
 import { RECIPE_LINES } from './recipe-lines.js';
 import { FRIEND_LINES } from './friend-lines.js';
@@ -1778,7 +1778,7 @@ let lastCloudSync = 0;
 function syncFromCloud(force = false) {
   if (!force && Date.now() - lastCloudSync < 2 * 60 * 1000) return Promise.resolve();
   lastCloudSync = Date.now();
-  return fetchMail().then(() => syncMissions()).then(() => syncPostcardReplies()).catch(() => {});
+  return fetchBroadcast().catch(() => 0).then(() => fetchMail()).then(() => syncMissions()).then(() => syncPostcardReplies()).catch(() => {});
 }
 $('fab-letter').addEventListener('click', openLetterBox);
 $('intro-ok').addEventListener('click', () => {
@@ -2438,7 +2438,7 @@ function setLetterTab(tab) {
   $('letter-tab-starred').setAttribute('aria-selected', String(tab === 'starred'));
   renderLetterList();
 }
-const letterSub = (letter) => letter.kind === 'mail' ? `湘寄來的 · ${new Date(letter.at).toLocaleDateString('zh-TW')}`
+const letterSub = (letter) => letter.kind === 'mail' ? `${letter.all ? '湘寄給大家的' : '湘寄來的'} · ${new Date(letter.at).toLocaleDateString('zh-TW')}`
   : letter.kind === 'note' ? `小湘寫的 · ${new Date(letter.at).toLocaleDateString('zh-TW')}`
   : letter.kind === 'intro' ? '最初的紙條' : `里程碑 · ${letter.hint}`;
 function renderLetterList() {
@@ -2458,7 +2458,7 @@ function renderLetterList() {
     text.append(sub);
     const badge = document.createElement('span'); badge.className = 'letter-new';
     if (star) badge.append(Object.assign(document.createElement('b'), { className: 'letter-star', textContent: '★', title: '重要紙條' }));
-    if (state.letters.mail.some(m => m.id === letter.id && m.gift && !m.giftAt)) badge.append(Object.assign(document.createElement('b'), { className: 'letter-gift-dot', textContent: '🎁', title: '附了禮物' }));
+    if (state.letters.mail.some(m => m.id === letter.id && mailGifts(m).length && !m.giftAt)) badge.append(Object.assign(document.createElement('b'), { className: 'letter-gift-dot', textContent: '🎁', title: '附了禮物' }));
     if (unread) badge.append('未讀');
     item.append(text, badge);
     if (star) item.setAttribute('aria-label', `${letter.title || '湘寄來的紙條'}（重要紙條）`);
@@ -2476,21 +2476,61 @@ function renderLetterStar() {
   $('letter-read-star').textContent = on ? '★ 已是重要紙條' : '☆ 收藏成重要紙條';
 }
 // 湘隨紙條附的禮物（11/21）：第一次拆開紙條時收下，只會收一次
+// 全服信（11/27）可以附好幾樣：gifts 陣列；舊的紙條只有一樣 gift
+const mailGifts = (m) => (Array.isArray(m?.gifts) ? m.gifts : m?.gift ? [m.gift] : []);
+const giftText = (list) => list.map(r => describeReward(r, CHARACTERS, EGGS)).join('、');
+// 全服信禮物的樣式（湘 11/27 挑）：a＝紙條＋一行字、拆開就收；b＝紙條＋禮物格子＋「收下禮物」；c＝b＋一收到就跳信封小卡
+const MAIL_STYLE = globalThis.__MAIL_STYLE || 'c'; // 湘 11/27 選 C
+const GIFT_SVG = {
+  energy: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3c1 4 5 5.500 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9z"/></svg>',
+  fossils: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 6-3 11H8L5 9zM5 9h14"/></svg>',
+};
+function giftChip(r) {
+  const chip = document.createElement('span'); chip.className = 'gift-chip';
+  const icon = document.createElement('i'); icon.className = 'gift-chip__icon';
+  const img = (src) => { const im = document.createElement('img'); im.src = src; im.alt = ''; im.loading = 'lazy'; icon.append(im); };
+  let n = r.amount; let name = describeReward(r, CHARACTERS, EGGS);
+  if (r.type === 'energy' || r.type === 'fossils') { icon.innerHTML = GIFT_SVG[r.type]; name = r.type === 'energy' ? '能量' : '化石碎片'; }
+  else if (r.type === 'token') { const t = events.eventDef(r.event)?.token; if (t?.art) img(t.art); else icon.textContent = t?.icon || '🪙'; name = t?.name || '活動代幣'; }
+  else if (r.type === 'candy') { icon.textContent = '🍬'; name = `${r.rarity} 星光糖`; }
+  else if (r.type === 'egg') { icon.classList.add('is-egg'); img(`assets/eggs/${r.egg}/shell.webp`); n = r.count || 1; name = EGGS[r.egg]?.name || '蛋'; }
+  else if (r.type === 'character') { icon.classList.add('is-egg'); img('assets/eggs/cipher/shell.webp'); n = 1; name = `暗號蛋・${CHARACTERS[r.no]?.name || '小湘'}`; }
+  chip.append(icon, Object.assign(document.createElement('b'), { textContent: `×${n}` }), Object.assign(document.createElement('small'), { textContent: name }));
+  return chip;
+}
+function renderGiftChips(box, gifts, got) {
+  box.hidden = !gifts.length; box.classList.toggle('is-got', Boolean(got));
+  box.replaceChildren(...gifts.map(giftChip));
+}
 function renderLetterGift(letter) {
   const mail = state.letters.mail.find(m => m.id === letter.id);
-  const gift = mail?.gift;
-  $('letter-read-gift').hidden = !gift;
-  if (gift) $('letter-read-gift').textContent = `🎁 隨信附上：${describeReward(gift, CHARACTERS, EGGS)}${mail.giftAt ? '（已收下）' : ''}`;
+  const gifts = mailGifts(mail);
+  const chips = MAIL_STYLE !== 'a' && mail?.all;
+  $('letter-read-gift').hidden = !gifts.length || chips;
+  if (gifts.length && !chips) $('letter-read-gift').textContent = `🎁 隨信附上：${giftText(gifts)}${mail.giftAt ? '（已收下）' : ''}`;
+  renderGiftChips($('letter-read-chips'), chips ? gifts : [], mail?.giftAt);
+  $('letter-read-claim').hidden = !chips || !gifts.length;
+  $('letter-read-claim').disabled = Boolean(mail?.giftAt);
+  $('letter-read-claim').textContent = mail?.giftAt ? '已收下 ✓' : '收下禮物';
 }
 function claimLetterGift(letter) {
   const mail = state.letters.mail.find(m => m.id === letter.id);
-  if (!mail?.gift || mail.giftAt) return;
-  void updateState(current => {
+  const gifts = mailGifts(mail);
+  if (!gifts.length || mail.giftAt) return Promise.resolve(false);
+  return updateState(current => {
     const m = current.letters.mail.find(x => x.id === letter.id);
-    if (!m?.gift || m.giftAt || !validReward(m.gift, CHARACTERS)) return false;
-    applyReward(current, m.gift, 'letter'); m.giftAt = new Date().toISOString(); return true;
-  }).then(t => { state = t.state; if (!t.result) return; renderAll(); if (readingLetter?.id === letter.id) renderLetterGift(letter); toast(`收下湘附的禮物：${describeReward(mail.gift, CHARACTERS, EGGS)}！`); });
+    const list = mailGifts(m);
+    if (!list.length || m.giftAt || !list.every(r => validReward(r, CHARACTERS))) return false;
+    for (const r of list) applyReward(current, r, m.all ? 'broadcast' : 'letter');
+    m.giftAt = new Date().toISOString(); return true;
+  }).then(t => {
+    state = t.state; if (!t.result) return false; renderAll(); if (readingLetter?.id === letter.id) renderLetterGift(letter);
+    if (mail.all) void publicApi('POST', `/broadcast/${encodeURIComponent(mail.id.slice(4))}/claim`);
+    toast(`收下湘附的禮物：${giftText(gifts)}！${gifts.some(rewardIsEgg) ? '蛋在培育室的「選擇蛋」。' : ''}`);
+    return true;
+  });
 }
+$('letter-read-claim').addEventListener('click', () => { if (readingLetter) { $('letter-read-claim').disabled = true; void claimLetterGift(readingLetter); } });
 function readLetter(letter) {
   readingLetter = letter;
   $('letter-read-title').textContent = letter.kind === 'intro' ? '' : letter.title || '湘寄來的紙條';
@@ -2499,7 +2539,7 @@ function readLetter(letter) {
   renderLetterGift(letter);
   renderLetterStar();
   $('letter-read').showModal();
-  claimLetterGift(letter);
+  if (MAIL_STYLE === 'a' || !letter.all) void claimLetterGift(letter);
   if (letter.kind !== 'intro' && !state.letters.read.includes(letter.id)) {
     void updateState(current => { if (!current.letters.read.includes(letter.id)) current.letters.read.push(letter.id); }).then(t => { state = t.state; renderLetterBadge(); });
   }
@@ -2541,6 +2581,63 @@ async function fetchMail() {
   toast(fresh.length > 1 ? `湘寄來 ${fresh.length} 張新紙條！${gifts ? '裡面還附了禮物🎁' : ''}` : `湘寄來一張新紙條！${gifts ? '還附了禮物🎁 ' : ''}到首頁的紙條看看吧。`);
   say('有一張新紙條送到了！', 'happy', 3000);
   return fresh.length;
+}
+
+// 全服信箱（湘 11/27）：不用邀請碼，所有玩家打開遊戲都會來問。驗過湘的印章才收；每封信 id 前面加 all-，存進紙條收藏，禮物拆開時收一次
+async function fetchBroadcast() {
+  if (!REVIEWER_PUBLIC_JWK || IS_TEST) return 0; // 測試服不連後台
+  const { status, data } = await publicApi('GET', '/broadcast');
+  if (status !== 200 || !Array.isArray(data?.mail)) return 0;
+  const now = Date.parse(data.now) || Date.now();
+  const known = new Set(state.letters.mail.map(m => m.id));
+  const fresh = [];
+  for (const signed of data.mail) {
+    const p = signed?.payload;
+    if (p?.type !== 'broadcast' || !/^[\w-]{6,40}$/.test(p.id || '') || known.has(`all-${p.id}`)) continue;
+    if (typeof p.body !== 'string' || p.body.length > 3000 || (p.expires && now > Date.parse(p.expires))) continue;
+    const gifts = rewardList(p, CHARACTERS);
+    if (!gifts || !(await verifySigned(REVIEWER_PUBLIC_JWK, signed))) continue;
+    fresh.push({ id: `all-${p.id}`, all: true, title: typeof p.title === 'string' ? p.title.slice(0, 40) : '', body: p.body, at: p.createdAt || new Date(now).toISOString(), ...(gifts.length ? { gifts } : {}) });
+  }
+  if (!fresh.length) return 0;
+  const t = await updateState(current => { const ids = new Set(current.letters.mail.map(m => m.id)); for (const m of fresh) if (!ids.has(m.id)) current.letters.mail.push(m); });
+  state = t.state; renderAll();
+  announceBroadcast(fresh);
+  return fresh.length;
+}
+// c：一收到就跳信封小卡，一次一封；按「收下禮物」就領、算已讀
+const bcQueue = [];
+function nextBroadcastPop() {
+  const m = bcQueue.shift();
+  if (!m) return;
+  const mail = state.letters.mail.find(x => x.id === m.id);
+  if (!mail || mail.giftAt && state.letters.read.includes(m.id)) { nextBroadcastPop(); return; }
+  $('bc-pop').dataset.id = m.id;
+  $('bc-pop-title').textContent = mail.title || '給大家的信';
+  $('bc-pop-body').textContent = mail.body;
+  renderGiftChips($('bc-pop-chips'), mailGifts(mail), false);
+  $('bc-pop-ok').textContent = mailGifts(mail).length ? '收下禮物' : '收好';
+  $('bc-pop').showModal(); syncRoomActivity();
+}
+$('bc-pop-ok').addEventListener('click', async () => {
+  const id = $('bc-pop').dataset.id; const mail = state.letters.mail.find(x => x.id === id);
+  $('bc-pop-ok').disabled = true;
+  try {
+    if (mail) await claimLetterGift(mail);
+    if (mail && !state.letters.read.includes(id)) { const t = await updateState(current => { if (!current.letters.read.includes(id)) current.letters.read.push(id); }); state = t.state; renderLetterBadge(); }
+  } finally { $('bc-pop-ok').disabled = false; $('bc-pop').close(); }
+});
+$('bc-pop').addEventListener('close', () => { syncRoomActivity(); setTimeout(nextBroadcastPop, 250); });
+function announceBroadcast(fresh) {
+  if (MAIL_STYLE === 'c') {
+    bcQueue.push(...fresh);
+    // 開場、教學或別的彈窗開著時先等一下，不要疊在上面
+    const tryPop = (n = 0) => { if ($('bc-pop').open) return; if (document.querySelector('dialog[open]') && n < 40) { setTimeout(() => tryPop(n + 1), 1500); return; } nextBroadcastPop(); };
+    tryPop(); return;
+  }
+  const gifts = fresh.some(m => m.gifts);
+  toast(fresh.length > 1 ? `湘寄了 ${fresh.length} 封信給大家！${gifts ? '裡面附了禮物🎁' : ''}` : `湘寄了一封信給大家：「${fresh[0].title || '給大家'}」${gifts ? '，還附了禮物🎁' : ''}到首頁的紙條看看吧。`);
+  say('有一封給大家的信送到了！', 'happy', 3000);
 }
 
 /* ---------- 湘的委託、記憶檔案、約會碼 ---------- */
@@ -3157,10 +3254,12 @@ async function redeemCode(text) {
   if (DATE_CODE.test(maybeDate)) { const r = await redeemDate(maybeDate); if (r) return r; }
   const phrase = normalizeCode(text);
   if (!phrase) return '先輸入暗號喔。';
-  const config = cloudConfig();
-  if (!config) return '要先到「雲端與備份」連線，才能兌換暗號。';
   if (!REVIEWER_PUBLIC_JWK) return '審核員的印章還沒設定好，請湘先完成審核頁的設定。';
   const hash = await sha256Hex(phrase);
+  const gift = await redeemGiftCode(hash);
+  if (gift) return gift;
+  const config = cloudConfig();
+  if (!config) return '暗號好像不對……再想想看？\n（湘私下給你的暗號，要先到「雲端與備份」連線才能兌換）';
   const cloud = createCloud(config);
   const file = await cloud.getJSON(`codes/${hash}.json`);
   if (!file) return state.gifts.redeemed.includes(hash) ? '這個暗號已經兌換過了。' : '暗號好像不對……再想想看？';
@@ -3181,6 +3280,31 @@ async function redeemCode(text) {
   state = transaction.state; renderAll();
   if (!transaction.result) return '這個暗號已經兌換過了。';
   return `兌換成功！獲得${describeReward(p.reward, CHARACTERS, EGGS)}。${p.reward.type === 'energy' ? '' : '\n到培育室的「選擇蛋」把它拿出來吧。'}`;
+}
+// 全服兌換碼（湘 11/27）：湘在脆或 LINE 公布，不用邀請碼；每份存檔只能領一次（記在 gifts.redeemed 的 gc:<雜湊>）
+// 回傳要顯示的文字；這組碼不存在時回傳 null，交給下面的舊暗號流程
+async function redeemGiftCode(hash) {
+  if (IS_TEST) return null; // 測試服不連後台
+  const mark = `gc:${hash}`;
+  const { status, data } = await publicApi('GET', `/giftcode/${hash}`);
+  if (status === 404) return state.gifts.redeemed.includes(mark) ? '這組兌換碼已經領過了。' : null;
+  if (status !== 200) return status === 0 && !cloudConfig() ? '網路連線不穩，等一下再試試看。' : null;
+  const p = data?.signed?.payload;
+  const gifts = rewardList(p, CHARACTERS);
+  if (p?.type !== 'giftcode' || p.hash !== hash || !gifts?.length || !(await verifySigned(REVIEWER_PUBLIC_JWK, data.signed))) return '這組兌換碼的印章不對，無法兌換。';
+  if (state.gifts.redeemed.includes(mark)) return '這組兌換碼已經領過了，每個人只能領一次喔。';
+  if (p.expires && Date.now() > Date.parse(p.expires)) return '這組兌換碼已經過期了。';
+  const claim = await publicApi('POST', `/giftcode/${hash}/claim`);
+  if (claim.status === 409) return '這組兌換碼已經被領完了，下次早點來！';
+  if (claim.status !== 200) return '兌換失敗，等一下再試試看。';
+  const transaction = await updateState(current => {
+    if (current.gifts.redeemed.includes(mark)) return false;
+    for (const r of gifts) applyReward(current, r, 'giftcode');
+    current.gifts.redeemed.push(mark); return true;
+  });
+  state = transaction.state; renderAll();
+  if (!transaction.result) return '這組兌換碼已經領過了。';
+  return `兌換成功！獲得${giftText(gifts)}。${gifts.some(rewardIsEgg) ? '\n到培育室的「選擇蛋」把它拿出來吧。' : ''}`;
 }
 $('open-code').addEventListener('click', () => { $('function-center').close(); $('code-input').value = ''; $('code-status').textContent = ''; $('code-dialog').showModal(); syncRoomActivity(); });
 $('close-code').addEventListener('click', () => $('code-dialog').close());

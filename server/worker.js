@@ -22,6 +22,11 @@
 //   POST /timers/off {endpoint, key}    → 這支手機不再收提醒
 //   POST /hello                         → 新玩家 +1（不用邀請碼，見下面 helloRoute）
 //   GET  /admin/new-players             → 審核員看每日新玩家數
+//   GET  /broadcast                     → 全服信箱（不用邀請碼，見下面 broadcastRoute）
+//   POST /broadcast/<id>/claim          → 有人領了這封信的禮物（+1，給湘看人數）
+//   GET  /giftcode/<雜湊>               → 全服兌換碼（不用邀請碼）
+//   POST /giftcode/<雜湊>/claim         → 兌換一次（+1；碼有設名額時，額滿就拒絕）
+//   GET  /admin/claims                  → 審核員看每封信、每組碼被領了幾次
 //   Cron Trigger 每分鐘（* * * * *）→ runTimers 推出到期的提醒
 //
 // 手機通知（Web Push，湘 11/21）：審核員把審核結果、紙條、照片回覆、新委託寫進某位玩家的空間時，
@@ -63,6 +68,7 @@ export async function ensureSchema(db) {
     db.prepare('CREATE INDEX IF NOT EXISTS timers_at ON timers (at)'),
     db.prepare('CREATE TABLE IF NOT EXISTS new_players (day TEXT, site TEXT, n INTEGER, PRIMARY KEY (day, site))'),
     db.prepare('CREATE INDEX IF NOT EXISTS timers_endpoint ON timers (endpoint)'),
+    db.prepare('CREATE TABLE IF NOT EXISTS claims (k TEXT PRIMARY KEY, n INTEGER)'),
   ]);
 }
 
@@ -241,6 +247,47 @@ async function newPlayerStats(db) {
   return { today: taiwanDay(), since: days[0]?.day || null, total: days.reduce((n, d) => n + d.total, 0), days };
 }
 
+/* ---------- 全服信箱、全服兌換碼（湘 11/27） ----------
+   存檔在玩家手機裡，所以「發給所有人」的獎勵要讓遊戲自己來問。大部分玩家沒有邀請碼，這兩個都不用登入就能讀。
+   內容是湘在審核室蓋過章的 JSON（審核員 PUT /f/shared/broadcast/<id>.json、/f/shared/giftcodes/<雜湊>.json），
+   遊戲驗章後才採用，所以後台被亂寫也發不出假獎勵。「每份存檔只能領一次」記在玩家的存檔裡；
+   後台只記一個匿名的人數（claims 表），兌換碼有設名額（payload.limit）時用它擋額滿。 */
+export const BROADCAST_MAX = 30;
+const parseSigned = (row) => { try { return JSON.parse(new TextDecoder().decode(new Uint8Array(row.body))); } catch { return null; } };
+async function claimCount(db, k) { return (await db.prepare('SELECT n FROM claims WHERE k = ?').bind(k).first())?.n || 0; }
+async function addClaim(db, k, limit = 0) {
+  if (limit > 0) {
+    const r = await db.prepare('INSERT INTO claims (k, n) VALUES (?, 1) ON CONFLICT(k) DO UPDATE SET n = n + 1 WHERE n < ?').bind(k, limit).run();
+    return r.meta?.changes ? claimCount(db, k) : -1;
+  }
+  await db.prepare('INSERT INTO claims (k, n) VALUES (?, 1) ON CONFLICT(k) DO UPDATE SET n = n + 1').bind(k).run();
+  return claimCount(db, k);
+}
+async function broadcastRoute(route, request, db) {
+  if (route === '/broadcast' && request.method === 'GET') {
+    const { results } = await db.prepare("SELECT body FROM files WHERE key > 'shared/broadcast/' AND key < 'shared/broadcast/￿' ORDER BY key DESC LIMIT ?").bind(BROADCAST_MAX).all();
+    return json({ now: new Date().toISOString(), mail: results.map(parseSigned).filter(Boolean) });
+  }
+  let m = route.match(/^\/broadcast\/([\w-]{6,40})\/claim$/);
+  if (m && request.method === 'POST') {
+    const row = await db.prepare('SELECT key FROM files WHERE key = ?').bind(`shared/broadcast/${m[1]}.json`).first();
+    if (!row) return fail(404, '這封信已經收回了');
+    return json({ ok: true, n: await addClaim(db, `bc:${m[1]}`) });
+  }
+  m = route.match(/^\/giftcode\/([0-9a-f]{64})(\/claim)?$/);
+  if (!m) return null;
+  const row = await db.prepare('SELECT body FROM files WHERE key = ?').bind(`shared/giftcodes/${m[1]}.json`).first();
+  if (!row) return fail(404, '沒有這組兌換碼');
+  const signed = parseSigned(row);
+  if (!m[2] && request.method === 'GET') return json({ signed, n: await claimCount(db, `gc:${m[1]}`) });
+  if (m[2] && request.method === 'POST') {
+    const limit = Math.max(0, Math.floor(Number(signed?.payload?.limit) || 0));
+    const n = await addClaim(db, `gc:${m[1]}`, limit);
+    return n < 0 ? fail(409, '這組兌換碼已經被領完了') : json({ ok: true, n });
+  }
+  return fail(405, '不支援');
+}
+
 async function handle(request, env, ctx) {
   const db = env.DB;
   const url = new URL(request.url);
@@ -250,6 +297,7 @@ async function handle(request, env, ctx) {
   if (!schemaReady) { await ensureSchema(db); schemaReady = true; }
   if ((route === '/timers' || route === '/timers/off') && request.method === 'POST') return timerRoute(route, request, env);
   if (route === '/hello' && request.method === 'POST') return helloRoute(request, env);
+  if (route.startsWith('/broadcast') || route.startsWith('/giftcode/')) { const r = await broadcastRoute(route, request, db); if (r) return r; }
 
   if (route === '/admin/claim' && request.method === 'POST') {
     const body = await request.json().catch(() => ({}));
@@ -290,6 +338,7 @@ async function handle(request, env, ctx) {
       return json(results.map((r) => ({ ...r, revoked: Boolean(r.revoked) })));
     }
     if (route === '/admin/new-players' && request.method === 'GET') return json(await newPlayerStats(db));
+    if (route === '/admin/claims' && request.method === 'GET') { const { results } = await db.prepare('SELECT k, n FROM claims').all(); return json(Object.fromEntries(results.map((r) => [r.k, r.n]))); }
     if (route === '/admin/players' && request.method === 'POST') {
       const body = await request.json().catch(() => ({}));
       const name = String(body.name || '').trim().slice(0, 20) || '新玩家';

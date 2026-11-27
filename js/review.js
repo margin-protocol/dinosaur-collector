@@ -404,6 +404,148 @@ async function refreshLetters() {
   } catch (err) { $('letter-status').textContent = `讀取紙條失敗：${err.message}`; }
 }
 
+
+/* ---------- 全服信箱、全服兌換碼（湘 11/27）：不用邀請碼，所有玩家都收得到 ---------- */
+// 禮物欄位：數字留空＝不給。兩張表單共用同一種欄位
+const GIFT_EGG_OPTIONS = [['', '不送蛋'], ['wish', '願望蛋'], ['weather', '天氣蛋'], ['cipher', '暗號蛋（隨機小湘）'], ['star', '星光蛋'], ['mohen', '墨痕蛋']];
+function buildGiftFields(box, prefix) {
+  const num = (id, label, max, ph = '') => `<label>${label}<input id="${prefix}-${id}" type="number" min="1" max="${max}" inputmode="numeric" placeholder="${ph}"></label>`;
+  box.insertAdjacentHTML('beforeend', [
+    num('energy', '能量', 9999), num('moyu', '墨玉', 9999), num('fossils', '化石碎片', 9999),
+    `<label>星光糖<span class="gift-duo"><select id="${prefix}-candy-r" aria-label="星光糖稀有度">${['N', 'R', 'SR', 'SSR', 'UR'].map((r) => `<option>${r}</option>`).join('')}</select><input id="${prefix}-candy" type="number" min="1" max="50" inputmode="numeric" placeholder="顆" aria-label="星光糖顆數"></span></label>`,
+    `<label class="gift-wide">蛋<span class="gift-duo"><select id="${prefix}-egg">${GIFT_EGG_OPTIONS.map(([v, t]) => `<option value="${v}">${t}</option>`).join('')}</select><input id="${prefix}-egg-n" type="number" min="1" max="20" inputmode="numeric" placeholder="1 顆" aria-label="幾顆蛋"></span></label>`,
+    `<label class="gift-wide">指定居民的暗號蛋<select id="${prefix}-char"><option value="">不送</option></select></label>`,
+  ].join(''));
+  $(`${prefix}-char`).append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `${noLabel(c.no)} ${c.name}` })));
+}
+function giftsFrom(prefix) {
+  const n = (id) => { const v = Math.floor(Number($(`${prefix}-${id}`).value)); return Number.isFinite(v) && v > 0 ? v : 0; };
+  const out = [];
+  if (n('energy')) out.push({ type: 'energy', amount: Math.min(9999, n('energy')) });
+  if (n('moyu')) out.push({ type: 'token', event: 'mo', amount: Math.min(9999, n('moyu')) });
+  if (n('fossils')) out.push({ type: 'fossils', amount: Math.min(9999, n('fossils')) });
+  if (n('candy')) out.push({ type: 'candy', rarity: $(`${prefix}-candy-r`).value, amount: Math.min(50, n('candy')) });
+  if ($(`${prefix}-egg`).value) out.push({ type: 'egg', egg: $(`${prefix}-egg`).value, ...(n('egg-n') > 1 ? { count: Math.min(20, n('egg-n')) } : {}) });
+  if ($(`${prefix}-char`).value) out.push({ type: 'character', no: $(`${prefix}-char`).value });
+  return out;
+}
+const giftsText = (list) => (list?.length ? list.map((r) => describeReward(r, CHARACTERS, EGGS)).join('、') : '');
+function clearGifts(prefix) { for (const el of $(`${prefix}-gifts`).querySelectorAll('input, select')) el.value = el.tagName === 'SELECT' && el.id.endsWith('-candy-r') ? 'N' : ''; }
+const dayEnd = (v) => (v ? new Date(`${v}T23:59:59+08:00`).toISOString() : null);
+const fmtDay = (iso) => new Date(iso).toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' });
+const expired = (p) => Boolean(p?.expires && Date.now() > Date.parse(p.expires));
+buildGiftFields($('bc-gifts'), 'bc'); buildGiftFields($('gc-gifts'), 'gc');
+const bcPreview = () => { const g = giftsText(giftsFrom('bc')); $('bc-preview').textContent = g ? `🎁 每個人會收到：${g}` : ''; };
+const gcPreview = () => { const g = giftsText(giftsFrom('gc')); $('gc-preview').textContent = g ? `🎁 兌換到：${g}` : ''; };
+$('bc-gifts').addEventListener('input', bcPreview); $('bc-gifts').addEventListener('change', bcPreview);
+$('gc-gifts').addEventListener('input', gcPreview); $('gc-gifts').addEventListener('change', gcPreview);
+function renderAllLock() {
+  const ok = Boolean(reviewerToken && privateKey);
+  $('all-locked').dataset.ok = ok ? '1' : '';
+  $('bc-send').disabled = $('gc-create').disabled = !ok;
+}
+const claimsOf = async () => { try { return await admin().claims(); } catch { return {}; } };
+
+let bcArmed = 0;
+$('bc-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const title = $('bc-title').value.trim(); const body = $('bc-body').value.trim();
+  if (!body) { $('bc-status').textContent = '先寫點什麼吧。'; return; }
+  if (!reviewerToken || !privateKey) { $('bc-status').textContent = '要先到「設定」登入審核員通行碼、準備好印章。'; return; }
+  const gifts = giftsFrom('bc');
+  // 寄出去所有人都會收到，按兩次才寄（湘 11/27）
+  if (Date.now() - bcArmed > 6000) { bcArmed = Date.now(); $('bc-send').textContent = '再按一次確認寄給所有人'; $('bc-status').textContent = `確認一下：「${title || '給大家'}」${gifts.length ? `，附上${giftsText(gifts)}` : '，沒有附禮物'}。`; return; }
+  bcArmed = 0; $('bc-send').textContent = '蓋章並寄給所有人';
+  $('bc-send').disabled = true; $('bc-status').textContent = '蓋章中…';
+  try {
+    const id = `${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 6)}`;
+    const payload = { v: 1, type: 'broadcast', id, title, body, rewards: gifts, expires: dayEnd($('bc-expires').value), createdAt: new Date().toISOString() };
+    await admin().putJSON(`shared/broadcast/${id}.json`, await signPayload(privateKey, payload), 'broadcast');
+    $('bc-status').textContent = `寄出了！所有玩家下次打開遊戲就會收到${gifts.length ? `，拆開領${giftsText(gifts)}` : ''}。`;
+    $('bc-title').value = ''; $('bc-body').value = ''; $('bc-expires').value = ''; clearGifts('bc'); bcPreview();
+    void refreshBroadcast();
+  } catch (err) { $('bc-status').textContent = `寄送失敗：${err.message}`; }
+  finally { renderAllLock(); }
+});
+async function refreshBroadcast() {
+  if (!reviewerToken) return;
+  try {
+    const a = admin();
+    const [files, claims] = await Promise.all([a.list('shared/broadcast'), claimsOf()]);
+    const items = await Promise.all(files.filter((f) => f.name.endsWith('.json')).sort((x, y) => y.name.localeCompare(x.name)).map(async (f) => ({ f, p: (await a.getJSON(f.path))?.data?.payload })));
+    $('bc-list').replaceChildren(...items.map(({ f, p }) => {
+      const li = document.createElement('li');
+      const b = document.createElement('b'); b.textContent = p?.title || '（無標題）';
+      const small = document.createElement('small');
+      const n = claims[`bc:${p?.id}`] || 0;
+      small.textContent = [p?.createdAt ? new Date(p.createdAt).toLocaleString('zh-TW') : '', p?.rewards?.length ? `附上${giftsText(p.rewards)}` : '沒附禮物', p?.expires ? (expired(p) ? '已過收信期限' : `收信到 ${fmtDay(p.expires)}`) : '不限期'].filter(Boolean).join(' · ');
+      const got = Object.assign(document.createElement('small'), { className: 'claimed', textContent: p?.rewards?.length ? `🎁 已經有 ${n} 人領了禮物` : '' });
+      const pre = document.createElement('pre'); pre.textContent = p?.body || '';
+      const row = document.createElement('div'); row.className = 'row';
+      const del = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '收回（已收到的人不會消失）' });
+      let armed = false;
+      del.addEventListener('click', async () => { if (!armed) { armed = true; del.textContent = '再按一次收回'; return; } del.disabled = true; await a.remove(f.path, 'remove broadcast'); void refreshBroadcast(); });
+      row.append(del); li.append(b, small, got, pre, row); return li;
+    }));
+    if (!items.length) $('bc-list').replaceChildren(Object.assign(document.createElement('li'), { textContent: '還沒有寄過全服信。' }));
+  } catch (err) { $('bc-status').textContent = `讀取全服信失敗：${err.message}`; }
+}
+$('bc-refresh').addEventListener('click', refreshBroadcast);
+
+const GC_WORDS = ['書頁', '江湖', '墨玉', '星光', '海棠', '小湘', '布丁', '月見', '琥珀', '天燈'];
+$('gc-random').addEventListener('click', () => {
+  const pick = (a) => a[Math.floor(Math.random() * a.length)];
+  $('gc-phrase').value = `${pick(GC_WORDS)}${String(Math.floor(Math.random() * 9000) + 1000)}`;
+});
+$('gc-form').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const label = $('gc-phrase').value.trim();
+  const phrase = normalizeCode(label);
+  if (phrase.length < 2) { $('gc-status').textContent = '兌換碼至少要兩個字。'; return; }
+  if (!reviewerToken || !privateKey) { $('gc-status').textContent = '要先到「設定」登入審核員通行碼、準備好印章。'; return; }
+  const gifts = giftsFrom('gc');
+  if (!gifts.length) { $('gc-status').textContent = '至少要選一樣禮物。'; return; }
+  $('gc-create').disabled = true; $('gc-status').textContent = '蓋章中…';
+  try {
+    const a = admin();
+    const hash = await sha256Hex(phrase);
+    if (await a.exists(`shared/giftcodes/${hash}.json`)) { $('gc-status').textContent = '這組兌換碼已經有了，換一組吧。'; return; }
+    const limit = Math.floor(Number($('gc-limit').value)) || null;
+    const payload = { v: 1, type: 'giftcode', hash, label, rewards: gifts, expires: dayEnd($('gc-expires').value), limit: limit && limit > 0 ? limit : null, createdAt: new Date().toISOString() };
+    await a.putJSON(`shared/giftcodes/${hash}.json`, await signPayload(privateKey, payload), 'add gift code');
+    $('gc-status').textContent = `完成！兌換碼「${label}」可以換${giftsText(gifts)}${payload.limit ? `，限 ${payload.limit} 人` : ''}。`;
+    $('gc-phrase').value = ''; $('gc-limit').value = ''; $('gc-expires').value = ''; clearGifts('gc'); gcPreview();
+    void refreshGiftCodes();
+  } catch (err) { $('gc-status').textContent = `建立失敗：${err.message}`; }
+  finally { renderAllLock(); }
+});
+async function refreshGiftCodes() {
+  if (!reviewerToken) return;
+  try {
+    const a = admin();
+    const [files, claims] = await Promise.all([a.list('shared/giftcodes'), claimsOf()]);
+    const items = await Promise.all(files.filter((f) => f.name.endsWith('.json')).map(async (f) => ({ f, hash: f.name.slice(0, -5), p: (await a.getJSON(f.path))?.data?.payload })));
+    items.sort((x, y) => String(y.p?.createdAt).localeCompare(String(x.p?.createdAt)));
+    $('gc-list').replaceChildren(...items.map(({ f, hash, p }) => {
+      const li = document.createElement('li');
+      const b = document.createElement('b'); b.textContent = p?.label || '（兌換碼）';
+      const n = claims[`gc:${hash}`] || 0;
+      const small = document.createElement('small');
+      small.textContent = [giftsText(p?.rewards), p?.expires ? (expired(p) ? '已過期' : `到 ${fmtDay(p.expires)}`) : '不限期'].filter(Boolean).join(' · ');
+      const got = Object.assign(document.createElement('small'), { className: 'claimed', textContent: p?.limit ? `已兌換 ${n} / ${p.limit}${n >= p.limit ? '（額滿）' : ''}` : `已兌換 ${n} 次` });
+      const row = document.createElement('div'); row.className = 'row';
+      const copyBtn = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '複製' });
+      copyBtn.addEventListener('click', async () => { try { await navigator.clipboard.writeText(p?.label || ''); copyBtn.textContent = '已複製'; } catch { copyBtn.textContent = '複製失敗'; } });
+      const del = Object.assign(document.createElement('button'), { className: 'btn btn--quiet', type: 'button', textContent: '停用' });
+      let armed = false;
+      del.addEventListener('click', async () => { if (!armed) { armed = true; del.textContent = '再按一次停用'; return; } del.disabled = true; await a.remove(f.path, 'remove gift code'); void refreshGiftCodes(); });
+      row.append(copyBtn, del); li.append(b, small, got, row); return li;
+    }));
+    if (!items.length) $('gc-list').replaceChildren(Object.assign(document.createElement('li'), { textContent: '還沒有兌換碼。' }));
+  } catch (err) { $('gc-status').textContent = `讀取兌換碼失敗：${err.message}`; }
+}
+$('gc-refresh').addEventListener('click', refreshGiftCodes);
+
 /* ---------- 照片委託 ---------- */
 $('mission-character').append(...Object.values(CHARACTERS).map((c) => Object.assign(document.createElement('option'), { value: c.no, textContent: `${noLabel(c.no)} ${c.name}` })));
 // 隨機題目（湘 11/21）：題目和說明一起換，按一次換一個
@@ -540,8 +682,9 @@ $('postcard-history').addEventListener('toggle', () => { if ($('postcard-history
 
 /* ---------- 分頁（湘 11/21：審核｜出題｜設定，打開先停在審核） ---------- */
 function showTab(name) {
+  if (name === 'all') { renderAllLock(); void refreshBroadcast(); void refreshGiftCodes(); }
   document.querySelectorAll('[data-tab]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
-  document.querySelectorAll('[data-panel]').forEach((el) => { el.hidden = el.dataset.panel !== name; });
+  document.querySelectorAll('[data-panel]').forEach((el) => { el.hidden = el.dataset.panel !== name || (el.id === 'all-locked' && el.dataset.ok === '1'); });
   $('batch-bar').hidden = name !== 'inbox' || !selected.size;
   document.body.classList.toggle('has-batch', !$('batch-bar').hidden);
 }

@@ -62,7 +62,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, .btn:focus-vi
 details > summary { margin-top: 8px; font: 13px var(--font-body); color: var(--pearl); cursor: pointer; }
 
 /* ---------- 分頁＋待審核收件匣＋批次（湘 11/21） ---------- */
-.tabs { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px; margin: 14px -16px 0; padding: calc(var(--safe-top) + 6px) 16px 8px; background: #fff0f3ee; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
+.tabs { position: sticky; top: 0; z-index: 5; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin: 14px -16px 0; padding: calc(var(--safe-top) + 6px) 16px 8px; background: #fff0f3ee; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-bottom: 1px solid var(--line); }
 .tabs button { min-height: 44px; border: 1px solid transparent; border-radius: 10px; background: none; color: var(--pearl); font: 15px var(--font-display); letter-spacing: .1em; display: inline-flex; align-items: center; justify-content: center; gap: 6px; touch-action: manipulation; }
 .tabs button[aria-selected=true] { background: var(--sakura-raised); border-color: var(--line); color: var(--sakura-accent); }
 .tab-count { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--sakura-accent); color: #fff; font: 12px/20px var(--font-body); letter-spacing: 0; }
@@ -124,3 +124,16 @@ body.has-batch .review { padding-bottom: 150px; }
 .np-dot:first-child { margin-left: 0; }
 .np-dot--gh { background: #d68aa8; }
 .np-dot--cf { background: #914e6a; }
+
+/* 全服信箱、兌換碼（湘 11/27） */
+.gift-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 10px; margin: 0; padding: 10px 12px 12px; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.gift-grid legend { padding: 0 6px; font-size: 13px; color: var(--pearl); }
+.gift-grid label { min-width: 0; }
+.gift-grid .gift-wide { grid-column: 1 / -1; }
+.gift-grid input, .gift-grid select, .gift-pair input { width: 100%; min-width: 0; box-sizing: border-box; }
+.gift-duo { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 6px; }
+.gift-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.gift-preview { margin: 0; min-height: 18px; font-size: 13px; color: var(--sakura-accent, #f4c6db); }
+.gift-preview:empty { display: none; }
+.all-locked { margin-top: 18px; }
+.list li .claimed { color: var(--sakura-accent, #f4c6db); }

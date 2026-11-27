@@ -6,7 +6,7 @@ const worker=[];p.on('request',r=>{if(/workers\.dev|api\.github\.com/.test(r.url
 await p.goto('http://127.0.0.1:8000');
 const real=JSON.stringify({seenIntro:true,energy:7,dex:{'001':{at:'2026-11-01T00:00:00.000Z'}}});
 await p.evaluate(r=>{localStorage.clear();localStorage.setItem('siang-collector:v1',r);localStorage.setItem('siang-collector:theme:v1','mint');},real);
-await p.goto('http://127.0.0.1:8000/?test');await p.waitForTimeout(800);
+await p.goto('http://127.0.0.1:8000/?test');worker.length=0;await p.waitForTimeout(800);
 assert.equal(await p.locator('#test-server-tag .tst-pill').textContent(),'測試服');
 assert.equal(await p.textContent('#energy-value'),'9999');
 const s=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v1')));
@@ -33,9 +33,10 @@ const s2=await p.evaluate(()=>JSON.parse(localStorage.getItem('siang-collector:v
 // 正式存檔一個字都沒變（用屬性讀，繞過測試服的 key 前綴）
 assert.equal(await p.evaluate(()=>localStorage['siang-collector:v1']),real,'正式存檔沒變');
 assert.equal(await p.evaluate(()=>localStorage['siang-collector:theme:v1']),'mint');
+assert.deepEqual(worker,[],'測試服不連後台');
 await p.goto('http://127.0.0.1:8000/');await p.waitForTimeout(300);
 assert.equal(JSON.parse(await p.evaluate(()=>localStorage.getItem('siang-collector:v1'))).energy,7);
 assert.equal(await p.evaluate(()=>globalThis.__SIANG_TEST__),undefined);
-assert.deepEqual(worker,[]);
+assert.deepEqual(worker.filter(u=>!/\/broadcast$/.test(u)),[],'正式服只會問全服信箱');
 const over=await p.evaluate(()=>document.documentElement.scrollWidth-innerWidth);assert.ok(over<=0);
 assert.equal(errs.length,0,errs.join('\n'));console.log('test server: isolated save, full seed, event open, 15s battle, backend blocked, reset PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

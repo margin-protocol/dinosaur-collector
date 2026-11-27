@@ -63,6 +63,7 @@ function createSiangCloud(config) {
     // 審核員專用
     async players() { return (await call('GET', '/admin/players')).json(); },
     async newPlayers() { return (await call('GET', '/admin/new-players')).json(); },
+    async claims() { return (await call('GET', '/admin/claims')).json(); },
     async addPlayer(name) { return (await call('POST', '/admin/players', { body: JSON.stringify({ name }) })).json(); },
     async playerAction(id, action, body = {}) { return (await call('POST', `/admin/players/${id}/${action}`, { body: JSON.stringify(body) })).json(); },
   };
@@ -81,6 +82,14 @@ export async function claimReviewer() {
 export async function reviewerClaimed() {
   const res = await fetch(`${apiBase()}/admin/status`, { cache: 'no-store' });
   return res.ok ? (await res.json()).claimed : null;
+}
+
+// 不用邀請碼的公開 API（全服信箱、全服兌換碼，湘 11/27）。回傳 { status, data }；連不上時 status 0
+export async function publicApi(method, route) {
+  try {
+    const res = await fetch(`${apiBase()}${route}`, { method, cache: 'no-store', signal: AbortSignal.timeout?.(12000) });
+    return { status: res.status, data: await res.json().catch(() => null) };
+  } catch { return { status: 0, data: null }; }
 }
 
 export function createCloud(config) {
