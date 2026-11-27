@@ -128,6 +128,12 @@ export const SERIES_BONUS = 0.15; // 同系列 2 位以上
 export const WEAK_BONUS = 0.3; // 帶了剋制的系列
 export const TEAM_MAX = 3;
 export const REST_MINUTES = 60; // 打完要休息
+// 連戰到天亮（湘 11/28 選 A）：打贏過的主線／活動關卡，自動重複打 8 小時；每場獎勵 5 折、用一張夜戰券、回來休息 2 小時
+// 首勝、信物、劇情、三星禮物只算第一場；野外和系列副本不能連戰
+export const NIGHT = { hours: 8, mult: 0.5, rest: 120, maxRuns: 16, refillHour: 12 };
+// 🌙 夜戰券：每天中午 12 點（本地時間）補到 1 張、不累積。用「中午換日」的日期記，睡前跨過半夜不會多一張
+export const nightDayKey = (now = new Date()) => todayKey(new Date(now.getTime() - NIGHT.refillHour * 3600e3));
+export const nightTickets = (state, now = new Date()) => (state.battle?.nightDay === nightDayKey(now) ? 0 : 1);
 export const FOOD_SPEED_CAP = 0.25; // LV5 羈絆＋料理＋居民技能的減時合計上限（湘 11/25：技能也算進來，剋制另外算）
 export const SPEED_CAP = FOOD_SPEED_CAP;
 // 世界代碼：沒寫的都是創始系列
@@ -166,6 +172,7 @@ export function ensureBattle(state) {
     weekBest: Number.isSafeInteger(old.weekBest) ? old.weekBest : 0,
     wildWins: Number.isSafeInteger(old.wildWins) ? old.wildWins : 0,
     pages: Array.isArray(old.pages) ? old.pages.filter(isStr) : [], // 預留：收集到的特殊書頁 id
+    ...(isStr(old.nightDay) ? { nightDay: old.nightDay } : {}), // 連戰到天亮：最後一次用的本地日期（沒用過就不寫進存檔）
   };
   ensureWild(state);
   return state.battle;
@@ -339,7 +346,19 @@ export function slotUse(state) {
 // 這一關現在還能不能再派一隊
 export const slotFull = (state, enemyId) => { const u = slotUse(state); return !(u.used < teamSlots(state) || (String(enemyId || '').startsWith('side:') && u.sideFree)); };
 
-export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math.random, busy = new Set() } = {}) {
+// 這一關現在能不能連戰：回傳 { ok, reason, runs(minutes) }
+export function nightStatus(state, enemyId, now = new Date()) {
+  const enemy = enemyFor(state, enemyId);
+  if (!enemy || enemy.wild || enemy.side) return { ok: false, reason: '野外和副本不能連戰' };
+  const ev = enemy.event ? parseStageKey(enemyId) : null;
+  const clears = ev ? progressOf(state, ev.eventId).stages[ev.stageId]?.clears : state.battle?.stages?.[enemyId]?.clears;
+  if (!clears) return { ok: false, reason: '先打贏這關一次才能連戰' };
+  if (!nightTickets(state, now)) return { ok: false, used: true, reason: '夜戰券用完了，中午 12 點補 1 張' };
+  return { ok: true };
+}
+export const nightRuns = (minutes) => Math.max(1, Math.min(NIGHT.maxRuns, Math.floor(NIGHT.hours * 60 / Math.max(1, minutes))));
+
+export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math.random, busy = new Set(), night = false } = {}) {
   const b = ensureBattle(state);
   const enemy = enemyFor(state, enemyId);
   if (!enemy) return '找不到這個對手。';
@@ -355,6 +374,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   if (slotFull(state, enemyId)) { const nx = nextTeamSlot(state); return `同時最多 ${teamSlots(state)} 隊，等她們回來吧。${nx ? `收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊。` : ''}`; }
   const free = available(state, now.getTime(), busy);
   if (nos.some((no) => !free.includes(no))) return '有小湘正在忙或休息中。';
+  if (night) { const ns = nightStatus(state, enemyId, now); if (!ns.ok) return `${ns.reason}。`; }
   const f = forecast(state, nos, enemyId);
   const win = rand() < f.chance;
   const score = scoreOf(f.ratio, f.weakHit, win);
@@ -386,9 +406,24 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   const chapterNo = enemy.wild || ev || sd ? Math.max(...CHAPTERS.filter((c) => unlocked(state, c.stages[0])).map((c) => c.id), 1) : (CHAPTERS.find((c) => c.stages.includes(enemyId))?.id || 1);
   loot.ingredients = dropsFor(chapterNo, { win, boss: Boolean(enemy.boss), gather: f.food?.kind === 'gather' ? 1 : 0, event: ev ? ev.eventId : null }, rand);
   if (!enemy.wild && !ev && !sd && win && stars === 3) { if (prev.stars < 3) loot.starGift = starGiftFor(chapterNo, rand); else loot.starBonus = { ...STAR_BONUS }; }
-  const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries, ...(f.sideSkill?.lootHalf ? { lootHalf: true } : {}) };
+  let nightInfo = null;
+  if (night) {
+    // 第一場照上面算好的；後面每場各自擲勝負，最後全部合計打 5 折
+    const runs = nightRuns(minutes); let wins = win ? 1 : 0;
+    const sum = { badges: loot.badges, energy: loot.energy, fossils: loot.fossils };
+    for (let k = 1; k < runs; k++) {
+      const w = rand() < f.chance; if (w) wins += 1;
+      const st2 = starsOf(f.ratio, w);
+      sum.badges += w ? (enemy.boss ? 3 : 1) : 0; sum.energy += w ? Math.round(enemy.power * (0.5 + 0.1 * st2)) : 5; sum.fossils += w && enemy.boss ? 3 : 0;
+    }
+    for (const k of ['badges', 'energy', 'fossils']) loot[k] = Math.round(sum[k] * NIGHT.mult);
+    nightInfo = { runs, wins, mult: NIGHT.mult };
+    state.battle.nightDay = nightDayKey(now);
+  }
+  const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries, ...(f.sideSkill?.lootHalf ? { lootHalf: true } : {}), ...(nightInfo ? { night: nightInfo } : {}) };
+  if (nightInfo) log.push(`🌙 連戰到天亮｜一路打了 ${nightInfo.runs} 場、贏了 ${nightInfo.wins} 場，獎勵合計打 5 折帶回來`);
   if (enemy.story && !enemy.wild && !ev && !b.story[`${enemyId}:before`]) b.story[`${enemyId}:before`] = iso(now); // 看過 Boss 開場故事
-  const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + (IS_TEST ? TEST_BATTLE_MS : minutes * 60e3))), report, ...(wildEntry ? { snapshot: wildEntry } : ev || sd ? { snapshot: enemy } : {}) };
+  const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + (IS_TEST ? TEST_BATTLE_MS : (nightInfo ? NIGHT.hours * 60 : minutes) * 60e3))), report, ...(nightInfo ? { night: true } : {}), ...(wildEntry ? { snapshot: wildEntry } : ev || sd ? { snapshot: enemy } : {}) };
   b.active.push(battle);
   return battle;
 }
@@ -437,10 +472,10 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const gift = r.loot.starGift || null;
   if (r.loot.starBonus) state.fossils = (state.fossils || 0) + (r.loot.starBonus.fossils || 0);
   if (gift) { b.badges += gift.badges || 0; state.fossils = (state.fossils || 0) + (gift.fossils || 0); addIngredients(state, gift.ingredients); if (st) st.starGiftAt = now.toISOString(); }
-  const restUntil = iso(new Date(now.getTime() + (IS_TEST ? 0 : REST_MINUTES * 60e3))); // 測試服不用休息
+  const restUntil = iso(new Date(now.getTime() + (IS_TEST ? 0 : (battle.night ? NIGHT.rest : REST_MINUTES) * 60e3))); // 測試服不用休息；連戰回來休息 2 小時
   for (const no of battle.nos) b.rest[no] = restUntil;
   b.total += 1; if (r.win) b.wins += 1;
-  const gains = [r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.daily && `☀️ 今日首勝：${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.daily}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`, evGain?.title && `五件信物收齊：稱號「${EVENT_DEFS[enemy.event]?.titles?.[evGain.title] || ''}」`, sideGain?.fossils && `+${sideGain.fossils} 化石${sideGain.first ? '（首勝）' : ''}`, r.lootHalf && '💰 經濟制裁：能量、化石減半', sideGain?.candy && `🍬 ${SERIES[sideGain.series]?.short || ''}星光糖 +${sideGain.candy}`, sideGain?.keepsake && `信物「${sideGain.keepsake.name}」`, sideGain?.title && `全線三星：稱號「${sideGain.title}」`, sideGain?.complete && `「${sideGain.lineName}」全線通關！`, sideGain?.resident && `🥚 ${CHARACTERS[sideGain.resident]?.name || ''}的紀念蛋送到蛋架了`].filter(Boolean);
+  const gains = [r.night && `🌙 連戰 ${r.night.runs} 場（贏 ${r.night.wins} 場）· 獎勵 5 折`, r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.daily && `☀️ 今日首勝：${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.daily}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`, evGain?.title && `五件信物收齊：稱號「${EVENT_DEFS[enemy.event]?.titles?.[evGain.title] || ''}」`, sideGain?.fossils && `+${sideGain.fossils} 化石${sideGain.first ? '（首勝）' : ''}`, r.lootHalf && '💰 經濟制裁：能量、化石減半', sideGain?.candy && `🍬 ${SERIES[sideGain.series]?.short || ''}星光糖 +${sideGain.candy}`, sideGain?.keepsake && `信物「${sideGain.keepsake.name}」`, sideGain?.title && `全線三星：稱號「${sideGain.title}」`, sideGain?.complete && `「${sideGain.lineName}」全線通關！`, sideGain?.resident && `🥚 ${CHARACTERS[sideGain.resident]?.name || ''}的紀念蛋送到蛋架了`].filter(Boolean);
   const firstClear = r.win && st.clears === 1;
   // 異世活動：第一次通關才在戰報播「打完後」（MO-05 再接上卷結尾）；解鎖紀錄在 state.events[id].story
   const ksDef = isEvent ? EVENT_DEFS[enemy.event]?.keepsakes : null; // 拿到信物＝播那件的小劇情；收齊再接「收齊」

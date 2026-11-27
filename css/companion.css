@@ -26,10 +26,6 @@ body[data-view="home"] .app { height:auto; min-height:max(760px,100svh); overflo
 .county-call__img.is-locked { filter:brightness(0) drop-shadow(0 0 10px #c9a8ff88); opacity:.85; }
 .county-call h2 { font:400 21px/1.5 var(--font-display); margin:6px 0; }
 .county-call__text { font-size:14px; line-height:1.8; margin:0 0 10px; }
-.county-call__note { font-size:12px; color:#f4c6db; margin:0 0 12px; white-space:pre-line; }
-.county-call__note.is-tips { text-align:left; line-height:1.8; padding:10px 12px; border-radius:12px; background:rgba(150,150,150,.1); }
-.county-call__note.is-tips > span { display:block; }
-.county-call__note.is-tips > .is-item { padding-left:1em; text-indent:-1em; }
 .county-call__actions { display:grid; gap:8px; }
 .county-call__actions .btn--quiet { width:100%; margin:0; }
 .county-call__privacy { margin:12px 0 0; font-size:10px; color:var(--pearl); }
@@ -204,7 +200,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .commission h3 { margin:0 0 4px; font:400 15px var(--font-display); }
 .commission p { margin:0 0 6px; font-size:13px; line-height:1.7; color:var(--pearl); white-space:pre-line; }
 .commission small { display:block; font-size:11px; color:var(--silver); }
-.commission__note { margin:6px 0; padding:6px 10px; border-left:2px solid #f4c6db; background:#f4c6db12; font-size:12px; color:#f4c6db; }
 .commission__thumb { width:64px; height:64px; object-fit:cover; border-radius:8px; float:right; margin-left:8px; }
 .commission .btn { width:100%; margin-top:8px; }
 .memories-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
@@ -218,8 +213,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .memory-view img { display:block; width:100%; max-height:50svh; object-fit:contain; border-radius:10px; background:#16131b; margin:6px 0 10px; }
 .memory-view small { font:11px var(--font-mono); color:var(--rose-metal); }
 .memory-view h2 { margin:4px 0 8px; font:400 19px var(--font-display); }
-.memory-view__note { margin:0; padding:10px 12px; border-left:2px solid #c9a8ff; border-radius:4px; background:#c9a8ff12; font:13px/1.8 var(--font-display); text-align:left; white-space:pre-line; }
-.memory-view__note::before { content:attr(data-label); display:block; font:10px var(--font-mono); letter-spacing:.14em; color:var(--rose-metal); margin-bottom:2px; }
 
 #chip-fossil { cursor:pointer; font:inherit; color:inherit; }
 .fossil-dialog { max-height:86vh; overflow:auto; }
@@ -534,7 +527,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .archive-entry { display:grid; grid-template-columns:36px 1fr auto; gap:10px; align-items:center; width:100%; margin:0 0 12px; padding:10px 14px; border-radius:14px; border:1px solid #e3b6a04d; background:linear-gradient(120deg,#6b233866,#2a111999); color:#f6e6dc; text-align:left; }
 .archive-entry__icon { font-size:22px; } .archive-entry b { display:block; font-size:14px; } .archive-entry small { font-size:11px; color:#f6e6dcb3; }
 .battle-stage-card.is-extra { border-color:#e3b6a066; background:linear-gradient(120deg,#6b233833,#ffffff08); grid-column:span 2; }
-.gugu-review p.gugu-review__note { margin-top:4px; font-size:12px; color:var(--rose-gold); opacity:.9; }
 
 /* Closed archives must retain the native dialog hidden state. */
 .archive:not([open]) { display:none; }
@@ -733,7 +725,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .dex-candy__feed:disabled { background:transparent; border:1px dashed var(--t-line,#6d6079); color:var(--t-muted,#d6cadc); cursor:default; }
 .candy-jar { margin:12px 0 0; padding:12px; border:1px solid var(--t-line,#6d6079); border-radius:14px; background:var(--t-raised,#302b3c); color:var(--t-text,#f8f0f6); display:grid; gap:8px; }
 .candy-jar h3 { margin:0; font:400 15px var(--font-display); }
-.candy-jar__note { margin:0; font-size:11px; line-height:1.6; color:var(--t-muted,#d6cadc); }
 .candy-jar__rows { display:grid; gap:8px; }
 .candy-jar__row { display:grid; gap:8px; padding:10px; border:1px solid var(--t-line,#6d6079); border-radius:12px; }
 .candy-jar__head { display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
@@ -883,7 +874,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-odds__luck { background:var(--t-raised); color:var(--t-text); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-odds__rarity { border-color:var(--t-line); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .egg-odds__list li.is-new small { color:var(--t-accent); }
-.vote-day__note { font-size:12px; opacity:.75; }
 /* 明信片盒與重複明信片（湘 11/20） */
 .card-dupes { display:grid; gap:8px; margin:10px 0; text-align:left; }
 .card-dupe { display:grid; gap:6px; padding:10px 12px; border-radius:12px; background:#00000026; font-size:13px; }
@@ -935,7 +925,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .checkin-reward { display:grid; gap:2px; justify-items:center; padding:8px 4px; border-radius:12px; border:1px dashed #e3b6a044; text-align:center; font-size:12px; min-width:0; }
 .checkin-reward b { font:14px var(--font-display); }
 .checkin-reward small { font-size:10.5px; opacity:.7; }
-.checkin-reward small.checkin-reward__note { opacity:.85; margin-top:-2px; }
 .checkin-reward.is-egg { border-style:solid; border-color:#ffd36b99; }
 .checkin-reward.is-got { background:#ffd9a81f; border-style:solid; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .checkin-day { background:var(--t-raised); border-color:var(--t-line); color:var(--t-text); }
@@ -951,7 +940,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .review-result__kicker { display: block; margin: -4px 0 4px; font: 10px var(--font-body); letter-spacing: .2em; opacity: .7; }
 .review-result__photo { display: block; width: min(100%, 240px); aspect-ratio: 1; object-fit: cover; margin: 10px auto 12px; border-radius: 12px; box-shadow: 0 4px 14px #0002; }
 .review-result__reward { margin: 0 0 12px; padding: 8px 12px; border-radius: 10px; border: 1px dashed currentColor; font-size: 14px; }
-.review-result__note { margin-bottom: 18px; }
 .review-result__mission { margin: 0; font: 15px var(--font-display); letter-spacing: .06em; opacity: .85; overflow-wrap: anywhere; }
 .cloud-push { display:grid; gap:8px; margin-top:14px; padding-top:12px; border-top:1px solid #ad96b13d; }
 .cloud-push p { margin:0; font-size:12px; line-height:1.7; color:var(--pearl); }
@@ -1080,9 +1068,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 /* 特訓格子（11/24 玩家：跟出勤狀態一樣的格子，依系列／稀有度分組） */
 .train-grid-wrap { display:block; }
 .train-groups { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:6px 10px; margin:2px 0 4px; }
-.train-groups__seg { display:inline-flex; padding:3px; border-radius:999px; background:var(--t-raised); border:1px solid var(--t-line); }
-.train-groups__seg button { min-height:34px; padding:4px 14px; border:0; border-radius:999px; background:none; color:var(--t-muted); font:13px/1 var(--font-display); }
-.train-groups__seg button[aria-pressed="true"] { background:var(--t-selected); color:var(--t-accent); font-weight:700; }
 .train-groups__can { font:12px var(--font-body); color:var(--t-accent); }
 .train-grid__label { margin:12px 2px 6px; }
 .train-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; }
@@ -1127,7 +1112,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 /* 標籤只在剛收到禮物時亮 8 秒，之後收起不擋畫面（湘 11/25 選 B） */
 .explore-pill.is-gifted.is-compact.is-flash .explore-pill__tag { display:block; position:absolute; left:calc(100% + 6px); top:50%; transform:translateY(-50%); padding:3px 9px; border-radius:999px; background:var(--t-panel, #2a2236cc); border:1px solid var(--t-accent, #f4c6db); color:var(--t-text, var(--ivory)); font:11px/1.5 var(--font-body); font-style:normal; white-space:nowrap; }
 .explore-pill.is-gifted.is-compact .explore-pill__tag::before { content:'🎁 '; }
-.county-call__note.is-gift { display:block; padding:6px 12px; border-radius:12px; border:1px solid var(--t-line, #c9a8ff66); background:var(--t-selected, #ffffff10); color:var(--t-text, var(--ivory)); line-height:1.7; }
 
 /* ── 異世活動（2.0 · 墨痕江湖）：跟著主題色，不用整片黑底；朱紅只用在印章和小重點 */
 .event-hub { --cinnabar:#c2413a; --ink-gold:#b08a4e; }
@@ -1162,7 +1146,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .home-event__text { display:grid; flex:1; min-width:0; }
 .home-event__text small { font-size:11px; letter-spacing:.06em; opacity:.7; }
 .home-event__text b { font:15px var(--font-display); letter-spacing:.06em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.home-event--c .home-event__go { opacity:.7; }
 
 /* 活動主視覺（湘 11/25）：活動區最上面放一條主視覺，文字放在圖下方的宣紙上，不壓到人物 */
 .event-hub .event-banner.has-art { padding-top:calc(min(46vw, 210px) + 10px); border-color:#c2413a55; }
@@ -1172,7 +1155,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .home-event--c.has-art .home-event__text { flex:0 1 58%; max-width:58%; }
 .home-event--c.has-art .home-event__text small { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .home-event--c.has-art .home-event__text small { opacity:.85; }
-.home-event--c.has-art .home-event__go { margin-left:auto; opacity:1; background:#fff8f2d9; border-radius:999px; width:30px; height:30px; display:grid; place-items:center; flex:none; }
 .home-event--c.has-art.is-soon .home-event__text .home-event__when { margin-top:2px; font-size:11.5px; letter-spacing:.04em; color:#8a2620; opacity:1; font-variant-numeric:tabular-nums; }
 /* 討伐頁收合（湘 11/25） */
 .fold-head { padding:0 !important; }
@@ -1210,7 +1192,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .event-keepsake small { font-size: 11px; line-height: 1.2; text-align: center; overflow-wrap: anywhere; opacity: .55; }
 .event-keepsake.is-got small { opacity: 1; }
 .event-keepsake.is-on { border-color: #a4423c; box-shadow: 0 0 0 2px color-mix(in srgb, #a4423c 25%, transparent); }
-.event-keepsakes__note { white-space: pre-line; margin: 6px 2px 0; font-size: 12.5px; line-height: 1.5; opacity: .8; }
 .event-keepsake { position: relative; }
 .event-keepsake__new { position: absolute; top: -6px; right: -4px; padding: 0 6px; border-radius: 999px; background: #c2413a; color: #fff; font-size: 10px; line-height: 16px; letter-spacing: .1em; font-family: var(--font-display); box-shadow: 0 1px 3px #0004; }
 .event-keepsake.is-on { transform: translateY(-3px); }
@@ -1220,7 +1201,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .event-keepsakes__bar i { display: block; height: 100%; border-radius: 6px; background: linear-gradient(90deg, #b08a4e, #c2413a); }
 .event-keepsakes__left { opacity: .85; white-space: nowrap; }
 .event-keepsakes__reward { margin: 5px 2px 0; font-size: 12px; line-height: 1.5; opacity: .75; }
-.event-keepsakes__note[hidden], .ks-scroll[hidden] { display: none; }
 .event-keepsakes__all { margin-top: 8px; text-align: center; }
 /* 攤開的卷軸：宣紙＋上下卷軸桿，深淺主題都一樣 */
 .ks-scroll { position: relative; margin: 14px 4px 10px; padding: 18px 16px 12px; border-radius: 6px; color: #3a2a26; background: linear-gradient(#fbf5ea, #f2e6d2); box-shadow: 0 6px 18px #0005; animation: ks-unroll .35s ease-out; transform-origin: top; }
@@ -1237,7 +1217,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .ks-scroll__story { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #a4423c66; }
 .ks-lines { display: grid; gap: 7px; font-size: 14px; line-height: 1.75; letter-spacing: .03em; }
 .ks-lines p { margin: 0; }
-.ks-lines__note { color: #8a6f66; font-size: 13px; }
 .ks-lines__say b { margin-right: 4px; font-family: var(--font-display); color: #a4423c; }
 .ks-scroll__foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; white-space: nowrap; margin-top: 10px; font-size: 11.5px; color: #8a6f66; }
 .ks-scroll__foot .epilogue-cta { flex: none; width: auto; margin: 0; min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid #a4423c66; background: transparent; color: #a4423c; font-family: var(--font-display); font-size: 13px; letter-spacing: .06em; }
@@ -1261,7 +1240,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .ks-reveal__dots img.is-off { filter: brightness(0) opacity(.3); }
 .ks-reveal__dots img.is-new { border-color: #e7b98f; box-shadow: 0 0 10px #e0a06a88; }
 .ks-reveal__sum { margin: 2px 0 0; max-width: 320px; font-size: 12.5px; line-height: 1.6; color: #f6ead9b3; }
-.ks-reveal__go { margin-top: 12px; min-width: min(220px, 80vw); min-height: 46px; border: 0; border-radius: 999px; background: #b8362f; color: #fbefe6; font-family: var(--font-display); font-size: 15px; letter-spacing: .2em; cursor: pointer; }
 .ks-reveal__later { min-height: 40px; padding: 0 16px; border: 0; background: none; color: #f6ead999; font: inherit; font-size: 13px; cursor: pointer; }
 @media (prefers-reduced-motion: reduce) { .ks-reveal__rays, .ks-reveal__art, .ks-reveal__seal { animation: none; } }
 .event-chip__icon { width: 1.6em; height: 1.6em; object-fit: contain; vertical-align: -.45em; margin: -2px 3px -2px -4px; }
@@ -1377,7 +1355,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .side-line__hero small { font-size:11px; letter-spacing:.12em; opacity:.85; }
 .side-line__hero b { margin:2px 0; font:20px var(--font-display); }
 .side-line__hero span { font-size:12px; opacity:.9; }
-.side-line__note { position:absolute; top:8px; right:10px; padding:2px 8px; border-radius:99px; background:#0008; border:1px solid #fff4; font-size:10.5px; font-style:normal; }
 .side-line .fold-head { margin-top:0; }
 .side-line__intro { font-size:13px; }
 .side-line__bonus { margin:8px 0; padding:8px 10px; border-radius:12px; border:1px dashed #ffffff33; background:#ffffff0d; font-size:12.5px; line-height:1.5; }
@@ -1410,7 +1387,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .side-line__hero.has-key { justify-content:flex-start; min-height:0; padding:0 0 10px; background:none; color:inherit; text-shadow:none; overflow:hidden; border:1px solid #ffffff1f; background-color:#ffffff08; }
 .side-line__hero.has-key::before { content:''; display:block; aspect-ratio:16/9; margin-bottom:8px; background:var(--scene) center/cover; }
 .side-line__hero.has-key > :is(small,b,span) { padding:0 12px; }
-.side-line__hero.has-key .side-line__note { top:auto; bottom:10px; right:10px; background:#0006; color:#fff8f2; }
 /* 支線信物櫃：沿用墨痕信物櫃，格子只放圖、名字在卷軸裡 */
 .side-keepsakes .event-keepsake { padding:6px 4px; aspect-ratio:1; align-content:center; }
 .side-keepsakes .event-keepsake img { max-width:none; }
@@ -1434,3 +1410,19 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .title-sheet__steps { display:flex; flex-wrap:wrap; gap:4px 10px; margin-top:6px; font-size:11.5px; opacity:.75; }
 .title-sheet__steps .is-done { text-decoration:line-through; opacity:.55; }
 .title-sheet__claim { width:100%; margin-top:8px; }
+/* 連戰到天亮（v2026.11.28d） */
+.battle-night { margin:0 0 10px; }
+.battle-night__card { display:flex; align-items:center; gap:10px; width:100%; padding:10px 12px; border-radius:14px; border:1px solid #ffffff2e; background:linear-gradient(135deg,#2a2552cc,#3b2f6acc); color:inherit; text-align:left; font:inherit; cursor:pointer; }
+.battle-night.is-on .battle-night__card { border-color:#cdb8ff; box-shadow:0 0 0 2px #cdb8ff55; }
+.battle-night__text { display:grid; gap:2px; flex:1; min-width:0; }
+.battle-night__text small { font-size:12px; opacity:.85; line-height:1.4; }
+.battle-night__switch { flex:none; position:relative; width:42px; height:24px; border-radius:999px; background:#ffffff33; transition:background .2s; }
+.battle-night__switch::after { content:''; position:absolute; top:3px; left:3px; width:18px; height:18px; border-radius:50%; background:#fff; transition:transform .2s; }
+.battle-night.is-on .battle-night__switch { background:#9d84f0; }
+.battle-night.is-on .battle-night__switch::after { transform:translateX(18px); }
+.battle-night :is(button:disabled) { opacity:.55; cursor:default; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-night__card { background:var(--t-raised); color:var(--t-text); border-color:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-night.is-on .battle-night__card { background:var(--t-selected); border-color:var(--t-accent); box-shadow:none; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-night__switch { background:var(--t-line); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-night.is-on .battle-night__switch { background:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-night__text small { color:var(--t-muted); opacity:1; }
