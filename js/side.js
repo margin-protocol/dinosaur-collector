@@ -39,30 +39,31 @@ export const SIDE_LINES = {
     tagline: '「我們住在這裡，不是因為誰允許我們住在這裡。」',
     disclaimer: '本故事純屬虛構',
     intro: '頁間世界的東方海域，有一座由各縣市居民一起生活的島。海峽另一端的「赤印帝國」發布《天下頁籍統一令》，說這座島是帝國書冊裡遺失的一頁，派出五位將軍，要把島嶼重新裝訂進去。於是，各縣市小湘組成了「島嶼居民守望隊」。',
+    keyArt: 'assets/events/side/island-key.webp', // 湘 11/27 主視覺（支線卡頂端，字在圖裡所以卡片字放圖下方）
     scene: 'assets/scene/side/island-harbor.webp', // 湘 11/27 畫的漁港燈塔（原檔 /mnt/project-files/side-quest/island/originals/）
     countyBonus: { per: 0.2, cap: 0.6 }, // 縣市居民每位 +20%，最多 +60%；其他居民也能上
     reward: { first: 10, firstBoss: 25, repeat: 2, repeatBoss: 4 },
     stages: [
-      { id: 'isl-1', label: '★', name: '正名將軍・朱筆', emoji: '🖍️', power: 60, minutes: 45, skill: 'rename',
+      { id: 'isl-1', scene: 'assets/scene/side/island-harbor.webp', label: '★', name: '正名將軍・朱筆', emoji: '🖍️', power: 60, minutes: 45, skill: 'rename',
         intro: '「妳們可以存在，但只能用本將軍批准的名字存在。」',
         win: '「這、這些名字本將軍沒有批准過！……妳們怎麼還敢自己寫上去！」', lose: '「很好。從今天起，妳們的圖鑑一律加註『赤印帝國所屬』。」',
-        keepsake: { id: 'nameplate', name: '未經批准的姓名牌', text: '一塊手寫的名牌，上面的名字沒有任何人蓋章批准。它本來就不需要。' } },
-      { id: 'isl-2', label: '★★', name: '斷交將軍・絕信', emoji: '✉️', power: 85, minutes: 60, skill: 'noBond',
+        keepsake: { id: 'nameplate', art: 'assets/keepsakes/side/island/nameplate.webp', name: '未經批准的姓名牌', text: '一塊手寫的名牌，上面的名字沒有任何人蓋章批准。它本來就不需要。' } },
+      { id: 'isl-2', scene: 'assets/scene/side/island-harbor.webp', label: '★★', name: '斷交將軍・絕信', emoji: '✉️', power: 85, minutes: 60, skill: 'noBond',
         intro: '「誰敢跟妳們做朋友，本將軍就不跟誰做朋友！」',
         win: '「信……信怎麼還是寄出去了？本將軍明明把郵筒都封起來了！」', lose: '「看吧，沒有人敢回妳們的信。」',
-        keepsake: { id: 'postcard', name: '沒有被寄出的明信片', text: '被將軍攔下的明信片。背面寫著：「下次換你來我們這裡玩。」' } },
-      { id: 'isl-3', label: '★★★', name: '封市將軍・斂財', emoji: '💰', power: 115, minutes: 60, skill: 'sanction',
+        keepsake: { id: 'postcard', art: 'assets/keepsakes/side/island/postcard.webp', name: '沒有被寄出的明信片', text: '被將軍攔下的明信片。背面寫著：「下次換你來我們這裡玩。」' } },
+      { id: 'isl-3', scene: 'assets/scene/side/island-market.webp', label: '★★★', name: '封市將軍・斂財', emoji: '💰', power: 115, minutes: 60, skill: 'sanction',
         intro: '「只要妳們乖乖聽話，本將軍就允許妳們做生意。」',
         win: '「這麼大的市集……鳳梨酥、芒果冰、太陽餅……不、不准排隊！本將軍也要買！」', lose: '「沒有帝國的訂單，妳們的水果就爛在倉庫裡吧。」',
-        keepsake: { id: 'market-pass', name: '自由市集通行證', text: '島嶼市集的入場章。誰都可以來逛，誰都可以來擺攤。' } },
-      { id: 'isl-4', label: '★★★★', name: '惑心將軍・千聲', emoji: '📢', power: 150, minutes: 75, skill: 'rumor',
+        keepsake: { id: 'market-pass', art: 'assets/keepsakes/side/island/market-pass.webp', name: '自由市集通行證', text: '島嶼市集的入場章。誰都可以來逛，誰都可以來擺攤。' } },
+      { id: 'isl-4', scene: 'assets/scene/side/island-market.webp', label: '★★★★', name: '惑心將軍・千聲', emoji: '📢', power: 150, minutes: 75, skill: 'rumor',
         intro: '「妳隔壁那個縣市的小湘，早就偷偷投靠我們了！」',
         win: '「怎麼沒有人轉傳了？妳們……妳們居然先去查證？！」', lose: '「懷疑吧，懷疑身邊的每一個人吧。」',
-        keepsake: { id: 'truth-mirror', name: '辨真之鏡', text: '照到傳單時，假的字會一個一個掉下來。先查證，再轉傳。' } },
-      { id: 'isl-5', label: '★★★★★', name: '歸冊大將軍・一統', emoji: '📕', power: 190, minutes: 90, boss: true, skill: 'silence',
+        keepsake: { id: 'truth-mirror', art: 'assets/keepsakes/side/island/truth-mirror.webp', name: '辨真之鏡', text: '照到傳單時，假的字會一個一個掉下來。先查證，再轉傳。' } },
+      { id: 'isl-5', scene: 'assets/scene/side/island-lookout.webp', label: '★★★★★', name: '歸冊大將軍・一統', emoji: '📕', power: 190, minutes: 90, boss: true, skill: 'silence',
         intro: '「本將軍不是來詢問妳們的意見。」\n縣市小湘：「可是我們也沒有在問你的意見啊？」',
         win: '「本次戰敗不影響本帝國對該島嶼的主權聲索！」\n系統提示：五星將軍已被踢出頁間世界。', lose: '「書冊已經打開了。妳們遲早會被裝訂進來。」',
-        keepsake: { id: 'island-seal', name: '島嶼自主之印', text: '一枚小小的印章，蓋下去的是「這一頁，我們自己寫」。' } },
+        keepsake: { id: 'island-seal', art: 'assets/keepsakes/side/island/island-seal.webp', name: '島嶼自主之印', text: '一枚小小的印章，蓋下去的是「這一頁，我們自己寫」。' } },
     ],
   },
   // 本週支線：圖、劇情還沒交，先用 emoji 和暫定文字讓測試服看得到
@@ -162,7 +163,7 @@ export function sideEnemy(lineId, stageId) {
   return { key: stageKey(lineId, stageId), stage: s.label, name: s.name, emoji: s.emoji, art: s.art || `side/${lineId}/${stageId}`,
     power: s.power, minutes: s.minutes, boss: Boolean(s.boss), weak: [line.series], intro: s.intro, win: s.win.split('\n')[0], winNote: s.win.split('\n').slice(1).join(' ') || null, lose: s.lose,
     weakTag: line.id === 'island' ? '島嶼守望' : '系列主場', weakHit: line.id === 'island' ? '「這是我們的家，我們自己守。」' : '「這裡是我們的主場！」',
-    side: lineId, sideStage: stageId, skill: s.skill || null };
+    side: lineId, sideStage: stageId, skill: s.skill || null, scene: s.scene || line.scene || null };
 }
 
 // 戰力加成：系列居民每位加一點（島嶼不歸檔＝縣市 +20%，上限 60%）

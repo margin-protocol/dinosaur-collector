@@ -4398,7 +4398,7 @@ function sideFaces(series) {
 }
 function sideLineSection(line, now, { weekly = null } = {}) {
   const sec = el('section', 'battle-chapter side-line'); sec.dataset.group = 'side'; sec.dataset.sideLine = line.id;
-  const hero = el('div', 'side-line__hero'); if (line.scene) hero.style.setProperty('--scene', `url("${new URL(line.scene, document.baseURI).href}")`);
+  const hero = el('div', `side-line__hero${line.keyArt ? ' has-key' : ''}`); const heroArt = line.keyArt || line.scene; if (heroArt) hero.style.setProperty('--scene', `url("${new URL(heroArt, document.baseURI).href}")`);
   const time = weekly ? `剩 ${leftText(weekly.endsMs - now)} · 每週一換系列` : '常駐 · 隨時都能打';
   hero.append(el('small', null, line.kicker), el('b', null, line.name), el('span', null, time));
   if (line.disclaimer) hero.append(el('em', 'side-line__note', line.disclaimer));
@@ -4426,8 +4426,28 @@ function sideLineSection(line, now, { weekly = null } = {}) {
   body.push(grid);
   const kss = line.stages.filter(s => s.keepsake);
   if (kss.length) {
-    const shelf = el('div', 'side-line__keepsakes'); shelf.append(el('small', null, `信物 ${kss.filter(s => prog.keepsakes?.[s.keepsake.id]).length} / ${kss.length}`));
-    for (const s of kss) { const got = prog.keepsakes?.[s.keepsake.id]; const b = el('button', `side-ks${got ? ' is-got' : ''}`, got ? s.keepsake.name : '？？？'); b.type = 'button'; b.disabled = !got; if (got) b.addEventListener('click', () => toast(`${s.keepsake.name}：${s.keepsake.text}`)); shelf.append(b); }
+    const owned = prog.keepsakes || {}; const n = kss.filter(s => owned[s.keepsake.id]).length;
+    const shelf = el('div', 'event-keepsakes side-keepsakes'); const row = el('div', 'event-keepsakes__row');
+    const bar = el('span', 'event-keepsakes__bar'); const fill = el('i'); fill.style.width = `${Math.round(n / kss.length * 100)}%`; bar.append(fill);
+    const meter = el('div', 'event-keepsakes__prog'); meter.append(el('span', null, `信物 ${n} / ${kss.length}`), bar, el('span', 'event-keepsakes__left', n === kss.length ? '全部收齊 ✦' : '首勝必得'));
+    const note = el('p', 'event-keepsakes__note', n ? '點信物看它的故事。' : '第一次打贏將軍就會拿到他手上的信物。');
+    const scroll = el('div', 'ks-scroll'); scroll.hidden = true; let open = null;
+    for (const s of kss) {
+      const k = s.keepsake; const got = owned[k.id];
+      const b = el('button', `event-keepsake${got ? ' is-got' : ''}`); b.type = 'button'; b.dataset.keepsake = k.id; b.setAttribute('aria-label', got ? k.name : '還沒拿到的信物');
+      if (k.art) { const img = el('img'); img.src = k.art; img.alt = ''; img.loading = 'lazy'; b.append(img); }
+      b.append(el('small', null, got ? k.name : '？'));
+      b.addEventListener('click', () => {
+        if (open === k.id) { open = null; b.classList.remove('is-on'); scroll.hidden = true; note.hidden = false; return; }
+        open = k.id; row.querySelectorAll('.is-on').forEach(x => x.classList.remove('is-on')); b.classList.add('is-on'); note.hidden = true; scroll.hidden = false;
+        scroll.classList.toggle('is-locked', !got); scroll.replaceChildren();
+        const head = el('div', 'ks-scroll__head'); if (k.art) { const img = el('img'); img.src = k.art; img.alt = ''; head.append(img); }
+        const txt = el('div'); txt.append(el('h4', null, got ? k.name : '？？？'), el('p', null, got ? k.text : `打贏「${s.name}」第一次就會拿到。`)); head.append(txt); scroll.append(head);
+        if (got) { const foot = el('div', 'ks-scroll__foot'); const d = new Date(got); foot.append(el('span', null, `從${s.name}手上取回`), el('span', null, Number.isNaN(d.getTime()) ? '' : `${d.getMonth() + 1}/${d.getDate()} 拾得`)); scroll.append(foot); }
+      });
+      row.append(b);
+    }
+    shelf.append(row, meter, note, scroll);
     body.push(shelf);
   }
   if (weekly?.next && weekly.next.id !== line.id) body.push(el('p', 'side-line__next', `下週：${SERIES[weekly.next.series]?.name || ''}「${weekly.next.name}」`));
@@ -4469,7 +4489,7 @@ function foldable(head, body, key, { summary = '', done = false, minis = null } 
 let eventView = null; // null＝關卡；{ id, view: 'shop' }＝墨玉閣
 const tpeDate = ms => new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(ms);
 const leftText = ms => { const m = Math.max(1, Math.ceil(ms / 60e3)); const d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60); return d ? `${d} 天 ${h} 小時` : h ? `${h} 小時 ${m % 60} 分` : `${m} 分鐘`; };
-function eventScene(e) { if (e?.side) { const sc = side.lineDef(e.side)?.scene; return sc ? new URL(sc, document.baseURI).href : null; } const s = events.eventDef(e.event)?.stages[e.eventStage]; return s?.scene ? new URL(s.scene, document.baseURI).href : null; }
+function eventScene(e) { if (e?.side) { const sc = side.stageDef(e.side, e.sideStage)?.scene || side.lineDef(e.side)?.scene; return sc ? new URL(sc, document.baseURI).href : null; } const s = events.eventDef(e.event)?.stages[e.eventStage]; return s?.scene ? new URL(s.scene, document.baseURI).href : null; }
 function eventStageCard(def, stageId, now) {
   const key = events.stageKey(def.id, stageId); const e = events.eventEnemy(def.id, stageId);
   const st = state.events?.[def.id]?.stages?.[stageId]; const lock = events.stageLock(state, def, stageId, now);

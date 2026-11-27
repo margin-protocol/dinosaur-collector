@@ -1406,3 +1406,13 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .series-badge.is-lit i { filter:none; border-color:#ffe3b5; background:radial-gradient(circle at 35% 30%,#fff6,#0000 60%),linear-gradient(135deg,#f3c58f,#d98a9a); box-shadow:0 0 10px #ffd9a855; }
 .series-badge.is-gold i { box-shadow:0 0 0 2px #ffd36b,0 0 12px #ffd36b88; }
 .dex-candy--series { margin-top:-8px; }
+/* 有主視覺的支線：圖完整露出（字在圖裡），卡片文字放在圖下方 */
+.side-line__hero.has-key { justify-content:flex-start; min-height:0; padding:0 0 10px; background:none; color:inherit; text-shadow:none; overflow:hidden; border:1px solid #ffffff1f; background-color:#ffffff08; }
+.side-line__hero.has-key::before { content:''; display:block; aspect-ratio:16/9; margin-bottom:8px; background:var(--scene) center/cover; }
+.side-line__hero.has-key > :is(small,b,span) { padding:0 12px; }
+.side-line__hero.has-key .side-line__note { top:auto; bottom:10px; right:10px; background:#0006; color:#fff8f2; }
+/* 支線信物櫃：沿用墨痕信物櫃，格子只放圖、名字在卷軸裡 */
+.side-keepsakes .event-keepsake { padding:6px 4px; aspect-ratio:1; align-content:center; }
+.side-keepsakes .event-keepsake img { max-width:none; }
+.side-keepsakes .event-keepsake small { display:none; }
+.side-keepsakes .event-keepsake:not(.is-got)::before { content:'？'; position:absolute; inset:0; display:grid; place-items:center; font-size:13px; opacity:.5; }
