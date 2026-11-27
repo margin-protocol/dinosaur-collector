@@ -4365,7 +4365,7 @@ function openTitleSheet() {
   const badges = titles.seriesBadges(state);
   body.push(el('small', 'title-sheet__group', `圖鑑系列徽章 · ${badges.filter(x => x.lit).length} / ${badges.length}`));
   const grid = el('div', 'title-sheet__badges');
-  for (const x of badges) { const b = el('div', `series-badge${x.lit ? ' is-lit' : ''}${x.gold ? ' is-gold' : ''}`); b.append(el('i', null, BADGE_ICON[x.series] || '✦'), el('span', null, x.name)); grid.append(b); }
+  for (const x of badges) { const b = el('div', `series-badge${x.lit ? ' is-lit' : ''}${x.gold ? ' is-gold' : ''}${x.soon ? ' is-soon' : ''}`); const art = titles.badgeArt(x.series); const ic = el('i', art ? 'has-art' : null, art ? '' : BADGE_ICON[x.series] || '✦'); if (art) { const img = el('img'); img.src = art; img.alt = ''; img.loading = 'lazy'; ic.append(img); } b.append(ic, el('span', null, x.name)); if (x.soon) b.append(el('small', null, '之後開放')); b.title = x.soon ? `${x.name}：支線之後開放` : x.lit ? `${x.name}：支線已打通` : `${x.name}：打通支線就會亮`; grid.append(b); }
   body.push(grid, el('p', 'residents-intro', '亮＝打通那個系列的支線；金框＝系列居民也收齊了'));
   d.replaceChildren(...body); if (!d.open) d.showModal();
 }

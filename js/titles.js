@@ -29,10 +29,16 @@ export function wearTitle(state, key) {
   return null;
 }
 // 圖鑑系列徽章：有支線的系列一枚。打通支線＝亮；系列居民也收齊＝金框
+// 湘 11/27 畫了五枚（assets/badges/<系列>.webp）；還沒有支線的系列也先擺出來，標「之後開放」
+export const BADGE_SERIES = ['county', 'animals', 'holiday', 'weather', 'friends'];
+export const badgeArt = (series) => (BADGE_SERIES.includes(series) ? `assets/badges/${series}.webp` : null);
 export function seriesBadges(state) {
   const seen = new Set(); const out = [];
-  for (const line of Object.values(SIDE_LINES)) {
-    if (seen.has(line.series)) continue; seen.add(line.series);
+  const series = [...new Set([...BADGE_SERIES, ...Object.values(SIDE_LINES).map((l) => l.series)])];
+  for (const sr of series) {
+    if (seen.has(sr)) continue; seen.add(sr);
+    const line = Object.values(SIDE_LINES).find((l) => l.series === sr);
+    if (!line) { out.push({ series: sr, name: SERIES[sr]?.short || sr, lit: false, gold: false, soon: true }); continue; }
     const lines = Object.values(SIDE_LINES).filter((l) => l.series === line.series);
     const lit = lines.some((l) => state.side?.lines?.[l.id]?.doneAt);
     const nos = Object.keys(CHARACTERS).filter((no) => CHARACTERS[no].series === line.series);

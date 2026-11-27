@@ -1399,7 +1399,7 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .title-pill { padding:6px 12px; border-radius:99px; border:1px solid #ffffff2a; background:#ffffff0a; color:inherit; font:13px var(--font-display); }
 .title-pill[aria-pressed="true"] { border-color:#ffd9a8; background:#ffd9a826; color:#ffd9a8; }
 .title-pill.is-off { border-style:dashed; opacity:.45; }
-.title-sheet__badges { display:grid; grid-template-columns:repeat(auto-fill,minmax(52px,1fr)); gap:8px; }
+.title-sheet__badges { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:10px 4px; }
 .series-badge { display:flex; flex-direction:column; align-items:center; gap:3px; font-size:11px; opacity:.45; }
 .series-badge i { display:grid; place-items:center; width:42px; height:42px; border-radius:50%; border:1.5px solid #ffffff30; background:#ffffff10; font-size:20px; font-style:normal; filter:grayscale(1); }
 .series-badge.is-lit { opacity:1; }
@@ -1416,3 +1416,9 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .side-keepsakes .event-keepsake img { max-width:none; }
 .side-keepsakes .event-keepsake small { display:none; }
 .side-keepsakes .event-keepsake:not(.is-got)::before { content:'？'; position:absolute; inset:0; display:grid; place-items:center; font-size:13px; opacity:.5; }
+/* 系列徽章圖（湘 11/27 畫）：沒亮＝灰階＋淡；亮＝原色；收齊＝金框 */
+.series-badge i.has-art { width:100%; max-width:56px; height:auto; aspect-ratio:1; border:0; background:none; box-shadow:none; }
+.series-badge i.has-art img { width:100%; height:100%; object-fit:contain; border-radius:50%; }
+.series-badge.is-lit i.has-art { background:none; box-shadow:0 2px 8px #0004; }
+.series-badge.is-gold i.has-art { box-shadow:0 0 0 2.5px #ffd36b,0 0 14px #ffd36b99; }
+.series-badge small { font-size:10px; opacity:.8; }
