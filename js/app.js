@@ -84,6 +84,7 @@ import * as guide from './guide.js';
 import * as studio from './studio-jh.js';
 import { playMoSsrFx } from './mo-ssr-fx.js';
 import { playHatchFx } from './hatch-fx.js';
+import { playLabFx } from './lab-fx.js';
 import { refreshPush } from './push.js';
 import { setupNotify, msgPushOn } from './notify-ui.js';
 import { queueTimerSync, syncTimers } from './push-timers.js';
@@ -2042,12 +2043,18 @@ function checkRecipes() {
   void updateState(current => lab.finishBrews(current)).then(t => {
     state = t.state; recipeBusy = false; renderAll(); research.update();
     const done = t.result || [];
-    if (done.length) {
-      const names = done.map(r => r.members.map(no => CHARACTERS[no].name).join('和')).join('、');
-      toast(`🧪 ${names}在研究室調配完成！收到${done.length > 1 ? ` ${done.length} 顆` : '一顆'}紀念蛋，到「選擇蛋」看看吧。`);
-      say('研究室那邊傳來好香的味道……好像有新的蛋！', 'happy', 5200);
-    }
+    if (done.length) void showLabDone(done);
   }).catch(() => { recipeBusy = false; });
+}
+// 調配完成演出（湘 11/27）：存檔已經寫好，演出只是畫面；兩格同時完成就一組一組播，最後再提示
+async function showLabDone(done) {
+  for (const r of done) {
+    const members = r.members.map(no => ({ name: CHARACTERS[no].name, image: characterSources(CHARACTERS[no].image)[0] }));
+    try { buzz([15, 30, 60]); await playLabFx({ members, title: r.note?.title || CHARACTERS[r.target]?.name || '', poem: r.note?.poem, secret: Boolean(r.secret), fast: reducedMotion() }); } catch { /* 演出失敗也要看到提示 */ }
+  }
+  const names = done.map(r => r.members.map(no => CHARACTERS[no].name).join('和')).join('、');
+  toast(`🧪 ${names}在研究室調配完成！收到${done.length > 1 ? ` ${done.length} 顆` : '一顆'}紀念蛋，到「選擇蛋」看看吧。`);
+  say('研究室那邊傳來好香的味道……好像有新的蛋！', 'happy', 5200);
 }
 setInterval(() => { if (!document.hidden) checkRecipes(); }, 60 * 1000);
 
