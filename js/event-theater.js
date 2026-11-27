@@ -3,7 +3,7 @@
 // 站位自動排：最近講話的兩位一左一右；新角色換掉比較久沒講話的那位。沒有立繪的角色（掌櫃、青禾、莊主）只顯示名字。
 // 只演出，不讀寫存檔。key：`${eventId}:${stageId}:${part}`，part＝before／after（after 會接上 ending）。
 import { registerStory } from './chapter-epilogue.js';
-import { MO_STORY } from './event-mo-story.js';
+import { MO_STORY, MO_KEEPSAKE_STORY } from './event-mo-story.js';
 import { STUDIO_STORY } from './studio-jh.js';
 import { EVENT_DEFS } from './events.js';
 import { characterSources, CHARACTERS } from './eggs.js';
@@ -96,6 +96,22 @@ export function buildStories(skin = '') {
       endSmall: '頁邊江湖 · 隱藏劇情', endTitle: `《${st.title}》・完`, endNote: '這段劇情在討伐頁的頁邊茶肆隨時可以重看。', closeLabel: st.close, beats,
     }, { actors, bg });
     ids.push(id);
+  }
+  // 信物劇場（湘 11/27）：開場字卡放信物圖＋說明，再演那件的小劇情；收齊那一件另外有一版接「收齊」
+  const ks = def.keepsakes;
+  const ksEp = (k, beats, extra = {}) => ({ chapter: 'mo', music: 'mo', skin, title: k.name, subtitle: '信物・小劇情', endSmall: `${def.code} · 信物`, endTitle: `《${k.name}》`, endNote: '這段故事收在討伐頁的信物櫃，點信物就能重看。', closeLabel: '收好', beats, ...extra });
+  const ksBeats = (title, text, scene, card) => [card, ...stage(text.split('\n').filter(Boolean), { bgKey: `mo:${scene}`, act: title, skin })];
+  const all = MO_KEEPSAKE_STORY['收齊'];
+  if (all) {
+    registerStory('mo:keepsake:complete', ksEp({ name: '五件信物' }, ksBeats('五件信物', all, ks.completeScene || 'mo-02', { card: '五件信物・收齊', sub: '十年，十一位。' }), { subtitle: '信物・收齊', endTitle: '《五件信物》・收齊' }), { actors, bg });
+    ids.push('mo:keepsake:complete');
+  }
+  for (const k of ks.list) {
+    const text = MO_KEEPSAKE_STORY[k.name]; if (!text) continue;
+    const beats = ksBeats(k.name, text, k.scene || 'mo-01', { card: k.name, sub: k.text, img: k.art });
+    registerStory(`mo:keepsake:${k.id}`, ksEp(k, beats), { actors, bg });
+    if (all) registerStory(`mo:keepsake:${k.id}:last`, ksEp(k, beats, { sequel: 'mo:keepsake:complete' }), { actors, bg });
+    ids.push(`mo:keepsake:${k.id}`);
   }
   return ids;
 }

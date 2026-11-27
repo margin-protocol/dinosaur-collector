@@ -352,7 +352,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     <div class="epi__bar"><span class="epi__chip"></span><button type="button" class="epi__btn epi__music" data-a="music" aria-pressed="true" aria-label="配樂" hidden>♪</button><button type="button" class="epi__btn" data-a="auto" aria-pressed="false">自動</button><button type="button" class="epi__btn" data-a="log">紀錄</button><button type="button" class="epi__btn" data-a="skip">跳過</button><button type="button" class="epi__btn epi__close" data-a="close" aria-label="關閉尾聲劇場">×</button></div>
     <div class="epi__act" aria-hidden="true"></div>
     <div class="epi__box" role="status" aria-live="polite"><img class="epi__face" alt="" hidden><span class="epi__name"></span><p class="epi__text"></p><span class="epi__count"></span><span class="epi__hint">點一下 ▼</span></div>
-    <div class="epi__card"><b></b><small></small></div>
+    <div class="epi__card"><img class="epi__card-img" alt="" hidden><b></b><small></small></div>
     <div class="epi__stamp"></div>
     <div class="epi__log" hidden><button type="button" class="epi__btn epi__close" data-a="log-close">關閉</button><h3 id="epilogue-log-title">對話紀錄</h3><div class="epi__log-list"></div></div>
     <div class="epi__end" hidden><div class="epi__end-card"><small></small><h2 id="epilogue-title"></h2><p>這段故事收進「咕咕的故事檔案館」的討伐故事，隨時可以重看。</p><div class="epi__unlock"></div><div class="epi__end-row"><button type="button" class="btn epi__sequel" data-a="sequel" hidden></button><button type="button" class="btn btn--quiet" data-a="again">再看一次</button><button type="button" class="btn" data-a="close">收下</button></div></div></div>
@@ -391,7 +391,7 @@ export function createEpilogueTheater({ dialog, onActivity = () => {} }) {
     stage.dataset.kind = b.kind; stage.dataset.step = String(index);
     q('.epi__count').textContent = `${String(index + 1).padStart(2, '0')} / ${String(beats.length).padStart(2, '0')}`;
     if (b.kind === 'card') {
-      q('.epi__card b').textContent = b.card; q('.epi__card small').textContent = b.sub || '';
+      q('.epi__card b').textContent = b.card; q('.epi__card small').textContent = b.sub || ''; const ci = q('.epi__card-img'); ci.hidden = !b.img; if (b.img) ci.src = b.img; // 信物開場卡：字卡上方放信物圖
       stage.dataset.card = b.boom ? 'boom' : b.over ? 'over' : '';
       stage.classList.remove('is-shake'); if (b.boom && !reduced.matches) { void stage.offsetWidth; stage.classList.add('is-shake'); }
       full = ''; return finishLine(1800);

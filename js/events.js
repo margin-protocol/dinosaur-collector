@@ -58,14 +58,15 @@ export const EVENT_DEFS = {
     // 限定劇情信物：打完上卷後，重複討伐（打贏）才會掉；每件只拿一次。
     // 保底：連續 pity 場沒掉，下一場一定掉一件還沒有的。
     keepsakes: {
-      after: 'up', chance: 0.2, pity: 6, completeBonus: 50, completeTitle: 'mo-unwed',
+      after: 'up', chance: 0.2, pity: 6, completeScene: 'mo-02', // hint＝還沒拿到時顯示的謎面；scene＝信物劇場背景（湘 11/27 選 B 卷軸＋劇場）
+       completeBonus: 50, completeTitle: 'mo-unwed',
       // perk：拿到就生效，只在這個活動的關卡有效。token＝墨玉掉落；power 的 who：origin＝小湘（非異世居民）、event-food＝吃了活動限定料理、編號＝那位居民在隊上
       list: [
-        { id: 'red-contract', perk: { kind: 'token', value: 0.05 }, art: 'assets/events/mo/keepsakes/red-contract.webp', name: '染朱婚書', text: '婚書上沒有新郎的姓名，卻詳細記載著新娘的生辰八字。' },
-        { id: 'gold-clasp', perk: { kind: 'power', who: 'origin', value: 0.03 }, art: 'assets/events/mo/keepsakes/gold-clasp.webp', name: '鎖命金扣', text: '藏於嫁衣內側的金扣。奇怪的是，它只能扣上，不能解開。' },
-        { id: 'torn-recipe', perk: { kind: 'power', who: 'event-food', value: 0.02 }, art: 'assets/events/mo/keepsakes/torn-recipe.webp', name: '殘缺藥方', text: '開方之人似乎患有無藥可醫的重病。最後一味藥，竟寫著「紅妝」。' },
-        { id: 'broken-bangle', perk: { kind: 'power', who: '117', value: 0.05 }, art: 'assets/events/mo/keepsakes/broken-bangle.webp', name: '斷裂玉鐲', text: '曾屬於另一位新娘。內側刻著一行小字：願來世不著紅衣。' },
-        { id: 'ink-tassel', perk: { kind: 'power', who: 'MO-001', value: 0.05 }, art: 'assets/events/mo/keepsakes/ink-tassel.webp', name: '墨色劍穗', text: '聞止水繫於劍柄上的舊物。她似乎已經很久沒有為誰拔劍了。' },
+        { id: 'red-contract', hint: '一紙沒寫新郎名字的東西。', scene: 'mo-09', perk: { kind: 'token', value: 0.05 }, art: 'assets/events/mo/keepsakes/red-contract.webp', name: '染朱婚書', text: '婚書上沒有新郎的姓名，卻詳細記載著新娘的生辰八字。' },
+        { id: 'gold-clasp', hint: '扣上了，就解不開。', scene: 'mo-03', perk: { kind: 'power', who: 'origin', value: 0.03 }, art: 'assets/events/mo/keepsakes/gold-clasp.webp', name: '鎖命金扣', text: '藏於嫁衣內側的金扣。奇怪的是，它只能扣上，不能解開。' },
+        { id: 'torn-recipe', hint: '有人病了很久、很久。', scene: 'mo-08', perk: { kind: 'power', who: 'event-food', value: 0.02 }, art: 'assets/events/mo/keepsakes/torn-recipe.webp', name: '殘缺藥方', text: '開方之人似乎患有無藥可醫的重病。最後一味藥，竟寫著「紅妝」。' },
+        { id: 'broken-bangle', hint: '似乎屬於另一位新娘……', scene: 'mo-06', perk: { kind: 'power', who: '117', value: 0.05 }, art: 'assets/events/mo/keepsakes/broken-bangle.webp', name: '斷裂玉鐲', text: '曾屬於另一位新娘。內側刻著一行小字：願來世不著紅衣。' },
+        { id: 'ink-tassel', hint: '某個人劍柄上的舊物。', scene: 'mo-04', perk: { kind: 'power', who: 'MO-001', value: 0.05 }, art: 'assets/events/mo/keepsakes/ink-tassel.webp', name: '墨色劍穗', text: '聞止水繫於劍柄上的舊物。她似乎已經很久沒有為誰拔劍了。' },
       ],
     },
     // 墨玉閣：reward.type 由 applyShopReward 處理；soon:true 的商品還沒做好，不顯示、不能買
@@ -146,7 +147,7 @@ export function activeEvents(state, nowMs) {
 }
 
 // ───────── 存檔 ─────────
-const freshProgress = () => ({ stages: {}, story: {}, tokens: 0, earned: 0, spent: 0, shop: {}, keepsakes: {}, keepsakeMiss: 0, runs: 0, wins: 0, titles: [], themes: [], leftoverAt: null, dailyWinDay: null });
+const freshProgress = () => ({ stages: {}, story: {}, tokens: 0, earned: 0, spent: 0, shop: {}, keepsakes: {}, keepsakeSeen: {}, keepsakeMiss: 0, runs: 0, wins: 0, titles: [], themes: [], leftoverAt: null, dailyWinDay: null });
 function cleanProgress(old) {
   const p = freshProgress();
   if (!old || typeof old !== 'object') return p;
@@ -158,6 +159,7 @@ function cleanProgress(old) {
   for (const [k, v] of Object.entries(old.story || {})) if (isStr(v)) p.story[k] = v;
   for (const [k, v] of Object.entries(old.shop || {})) if (isInt(v)) p.shop[k] = v;
   for (const [k, v] of Object.entries(old.keepsakes || {})) if (isStr(v)) p.keepsakes[k] = v;
+  for (const [k, v] of Object.entries(old.keepsakeSeen || {})) if (isStr(v)) p.keepsakeSeen[k] = v;
   for (const k of ['tokens', 'earned', 'spent', 'keepsakeMiss', 'runs', 'wins']) if (isInt(old[k])) p[k] = old[k];
   if (Array.isArray(old.titles)) p.titles = [...new Set(old.titles.filter(isStr))];
   if (Array.isArray(old.themes)) p.themes = [...new Set(old.themes.filter(isStr))];
@@ -328,6 +330,13 @@ export function wornTitle(state) {
   return null;
 }
 // titleId 為 null＝拿下來；回傳戴上的名字或 null
+// 信物櫃「新」標：點開看過就記下（湘 11/27）
+export function markKeepsakeSeen(state, eventId, id, now = new Date()) {
+  const p = progressOf(state, eventId); p.keepsakeSeen ||= {}; if (!p.keepsakes?.[id] || p.keepsakeSeen[id]) return false;
+  p.keepsakeSeen[id] = now.toISOString(); return true;
+}
+// 保底：還要再贏幾場（非首通）一定拿到下一件；收齊或還沒打完指定卷＝null
+export function keepsakePityLeft(def, prog) { const ks = def.keepsakes; if (!ks || ks.list.every((k) => prog.keepsakes?.[k.id])) return null; return Math.max(1, ks.pity - (prog.keepsakeMiss | 0)); }
 export function wearTitle(state, eventId, titleId) {
   ensureEvents(state);
   const prog = state.events[eventId]; if (titleId && !prog?.titles.includes(titleId)) return null;

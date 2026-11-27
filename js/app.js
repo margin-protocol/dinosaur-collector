@@ -4244,18 +4244,71 @@ function titleRow(def, prog) {
   return row;
 }
 const keepsakePerkText = p => `${p.kind === 'token' ? '墨玉掉落' : p.who === 'origin' ? '隊上有小湘時戰力' : p.who === 'event-food' ? '吃了活動限定料理時戰力' : `${CHARACTERS[p.who]?.name || p.who}出戰時戰力`} +${Math.round(p.value * 100)}%`;
-// 信物櫃：拿到的亮著、點了看說明；沒拿到的只剩剪影
-function keepsakeShelf(ks, prog) {
-  const box = el('div', 'event-keepsakes'); const row = el('div', 'event-keepsakes__row'); const gotAll = ks.list.every(k => prog.keepsakes?.[k.id]); const note = el('p', 'event-keepsakes__note', gotAll ? '五件信物都收齊了。點一下看它們的故事和加成。' : '打完上卷後重複討伐，打贏有機會拿到信物。每件都有加成。');
+// 信物櫃（湘 11/27 選 B）：點信物在櫃子下方攤開一卷（圖、說明、加成、小劇情、▶ 劇場）；沒拿到的給一句謎面
+// 進度條＋保底「最多再贏 N 場」＋收齊獎勵；新拿到、還沒點開的掛「新」
+function keepsakeLines(text) {
+  const box = el('div', 'ks-lines');
+  for (const line of String(text || '').split('\n').filter(Boolean)) {
+    const m = line.trim().match(/^([^（：「]{1,8})：(「.*」)$/);
+    const p = el('p', m ? 'ks-lines__say' : 'ks-lines__note');
+    if (m) p.append(el('b', null, m[1]), m[2]); else p.textContent = line.trim();
+    box.append(p);
+  }
+  return box;
+}
+function keepsakeShelf(def, prog) {
+  const ks = def.keepsakes; const owned = prog.keepsakes || {}; const seen = prog.keepsakeSeen || {};
+  const count = ks.list.filter(k => owned[k.id]).length; const gotAll = count === ks.list.length;
+  const box = el('div', 'event-keepsakes'); const row = el('div', 'event-keepsakes__row');
+  const prog_ = el('div', 'event-keepsakes__prog'); const bar = el('span', 'event-keepsakes__bar'); const fill = el('i'); fill.style.width = `${Math.round(count / ks.list.length * 100)}%`; bar.append(fill);
+  const unlocked = events.phaseDone(state, def, ks.after); const left = events.keepsakePityLeft(def, prog);
+  prog_.append(el('span', null, `信物 ${count} / ${ks.list.length}`), bar, el('span', 'event-keepsakes__left', gotAll ? '五件收齊 ✦' : !unlocked ? `打完${def.phases.find(x => x.id === ks.after)?.name || '上卷'}開始掉落` : `最多再贏 ${left} 場`));
+  const reward = gotAll ? null : el('p', 'event-keepsakes__reward', `收齊得：${ks.completeBonus} ${def.token.name}＋稱號「${def.titles?.[ks.completeTitle] || ''}」＋收齊劇情`);
+  const note = el('p', 'event-keepsakes__note', gotAll ? '五件信物都收齊了。點信物重看它們的故事。' : '點信物看它背後的故事。打完上卷後重複討伐，打贏有機會拿到。');
+  let open = null; const scroll = el('div', 'ks-scroll'); scroll.hidden = true;
+  const show = (k, btn) => {
+    if (open === k.id) { open = null; btn.classList.remove('is-on'); scroll.hidden = true; note.hidden = false; return; }
+    open = k.id; row.querySelectorAll('.is-on').forEach(x => x.classList.remove('is-on')); btn.classList.add('is-on'); note.hidden = true; scroll.hidden = false;
+    const got = Boolean(owned[k.id]); scroll.classList.toggle('is-locked', !got); scroll.replaceChildren();
+    const head = el('div', 'ks-scroll__head'); const img = el('img'); img.src = k.art; img.alt = ''; head.append(img);
+    const txt = el('div'); txt.append(el('h4', null, got ? k.name : '？？？'), el('p', null, got ? k.text : `謎面：${k.hint || '還不知道是什麼。'}`)); head.append(txt); scroll.append(head);
+    if (!got) { scroll.append(el('p', 'ks-scroll__perk', '還沒拿到。打完上卷後重複討伐，打贏有機會掉落。')); return; }
+    if (k.perk) scroll.append(el('p', 'ks-scroll__perk', `✦ 加成：${keepsakePerkText(k.perk)}（只在活動關卡）`));
+    if (k.story) { const st = el('div', 'ks-scroll__story'); st.append(keepsakeLines(k.story)); scroll.append(st); }
+    const foot = el('div', 'ks-scroll__foot'); const d = new Date(owned[k.id]); foot.append(el('span', null, Number.isNaN(d.getTime()) ? '' : `${d.getMonth() + 1}/${d.getDate()} 拾得`));
+    if (epilogue.has(`mo:keepsake:${k.id}`)) foot.append(epilogueButton(`mo:keepsake:${k.id}`, '▶ 用劇場看'));
+    scroll.append(foot);
+    if (!seen[k.id]) { seen[k.id] = 'now'; btn.querySelector('.event-keepsake__new')?.remove(); void updateState(cur => events.markKeepsakeSeen(cur, def.id, k.id)).then(t => { state = t.state; }); }
+  };
   for (const k of ks.list) {
-    const got = Boolean(prog.keepsakes?.[k.id]);
+    const got = Boolean(owned[k.id]);
     const b = el('button', `event-keepsake${got ? ' is-got' : ''}`); b.type = 'button'; b.dataset.keepsake = k.id; b.setAttribute('aria-label', got ? k.name : '還沒拿到的信物');
     if (k.art) { const img = el('img'); img.src = k.art; img.alt = ''; img.loading = 'lazy'; b.append(img); }
     b.append(el('small', null, got ? k.name : '？'));
-    b.addEventListener('click', () => { row.querySelectorAll('.is-on').forEach(x => x.classList.remove('is-on')); b.classList.add('is-on'); note.textContent = got ? `${k.name}：${k.text}${k.perk ? `\n加成：${keepsakePerkText(k.perk)}（只在活動關卡）` : ''}` : '還沒拿到。打完上卷後重複討伐，打贏有機會掉落。'; });
+    if (got && !seen[k.id]) b.append(el('span', 'event-keepsake__new', '新'));
+    b.addEventListener('click', () => show(k, b));
     row.append(b);
   }
-  box.append(row, note); const ink = studioInk('keepsake'); if (ink) box.append(ink); return box;
+  box.append(row, prog_); if (reward) box.append(reward); box.append(note, scroll);
+  if (gotAll && epilogue.has('mo:keepsake:complete')) { const r = el('div', 'event-keepsakes__all'); r.append(epilogueButton('mo:keepsake:complete', '▶ 重看收齊劇情')); box.append(r); }
+  const ink = studioInk('keepsake'); if (ink) box.append(ink); return box;
+}
+// 拾得信物演出（湘 11/27 ①）：收下戰報後全螢幕跳出，再接信物劇場
+function showKeepsakeReveal(def, id, complete) {
+  const ks = def.keepsakes; const k = ks.list.find(x => x.id === id); if (!k) return;
+  let dlg = $('keepsake-reveal'); if (!dlg) { dlg = el('dialog', 'ks-reveal'); dlg.id = 'keepsake-reveal'; document.body.append(dlg); }
+  const owned = state.events?.[def.id]?.keepsakes || {}; const count = ks.list.filter(x => owned[x.id]).length;
+  const inner = el('div', 'ks-reveal__in'); const rays = el('div', 'ks-reveal__rays'); rays.setAttribute('aria-hidden', 'true');
+  const art = el('div', 'ks-reveal__art'); const img = el('img'); img.src = k.art; img.alt = ''; art.append(img, el('span', 'ks-reveal__seal', complete ? '收齊' : '拾得'));
+  const dots = el('div', 'ks-reveal__dots'); for (const x of ks.list) { const d = el('img', owned[x.id] ? (x.id === id ? 'is-new' : '') : 'is-off'); d.src = x.art; d.alt = ''; dots.append(d); }
+  const go = el('button', 'ks-reveal__go', '看信物的故事'); go.type = 'button';
+  const later = el('button', 'ks-reveal__later', '先收著'); later.type = 'button';
+  inner.append(el('p', 'ks-reveal__kicker', complete ? '五 件 收 齊' : '拾 得 信 物'), art, el('h3', null, k.name), el('p', 'ks-reveal__perk', k.perk ? `✦ ${keepsakePerkText(k.perk)}` : ''), dots,
+    el('p', 'ks-reveal__sum', complete ? `收齊獎勵：${def.token.name} +${ks.completeBonus}・稱號「${def.titles?.[ks.completeTitle] || ''}」` : `已收 ${count} / ${ks.list.length}・收齊得 ${ks.completeBonus} ${def.token.name}＋稱號「${def.titles?.[ks.completeTitle] || ''}」`), go, later);
+  dlg.replaceChildren(rays, inner);
+  go.addEventListener('click', () => { dlg.close(); void updateState(cur => events.markKeepsakeSeen(cur, def.id, id)).then(t => { state = t.state; renderBattle(); }); epilogue.play(complete && epilogue.has(`mo:keepsake:${id}:last`) ? `mo:keepsake:${id}:last` : `mo:keepsake:${id}`); });
+  later.addEventListener('click', () => dlg.close());
+  dlg.showModal(); go.focus({ preventScroll: true });
 }
 // ── 頁邊江湖三寶（湘 11/26）：墨點、修門、隱藏劇情；邏輯在 studio-jh.js，下卷開放（測試服立刻）才出現
 const STUDIO_TEST_KEY = 'siang-collector:test-studio-open';
@@ -4358,7 +4411,7 @@ function eventHub(def, sch, now) {
   if (sch.state === 'battle' && def.dailyWin) { const ready = events.dailyWinReady(prog, def); const c = el('span', `event-chip event-chip--daily${ready ? '' : ' is-done'}`, ready ? `☀️ 今日首勝 +${def.dailyWin}` : '☀️ 今日首勝 ✓'); c.title = ready ? `今天第一場打贏，額外 +${def.dailyWin} ${def.token.name}` : '今天的首勝獎勵拿過了，明天再來'; bar.append(c); }
   if (sch.state === 'battle' || sch.state === 'shop') { const shop = el('button', 'text-action event-banner__shop', '墨玉閣 ⟶'); shop.type = 'button'; shop.addEventListener('click', () => { eventView = { id: def.id, view: 'shop' }; renderBattle(); }); bar.append(shop); }
   ban.append(bar); { const ink = studioInk('banner'); if (ink) ban.append(ink); } sec.append(ban);
-  if (ks && ks.list.some(k => k.art)) sec.append(keepsakeShelf(ks, prog));
+  if (ks && ks.list.some(k => k.art)) sec.append(keepsakeShelf(def, prog));
   if (def.id === studio.EVENT_ID && studioOpen()) sec.append(studioCard());
   if (prog.titles?.length && def.titles) sec.append(titleRow(def, prog));
   if (sch.state !== 'battle') return sec;
@@ -4552,8 +4605,8 @@ $('battle-go').addEventListener('click', async () => {
 const battleTheater = createBattleTheater({root:$('battle-theater'),details:$('battle-result-details'),dialog:$('battle-result'),replay:$('battle-replay'),onActivity:syncRoomActivity});
 // 章節尾聲劇場：第一次打倒章節 Boss，收下戰報後自動播；故事檔案館可以重看（只演出，不動存檔）
 const epilogue = createEpilogueTheater({dialog:$('chapter-epilogue'),onActivity:syncRoomActivity});
-let pendingEpilogue = null;
-$('battle-result').addEventListener('close', () => { const id = pendingEpilogue; pendingEpilogue = null; if (id) epilogue.play(id); });
+let pendingEpilogue = null; let pendingKeepsake = null;
+$('battle-result').addEventListener('close', () => { const id = pendingEpilogue; pendingEpilogue = null; const ks = pendingKeepsake; pendingKeepsake = null; if (id) epilogue.play(id); else if (ks && events.EVENT_DEFS[ks.event]) showKeepsakeReveal(events.EVENT_DEFS[ks.event], ks.id, ks.complete); });
 function epilogueButton(id, label, before) { const btn = el('button', 'epilogue-cta', label); btn.type = 'button'; btn.addEventListener('click', () => { before?.(); epilogue.play(id); }); return btn; }
 async function collectBattle(id) {
   const t = await updateState(current => battle.collectBattle(current, id));
@@ -4580,7 +4633,9 @@ async function collectBattle(id) {
   const storyLines = [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), ...(r.story ? storyParas(`📖 ${r.story}`) : [])];
   const evEpi = r.event?.first && !r.snapshot ? `${r.event.id}:${r.event.stage}:after` : null; // 異世活動：第一次通關播這關的「打完後」劇場
   const epi = evEpi && epilogue.has(evEpi) ? evEpi : r.story && !r.snapshot && epilogue.has(r.enemy) ? r.enemy : null; pendingEpilogue = epi;
-  const epiLines = epi ? [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), evEpi === epi ? '📖 收下戰報後，會播放這一關的劇情。' : '📖 這一章的故事迎來了尾聲。收下戰報後，會播放尾聲劇場。'] : storyLines;
+  pendingKeepsake = r.event?.keepsake && !r.snapshot ? { event: r.event.id, id: r.event.keepsake.id, complete: Boolean(r.event.complete) } : null; // 拾得信物：收下戰報後播演出
+  const ksLines = pendingKeepsake ? [`🎐 拾得信物「${r.event.keepsake.name}」！收下戰報後打開看看。`] : null;
+  const epiLines = ksLines || (epi ? [...(r.clue ? storyParas(`🔍 線索：${r.clue}`) : []), evEpi === epi ? '📖 收下戰報後，會播放這一關的劇情。' : '📖 這一章的故事迎來了尾聲。收下戰報後，會播放尾聲劇場。'] : storyLines);
   $('battle-result-story').hidden = !epiLines.length; $('battle-result-story').replaceChildren(...epiLines.map(t => el('span', 'para', t)));
   if (epi) $('battle-result-story').append(epilogueButton(epi, evEpi === epi ? '▶ 現在觀看劇情' : '▶ 現在觀看尾聲', () => { pendingEpilogue = null; $('battle-result').close(); }));
   $('battle-result-gains').replaceChildren(...r.gains.map(g => Object.assign(document.createElement('li'), { textContent: g })));

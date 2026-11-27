@@ -133,6 +133,8 @@
 .epi__card b { font-size:22px; letter-spacing:.2em; }
 .epi__card small { font-size:15px; color:#f1cfb5; letter-spacing:.08em; white-space:pre-line; line-height:1.9; padding:0 20px; text-wrap:balance; }
 .epi__card small:empty { display:none; }
+.epi__card-img { justify-self:center; width:min(52vw,200px); aspect-ratio:1; object-fit:contain; filter:drop-shadow(0 8px 16px #000a) drop-shadow(0 0 24px #e0a06a55); }
+.epi__card-img[hidden] { display:none; }
 .epi__stage[data-kind="card"] .epi__card { opacity:1; pointer-events:auto; }
 .epi__stage[data-card="over"] .epi__card { background:#1a0f0cb0; }
 .epi__stage[data-card="over"] .epi__card b { font-size:19px; letter-spacing:.12em; }
