@@ -472,14 +472,12 @@ function say(text, mood, ms = 2200, mode) {
 function renderPlayer() {
   const level = playerLevel(state);
   const xp = state.player.xp % XP_PER_LEVEL;
-  if (side.sideOn()) { // 稱號櫃（湘 11/27）：戴著的稱號變成小膠囊，點一下打開稱號櫃
+  { // 稱號櫃（湘 11/27，正式服開放）：戴著的稱號變成小膠囊，點一下打開稱號櫃
     const worn = titles.wornTitle(state); const any = titles.ownedTitles(state).some(t => t.owned);
     const chip = document.createElement('button'); chip.className = `title-chip${worn ? '' : ' is-empty'}`; chip.textContent = worn ? worn.name : any ? '戴稱號' : '稱號櫃'; chip.type = 'button'; chip.id = 'title-chip';
     chip.addEventListener('click', openTitleSheet);
+    if (titles.milestones(state).some(m => m.ready)) { const dot = document.createElement('i'); dot.className = 'title-chip__dot'; chip.append(dot); }
     $('player-rank').replaceChildren(`Lv.${level} ${rankTitle(level)}`, chip);
-  } else {
-  const worn = events.wornTitle(state);
-  $('player-rank').textContent = `Lv.${level} ${rankTitle(level)}${worn ? `｜${worn.name}` : ''}`;
   }
   $('player-xp').textContent = `${xp} / ${XP_PER_LEVEL} XP`;
   $('xp-fill').style.width = `${xp / XP_PER_LEVEL * 100}%`;
@@ -3758,6 +3756,8 @@ $('open-updates').addEventListener('click', async () => {
   $('whats-new').addEventListener('cancel', done, { once: true });
 });
 setTimeout(() => void showWhatsNew(), 1500);
+// 稱號加成（湘 11/27）：舊存檔戴著活動稱號的人，開遊戲時補上加成
+if (titles.wornTitle(state) && !state.title?.buff) void updateState(cur => { titles.syncBuff(cur); }).then(t => { state = t.state; });
 
 // ── 不用拍照的願望（陪伴、小恐龍的問題）
 let claimWishBusy = false;
@@ -4352,23 +4352,40 @@ function openTitleSheet() {
   const close = el('button', 'close-button', '×'); close.type = 'button'; close.setAttribute('aria-label', '關閉'); close.addEventListener('click', () => d.close());
   const h = el('h2', null, '我的稱號'); h.id = 'title-sheet-h';
   const worn = titles.wornTitle(state); const list = titles.ownedTitles(state);
-  const body = [close, h, el('p', 'residents-intro', '點一下戴上，再點一次拿下來。戴著的稱號會顯示在研究者等級旁邊。')];
-  for (const g of ['系列支線', '活動']) {
+  const buffNow = state.title?.buff;
+  const body = [close, h, el('p', 'residents-intro', '點一下戴上，再點一次拿下來。戴著的稱號會顯示在研究者等級旁邊，一次只能戴一個，戴著才有加成。')];
+  const wearing = el('div', 'title-sheet__worn'); wearing.append(el('small', null, '戴著'), el('b', null, worn ? `「${worn.name}」` : '還沒戴'), el('span', null, buffNow ? `✦ ${buffNow.text}` : worn ? '這個稱號只是紀念' : '戴上稱號就有小加成'));
+  body.push(wearing);
+  // C：集稱號獎勵
+  const n = titles.titleCount(state); const ms = titles.milestones(state); const next = ms.find(m => !m.done);
+  const prize = el('div', 'title-sheet__prize');
+  const bar = el('span', 'event-keepsakes__bar'); const fill = el('i'); const top = next?.n || ms[ms.length - 1].n; fill.style.width = `${Math.min(100, Math.round(n / top * 100))}%`; bar.append(fill);
+  const head = el('div', 'event-keepsakes__prog'); head.append(el('span', null, `已收集 ${n} 個稱號`), bar, el('span', 'event-keepsakes__left', next ? `${next.n} 個：${next.text}` : '全部領完 ✦'));
+  prize.append(head);
+  const ready = ms.filter(m => m.ready);
+  if (ready.length) { const go = el('button', 'btn title-sheet__claim', `領取集稱號獎勵（${ready.map(m => m.text).join('、')}）`); go.type = 'button'; go.addEventListener('click', () => void updateState(cur => ({ got: titles.claimMilestones(cur) })).then(r => { state = r.state; toast(`🎖️ ${r.result.got.map(m => m.text).join('、')}`); renderAll(); openTitleSheet(); })); prize.append(go); }
+  else { const row = el('div', 'title-sheet__steps'); for (const m of ms) row.append(el('span', m.done ? 'is-done' : null, `${m.n}｜${m.text}`)); prize.append(row); }
+  body.push(prize);
+  for (const g of titles.TITLE_GROUPS) {
     const items = list.filter(t => t.group === g); if (!items.length) continue;
-    body.push(el('small', 'title-sheet__group', g)); const row = el('div', 'title-sheet__list');
-    for (const t of items) {
-      const b = el('button', `title-pill${t.owned ? '' : ' is-off'}`, t.owned ? t.name : '？？？'); b.type = 'button'; b.setAttribute('aria-pressed', String(worn?.key === t.key)); b.title = t.how;
-      if (!t.owned) b.addEventListener('click', () => toast(`怎麼拿：${t.how}`));
-      else b.addEventListener('click', () => void updateState(cur => ({ name: titles.wearTitle(cur, worn?.key === t.key ? null : t.key) })).then(r => { state = r.state; toast(r.result.name ? `戴上稱號「${r.result.name}」` : '拿下稱號了'); renderPlayer(); openTitleSheet(); }));
+    const owned = items.filter(t => t.owned); const locked = items.length - owned.length;
+    const sample = titles.buffOf(items[0].key, g);
+    body.push(el('small', 'title-sheet__group', `${g} · ${owned.length} / ${items.length}${g !== '活動' && sample ? `｜戴著：${sample.text}` : ''}`)); const row = el('div', 'title-sheet__list');
+    for (const t of owned) {
+      const b = el('button', 'title-pill', t.name); b.type = 'button'; b.setAttribute('aria-pressed', String(worn?.key === t.key)); b.title = t.how;
+      b.addEventListener('click', () => void updateState(cur => ({ name: titles.wearTitle(cur, worn?.key === t.key ? null : t.key) })).then(r => { state = r.state; const bf = state.title?.buff; toast(r.result.name ? `戴上稱號「${r.result.name}」${bf ? `｜${bf.text}` : ''}` : '拿下稱號了'); renderPlayer(); openTitleSheet(); }));
       row.append(b);
     }
+    if (locked) { const b = el('button', 'title-pill is-off', `還有 ${locked} 個`); b.type = 'button'; const hints = items.filter(t => !t.owned).slice(0, 4).map(t => t.secret ? '？？？（隱藏成就）' : t.how.replace(/^成就：/, '')); b.addEventListener('click', () => toast(`在「成就」領取就會拿到：${hints.join('、')}${locked > 4 ? '……' : ''}`)); row.append(b); }
     body.push(row);
   }
+  if (side.sideOn()) {
   const badges = titles.seriesBadges(state);
   body.push(el('small', 'title-sheet__group', `圖鑑系列徽章 · ${badges.filter(x => x.lit).length} / ${badges.length}`));
   const grid = el('div', 'title-sheet__badges');
   for (const x of badges) { const b = el('div', `series-badge${x.lit ? ' is-lit' : ''}${x.gold ? ' is-gold' : ''}${x.soon ? ' is-soon' : ''}`); const art = titles.badgeArt(x.series); const ic = el('i', art ? 'has-art' : null, art ? '' : BADGE_ICON[x.series] || '✦'); if (art) { const img = el('img'); img.src = art; img.alt = ''; img.loading = 'lazy'; ic.append(img); } b.append(ic, el('span', null, x.name)); if (x.soon) b.append(el('small', null, '之後開放')); b.title = x.soon ? `${x.name}：支線之後開放` : x.lit ? `${x.name}：支線已打通` : `${x.name}：打通支線就會亮`; grid.append(b); }
   body.push(grid, el('p', 'residents-intro', '亮＝打通那個系列的支線；金框＝系列居民也收齊了'));
+  }
   d.replaceChildren(...body); if (!d.open) d.showModal();
 }
 // 預估列上的將軍技能狀態
@@ -4863,7 +4880,7 @@ function renderBattleStage() {
   const fc = battlePicked.length ? battle.forecast(state, battlePicked, id) : null;
   $('battle-forecast').innerHTML = '';
   if (fc) {
-    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}${fc.foodPower ? `（+${fc.foodPower}）` : ''}`, fc.keepsakes?.list.length && `信物 +${Math.round(fc.keepsakes.power * 100)}%（${fc.keepsakes.list.map(k => k.name).join('、')}）`, fc.sideBonus?.n && `🏝️ 主場 +${Math.round(fc.sideBonus.power * 100)}%`, fc.sideSkill && e.skill && sideSkillShort(e.skill, fc.sideSkill)].filter(Boolean).join(' · ');
+    const bonus = [fc.weakHit && '剋制 +30%', fc.sameSeries && '同系列 +15%', !fc.bond && fc.heroParty && '勇者小隊 +50%', fc.bond && (fc.bond.id==='general'||state.teamBonds?.unlocked[fc.bond.id] ? effectText(fc.bond) : '未知的 LV5 默契'), fc.food && `🍳 ${CHARACTERS[fc.food.no].name}的料理：${kitchen.buffText(fc.food)}${fc.foodPower ? `（+${fc.foodPower}）` : ''}`, fc.keepsakes?.list.length && `信物 +${Math.round(fc.keepsakes.power * 100)}%（${fc.keepsakes.list.map(k => k.name).join('、')}）`, fc.sideBonus?.n && `🏝️ 主場 +${Math.round(fc.sideBonus.power * 100)}%`, fc.titlePower && `🎖️ 稱號 +${Math.round(fc.titlePower * 100)}%`, fc.sideSkill && e.skill && sideSkillShort(e.skill, fc.sideSkill)].filter(Boolean).join(' · ');
     $('battle-forecast').innerHTML = `<b></b><span></span>`;
     $('battle-forecast').querySelector('b').textContent = `隊伍戰力 ${fc.total} vs ${e.power} · ${fc.label}`;
     $('battle-forecast').querySelector('span').textContent = bonus || '沒有加成（帶 ✦ 的小湘有剋制效果）';

@@ -171,7 +171,7 @@ export function depart(state, { place, task, nos }, now = new Date(), rand = Mat
   if (nos.some((no) => busy.has(no))) return '她已經在忙了。';
   if (er.active.length >= errandSlots(state)) return `同時最多 ${errandSlots(state)} 趟，等她們回來吧。${errandSlotHint(state)}`;
 
-  const hours = (spot || job).hours;
+  const hours = (spot || job).hours * (spot ? 1 - (Number(state.title?.buff?.errand) || 0) : 1); // 旅行類稱號：出門時間 −5%（顧蛋、寫紙條不算）
   const loot = {};
   if (spot) {
     const boost = nos.some((no) => hasAffinity(place, no));

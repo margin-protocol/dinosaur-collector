@@ -111,7 +111,7 @@ export function completeDaily(state, date, id) {
   if (wish.kind === 'act' && !actProgress(wish, state)?.ready) return { awarded: false };
   const levelBefore = playerLevel(state);
   state.wishes.done.push(id);
-  state.energy += WISH_REWARD;
+  state.energy += Math.round(WISH_REWARD * (1 + (Number(state.title?.buff?.wish) || 0))); // 願望類稱號 +10%
   state.player.xp += DAILY_XP;
   state.player.stats.wishes += 1;
   if (wish.kind === 'color') state.player.stats.colors = unique([...state.player.stats.colors, id]);

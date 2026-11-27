@@ -115,6 +115,7 @@ export function gain(state, no, kind, today, times = 1) {
   if (!CHARACTERS[no] || !state.dex?.[no]) return { added: 0, level: 1, up: [] };
   const e = entry(state, no);
   let amount = (GAIN[kind] || 0) * times;
+  if ((kind === 'pet' || kind === 'tap') && amount > 0) amount += (state.title?.buff?.bond | 0) * times; // 陪伴類稱號：摸頭、打招呼 +1
   if (kind === 'photo') { if (e.photo === today) amount = 0; else e.photo = today; }
   if (kind === 'cook') {
     if (e.cookDay !== today) { e.cookDay = today; e.cookToday = 0; }

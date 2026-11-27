@@ -239,11 +239,15 @@ export function teamPower(state, nos, enemyId) {
   // 異世活動信物：只在該活動關卡有效
   const evDef = enemy?.event ? EVENT_DEFS[enemy.event] : null;
   const keepsakes = evDef ? keepsakePower(evDef, state.events?.[evDef.id]?.keepsakes, nos, { worldOf: worldNo, eventFood: Boolean(food && isEventRecipe(food.dish)) }) : { power: 0, list: [] };
-  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty && !sideSkill?.noBond ? HERO_PARTY_BONUS : 0)) * (1 + (food?.kind === 'power' ? food.value : 0)) * (1 + skills.power) * (1 + keepsakes.power) * (1 + sideBonus.power) * (sideSkill?.mult ?? 1);
+  // 稱號加成（湘 11/27）：戴著才有效；一統「不容異議」也會關掉
+  const tb = sideSkill?.noBuffs ? null : state.title?.buff;
+  const titlePower = (Number(tb?.power) || 0) + (tb?.event && enemy?.event === tb.event ? Number(tb.eventPower) || 0 : 0);
+  const foodV = food?.kind === 'power' ? food.value + (Number(tb?.food) || 0) : 0;
+  const mult = (1 + (sameSeries ? SERIES_BONUS : 0)) * (1 + (weakHit ? WEAK_BONUS : 0)) * (1 + (bond ? bond.power : heroParty && !sideSkill?.noBond ? HERO_PARTY_BONUS : 0)) * (1 + foodV) * (1 + titlePower) * (1 + skills.power) * (1 + keepsakes.power) * (1 + sideBonus.power) * (sideSkill?.mult ?? 1);
   const total = Math.round((raw - rumorOut) * mult * 10) / 10;
   // 料理多加了幾點戰力（拿掉料理那一層算一次，差多少就是料理的功勞）
-  const foodPower = food?.kind === 'power' ? Math.round((total - Math.round((raw - rumorOut) * mult / (1 + food.value) * 10) / 10) * 10) / 10 : 0;
-  return { members, raw: Math.round(raw * 10) / 10, total, sameSeries, weakHit, heroParty: heroParty && !sideSkill?.noBond, bond, food, foodPower, skills, keepsakes, sideSkill, sideBonus };
+  const foodPower = food?.kind === 'power' ? Math.round((total - Math.round((raw - rumorOut) * mult / (1 + foodV) * 10) / 10) * 10) / 10 : 0;
+  return { members, raw: Math.round(raw * 10) / 10, total, sameSeries, weakHit, heroParty: heroParty && !sideSkill?.noBond, bond, food, foodPower, skills, keepsakes, sideSkill, sideBonus, titlePower };
 }
 
 // 預估：勝率與評語
