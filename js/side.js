@@ -4,7 +4,7 @@
 // 關卡 key＝`side:<線>:<關>`；進度存在 state.side.lines[線]
 // 上線前只有測試服（?test）看得到：SIDE_LIVE 改成 true 才對所有玩家開放。
 import { CHARACTERS } from './eggs.js';
-import { ISLAND_STORY, ISLAND_KEEPSAKE_TEXT } from './side-story.js';
+import { ISLAND_STORY, ISLAND_KEEPSAKE_TEXT, ANIMALS_STORY, ANIMALS_KEEPSAKE_TEXT } from './side-story.js';
 import { nextStarCost, weekKey, MAX_CANDY_STARS } from './candy.js';
 
 export const SIDE_LIVE = false;
@@ -127,6 +127,15 @@ SIDE_LINES.island.stages.forEach((st, i) => {
   if (st.keepsake && ISLAND_KEEPSAKE_TEXT[st.keepsake.id]) st.keepsake.text = ISLAND_KEEPSAKE_TEXT[st.keepsake.id];
 });
 SIDE_LINES.island.finale = ISLAND_STORY.finale;
+// 皮寶 11/27 的《萬物不標價》劇本（關卡名照劇本）
+SIDE_LINES.animals.stages.forEach((st) => {
+  const story = ANIMALS_STORY[st.id]; if (!story) return;
+  Object.assign(st, { title: story.title, story: { before: story.before, after: story.after } });
+  if (st.keepsake && ANIMALS_KEEPSAKE_TEXT[st.keepsake.id]) st.keepsake.text = ANIMALS_KEEPSAKE_TEXT[st.keepsake.id];
+});
+SIDE_LINES.animals.finale = ANIMALS_STORY.finale;
+SIDE_LINES.island.finaleEnd = '本島正常營業，恕不接受強制裝訂。';
+SIDE_LINES.animals.finaleEnd = '「你不必可愛、不必聽話，也不必為誰帶來快樂。能夠好好活著，就已經很好了。」';
 export const stageDef = (lineId, stageId) => SIDE_LINES[lineId]?.stages.find((s) => s.id === stageId) || null;
 export const stageKey = (lineId, stageId) => `side:${lineId}:${stageId}`;
 export function parseSideKey(key) {
