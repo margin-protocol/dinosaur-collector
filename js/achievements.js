@@ -27,6 +27,9 @@ export const ACHIEVEMENTS = [
   { id: 'hatch-10', group: '孵化', title: '熟練的飼養員', hint: '孵化 10 顆蛋', goal: 10, value: (s) => s.hatched || 0, reward: 40 },
   { id: 'hatch-30', group: '孵化', title: '孵化室常客', hint: '孵化 30 顆蛋', goal: 30, value: (s) => s.hatched || 0, reward: 60 },
   { id: 'hatch-100', group: '孵化', title: '傳說中的飼養員', hint: '孵化 100 顆蛋', goal: 100, value: (s) => s.hatched || 0, reward: 100 },
+  { id: 'hatch-1000', group: '孵化', title: '千次破殼', hint: '孵化 1000 顆蛋', goal: 1000, value: (s) => s.hatched || 0, reward: 300 },
+  { id: 'hatch-5000', group: '孵化', title: '孵化室的傳說', hint: '孵化 5000 顆蛋', goal: 5000, value: (s) => s.hatched || 0, reward: 600 },
+  { id: 'hatch-10000', group: '孵化', title: '萬蛋之主', hint: '孵化 10000 顆蛋', goal: 10000, value: (s) => s.hatched || 0, reward: 1000 },
   { id: 'dex-10', group: '收藏', title: '小小收藏家', hint: '收集 10 位小湘', goal: 10, value: dexCount, reward: 30 },
   { id: 'dex-30', group: '收藏', title: '收藏家', hint: '收集 30 位小湘', goal: 30, value: dexCount, reward: 60 },
   // 湘 11/25：全圖鑑只算創始系列（異世限定居民活動結束後拿不到，不算進來；異世另外有自己的收藏成就）
