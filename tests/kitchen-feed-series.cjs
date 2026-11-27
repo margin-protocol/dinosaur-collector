@@ -44,5 +44,5 @@ const fit=await p.$$eval('#kitchen-siangs .errand-siang',ts=>ts.every(t=>{const 
 assert(!(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth)),'no horizontal scroll');
 // 點格子還是能餵
 await p.locator(`#kitchen-siangs [data-siang="${setup.nos[0]}"]`).click();await p.waitForTimeout(300);
-assert.equal(await p.locator('#kitchen-result').isHidden(),false,'fed');
+assert.equal(await p.locator('.kitchen-result--inline').count(),1,'fed');
 assert.equal(errs.length,0,errs.join('\n'));console.log('kitchen-feed-series: grouped by series, names, fold remembered PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

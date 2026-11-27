@@ -4136,9 +4136,18 @@ function renderKitchen() {
     }
     $('kitchen-siangs').replaceChildren(...out);
   }
-  const res = $('kitchen-result'); res.hidden = !kitchenResult;
+  let res = $('kitchen-result'); res.hidden = true; res.replaceChildren();
+  document.querySelectorAll('.kitchen-result--inline').forEach(n => n.remove());
   if (kitchenResult) {
     const r = kitchenResult; const rt = kitchen.RATINGS[r.rating];
+    // 結果直接出現在被餵那格的同一排下方（11/28 玩家：餵完要往上滑才看到喜不喜歡，湘選 A）
+    const tileEl = !$('kitchen-feed').hidden && $('kitchen-siangs').querySelector(`[data-siang="${r.no}"]`);
+    if (tileEl) {
+      res = document.createElement('div'); res.className = 'kitchen-result kitchen-result--inline'; res.setAttribute('aria-live', 'polite');
+      const grid = tileEl.parentElement; const tiles = [...grid.children].filter(n => n.matches('.errand-siang'));
+      const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').length || 4;
+      tiles[Math.min(tiles.length - 1, Math.ceil((tiles.indexOf(tileEl) + 1) / cols) * cols - 1)].after(res); tileEl.classList.add('is-fed');
+    } else res.hidden = false; // 料理吃完、名單收起來了：用原本的位置，下面會捲過去
     res.replaceChildren(siangImg(r.no, 'kitchen-result__img'));
     const box = document.createElement('div');
     box.innerHTML = '<small></small><b></b><p></p><span></span>';
@@ -4149,6 +4158,7 @@ function renderKitchen() {
     const found = [r.learned?.like && `喜歡「${r.learned.like}」${tagIcons(r.learned.like)}`, r.learned?.dislike && `討厭「${r.learned.dislike}」${tagIcons(r.learned.dislike)}`].filter(Boolean);
     if (found.length) box.append(Object.assign(document.createElement('span'), { className: 'kitchen-learned', textContent: `📒 口味筆記新發現：${CHARACTERS[r.no].name}${found.join('，')}` }));
     res.append(box);
+    if (kitchenResult.fresh) { kitchenResult.fresh = false; requestAnimationFrame(() => document.querySelector('.kitchen-result--inline, #kitchen-result:not([hidden])')?.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })); }
   }
   // 圖鑑
   const known = Object.keys(k.known).filter(kitchen.isBaseDish).length;
@@ -4174,18 +4184,33 @@ function renderKitchen() {
 }
 // 料理小書：做過的每一道，一頁 6 道，新做的在前
 const COOKBOOK_PER_PAGE = 6;
-const COOKBOOK_TABS = [['all', '全部'], ['recipe', '特色'], ['home', '家常'], ['dark', '黑暗']];
-let cookbookTab = 'all'; let cookbookPage = 0;
+// 料理小書一排四個切換（11/28 湘）：全部／類型／食材／口味，選了後三個再點小按鈕篩選
+const COOKBOOK_TABS = [['all', '全部'], ['kind', '類型'], ['ing', '食材'], ['tag', '口味']];
+const COOKBOOK_KINDS = [['recipe', '✨特色'], ['home', '🥣家常'], ['dark', '🫕黑暗']];
+let cookbookBy = 'all'; let cookbookPick = null; let cookbookPage = 0;
+const cookbookHas = (e, by, id) => by === 'kind' ? e.kind === id : by === 'ing' ? e.dish.ings.includes(id) : e.dish.tags.includes(id);
 function renderCookbook() {
   const all = kitchen.cookbook(state);
-  const counts = Object.fromEntries(COOKBOOK_TABS.map(([id]) => [id, id === 'all' ? all.length : all.filter(e => e.kind === id).length]));
+  const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
   $('cookbook-tabs').replaceChildren(...COOKBOOK_TABS.map(([id, label]) => {
-    const btn = document.createElement('button'); btn.type = 'button'; btn.role = 'tab'; btn.setAttribute('aria-selected', String(cookbookTab === id)); btn.dataset.tab = id;
-    btn.append(label, Object.assign(document.createElement('small'), { textContent: counts[id] }));
-    btn.addEventListener('click', () => { cookbookTab = id; cookbookPage = 0; renderCookbook(); });
+    const btn = el('button'); btn.type = 'button'; btn.role = 'tab'; btn.setAttribute('aria-selected', String(cookbookBy === id)); btn.dataset.tab = id;
+    btn.append(label); if (id === 'all') btn.append(el('small', null, String(all.length)));
+    btn.addEventListener('click', () => { cookbookBy = id; cookbookPick = null; cookbookPage = 0; renderCookbook(); });
     return btn;
   }));
-  const list = cookbookTab === 'all' ? all : all.filter(e => e.kind === cookbookTab);
+  const opts = cookbookBy === 'kind' ? COOKBOOK_KINDS
+    : cookbookBy === 'ing' ? kitchen.INGREDIENTS.map(i => [i.id, `${i.icon}${i.short}`])
+    : cookbookBy === 'tag' ? kitchen.TAGS.map(t => [t, `${kitchen.tagIngredients(t)[0]?.icon || ''}${t}`]) : [];
+  const shownOpts = opts.map(([id, label]) => ({ id, label, n: all.filter(e => cookbookHas(e, cookbookBy, id)).length })).filter(o => o.n);
+  if (cookbookPick && !shownOpts.some(o => o.id === cookbookPick)) cookbookPick = null;
+  $('cookbook-filter').replaceChildren(...(shownOpts.length ? [Object.assign(el('div', 'cookbook-chips'), { role: 'group' })] : []));
+  $('cookbook-filter').firstChild?.append(...shownOpts.map(o => {
+    const b = el('button', 'cookbook-chip'); b.type = 'button'; b.dataset.pick = o.id; b.setAttribute('aria-pressed', String(cookbookPick === o.id));
+    b.append(o.label, el('small', null, String(o.n)));
+    b.addEventListener('click', () => { cookbookPick = cookbookPick === o.id ? null : o.id; cookbookPage = 0; renderCookbook(); });
+    return b;
+  }));
+  const list = cookbookPick ? all.filter(e => cookbookHas(e, cookbookBy, cookbookPick)) : all;
   const pages = Math.max(1, Math.ceil(list.length / COOKBOOK_PER_PAGE));
   cookbookPage = Math.min(Math.max(0, cookbookPage), pages - 1);
   const shown = list.slice(cookbookPage * COOKBOOK_PER_PAGE, (cookbookPage + 1) * COOKBOOK_PER_PAGE);
@@ -4247,7 +4272,7 @@ async function feedKitchen(no, dishId) {
     const t = await updateState(current => kitchen.feed(current, no, dishId, todayKey()));
     state = t.state;
     if (typeof t.result === 'string') { $('kitchen-status').textContent = t.result; return; }
-    kitchenResult = t.result; $('kitchen-status').textContent = '';
+    kitchenResult = { ...t.result, fresh: true }; $('kitchen-status').textContent = '';
     if (t.result.up.length) queueBondUps([{ no, up: t.result.up }]);
     renderAll();
   } finally { kitchenBusy = false; renderKitchen(); }

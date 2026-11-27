@@ -32,7 +32,7 @@ assert.equal(await p.locator('.cookbook-page').count(),6);
 assert.match(await p.locator('#cookbook-page').textContent(),/1 \/ 3/);
 assert.match(await p.locator('.cookbook-page').first().textContent(),/No\.013/);
 assert.match(await p.locator('[data-dish="cloud+milk"]').textContent(),/手上還有 2 份/);
-await p.locator('#cookbook-tabs [data-tab="recipe"]').click();
+await p.locator('#cookbook-tabs [data-tab="kind"]').click();await p.locator('#cookbook-filter [data-pick="recipe"]').click();
 assert.equal(await p.locator('#cookbook-nav').isVisible(),false);
 const straw=p.locator('[data-dish="milk+strawberry"]');
 assert.match(await straw.textContent(),/做過 4 次/);assert.equal(await straw.locator('.cookbook-eater').count(),4);assert.match(await straw.textContent(),/\+1/);
@@ -45,9 +45,9 @@ for(const w of [360,390,430]){await p.setViewportSize({width:w,height:844});awai
   if(shot){await p.locator('#kitchen-cookbook').scrollIntoViewIfNeeded();await p.locator('#kitchen-cookbook').screenshot({path:`${shot}/cookbook-${w}.png`});}
 }
 await p.locator('#cookbook-next').click();assert.match(await p.locator('#cookbook-page').textContent(),/2 \/ 3/);
-await p.locator('#cookbook-tabs [data-tab="dark"]').click();assert.equal(await p.locator('.cookbook-page.is-dark').count(),await p.locator('.cookbook-page').count());
+await p.locator('#cookbook-tabs [data-tab="kind"]').click();await p.locator('#cookbook-filter [data-pick="dark"]').click();assert.equal(await p.locator('.cookbook-page.is-dark').count(),await p.locator('.cookbook-page').count());
 // 長按吃過的小湘頭像 → 顯示名字和評價；+N 顯示其他人
-await p.locator('#cookbook-tabs [data-tab="recipe"]').click();
+await p.locator('#cookbook-tabs [data-tab="kind"]').click();await p.locator('#cookbook-filter [data-pick="recipe"]').click();
 const face=p.locator('[data-dish="milk+strawberry"] .cookbook-eater').first();
 const box=await face.boundingBox();await p.mouse.move(box.x+box.width/2,box.y+box.height/2);await p.mouse.down();await p.waitForTimeout(600);
 assert.match(await p.textContent('.press-tip'),/小湘.*吃過，覺得/);

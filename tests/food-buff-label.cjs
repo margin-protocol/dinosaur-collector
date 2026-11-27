@@ -46,8 +46,8 @@ assert.equal(await p.locator('#kitchen-siangs [data-siang="087"] .errand-siang__
 const kfit=await p.$$eval('#kitchen-siangs .errand-siang__food',ls=>ls.every(l=>{const r=l.getBoundingClientRect(),g=document.querySelector('#kitchen-siangs');return l.scrollWidth<=l.clientWidth+1&&g.scrollWidth<=g.clientWidth+1;}));assert.ok(kfit,'kitchen label fits, grid not wider');
 if(process.env.SHOT){await p.evaluate(()=>document.querySelector('#kitchen-siangs').scrollIntoView({block:'start'}));await p.evaluate(()=>scrollBy(0,-80));await p.waitForTimeout(200);await p.screenshot({path:`${process.env.SHOT}-kitchen.png`});}
 await p.locator('#kitchen-siangs [data-siang="087"]').click();await p.waitForTimeout(300);
-const res=await p.locator('#kitchen-result').textContent();
+const res=await p.locator('.kitchen-result--inline, #kitchen-result:not([hidden])').first().textContent();
 if(!/討厭/.test(res))assert.match(res,/下一次討伐：戰力 \+\d+%（換掉了原本的討伐時間 −4%）/);
-if(process.env.SHOT){await p.evaluate(()=>document.querySelector('#kitchen-result').scrollIntoView({block:'center'}));await p.waitForTimeout(200);await p.screenshot({path:`${process.env.SHOT}-result.png`});}
+if(process.env.SHOT){await p.evaluate(()=>document.querySelector('.kitchen-result--inline, #kitchen-result:not([hidden])').scrollIntoView({block:'center'}));await p.waitForTimeout(200);await p.screenshot({path:`${process.env.SHOT}-result.png`});}
 assert(!(await p.evaluate(()=>document.documentElement.scrollWidth>innerWidth)),'no horizontal scroll kitchen');
 assert.equal(errs.length,0,errs.join('\n'));console.log('food-buff-label: 🍳 label on battle cells, forecast +points, kitchen swap warning PASS');await b.close();})().catch(e=>{console.error(e);process.exit(1)});

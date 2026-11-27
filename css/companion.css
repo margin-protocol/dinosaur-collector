@@ -1426,3 +1426,16 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-night__switch { background:var(--t-line); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-night.is-on .battle-night__switch { background:var(--t-accent); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .battle-night__text small { color:var(--t-muted); opacity:1; }
+/* 餵完馬上看到結果（11/28 玩家：要往上滑才看得到喜不喜歡） */
+.kitchen-feed__grid .kitchen-result--inline { grid-column:1 / -1; margin:2px 0 6px; grid-template-columns:64px 1fr; position:relative; animation:kitchen-pop .25s ease-out; }
+.kitchen-feed__grid .kitchen-result--inline img { width:64px; height:64px; }
+.kitchen-feed__grid .errand-siang.is-fed { box-shadow:0 0 0 2px var(--t-accent, #ffd9a8); }
+@keyframes kitchen-pop { from { opacity:0; transform:scale(.96); } to { opacity:1; transform:none; } }
+@media (prefers-reduced-motion: reduce) { .kitchen-feed__grid .kitchen-result--inline { animation:none; } }
+/* 料理小書：依食材／口味篩選 */
+.cookbook__filter:empty { display:none; }
+.cookbook__filter { margin:-2px 0 10px; }
+.cookbook-chips { display:flex; flex-wrap:wrap; gap:5px; }
+.cookbook-chip { display:inline-flex; align-items:center; gap:3px; min-height:30px; padding:3px 9px; border:1px solid var(--t-line); border-radius:999px; background:var(--t-panel); color:var(--t-text); font:12.5px var(--font-body); white-space:nowrap; }
+.cookbook-chip small { font-size:10.5px; color:var(--t-muted); }
+.cookbook-chip[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); box-shadow:0 0 0 1px var(--t-accent); }
