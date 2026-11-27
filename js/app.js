@@ -4256,8 +4256,9 @@ function renderBattle() {
   renderAtlas($('team-bond-atlas'),state);
   const b = state.battle; const now = Date.now();
   $('battle-badges').textContent = b.badges;
-  $('battle-slots').textContent = `隊伍 ${b.active.length} / ${battle.teamSlots(state)}`;
-  { const nx = battle.nextTeamSlot(state); const hint = $('battle-slot-hint'); hint.hidden = !nx || b.active.length < battle.teamSlots(state); hint.textContent = nx ? `隊伍都派出去了。收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊（還差 ${nx.left} 位）。` : ''; }
+  const su = battle.slotUse(state);
+  $('battle-slots').textContent = `隊伍 ${su.used} / ${battle.teamSlots(state)}${su.extra ? ` · 副本 ${su.sideUsed} / ${su.extra}` : ''}`;
+  { const nx = battle.nextTeamSlot(state); const hint = $('battle-slot-hint'); hint.hidden = !nx || su.used < battle.teamSlots(state); hint.textContent = nx ? `隊伍都派出去了。收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊（還差 ${nx.left} 位）。` : ''; }
   $('battle-active').classList.toggle('is-compact', b.active.length >= 4); // 4 隊以上改精簡列，手機上不把關卡地圖擠下去
   $('battle-active').replaceChildren(...b.active.map(a => {
     const row = document.createElement('div'); const back = battle.isBack(a, now); row.className = `errand-trip${back ? ' is-back' : ''}`;
@@ -4903,7 +4904,7 @@ function renderBattleStage() {
     onSave:async(slot,nos,name)=>{const t=await updateState(current=>savePreset(current,slot,nos,name));state=t.state;toast(t.result?'隊伍已儲存':'請選三位已收集的小湘');renderBattleStage();},
     onDelete:async slot=>{state=(await updateState(current=>{ensureTeamBonds(current).presets[slot]=null;})).state;renderBattleStage();}
   });
-  const full = state.battle.active.length >= battle.teamSlots(state);
+  const full = battle.slotFull(state, id);
   $('battle-go').disabled = !battlePicked.length || full;
   $('battle-go').textContent = full ? '隊伍都派出去了' : `出發討伐${fc ? (IS_TEST ? `（測試服 15 秒・正式 ${fc.minutes} 分鐘）` : `（約 ${fc.minutes} 分鐘）`) : ''}`;
 }
@@ -5323,7 +5324,7 @@ function todayItems() {
     const heroReady = HERO_SHOP.find(({ no }) => battle.heroStatus(state, no).ready);
     if (heroReady) add('hero', `徽章夠換${CHARACTERS[heroReady.no].name}了`, '討伐 → 特訓與兌換', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); $('open-train').click(); });
     if (backs) add('battle-back', `${backs} 份戰報可以看`, '討伐回來了', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); });
-    else if ((state.battle?.active?.length || 0) < battle.teamSlots(state) && wildLeft) add('battle', `討伐野生小怪（今天還有 ${wildLeft} 隻）`, '打贏拿徽章，可以特訓小湘', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); });
+    else if (battle.slotUse(state).used < battle.teamSlots(state) && wildLeft) add('battle', `討伐野生小怪（今天還有 ${wildLeft} 隻）`, '打贏拿徽章，可以特訓小湘', () => { $('today-dialog').close(); openErrands(); showErrandTab('battle'); });
   }
   const pettable = room.residents().filter(no => bondInfo(state, no, today).left > 0 && !bondInfo(state, no, today).max);
   if (pettable.length) add('bond', '摸摸首頁的小湘', `${pettable.map(no => CHARACTERS[no].name).join('、')}今天還能增加好感`, () => $('today-dialog').close());

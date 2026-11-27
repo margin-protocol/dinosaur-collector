@@ -328,6 +328,17 @@ export function diagnose(state, nos, enemyId, pool) {
 }
 
 // 出發：先算好結果存起來（重新整理不會重抽）。回傳錯誤字串或 battle 物件
+// 副本專屬隊伍（湘 11/27 選）：副本多一格只能打副本的隊伍，不搶主線／活動／野外的隊伍；小湘忙碌、休息照舊共用
+export const SIDE_EXTRA_SLOTS = 1;
+export function slotUse(state) {
+  const a = state.battle?.active || [];
+  const side = a.filter((x) => String(x.enemy).startsWith('side:')).length;
+  const extra = sideOn() ? SIDE_EXTRA_SLOTS : 0;
+  return { used: a.length - Math.min(side, extra), side, extra, sideUsed: Math.min(side, extra), sideFree: side < extra };
+}
+// 這一關現在還能不能再派一隊
+export const slotFull = (state, enemyId) => { const u = slotUse(state); return !(u.used < teamSlots(state) || (String(enemyId || '').startsWith('side:') && u.sideFree)); };
+
 export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math.random, busy = new Set() } = {}) {
   const b = ensureBattle(state);
   const enemy = enemyFor(state, enemyId);
@@ -341,7 +352,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   nos = [...new Set(nos || [])];
   if (!nos.length) return '先選一位小湘。';
   if (nos.length > TEAM_MAX) return `一隊最多 ${TEAM_MAX} 位。`;
-  if (b.active.length >= teamSlots(state)) { const nx = nextTeamSlot(state); return `同時最多 ${teamSlots(state)} 隊，等她們回來吧。${nx ? `收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊。` : ''}`; }
+  if (slotFull(state, enemyId)) { const nx = nextTeamSlot(state); return `同時最多 ${teamSlots(state)} 隊，等她們回來吧。${nx ? `收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊。` : ''}`; }
   const free = available(state, now.getTime(), busy);
   if (nos.some((no) => !free.includes(no))) return '有小湘正在忙或休息中。';
   const f = forecast(state, nos, enemyId);
