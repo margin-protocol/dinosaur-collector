@@ -1,6 +1,7 @@
 // 更新通知：定期用 HEAD 請求比對幾個檔案的版本標記（ETag / Last-Modified），有變就提醒重新整理；
 // 重新整理後，若 changelog.json 有玩家還沒看過的版本，顯示更新內容。沒有更新就什麼都不顯示。
-const WATCH = ['index.html', 'js/app.js', 'changelog.json'];
+// 11/28：每次推送都會改 changelog.json，只看它就夠了（少打 GitHub Pages，避免 Rate limit）
+const WATCH = ['changelog.json'];
 const SEEN_KEY = 'siang-collector:seen-version';
 const CHECK_EVERY = 10 * 60 * 1000;
 const NEW_PLAYER = 'new-player';

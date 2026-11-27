@@ -1019,6 +1019,7 @@ function dexCard(c) {
   const img = document.createElement('img');
   img.className = `dex__img${has ? '' : ' is-locked'}`;
   img.alt = has ? c.name : '尚未收集的小湘';
+  img.loading = 'lazy'; img.decoding = 'async'; // 11/28：圖鑑一百多張圖不要一開遊戲就全部下載（GitHub Pages 會擋 Rate limit）
   loadWithFallback(img, characterSources(c.image));
   const series = SERIES[c.series];
   if (series) {
