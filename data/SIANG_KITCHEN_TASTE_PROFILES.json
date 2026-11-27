@@ -1518,6 +1518,28 @@
         "bamboo",
         "mushroom"
       ]
+    },
+    {
+      "no": "120",
+      "name": "法官ㄊㄧ",
+      "like": "清涼",
+      "dislike": "刺激",
+      "secret_combo": [
+        "matcha",
+        "moon",
+        "mushroom"
+      ]
+    },
+    {
+      "no": "121",
+      "name": "摯友小湘（泱泱ver）",
+      "like": "滑順",
+      "dislike": "怪味",
+      "secret_combo": [
+        "caramel",
+        "pudding",
+        "strawberry"
+      ]
     }
   ]
 }

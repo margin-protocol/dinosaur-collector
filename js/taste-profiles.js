@@ -110,6 +110,8 @@ export const TASTES = {
   '108': { like: '果香', dislike: '怪味', secret: ["gear", "moon", "strawberry"] }, // 柴郡貓小湘：彎月莓果塔＝齒輪餅乾（酥脆塔皮）＋月光露（彎月）＋草莓（酸甜莓果餡）
   '118': { like: '果香', dislike: '怪味', secret: ["gear", "caramel", "strawberry"] }, // 島嶼守望・小湘：鳳梨酥＝齒輪餅乾（酥皮）＋焦糖（內餡）＋草莓（代替鳳梨的果香）
   '119': { like: '菇香', dislike: '刺激', secret: ["mushroom", "moon", "milk"] }, // 萬物共生・小湘：森林早餐＝魔法蘑菇＋月光露（晨露）＋牛奶
+  '120': { like: '清涼', dislike: '刺激', secret: ["matcha", "moon", "mushroom"] }, // 法官ㄊㄧ：竹筍清湯＝抹茶粉（筍的清綠香）＋月光露（清湯）＋魔法蘑菇（鮮味）；雨後竹筍是墨痕江湖活動食材，創始系列不能用
+  '121': { like: '滑順', dislike: '怪味', secret: ["caramel", "pudding", "strawberry"] }, // 摯友小湘（泱泱ver）：櫻桃焦糖布丁＝焦糖（焦糖醬）＋布丁粉（布丁）＋草莓（頂端的紅櫻桃）；立繪抱著布丁娃娃
   '109': { like: '酥脆', dislike: '怪味', secret: ["caramel", "gear", "mushroom"] }, // 白虎小湘：金穗豐收飯＝焦糖（金黃）＋齒輪餅乾（烘烤穀物）＋魔法蘑菇（濃郁香氣）
   '110': { like: '濃甜', dislike: '刺激', secret: ["caramel", "cloud", "moon"] }, // 禿小湘：月見糰子＝焦糖（蜜）＋雲朵棉花糖（白白軟軟的糰子）＋月光露（賞月）
   '111': { like: '菇香', dislike: '怪味', secret: ["gear", "milk", "mushroom"] }, // 番頭新造小湘：暖心味噌飯糰＝齒輪餅乾（烤過的米香）＋牛奶（溫暖）＋魔法蘑菇（味噌般的鹹香）
