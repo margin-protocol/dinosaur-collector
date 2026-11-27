@@ -1298,6 +1298,17 @@
       ]
     },
     {
+      "no": "119",
+      "name": "萬物共生・小湘",
+      "like": "菇香",
+      "dislike": "刺激",
+      "secret_combo": [
+        "mushroom",
+        "moon",
+        "milk"
+      ]
+    },
+    {
       "no": "109",
       "name": "白虎小湘",
       "like": "酥脆",

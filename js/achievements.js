@@ -5,7 +5,7 @@ import { siangMailCount } from './letters.js';
 import { MAIN_ISLAND } from './geo.js';
 import { sideOn, stageWon, lineCleared, MAIN_COUNTY, hasFeat, lineRan } from './side.js';
 import { CHARACTERS as SIDE_CHARS } from './eggs.js';
-const ANIMAL_ALL = Object.keys(SIDE_CHARS).filter((no) => SIDE_CHARS[no].series === 'animals' && !SIDE_CHARS[no].sidePreview);
+const ANIMAL_ALL = Object.keys(SIDE_CHARS).filter((no) => SIDE_CHARS[no].series === 'animals' && !SIDE_CHARS[no].sidePreview && no !== '119'); // 企劃定 14 位；通關送的 119 不算
 import { dishById, recipesFound, secretsFound } from './kitchen.js';
 const darkDish = (id) => dishById(id)?.dark;
 // 成就：由進度直接推算是否達成；領取獎勵的紀錄存在 state.achievements.claimed

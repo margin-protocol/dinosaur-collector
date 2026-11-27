@@ -348,6 +348,7 @@ const CHARACTER_TABLE = {
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   // 島嶼守望・小湘（湘 11/27 畫）：系列支線「島嶼不歸檔」五關全通的獎勵，不進任何蛋池。文案暫稿（德寶），皮寶可改。
   '118': { no: '118', name: '島嶼守望・小湘', rarity: 'SSR', line: '「這裡不是誰遺失的一頁。這裡是我們自己寫成的故事。」', image: 'siang-118-island-watch', series: 'county', sidePreview: true },
+  '119': { no: '119', name: '萬物共生・小湘', rarity: 'SSR', line: '「你不必可愛、不必聽話，也不必為誰帶來快樂。能夠好好活著，就已經很好了。」', image: 'siang-119-all-life', series: 'animals', sidePreview: true },
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
   '091': { no: '091', name: '未完待續小湘', rarity: 'SSR', line: "「考上了也好，沒考上也好……嘿嘿，我的故事又還沒寫完！」", image: 'siang-091-to-be-continued', series: 'recipe', special: true },
