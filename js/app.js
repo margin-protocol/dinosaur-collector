@@ -84,6 +84,8 @@ import * as gugu from './gugu.js';
 import * as guide from './guide.js';
 import * as studio from './studio-jh.js';
 import { playMoSsrFx } from './mo-ssr-fx.js';
+import { playTaiwanFx } from './taiwan-fx.js';
+import { playTaiwanStory } from './taiwan-story.js';
 import { playHatchFx } from './hatch-fx.js';
 import { playLabFx } from './lab-fx.js';
 import { refreshPush } from './push.js';
@@ -1422,7 +1424,7 @@ async function hatch(expected) {
     // 其他蛋出 SSR／UR：櫻花綻放（湘 11/26 選 B），顏色跟著主題、UR 更華麗
     if (c.rarity === 'SSR' || c.rarity === 'UR') {
       const fx = { name: c.name, image: characterSources(c.image)[0], rarity: c.rarity, fast: duplicate || reducedMotion() };
-      try { buzz([20, 40, 90]); await (eggId === 'mohen' ? playMoSsrFx(fx) : playHatchFx(fx)); } catch { /* 演出失敗也要看到結果 */ }
+      try { buzz([20, 40, 90]); await (eggId === 'mohen' ? playMoSsrFx(fx) : c.no === TAIWAN_NO ? playTaiwanFx({ variant: 'c', fast: fx.fast }) : playHatchFx(fx)); } catch { /* 演出失敗也要看到結果 */ }
     }
     showReveal(c, duplicate, candy);
   } else toast('這顆蛋已經完成孵化，進度已更新。');
@@ -2001,6 +2003,7 @@ const photoBooth = createPhotoBooth({ dialog: $('photo-dialog'), getState: () =>
 } });
 $('open-photo').addEventListener('click', () => { $('function-center').close(); photoBooth.open(); });
 $('dex-photo').addEventListener('click', () => { const no = $('dex-photo').dataset.no; $('dex-detail').close(); photoBooth.open(no); });
+$('dex-story-anim').addEventListener('click', async () => { $('dex-detail').close(); await playTaiwanStory({ text: INTROS[TAIWAN_NO] }); openDexDetail(TAIWAN_NO); });
 
 /* ---------- 焦點框：手指點不畫、鍵盤才畫 ---------- */
 document.addEventListener('pointerdown', () => { document.documentElement.dataset.input = 'pointer'; }, { capture: true, passive: true });
@@ -2350,6 +2353,7 @@ function openDexDetail(no) {
   img.className = `dex-detail__img${owned ? '' : ' is-locked'}${owned && c.cheshire ? ' is-cheshire' : ''}`; img.alt = owned ? c.name : '尚未收集的小湘'; // is-cheshire：柴郡貓小湘慢慢隱身只剩笑容（純視覺）
   loadWithFallback(img, characterSources(c.image));
   $('dex-photo').hidden = !owned; $('dex-photo').dataset.no = no;
+  $('dex-story-anim').hidden = !(owned && no === TAIWAN_NO); // 台灣小湘故事動畫（湘 11/28）
   $('dex-detail-no').textContent = `${noLabel(c.no)} · ${owned ? c.rarity : '?'} · ${worldOf(c) === 'origin' ? (SERIES[c.series]?.name || '') : worldLabel(worldOf(c))}`;
   const stars = owned ? state.dex[no]?.dup || 0 : 0;
   $('dex-detail-stars').hidden = !owned;
