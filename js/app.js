@@ -1944,6 +1944,7 @@ function showPressTip(btn) {
       const p = battle.siangPower(state, c.no);
       const b = bondInfo(state, c.no, todayKey());
       tip.append(Object.assign(document.createElement('b'), { textContent: c.name }), Object.assign(document.createElement('span'), { textContent: `${c.rarity} · ${SERIES[c.series]?.name || ''} · 戰力 ${p.power} · ♥ Lv.${b.level}${p.stars ? ` · ★${p.stars}` : ''}` }));
+      if (btn.classList.contains('train-tile')) tip.append(Object.assign(document.createElement('span'), { textContent: `特訓 Lv.${p.train}/${battle.MAX_TRAIN}` })); // 特訓格子多一行特訓等級
     }
   }
   const host = btn.closest('dialog') || document.body; host.append(tip);
@@ -1953,7 +1954,7 @@ function showPressTip(btn) {
   tip.style.top = `${r.top - hr.top + host.scrollTop - 6}px`;
   buzz(15);
 }
-const PRESS_SEL = '.errand-siang[data-siang], .cookbook-eater[data-siang], .cookbook-eater-more';
+const PRESS_SEL = '.errand-siang[data-siang], .cookbook-eater[data-siang], .cookbook-eater-more, .train-tile[data-siang]';
 document.addEventListener('pointerdown', e => {
   const btn = e.target.closest(PRESS_SEL); if (!btn) return;
   pressShown = false; clearTimeout(pressTimer);
@@ -1965,6 +1966,8 @@ document.addEventListener('click', e => { if (pressShown && e.target.closest(PRE
 document.addEventListener('contextmenu', e => { if (e.target.closest(PRESS_SEL)) e.preventDefault(); });
 // 料理小書的頭像本來點了沒反應，輕點也顯示是誰
 document.addEventListener('click', e => { const el = e.target.closest('.cookbook-eater[data-siang], .cookbook-eater-more'); if (!el || pressShown) return; showPressTip(el); setTimeout(hidePressTip, 1800); });
+// 特訓格子：點頭像／名字（不是特訓鈕）也顯示是誰
+document.addEventListener('click', e => { const el = e.target.closest('.train-tile[data-siang]'); if (!el || pressShown || e.target.closest('button')) return; showPressTip(el); setTimeout(hidePressTip, 2200); });
 
 /* ---------- 外出合照 ---------- */
 const photoBooth = createPhotoBooth({ dialog: $('photo-dialog'), getState: () => state, onTaken: no => {
