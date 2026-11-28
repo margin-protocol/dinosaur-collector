@@ -256,7 +256,7 @@ const CHARACTER_TABLE = {
   '059': { no: '059', name: '七夕小湘', rarity: 'SSR', line: '「鵲橋搭好了，這次換我去找你。」', image: 'siang-059-qixi', series: 'holiday', special: true },
   '060': { no: '060', name: '萬聖節小湘', rarity: 'SSR', line: '「不給糖就搗蛋！……給了糖也要搗蛋。」', image: 'siang-060-halloween', series: 'holiday', special: true },
   // 集滿 19 位縣市小湘時送出
-  '061': { no: '061', name: '台灣小湘', rarity: 'UR', line: '「我們把整座島都走過一遍了，謝謝你帶我回家。」', image: 'siang-061-taiwan', series: 'county', special: true },
+  '061': { no: '061', name: '台灣小湘', rarity: 'UR', line: "「原來那些走過的路、看過的海，還有遇見的每一個人，都在這裡呀。我們把整座島都走過一遍了。謝謝你帶我回家。」", image: 'siang-061-taiwan', series: 'county', special: true },
   // 勇者小隊：徽章兌換專屬紀念蛋，再固定孵出；不進隨機蛋池
   '062': { no: '062', name: '騎士小湘', rarity: 'SR', line: '「別怕，我會保護你的！……等一下，盾牌是不是拿反了？」', image: 'siang-062-knight', series: 'hero', special: true, badge: true },
   '063': { no: '063', name: '魔法師小湘', rarity: 'SR', line: '「站好不要動喔！這次的魔法……應該不會爆炸吧？」', image: 'siang-063-mage', series: 'hero', special: true, badge: true },
