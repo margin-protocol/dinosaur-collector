@@ -7,7 +7,7 @@ const EVENT_THEATER_SKIN = 'b'; // 活動劇情劇場外觀（湘選；a 劇場�
 buildStories(EVENT_THEATER_SKIN);
 import { buildSideStories } from './side-theater.js';
 buildSideStories();
-import { renderAtlas, renderTeamTools } from './team-ui.js';
+import { renderAtlas, renderTeamTools, presetActions } from './team-ui.js';
 import { savePreset, ensureTeamBonds, effectText, teamBond } from './team-bonds.js';
 import { featureIcon } from './ui-icons.js';
 import { setupThemes, THEME_KEY } from './themes.js';
@@ -4299,6 +4299,7 @@ function renderBattle() {
     return row;
   }));
   const inStage = Boolean(battleEnemy); const inTrain = !$('battle-train').hidden;
+  if (!inStage) $('team-presets-glance').hidden = false;
   $('battle-map').hidden = inStage || inTrain; $('battle-stage').hidden = !inStage;
   if (!inStage && !inTrain) {
     const wild = state.battle.wild?.list || [];
@@ -4928,11 +4929,14 @@ function renderBattleStage() {
   }
   const free = battle.available(state, now, busy);
   const comparison = battle.compareTeams(state, id, free);
-  renderTeamTools($('team-tools'), {state,free,picked:[...battlePicked],comparison,
+  const teamCtx = {state,free,picked:[...battlePicked],comparison,
     onChoose:nos=>{ const currentFree=battle.available(state,Date.now(),allBusy());if(nos.some(n=>!currentFree.includes(n))){toast('有人正在忙或休息，請重新選隊。');return;}battlePicked=[...nos];renderBattleStage(); },
     onSave:async(slot,nos,name)=>{const t=await updateState(current=>savePreset(current,slot,nos,name));state=t.state;toast(t.result?'隊伍已儲存':'請選三位已收集的小湘');renderBattleStage();},
     onDelete:async slot=>{state=(await updateState(current=>{ensureTeamBonds(current).presets[slot]=null;})).state;renderBattleStage();}
-  });
+  };
+  renderTeamTools($('team-tools'), teamCtx);
+  $('team-presets-glance').hidden = true; // 關卡裡改顯示在選小湘下面，上面那份收起來
+  { const g = el('div', 'team-glance-stage'); renderPresetGlance(g, teamCtx); $('team-tools').prepend(g); }
   const full = battle.slotFull(state, id);
   const night = renderBattleNight(id, e, fc, full);
   $('battle-go').disabled = !battlePicked.length || full;
@@ -5045,15 +5049,16 @@ function presetBondLine(nos) {
   if (!b || b.id === 'general') return { cls: 'is-general', text: `三位都 LV5 · ${effectText(b)}` };
   return state.teamBonds?.unlocked?.[b.id] ? { cls: 'is-bond', text: `✦ ${b.name} · ${effectText(b)}` } : { cls: 'is-secret', text: '✦ 未知的默契正在共鳴！一起出發就能收藏合照' };
 }
-function renderPresetGlance() {
-  const host = $('team-presets-glance'); if (!host) return;
-  const presets = (state.teamBonds?.presets || []).map((p, i) => p && { ...p, i }).filter(p => p && p.nos.every(no => state.dex[no]));
+// ctx：在關卡裡時（湘 11/28 選 C：兩份常用隊伍整合成一份），每隊多一排 選用／覆寫／清除，空位可以存新隊伍
+function renderPresetGlance(host = $('team-presets-glance'), ctx = null) {
+  if (!host) return;
+  const presets = (state.teamBonds?.presets || []).map((p, i) => p && { ...p, i }).filter(p => p && (ctx || p.nos.every(no => state.dex[no])));
   const status = new Map(siangStatuses(state, Date.now()).map(s => [s.no, s]));
   const open = (() => { try { return localStorage.getItem(GLANCE_KEY) !== 'closed'; } catch { return true; } })();
   const box = el('details', 'team-glance'); box.open = open;
   box.addEventListener('toggle', () => { try { localStorage.setItem(GLANCE_KEY, box.open ? 'open' : 'closed'); } catch {} });
   box.append(el('summary', null, `常用隊伍 · ${presets.length} / 5`));
-  if (!presets.length) { box.append(el('p', 'team-glance__empty', '還沒有常用隊伍。點進任一關卡選好三位，在「常用隊伍」按儲存，就會出現在這裡。')); host.replaceChildren(box); return; }
+  if (!presets.length && !ctx) { box.append(el('p', 'team-glance__empty', '還沒有常用隊伍。點進任一關卡選好三位，在「常用隊伍」按儲存，就會出現在這裡。')); host.replaceChildren(box); return; }
   for (const p of presets) {
     const row = el('article', 'team-glance__row');
     const bond = presetBondLine(p.nos);
@@ -5068,7 +5073,17 @@ function renderPresetGlance() {
     }));
     row.append(head, faces);
     row.append(el('p', `team-glance__bond ${bond.cls}`, bond.text));
+    if (ctx) row.append(presetActions({ ...ctx, p, i: p.i, name: null }));
     box.append(row);
+  }
+  if (ctx) {
+    const empty = (state.teamBonds?.presets || [null, null, null, null, null]).findIndex(p => !p);
+    const add = el('div', 'team-glance__add');
+    if (empty >= 0) {
+      const name = el('input'); name.type = 'text'; name.maxLength = 20; name.placeholder = `隊伍 ${empty + 1}（名稱選填）`; name.setAttribute('aria-label', '儲存的隊伍名稱');
+      add.append(name, presetActions({ ...ctx, p: null, i: empty, name }));
+    } else add.append(el('small', null, '5 個位置都滿了，想存新的就覆寫其中一隊。'));
+    box.append(add);
   }
   host.replaceChildren(box);
 }

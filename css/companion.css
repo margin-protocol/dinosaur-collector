@@ -775,7 +775,6 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .bond-lightbox .bond-lightbox__members { color:var(--t-muted); font-size:12px; }
 @keyframes bond-photo-shine { to { transform:translateX(120%); } }
 @media(prefers-reduced-motion:reduce) { .team-bond-photo::after { display:none; } }
-.team-presets input { box-sizing:border-box; width:100%; min-width:0; min-height:44px; padding:8px; background:var(--t-panel); color:var(--t-text); border:1px solid var(--t-line); border-radius:6px; font:13px var(--font-display); }
 :is(.team-preset,.team-compare-row) .btn { min-height:44px; width:100%; white-space:normal; }
 /* 小湘廚房（11/20） */
 .kitchen-ings { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:6px; margin-bottom:10px; }
@@ -1440,3 +1439,12 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .cookbook-chip { display:inline-flex; align-items:center; gap:3px; min-height:30px; padding:3px 9px; border:1px solid var(--t-line); border-radius:999px; background:var(--t-panel); color:var(--t-text); font:12.5px var(--font-body); white-space:nowrap; }
 .cookbook-chip small { font-size:10.5px; color:var(--t-muted); }
 .cookbook-chip[aria-pressed="true"] { background:var(--t-selected); border-color:var(--t-accent); box-shadow:0 0 0 1px var(--t-accent); }
+/* 常用隊伍：按鈕縮小排一排、整合進格子卡（玩家 11/28，湘選 C） */
+.team-preset__actions { display:flex; gap:6px; }
+.team-glance .team-preset__btn { flex:1 1 0; width:auto; min-width:0; min-height:36px; margin:0; padding:0 8px; border:1px solid var(--t-line); border-radius:999px; font:600 12px/1 var(--font-body); letter-spacing:.04em; white-space:nowrap; }
+.team-preset__btn.is-main:not(:disabled) { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }
+.team-preset__btn:disabled { opacity:.4; }
+.team-glance .team-preset__actions { margin-top:2px; }
+.team-glance__add { display:grid; gap:6px; padding:10px 0 0; border-top:1px dashed var(--t-line); }
+.team-glance__add input { box-sizing:border-box; width:100%; min-width:0; min-height:40px; padding:8px; background:var(--t-panel); color:var(--t-text); border:1px solid var(--t-line); border-radius:6px; font:13px var(--font-display); }
+.team-glance__add small { color:var(--t-muted); font:11px/1.7 var(--font-display); }
