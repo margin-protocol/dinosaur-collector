@@ -15,7 +15,15 @@ assert(await p.locator('#team-presets-glance').isHidden());const st='#team-tools
 await p.locator(`${st} .team-glance__add input`).fill('常用甜點隊');await p.locator(`${st} .team-glance__add`).getByRole('button',{name:'儲存目前三人'}).click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('siang-collector:v1')).teamBonds.presets[0]?.name==='常用甜點隊');
 const row=p.locator(`${st} .team-glance__row`).first();assert.equal(await row.locator('b').textContent(),'常用甜點隊');assert(await row.getByRole('button',{name:'選用',exact:true}).isEnabled());
 const acts=await row.locator('.team-preset__actions button').evaluateAll(bs=>bs.map(b=>({t:b.textContent,top:Math.round(b.getBoundingClientRect().top),h:b.getBoundingClientRect().height})));assert.deepEqual(acts.map(a=>a.t),['選用','覆寫','清除']);assert(acts.every(a=>a.top===acts[0].top&&a.h<=40),'buttons in one compact row');
-await row.getByRole('button',{name:'清除'}).click();await p.waitForFunction(()=>!JSON.parse(localStorage.getItem('siang-collector:v1')).teamBonds.presets[0]);
+// 覆寫只換成員、保留自訂隊名（11/28 bug：會變回「隊伍 1」）
+const before=JSON.parse(await p.evaluate(()=>localStorage.getItem('siang-collector:v1'))).teamBonds.presets[0].nos;
+await p.locator('#battle-siangs button[aria-pressed="true"]').first().click();await p.locator('#battle-siangs button[aria-pressed="false"]').first().click();
+const picked=await p.locator('#battle-siangs button[aria-pressed="true"]').evaluateAll(bs=>bs.map(b=>b.dataset.siang||b.dataset.no));
+await p.locator(`${st} .team-glance__row`).first().getByRole('button',{name:'覆寫此隊'}).click();
+await p.waitForFunction(b=>{const x=JSON.parse(localStorage.getItem('siang-collector:v1')).teamBonds.presets[0];return x&&x.nos.join()!==b.join();},before);
+const after=JSON.parse(await p.evaluate(()=>localStorage.getItem('siang-collector:v1'))).teamBonds.presets[0];assert.equal(after.name,'常用甜點隊','overwrite keeps custom name');assert.notDeepEqual(after.nos,before);
+assert.equal(await p.locator(`${st} .team-glance__row`).first().locator('b').textContent(),'常用甜點隊');
+await p.locator(`${st} .team-glance__row`).first().getByRole('button',{name:'清除'}).click();await p.waitForFunction(()=>!JSON.parse(localStorage.getItem('siang-collector:v1')).teamBonds.presets[0]);
 await p.locator(`${st} .team-glance__add input`).fill('常用甜點隊');await p.locator(`${st} .team-glance__add`).getByRole('button',{name:'儲存目前三人'}).click();await p.waitForFunction(()=>JSON.parse(localStorage.getItem('siang-collector:v1')).teamBonds.presets[0]?.name==='常用甜點隊');
 fs.mkdirSync('docs/review/team-bonds',{recursive:true});for(const theme of ['sakura','blue']){await p.evaluate(t=>document.documentElement.dataset.theme=t,theme);for(const width of [360,390,430]){await p.setViewportSize({width,height:844});await p.locator('.team-compare').scrollIntoViewIfNeeded();assert(await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await p.screenshot({path:`docs/review/team-bonds/${theme}-${width}.png`});}}
 await p.locator('#battle-back').click();await p.locator('.team-bond-photo').first().scrollIntoViewIfNeeded();await p.screenshot({path:'docs/review/team-bonds/atlas-390.png'});

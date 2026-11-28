@@ -17,7 +17,7 @@ const mini=(text,fn,cls='')=>{const b=action(text,fn);b.classList.add('team-pres
 export function presetActions({p,i,free,picked,name,onChoose,onSave,onDelete}){
   const box=el('div',null,'team-preset__actions');
   if(p){const use=mini('選用',()=>onChoose(p.nos),'is-main');use.disabled=p.nos.some(n=>!free.includes(n));box.append(use);}
-  const save=mini(p?'覆寫':'儲存目前三人',()=>onSave(i,picked,name?.value||''));save.disabled=picked.length!==3;if(p)save.setAttribute('aria-label','覆寫此隊');box.append(save);
+  const save=mini(p?'覆寫':'儲存目前三人',()=>onSave(i,picked,p?p.name:(name?.value||'')));save.disabled=picked.length!==3;if(p)save.setAttribute('aria-label','覆寫此隊');box.append(save);
   if(p)box.append(mini('清除',()=>onDelete(i)));
   return box;
 }
