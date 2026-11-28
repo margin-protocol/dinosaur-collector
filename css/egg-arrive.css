@@ -1,0 +1,91 @@
+/* 收到蛋的提示（湘 11/28）：A 小卡＋蛋落下、B 底部浮出條、C 首頁小蛋泡泡；三種都會在入口標新蛋數 */
+
+/* ---------- 新蛋角標 ---------- */
+#open-center, #open-eggs { position: relative; }
+.egg-new-dot.is-corner {
+  position: absolute; top: -7px; right: -7px; min-width: 18px; height: 18px; padding: 0 5px;
+  display: flex; align-items: center; justify-content: center; border-radius: 99px;
+  background: linear-gradient(180deg, #f0a35e, #d96a3a); color: #fff; border: 1.5px solid #ffe3c2;
+  font: 700 10px/1 var(--font-body); font-style: normal; box-shadow: 0 2px 6px #00000055; pointer-events: none;
+}
+.nav__item > .egg-new-dot.is-corner { top: 4px; right: calc(50% - 26px); }
+.egg-new-dot.is-pill {
+  display: inline-block; margin-left: 2px; padding: 2px 7px; border-radius: 99px; font: 700 10px/1.3 var(--font-body); font-style: normal;
+  background: linear-gradient(180deg, #f0a35e, #d96a3a); color: #fff; animation: eggPillGlow 1.8s ease-in-out infinite;
+}
+@keyframes eggPillGlow { 50% { box-shadow: 0 0 0 4px #f0a35e33; } }
+.egg-catch { animation: eggCatch .5s cubic-bezier(.3,1.6,.5,1); }
+@keyframes eggCatch { 40% { transform: scale(1.08); } }
+.egg-fly { position: fixed; z-index: 90; pointer-events: none; object-fit: contain; filter: drop-shadow(0 4px 10px #ffd9c488); }
+
+/* ---------- A：小卡 ---------- */
+.egg-arrive { width: min(86vw, 340px); padding: 18px 20px 20px; text-align: center; overflow: visible; }
+.egg-arrive::backdrop { background: #0b070acc; backdrop-filter: blur(2px); }
+.egg-arrive__eyebrow { display: block; font: 600 11px/1 var(--font-latin); letter-spacing: .32em; color: var(--rose-metal); opacity: .9; }
+.egg-arrive__stage { position: relative; width: 150px; height: 150px; margin: 4px auto 2px; }
+.egg-arrive__halo { position: absolute; inset: 6px; border-radius: 50%; background: radial-gradient(circle, #ffe7cfcc 0%, #ffd9c455 38%, transparent 70%); }
+.egg-arrive__shell { position: absolute; left: 50%; top: 50%; width: 150px; height: 150px; margin: -75px 0 0 -75px; object-fit: contain; filter: drop-shadow(0 8px 14px #00000066); }
+.egg-arrive__spark { position: absolute; color: #ffe3c2; font-size: 14px; opacity: 0; text-shadow: 0 0 8px #ffd9c4; }
+.egg-arrive__spark.s1 { left: 14px; top: 26px; } .egg-arrive__spark.s2 { right: 10px; top: 48px; font-size: 18px; } .egg-arrive__spark.s3 { right: 30px; bottom: 16px; font-size: 11px; }
+.egg-arrive.is-in .egg-arrive__shell { animation: eggDrop .9s cubic-bezier(.3,1.25,.5,1) both, eggWobble 2.6s ease-in-out .9s infinite; }
+.egg-arrive.is-in .egg-arrive__halo { animation: eggHalo 1.2s ease-out both; }
+.egg-arrive.is-in .egg-arrive__spark { animation: eggSpark 1.8s ease-in-out .6s infinite; }
+.egg-arrive.is-in .egg-arrive__spark.s2 { animation-delay: .9s; } .egg-arrive.is-in .egg-arrive__spark.s3 { animation-delay: 1.2s; }
+@keyframes eggDrop { 0% { transform: translateY(-90px) scale(.6); opacity: 0; } 55% { transform: translateY(6px) scale(1.04, .94); opacity: 1; } 75% { transform: translateY(-6px); } 100% { transform: none; } }
+@keyframes eggWobble { 0%, 70%, 100% { transform: rotate(0); } 76% { transform: rotate(-6deg); } 84% { transform: rotate(5deg); } 92% { transform: rotate(-2deg); } }
+@keyframes eggHalo { 0% { transform: scale(.3); opacity: 0; } 60% { opacity: 1; } 100% { transform: scale(1); } }
+@keyframes eggSpark { 0%, 100% { opacity: 0; transform: scale(.6); } 50% { opacity: 1; transform: scale(1); } }
+.egg-arrive h2 { margin: 4px 0 6px; font: 600 19px/1.4 var(--font-display); color: var(--t-text, var(--ivory)); }
+.egg-arrive__chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin: 4px 0 8px; }
+.egg-arrive__chips[hidden] { display: none; }
+.egg-arrive__chip { display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px 3px 4px; border-radius: 99px; background: var(--t-raised, #302b3c); border: 1px solid var(--t-line, #6d6079); font-size: 12px; color: var(--t-text, var(--ivory)); }
+.egg-arrive__chip img { width: 30px; height: 30px; margin: -6px -4px -6px -6px; object-fit: contain; }
+.egg-arrive__note { margin: 0 0 14px; font-size: 13px; line-height: 1.6; color: var(--t-muted, #d6cadc); }
+.egg-arrive__actions { display: grid; grid-template-columns: 1fr 1.3fr; gap: 10px; }
+.egg-arrive__actions .btn { width: 100%; min-height: 44px; margin: 0; }
+.egg-arrive__later { background: transparent !important; border: 1px solid var(--t-line, #6d6079) !important; color: var(--t-muted, #d6cadc) !important; box-shadow: none !important; }
+
+/* ---------- B：底部浮出條 ---------- */
+.egg-banner {
+  position: fixed; z-index: 45; left: 50%; bottom: calc(var(--safe-bottom) + 86px); width: min(calc(100vw - 24px), 406px);
+  display: grid; grid-template-columns: 52px 1fr auto 22px; align-items: center; gap: 10px; padding: 10px 8px 10px 10px;
+  border-radius: 18px; border: 1px solid #e8c4a8aa; color: var(--t-text, var(--ivory));
+  background: linear-gradient(120deg, color-mix(in srgb, var(--t-panel, #24232f) 94%, #f0a35e) 0%, var(--t-panel, #24232f) 70%);
+  box-shadow: 0 10px 30px #00000066, inset 0 1px 0 #ffffff1a;
+  transform: translate(-50%, 140%); opacity: 0; pointer-events: none; transition: transform .45s cubic-bezier(.3,1.35,.5,1), opacity .3s ease;
+}
+.egg-banner.is-on { transform: translate(-50%, 0); opacity: 1; pointer-events: auto; }
+.egg-banner__art { position: relative; width: 52px; height: 52px; border-radius: 14px; background: radial-gradient(circle at 50% 55%, #ffe7cf55, transparent 70%); }
+.egg-banner__art img { width: 64px; height: 64px; margin: -6px; object-fit: contain; filter: drop-shadow(0 4px 8px #00000055); }
+.egg-banner.is-on .egg-banner__art img { animation: eggDrop .8s cubic-bezier(.3,1.25,.5,1) both, eggWobble 2.6s ease-in-out .8s infinite; }
+.egg-banner__text { min-width: 0; display: grid; gap: 1px; }
+.egg-banner__text small { font: 600 10px/1.3 var(--font-body); letter-spacing: .08em; color: #f0b98a; }
+.egg-banner__text b { font: 600 15px/1.35 var(--font-display); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.egg-banner__text em { font-style: normal; font-size: 11px; color: var(--t-muted, #d6cadc); }
+.egg-banner__go { min-height: 38px; padding: 0 12px; border: 0; border-radius: 99px; background: linear-gradient(180deg, #f6c08f, #e08e5a); color: #3a1f12; font: 700 13px/1 var(--font-body); }
+.egg-banner__x { width: 22px; height: 38px; padding: 0; border: 0; background: none; color: var(--t-muted, #d6cadc); font-size: 18px; opacity: .7; }
+
+/* ---------- C：首頁小蛋泡泡 ---------- */
+.egg-bubble {
+  position: relative; display: grid; place-items: center; width: 44px; height: 44px; margin: 2px 0 14px; padding: 0;
+  border-radius: 50%; border: 1px solid #f0c49c; background: radial-gradient(circle at 50% 40%, #4a3533, #241a1f); box-shadow: 0 0 0 3px #f0a35e22, 0 6px 14px #00000055;
+}
+.egg-bubble[hidden] { display: none; }
+.egg-bubble img { width: 44px; height: 44px; object-fit: contain; animation: eggWobble 2.4s ease-in-out infinite; }
+.egg-bubble b { position: absolute; top: -6px; right: -8px; min-width: 22px; height: 18px; padding: 0 5px; border-radius: 99px; background: linear-gradient(180deg, #f0a35e, #d96a3a); color: #fff; border: 1.5px solid #ffe3c2; font: 700 10px/15px var(--font-body); }
+.egg-bubble small { position: absolute; bottom: -17px; left: 50%; transform: translateX(-50%); white-space: nowrap; font-size: 11px; color: #ffe3c2; text-shadow: 0 1px 3px #000; }
+.egg-bubble.is-pop { animation: eggBubblePop .7s cubic-bezier(.3,1.6,.5,1); }
+@keyframes eggBubblePop { 0% { transform: scale(.2); opacity: 0; } 70% { transform: scale(1.15); opacity: 1; } 100% { transform: none; } }
+.egg-bubble::after { content: ''; position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid #f0a35e; opacity: 0; animation: eggRing 2.4s ease-out infinite; }
+@keyframes eggRing { 0% { transform: scale(.9); opacity: .8; } 100% { transform: scale(1.2); opacity: 0; } }
+
+/* 淺色主題 */
+:root[data-theme="cream"] .egg-bubble, :root[data-theme="sakura"] .egg-bubble, :root[data-theme="daylight"] .egg-bubble { background: radial-gradient(circle at 50% 40%, #fff8f0, #f6dcc6); }
+:root[data-theme="cream"] .egg-bubble small, :root[data-theme="sakura"] .egg-bubble small, :root[data-theme="daylight"] .egg-bubble small { color: var(--t-text); text-shadow: 0 1px 2px #fff; }
+:root[data-theme="cream"] .egg-banner__text small, :root[data-theme="sakura"] .egg-banner__text small, :root[data-theme="daylight"] .egg-banner__text small { color: #b4602c; }
+
+@media (prefers-reduced-motion: reduce) {
+  .egg-arrive.is-in .egg-arrive__shell, .egg-arrive.is-in .egg-arrive__halo, .egg-arrive.is-in .egg-arrive__spark, .egg-banner.is-on .egg-banner__art img, .egg-bubble img, .egg-bubble::after, .egg-bubble.is-pop, .egg-new-dot.is-pill { animation: none; }
+  .egg-arrive__spark { opacity: .8; }
+  .egg-banner { transition: opacity .2s; }
+}

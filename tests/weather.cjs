@@ -4,6 +4,7 @@ const {chromium}=require('playwright'),assert=require('node:assert/strict');
 const key='siang-collector:v1';let weather={code:61,precip:1.2};let fail=false;
 const ctx=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce',geolocation:{latitude:24.1372,longitude:120.6869},permissions:['geolocation'],timezoneId:'Asia/Taipei'});await ctx.addInitScript(()=>{globalThis.SIANG_NO_DAILY_EXPLORE=true;});
 await ctx.route('https://api.open-meteo.com/**',route=>fail?route.abort():route.fulfill({contentType:'application/json',headers:{'access-control-allow-origin':'*'},body:JSON.stringify({current:{weather_code:weather.code,precipitation:weather.precip}})}));
+await ctx.addInitScript(()=>{try{localStorage.setItem('siang-collector:egg-style','c')}catch{}}); // 收到蛋的小卡另有 egg-arrive.cjs 測
 const p=await ctx.newPage();const errs=[];p.on('pageerror',e=>errs.push(e.message));
 await p.clock.install({time:new Date('2026-11-16T14:00:00+08:00')});
 await p.goto('http://127.0.0.1:8000');await p.locator('#intro-ok').click();await p.evaluate(()=>localStorage.setItem('siang-collector:explore-intro:v1','1'));

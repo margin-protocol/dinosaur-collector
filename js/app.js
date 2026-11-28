@@ -90,6 +90,7 @@ import { playHatchFx } from './hatch-fx.js';
 import { playLabFx } from './lab-fx.js';
 import { refreshPush } from './push.js';
 import { setupNotify, msgPushOn } from './notify-ui.js';
+import { setupEggArrive, clearNewEggs } from './egg-arrive.js';
 import { queueTimerSync, syncTimers } from './push-timers.js';
 import { PRESENTER_KEY, selectedPresenter, presenterCopy, recentPresenters, rememberPresenter } from './wish-presenter.js';
 
@@ -1697,6 +1698,7 @@ $('presenter-list').addEventListener('click', event => {
 eggButton.addEventListener('click', onEggTap);
 $('open-eggs').addEventListener('click', () => {
   state = loadState(); sideTarget = null; eggCategory = null; renderEggChoices(); $('egg-picker-feedback').textContent = ''; $('egg-picker').showModal(); syncRoomActivity();
+  clearNewEggs();
 });
 $('egg-picker').addEventListener('close', () => { if (!$('egg-odds').dataset.back) sideTarget = null; });
 $('close-eggs').addEventListener('click', () => $('egg-picker').close());
@@ -3409,6 +3411,9 @@ void autoBackup().catch(() => {}).then(() => syncFromCloud(true));
 if (cloudConfig()?.kind === 'siang') void msgPushOn().then((on) => on && refreshPush(cloudConfig().token)).catch(() => {});
 // 回家／討伐提醒：存檔一變就重排（等 1.5 秒、內容一樣不送）；打開遊戲時也送一次
 onSave(() => queueTimerSync(loadState));
+// 收到蛋的提示（湘 11/28）：任何地方發了蛋都會跳出來，並在「研究者手記／培育／選擇蛋」標新蛋數
+const EGG_NOTICE_STYLE = globalThis.__EGG_STYLE || (() => { try { return localStorage.getItem('siang-collector:egg-style') || 'a'; } catch { return 'a'; } })();
+setupEggArrive({ eggs: EGGS, characters: CHARACTERS, style: () => EGG_NOTICE_STYLE, buzz, openPicker: () => { showView('incubate'); setTimeout(() => $('open-eggs').click(), 60); } });
 void syncTimers(loadState()).catch(() => {});
 setInterval(() => { if (!document.hidden) void syncFromCloud(); }, 10 * 60 * 1000);
 void handleDateHash();

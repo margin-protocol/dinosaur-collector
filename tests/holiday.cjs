@@ -2,7 +2,7 @@
 const {chromium}=require('playwright'),assert=require('node:assert/strict');
 (async()=>{const b=await chromium.launch({...(process.env.CHROMIUM_PATH?{executablePath:process.env.CHROMIUM_PATH}:{}),args:['--no-sandbox']});
 const errs=[];const key='siang-collector:v1';
-const page=async(time)=>{const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce',timezoneId:'Asia/Taipei'});const p=await c.newPage();p.on('pageerror',e=>errs.push(e.message));await p.clock.install({time:new Date(time)});await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');return {c,p,save:()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key)};};
+const page=async(time)=>{const c=await b.newContext({viewport:{width:390,height:844},isMobile:true,hasTouch:true,reducedMotion:'reduce',timezoneId:'Asia/Taipei'});await c.addInitScript(()=>{try{localStorage.setItem('siang-collector:egg-style','c')}catch{}});const p=await c.newPage();p.on('pageerror',e=>errs.push(e.message));await p.clock.install({time:new Date(time)});await p.goto('http://127.0.0.1:8000');await p.click('#intro-ok');return {c,p,save:()=>p.evaluate(k=>JSON.parse(localStorage.getItem(k)),key)};};
 // valentine window
 let {c,p,save}=await page('2027-02-12T10:00:00+08:00');
 await p.evaluate(k=>{const s=JSON.parse(localStorage.getItem(k));s.hatched=1;s.dex={'001':{at:'x'}};s.egg={id:'ordinary',warmth:0,since:'2027-02-01T00:00:00Z'};localStorage.setItem(k,JSON.stringify(s));},key);
