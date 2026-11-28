@@ -3,6 +3,7 @@ import { levelOf, MAX_LEVEL } from './affection.js';
 import { inkCount, INKS } from './studio-jh.js';
 import { siangMailCount } from './letters.js';
 import { MAIN_ISLAND } from './geo.js';
+import { guguOn, pagesOwned, shelfCleared, SHELF, GUGU_PAGES } from './gugu.js';
 import { sideOn, stageWon, lineCleared, MAIN_COUNTY, hasFeat, lineRan } from './side.js';
 import { CHARACTERS as SIDE_CHARS } from './eggs.js';
 const ANIMAL_ALL = Object.keys(SIDE_CHARS).filter((no) => SIDE_CHARS[no].series === 'animals' && !SIDE_CHARS[no].sidePreview && no !== '119'); // 企劃定 14 位；通關送的 119 不算
@@ -101,6 +102,13 @@ export const ACHIEVEMENTS = [
   { id: 'win-2000', group: '討伐', title: '身經千戰', hint: '討伐打贏 2000 場', goal: 2000, value: (s) => s.battle?.wins || 0, reward: 300 },
   { id: 'win-5000', group: '討伐', title: '戰無不勝', hint: '討伐打贏 5000 場', goal: 5000, value: (s) => s.battle?.wins || 0, reward: 600 },
   { id: 'stars-all', group: '討伐', title: '滿天星', hint: '主線討伐關卡全部拿到三星', goal: () => mainStages().length * 3, value: mainStars, reward: 100 },
+  // 書靈咕咕（湘 11/28 A＋B）：禁書書頁＋書架層數。上線前只有測試服有
+  ...(guguOn() ? [
+    { id: 'gugu-page-1', group: '討伐', title: '借到禁書了', hint: '從書靈咕咕那裡拿到第一頁禁書', goal: 1, value: (s) => Math.min(1, pagesOwned(s).length), reward: 30 },
+    { id: 'gugu-page-all', group: '隱藏', title: '本咕才沒有在關心你們', hint: '？？？', reveal: '集齊全部八頁《咕咕禁書》，揭開檔案館最不可告人的秘密。', goal: GUGU_PAGES.length, value: (s) => pagesOwned(s).length, reward: 100, secret: true },
+    { id: 'gugu-floor-10', group: '討伐', title: '書架攀登者', hint: '咕咕的書架爬到第 10 層', goal: 10, value: (s) => shelfCleared(s), reward: 50 },
+    { id: 'gugu-floor-30', group: '討伐', title: '書架之巔', hint: `咕咕的書架爬到第 ${SHELF.max} 層`, goal: SHELF.max, value: (s) => shelfCleared(s), reward: 150 },
+  ] : []),
   { id: 'unlucky-10', group: '收藏', title: '希望尚存', hint: '累計孵到重複的小湘 10 次（普通非酋小湘會來找你）', goal: 10, value: (s) => s.dupTotal || 0, reward: 30 },
   { id: 'unlucky-50', group: '收藏', title: '希望崩塌', hint: '累計孵到重複的小湘 50 次（中級非酋小湘會來找你）', goal: 50, value: (s) => s.dupTotal || 0, reward: 60 },
   { id: 'unlucky-100', group: '收藏', title: '非酋之道', hint: '累計孵到重複的小湘 100 次（究級非酋小湘會來找你）', goal: 100, value: (s) => s.dupTotal || 0, reward: 100 },

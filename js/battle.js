@@ -11,6 +11,7 @@ import { levelOf } from './affection.js';
 import { ensureGifts } from './gifts.js';
 import { todayKey } from './wishes.js';
 import { GUGU_REVIEWS, REVIEW_ORDER } from './gugu-reviews.js';
+import { guguOn, shelfFloor, floorPower, floorBadges, recordGugu, milestoneText, GUGU_BOOK, GUGU_PAGES } from './gugu.js';
 import { HERO_SHOP, HERO_LINES, PARTY_LINES, PARTY_REPORT, heroOffer } from './badge-heroes.js';
 import { WEATHER_LINES } from './weather-lines.js';
 import { RECIPE_LINES } from './recipe-lines.js';
@@ -172,6 +173,7 @@ export function ensureBattle(state) {
     weekBest: Number.isSafeInteger(old.weekBest) ? old.weekBest : 0,
     wildWins: Number.isSafeInteger(old.wildWins) ? old.wildWins : 0,
     pages: Array.isArray(old.pages) ? old.pages.filter(isStr) : [], // 預留：收集到的特殊書頁 id
+    ...(old.gugu && typeof old.gugu === 'object' ? { gugu: { floor: old.gugu.floor | 0, dry: old.gugu.dry | 0 } } : {}), // 咕咕書架層數＋禁書保底（沒打過就不寫進存檔）
     ...(isStr(old.nightDay) ? { nightDay: old.nightDay } : {}), // 連戰到天亮：最後一次用的本地日期（沒用過就不寫進存檔）
   };
   ensureWild(state);
@@ -180,6 +182,7 @@ export function ensureBattle(state) {
 
 // 章節敵人或野生小怪（wild:<id>）都用這個取得資料
 export function enemyFor(state, key) {
+  if (key === 'gugu' && guguOn()) { const floor = shelfFloor(state); return { key, ...ENEMIES.gugu, power: floorPower(floor), floor }; } // 書架層數：越爬越強
   if (ENEMIES[key]) return { key, ...ENEMIES[key] };
   if (typeof key === 'string' && key.startsWith('wild:')) {
     const w = state.battle?.wild?.list?.find((x) => x.key === key) || state.battle?.active?.find((a) => a.enemy === key)?.snapshot;
@@ -399,7 +402,7 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
   const loot = enemy.wild
     ? (win ? { badges: Math.max(1, Math.round((enemy.boss ? 3 : 1) * enemy.reward)), energy: Math.round(enemy.power * 0.4 * enemy.reward), fossils: (enemy.trait.id === 'shiny' ? 3 : 0) + (enemy.boss ? 2 : 0) } : { badges: 0, energy: 5, fossils: 0 })
     : win
-      ? { badges: enemy.boss ? 3 : 1, energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
+      ? { badges: enemy.boss ? 3 : enemy.floor ? floorBadges(enemy.floor) : 1, energy: Math.round(enemy.power * (0.5 + 0.1 * stars)), fossils: enemy.boss ? 3 : 0, firstBoss: enemy.boss && !prev.clears }
       : { badges: 0, energy: 5, fossils: 0 };
   // 系列支線：化石另外算（recordSideRun），不送願望蛋；經濟制裁＝能量減半
   if (sd) { loot.fossils = 0; loot.firstBoss = false; if (f.sideSkill?.lootHalf) loot.energy = Math.floor(loot.energy / 2); }
@@ -414,13 +417,13 @@ export function startBattle(state, enemyId, nos, { now = new Date(), rand = Math
     for (let k = 1; k < runs; k++) {
       const w = rand() < f.chance; if (w) wins += 1;
       const st2 = starsOf(f.ratio, w);
-      sum.badges += w ? (enemy.boss ? 3 : 1) : 0; sum.energy += w ? Math.round(enemy.power * (0.5 + 0.1 * st2)) : 5; sum.fossils += w && enemy.boss ? 3 : 0;
+      sum.badges += w ? (enemy.boss ? 3 : enemy.floor ? floorBadges(enemy.floor) : 1) : 0; sum.energy += w ? Math.round(enemy.power * (0.5 + 0.1 * st2)) : 5; sum.fossils += w && enemy.boss ? 3 : 0;
     }
     for (const k of ['badges', 'energy', 'fossils']) loot[k] = Math.round(sum[k] * NIGHT.mult);
     nightInfo = { runs, wins, mult: NIGHT.mult };
     state.battle.nightDay = nightDayKey(now);
   }
-  const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries, ...(f.sideSkill?.lootHalf ? { lootHalf: true } : {}), ...(nightInfo ? { night: nightInfo } : {}) };
+  const report = { win, score, stars, ratio: Math.round(f.ratio * 100) / 100, power: f.total, enemyPower: enemy.power, weakHit: f.weakHit, sameSeries: f.sameSeries, heroParty: f.heroParty, bond: f.bond?.id || null, discovered: discovered?.id || null, log, advice, loot, prevBest: prev.best, prevLast: prev.last, tries: prev.tries, ...(enemy.floor ? { floor: enemy.floor } : {}), ...(f.sideSkill?.lootHalf ? { lootHalf: true } : {}), ...(nightInfo ? { night: nightInfo } : {}) };
   if (nightInfo) log.push(`🌙 連戰到天亮｜一路打了 ${nightInfo.runs} 場、贏了 ${nightInfo.wins} 場，獎勵合計打 5 折帶回來`);
   if (enemy.story && !enemy.wild && !ev && !b.story[`${enemyId}:before`]) b.story[`${enemyId}:before`] = iso(now); // 看過 Boss 開場故事
   const battle = { id: `${now.getTime().toString(36)}-${enemyId}`, enemy: enemyId, nos, start: iso(now), until: iso(new Date(now.getTime() + (IS_TEST ? TEST_BATTLE_MS : (nightInfo ? NIGHT.hours * 60 : minutes) * 60e3))), report, ...(nightInfo ? { night: true } : {}), ...(wildEntry ? { snapshot: wildEntry } : ev || sd ? { snapshot: enemy } : {}) };
@@ -464,6 +467,7 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
     st.tries += 1; st.last = r.score;
     if (r.win) { st.clears += 1; st.stars = Math.max(st.stars, r.stars); if (st.clears === 1 && !st.firstAt) st.firstAt = now.toISOString(); }
   }
+  const guguGain = battle.enemy === 'gugu' && guguOn() ? recordGugu(state, r, rand) : null; // 咕咕：爬層、里程碑、禁書書頁
   const record = r.score > (enemy.wild || isEvent || isSide ? r.prevBest : st.best); if (!enemy.wild && !isEvent && !isSide && record) st.best = r.score;
   const best = enemy.wild ? b.weekBest : st.best;
   b.badges += r.loot.badges; state.energy += r.loot.energy; if (r.loot.fossils) state.fossils = (state.fossils || 0) + r.loot.fossils;
@@ -476,12 +480,13 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   for (const no of battle.nos) b.rest[no] = restUntil;
   // 連戰到天亮：每一場都算進討伐場數／勝場（成就用）；首勝、信物、劇情照舊只看第一場
   if (r.night?.runs > 0) { b.total += r.night.runs; b.wins += Math.max(0, r.night.wins | 0); } else { b.total += 1; if (r.win) b.wins += 1; }
-  const gains = [r.night && `🌙 連戰 ${r.night.runs} 場（贏 ${r.night.wins} 場）· 獎勵 5 折`, r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.daily && `☀️ 今日首勝：${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.daily}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`, evGain?.title && `五件信物收齊：稱號「${EVENT_DEFS[enemy.event]?.titles?.[evGain.title] || ''}」`, sideGain?.fossils && `+${sideGain.fossils} 化石${sideGain.first ? '（首勝）' : ''}`, r.lootHalf && '💰 經濟制裁：能量、化石減半', sideGain?.candy && `🍬 ${SERIES[sideGain.series]?.short || ''}星光糖 +${sideGain.candy}`, sideGain?.keepsake && `信物「${sideGain.keepsake.name}」`, sideGain?.title && `全線三星：稱號「${sideGain.title}」`, sideGain?.complete && `「${sideGain.lineName}」全線通關！`, sideGain?.resident && `🥚 ${CHARACTERS[sideGain.resident]?.name || ''}的紀念蛋送到蛋架了`].filter(Boolean);
+  const gains = [r.night && `🌙 連戰 ${r.night.runs} 場（贏 ${r.night.wins} 場）· 獎勵 5 折`, r.loot.badges && `徽章 +${r.loot.badges}`, r.loot.energy && `+${r.loot.energy} 能量`, r.loot.fossils && `+${r.loot.fossils} 化石`, r.loot.firstBoss && '第一次打倒 Boss：願望蛋 +1', r.loot.ingredients?.length && `食材：${ingredientText(r.loot.ingredients)}`, r.loot.starBonus && `再次三星 ⭐ +${r.loot.starBonus.fossils} 化石`, evGain?.tokens && `${EVENT_DEFS[enemy.event]?.token.icon || ''} ${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.tokens}`, evGain?.daily && `☀️ 今日首勝：${EVENT_DEFS[enemy.event]?.token.name || '代幣'} +${evGain.daily}`, evGain?.keepsake && `信物「${evGain.keepsake.name}」`, evGain?.title && `五件信物收齊：稱號「${EVENT_DEFS[enemy.event]?.titles?.[evGain.title] || ''}」`, sideGain?.fossils && `+${sideGain.fossils} 化石${sideGain.first ? '（首勝）' : ''}`, r.lootHalf && '💰 經濟制裁：能量、化石減半', sideGain?.candy && `🍬 ${SERIES[sideGain.series]?.short || ''}星光糖 +${sideGain.candy}`, sideGain?.keepsake && `信物「${sideGain.keepsake.name}」`, sideGain?.title && `全線三星：稱號「${sideGain.title}」`, sideGain?.complete && `「${sideGain.lineName}」全線通關！`, sideGain?.resident && `🥚 ${CHARACTERS[sideGain.resident]?.name || ''}的紀念蛋送到蛋架了`, guguGain?.floor && `📚 爬上書架第 ${guguGain.floor} 層`, guguGain?.milestone && `🏆 第 ${guguGain.milestone.floor} 層里程碑：${milestoneText(guguGain.milestone)}`, guguGain?.page && `📜 禁書一頁「${guguGain.page.title}」（${guguGain.pages} / ${GUGU_PAGES.length}）`].filter(Boolean);
   const firstClear = r.win && st.clears === 1;
   // 異世活動：第一次通關才在戰報播「打完後」（MO-05 再接上卷結尾）；解鎖紀錄在 state.events[id].story
   const ksDef = isEvent ? EVENT_DEFS[enemy.event]?.keepsakes : null; // 拿到信物＝播那件的小劇情；收齊再接「收齊」
   const story = isEvent ? ((evGain?.first && enemy.story ? [enemy.story.after, enemy.story.ending] : evGain?.keepsake ? [evGain.keepsake.story, evGain.complete && ksDef?.completeStory] : []).filter(Boolean).join('\n') || null)
     : isSide ? (sideGain?.keepsake ? `【${sideGain.keepsake.name}】${sideGain.keepsake.text}` : null)
+    : guguGain?.page ? [`咕咕：${GUGU_BOOK.drop}`, `【禁書・${guguGain.page.title}】`, guguGain.page.text, `咕咕批註：${guguGain.page.note}`, ...(guguGain.complete ? ['── 八頁收齊了 ──', ...GUGU_BOOK.complete.map((l) => `咕咕：${l}`), `稱號「${GUGU_BOOK.title_reward.name}」：${GUGU_BOOK.title_reward.text}`] : [])].join('\n')
     : enemy.story && r.win && !b.story[`${battle.enemy}:after`] ? (b.story[`${battle.enemy}:after`] = now.toISOString(), enemy.story.after) : null;
   const clue = firstClear && enemy.clue ? enemy.clue : null;
   // 咕咕書評：依結果挑一種，結算時就決定並存起來（檔案館讀存好的，不會每次重抽）
@@ -491,7 +496,7 @@ export function collectBattle(state, id, now = new Date(), rand = Math.random) {
   const note = observe(kind, r, enemy, prevStage);
   const review = lines.length ? { kind, text: lines[Math.floor(rand() * lines.length) % lines.length], ...(note ? { note } : {}), at: now.toISOString() } : null;
   if (!enemy.wild && !isEvent && !isSide) { st.lastWin = r.win; if (review) st.review = review; }
-  return { ...battle, report: r, record, best, starGift: gift, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild), event: evGain ? { id: enemy.event, stage: enemy.eventStage, ...evGain } : null, side: sideGain ? { line: enemy.side, stage: enemy.sideStage, ...sideGain } : null, ...(isEvent || isSide ? { snapshot: undefined, eventEnemy: enemy } : {}) };
+  return { ...battle, report: r, record, best, starGift: gift, delta: r.tries ? r.score - r.prevLast : null, gains, story, clue, review, wild: Boolean(enemy.wild), ...(guguGain ? { gugu: guguGain } : {}), event: evGain ? { id: enemy.event, stage: enemy.eventStage, ...evGain } : null, side: sideGain ? { line: enemy.side, stage: enemy.sideStage, ...sideGain } : null, ...(isEvent || isSide ? { snapshot: undefined, eventEnemy: enemy } : {}) };
 }
 
 // 徽章兌換專屬蛋：孵化後才加入隊伍，不進隨機蛋池

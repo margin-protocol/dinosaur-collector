@@ -1449,3 +1449,16 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .team-glance__add input { box-sizing:border-box; width:100%; min-width:0; min-height:40px; padding:8px; background:var(--t-panel); color:var(--t-text); border:1px solid var(--t-line); border-radius:6px; font:13px var(--font-display); }
 .team-glance__add small { color:var(--t-muted); font:11px/1.7 var(--font-display); }
 .battle-stage-trips { margin:10px 0 4px; }
+/* 咕咕的禁書（湘 11/28 A）：羊皮紙書頁 */
+#battle-gift-hint { white-space:pre-line; }
+.archive-card.gugu-page { background:linear-gradient(180deg,#f3e2c214,#e3b6a00d); border-color:#e3c99a40; }
+.gugu-page__top { display:grid; grid-template-columns:42px 1fr; gap:10px; align-items:center; }
+.gugu-page__top img { width:42px; height:42px; object-fit:contain; }
+.gugu-page__top small { display:block; font-size:10px; letter-spacing:.08em; color:var(--rose-gold); } .gugu-page__top b { font-size:14px; color:#f6e6dc; }
+.gugu-page .archive-text p { margin:0; font-size:13px; line-height:1.75; }
+.gugu-page__note { margin:10px 0 0; font-size:12px; color:var(--rose-gold); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .archive-card.gugu-page { background:linear-gradient(180deg,#fff8ec,var(--t-raised)); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.gugu-page__top b,.gugu-page .archive-text p) { color:var(--t-text); }
+.gugu-book__warn { margin:6px 0 4px; padding:8px 12px; border-left:3px solid #c0392b88; background:#c0392b12; border-radius:0 10px 10px 0; }
+.gugu-book__warn p { margin:0; font-size:12px; line-height:1.6; color:#f6e6dccc; }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .gugu-book__warn p { color:var(--t-muted); }

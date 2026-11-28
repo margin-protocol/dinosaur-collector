@@ -80,6 +80,7 @@ import { SCENES as UNLUCKY_SCENES, unluckyDue, grantUnlucky } from './unlucky.js
 import { CHECKIN_REWARDS, ensureCheckin, checkIn as monthlyCheckIn, checkedToday, daysInMonth } from './checkin.js';
 import { battleArchive, bondArchive, travelArchive } from './archive.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
+import * as gugu from './gugu.js';
 import * as guide from './guide.js';
 import * as studio from './studio-jh.js';
 import { playMoSsrFx } from './mo-ssr-fx.js';
@@ -4399,14 +4400,14 @@ function renderBattle() {
     // 特殊關卡（EX）：還沒解鎖時整區不出現，避免劇透
     for (const x of battle.EXTRA_STAGES) {
       if (!battle.unlocked(state, x.id)) continue;
-      const e = battle.ENEMIES[x.id]; const st = b.stages[x.id];
+      const e = battle.enemyFor(state, x.id) || battle.ENEMIES[x.id]; const st = b.stages[x.id];
       const sec = document.createElement('section'); sec.className = 'battle-chapter battle-extra';
       const h = document.createElement('h3'); h.className = 'egg-choices__heading'; h.textContent = x.title;
       const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'battle-stage-card is-extra';
       btn.append(enemyArt(x.id));
       const info = document.createElement('div'); info.className = 'battle-stage-card__info'; info.innerHTML = '<small></small><b></b><span></span>';
-      info.querySelector('small').textContent = `${e.stage} · 可重複挑戰`; info.querySelector('b').textContent = e.name;
-      info.querySelector('span').textContent = st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
+      info.querySelector('small').textContent = e.floor ? `${e.stage} · 書架第 ${e.floor} 層` : `${e.stage} · 可重複挑戰`; info.querySelector('b').textContent = e.name;
+      info.querySelector('span').textContent = e.floor ? `戰力 ${e.power} · 📜 禁書 ${gugu.pagesOwned(state).length} / ${gugu.GUGU_PAGES.length}` : st?.clears ? `${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)} · 最高 ${st.best}` : `建議戰力 ${e.power}`;
       btn.append(info);
       stageFight(btn, info, x.id);
       btn.addEventListener('click', () => { battleEnemy = x.id; battlePicked = []; $('battle-status').textContent = ''; renderBattle(); });
@@ -4904,7 +4905,7 @@ function renderBattleStage() {
   const bigArt = enemyArt(id, 'is-big'); const scene = e.wild ? null : e.event || e.side ? eventScene(e) : chapterScene(id);
   if (scene) { bigArt.classList.add('has-scene'); bigArt.style.setProperty('--scene', `url("${scene}")`); }
   $('battle-enemy-art').replaceChildren(bigArt);
-  $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}`;
+  $('battle-enemy-stage').textContent = e.wild ? e.stage : `${e.stage}${e.boss ? ' · BOSS' : ''}${e.floor ? ` · 書架第 ${e.floor} 層` : ''}`;
   $('battle-enemy-name').textContent = e.name;
   $('battle-enemy-meta').textContent = `戰力 ${e.power} · 怕：${e.weak.map(sr => SERIES[sr]?.short).join('、')}系列${st?.tries ? ` · 最高 ${st.best} 分（${'★'.repeat(st.stars)}${'☆'.repeat(3 - st.stars)}）` : ''}`;
   $('battle-story').hidden = !e.story; if (e.story) setParas($('battle-story'), e.side ? [`${e.code}《${e.title}》`, e.story.before, ...(st?.clears ? ['── 打完後 ──', e.story.after] : [])].join('\n') : e.event && st?.clears ? [e.story.before, '── 打完後 ──', e.story.after, e.story.ending && (e.eventStage === 'mo-05' ? '── 上卷結尾 ──' : '── 尾聲 ──'), e.story.ending].filter(Boolean).join('\n') : e.story.before); // 異世活動：通關後在關卡頁可以重看整段
@@ -4938,7 +4939,10 @@ function renderBattleStage() {
   $('battle-enemy-intro').textContent = e.intro;
   $('battle-gift-hint').hidden = Boolean(e.wild || e.event || (e.side && !e.skill));
   if (e.side && e.skill) { const k = side.SKILL_INFO[e.skill]; $('battle-gift-hint').textContent = `⚔️ 將軍技能「${k.name}」：${k.text}。破解：${k.counter}`; }
-  if (!e.wild && !e.event && !e.side) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
+  if (e.floor) { // 咕咕（湘 11/28 A＋B）：書架層數＋禁書
+    const ms = gugu.nextMilestone(state); const top = gugu.shelfCleared(state) >= gugu.SHELF.max;
+    $('battle-gift-hint').textContent = `📚 ${top ? `已經爬到最頂層（第 ${gugu.SHELF.max} 層）了！` : `打贏就爬上第 ${e.floor} 層，咕咕會變強，獎勵也變多。`}${ms ? `第 ${ms.floor} 層里程碑：${gugu.milestoneText(ms)}。` : ''}\n📜 禁書 ${gugu.pagesOwned(state).length} / ${gugu.GUGU_PAGES.length}：打贏有機會掉一頁，連續 4 場沒掉第 5 場一定掉。`;
+  } else if (!e.wild && !e.event && !e.side) $('battle-gift-hint').textContent = (st?.stars || 0) >= 3 ? `⭐ 已經三星了！之後每次再打到三星 +${battle.STAR_BONUS.fossils} 化石` : `🎁 第一次打到三星，收下戰報時自動送：${battle.starGiftText({ ...battle.STAR_GIFT, ingredients: [] })}、本章食材 1 份`;
   const busy = allBusy(); const now = Date.now();
   const owned = Object.keys(CHARACTERS).filter(no => state.dex[no]);
   // 可以出戰的排前面（照戰力），休息、忙碌的放後面，進關卡就能直接挑還在家的
@@ -5290,7 +5294,18 @@ function renderArchive() {
       const sec = el('section', 'archive-section'); sec.append(el('h3', 'archive-section__title', x.title), stageCard(x.file)); body.append(sec);
     }
     const pages = el('section', 'archive-section');
-    pages.append(el('h3', 'archive-section__title', `特殊書頁 ${ba.pages.owned.length}`), lockedCard('這一頁還是空白的……咕咕說，有些故事要等時候到了才會出現。'));
+    if (!ba.pages.slots.length) pages.append(el('h3', 'archive-section__title', `特殊書頁 ${ba.pages.owned.length}`), lockedCard('這一頁還是空白的……咕咕說，有些故事要等時候到了才會出現。'));
+    else { // 咕咕的禁書（湘 11/28 方案 A）：拿到的照順序顯示，沒拿到的是空白頁
+      const own = new Set(ba.pages.owned); const n = ba.pages.slots.filter(p => own.has(p.id)).length;
+      pages.append(el('h3', 'archive-section__title', `${gugu.GUGU_BOOK.title} ${n} / ${ba.pages.slots.length}`), (() => { const w = el('div', 'gugu-book__warn'); w.append(...gugu.GUGU_BOOK.warning.split('\n').map(t => el('p', '', t))); return w; })(), el('p', 'archive-note', '打贏書靈咕咕有機會掉一頁。連續 4 場沒掉，第 5 場一定會掉。'));
+      for (const p of ba.pages.slots) {
+        if (!own.has(p.id)) { pages.append(lockedCard('這一頁被咕咕藏起來了……打贏牠才搶得到。')); continue; }
+        const c = el('div', 'archive-card gugu-page'); const top = el('div', 'gugu-page__top');
+        top.append(siangImg(p.no), (() => { const h = el('div'); h.append(el('small', '', `禁書 · ${CHARACTERS[p.no]?.name || ''}`), el('b', '', p.title)); return h; })());
+        const note = el('p', 'gugu-page__note', `咕咕批註：${p.note}`);
+        c.append(top, storyBox(p.text), note); pages.append(c);
+      }
+    }
     body.append(pages);
   } else if (archiveTab === 'bond') {
     // 小湘越來越多（湘 11/20）：依系列篩選；解鎖的故事收合成一行，沒解鎖的縮成小格子

@@ -3,6 +3,7 @@
 // 沒解鎖的內容只回傳 locked，不帶標題和內文，避免劇透。
 import { CHARACTERS } from './eggs.js';
 import { ENEMIES, CHAPTERS, EXTRA_STAGES, SPECIAL_PAGES, unlocked } from './battle.js';
+import { guguOn, GUGU_PAGES } from './gugu.js';
 import { levelOf, bondText } from './affection.js';
 import { STORIES, PLACES } from './errands.js';
 import { REVIEW_LABEL } from './gugu-reviews.js';
@@ -47,7 +48,7 @@ export function battleArchive(state) {
   return {
     chapters, extras,
     collected: files.filter((f) => f.cleared).length, total: files.length,
-    pages: { owned: state.battle?.pages || [], slots: SPECIAL_PAGES }, // 預留：特殊書頁
+    pages: { owned: state.battle?.pages || [], slots: guguOn() ? GUGU_PAGES : SPECIAL_PAGES }, // 特殊書頁＝咕咕的禁書（測試服先開）
   };
 }
 

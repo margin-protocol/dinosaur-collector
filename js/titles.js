@@ -6,6 +6,7 @@ import { SIDE_LINES, ensureSide, sideOn } from './side.js';
 import { CHARACTERS, SERIES } from './eggs.js';
 import { ACHIEVEMENTS } from './achievements.js';
 import { candyOf } from './candy.js';
+import { guguOn, pagesOwned, GUGU_PAGES, GUGU_BOOK } from './gugu.js';
 
 const ACH_GROUP = { 孵化: '孵化', 收藏: '收藏', 願望: '願望', 旅行: '旅行', 陪伴: '陪伴', 廚房: '廚房', 討伐: '討伐', 隱藏: '隱藏' };
 export const TITLE_GROUPS = ['限定', '孵化', '收藏', '願望', '旅行', '陪伴', '廚房', '討伐', '隱藏', '活動', '系列支線', '特別'];
@@ -62,6 +63,8 @@ export function ownedTitles(state) {
     if (owned) out.push({ key: `event:${eid}:${tid}`, name, group: '活動', owned: true, how: def.name });
   }
   if (sideOn()) for (const [id, line] of Object.entries(SIDE_LINES)) if (line.title) out.push({ key: `side:${id}`, name: line.title, group: '系列支線', owned: Boolean(state.side?.lines?.[id]?.titleAt), how: `「${line.name}」全部三星` });
+  // 咕咕禁書收齊的限定稱號（湘 11/28）
+  if (guguOn()) out.push({ key: 'special:gugu-accomplice', name: GUGU_BOOK.title_reward.name, group: '限定', owned: pagesOwned(state).length >= GUGU_PAGES.length, how: `${GUGU_BOOK.title_reward.text}（收齊 ${GUGU_PAGES.length} 頁《咕咕禁書》）` });
   const got = new Set(state.title?.got || []);
   for (const m of TITLE_MILESTONES) if (m.title) out.push({ key: `special:${m.title}`, name: SPECIAL[m.title], group: '特別', owned: got.has(m.n), how: `收集 ${m.n} 個稱號` });
   return out;
