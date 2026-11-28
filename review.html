@@ -16,6 +16,7 @@
     <button type="button" role="tab" id="tab-inbox" data-tab="inbox" aria-selected="true">審核<span class="tab-count" id="inbox-count" hidden></span></button>
     <button type="button" role="tab" id="tab-make" data-tab="make" aria-selected="false">出題</button>
     <button type="button" role="tab" id="tab-all" data-tab="all" aria-selected="false">全服</button>
+    <button type="button" role="tab" id="tab-ops" data-tab="ops" aria-selected="false">營運</button>
     <button type="button" role="tab" id="tab-setup" data-tab="setup" aria-selected="false">設定</button>
   </nav>
 
@@ -73,6 +74,35 @@
     <p class="status" id="gc-status" role="status"></p>
     <div class="inbox-top"><h3>建立過的兌換碼</h3><button class="btn btn--quiet btn--small" type="button" id="gc-refresh">重新整理</button></div>
     <ul class="list" id="gc-list"></ul>
+  </section>
+
+  <!-- 營運（湘 11/28）：上線看板＋Bug 清單。資料在小湘雲端 shared/ops/，只有審核員通行碼讀得到 -->
+  <p class="hint all-locked" id="ops-locked" data-panel="ops-x" hidden>要先到「設定」登入審核員通行碼，才看得到營運資料。</p>
+  <section class="card ops" id="sec-ops-board" data-panel="ops-x" hidden>
+    <div class="inbox-top"><h2>上線看板</h2><button class="btn btn--quiet btn--small" type="button" id="ops-refresh">重新整理</button></div>
+    <div class="ops-vers">
+      <div class="ops-ver-card is-live"><small>玩家版（正式服）</small><b id="ops-live">讀取中…</b><span id="ops-live-title"></span></div>
+      <div class="ops-ver-card"><small>主分支</small><b id="ops-main">—</b></div>
+    </div>
+    <p class="hint ops-sync" id="ops-sync"></p>
+    <h3>活動開關時間 <small class="hint">台灣時間・從遊戲設定讀</small></h3>
+    <ol class="ops-times" id="ops-times"></ol>
+    <h3>這版要驗 · <span id="ops-check-version">這版</span></h3>
+    <ul class="ops-checks" id="ops-checks"></ul>
+    <form class="inline ops-check-form" id="ops-check-form"><input id="ops-check-text" maxlength="200" autocomplete="off" placeholder="加一項要驗的（例如：下卷開放後劇情順序）" aria-label="加一項這版要驗的"><button class="btn btn--small" type="submit">加</button></form>
+  </section>
+  <section class="card ops" id="ops-bugs" data-panel="ops-x" hidden>
+    <div class="inbox-top"><h2>Bug 清單</h2><button class="btn btn--small" type="button" id="ops-add">＋ 回報 bug</button></div>
+    <p class="hint">湘決定改什麼、什麼時候上；德寶修＋部署；皮寶抓 bug、複驗。「主分支已修」和「玩家版已驗」分開標。</p>
+    <div class="chips" id="ops-filter" role="group" aria-label="篩選">
+      <button type="button" class="chip" data-filter="todo" aria-pressed="true">還沒結 <span>0</span></button>
+      <button type="button" class="chip" data-filter="open" aria-pressed="false">待修 <span>0</span></button>
+      <button type="button" class="chip" data-filter="live" aria-pressed="false">待驗 <span>0</span></button>
+      <button type="button" class="chip" data-filter="verified" aria-pressed="false">已驗 <span>0</span></button>
+      <button type="button" class="chip" data-filter="all" aria-pressed="false">全部 <span>0</span></button>
+    </div>
+    <ul class="list ops-bug-list" id="ops-bug-list"></ul>
+    <p class="status" id="ops-status" role="status"></p>
   </section>
 
   <section class="card" id="sec-newbies" data-panel="setup" hidden>

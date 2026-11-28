@@ -680,11 +680,20 @@ async function refreshPostcards() {
 }
 $('postcard-history').addEventListener('toggle', () => { if ($('postcard-history').open) void refreshPostcards(); });
 
+/* ---------- 營運（湘 11/28）：用到才載入，審核室打開不會變慢 ---------- */
+let opsMod = null;
+async function openOps() {
+  if (!opsMod) { opsMod = await import('./ops-ui.js'); opsMod.initOps({ getStore: () => admin() }); }
+  if (currentTab() !== 'ops') return;
+  if (reviewerToken) void opsMod.refreshOps(); else opsMod.lockOps();
+}
+
 /* ---------- 分頁（湘 11/21：審核｜出題｜設定，打開先停在審核） ---------- */
 function showTab(name) {
   if (name === 'all') { renderAllLock(); void refreshBroadcast(); void refreshGiftCodes(); }
   document.querySelectorAll('[data-tab]').forEach((t) => t.setAttribute('aria-selected', String(t.dataset.tab === name)));
   document.querySelectorAll('[data-panel]').forEach((el) => { el.hidden = el.dataset.panel !== name || (el.id === 'all-locked' && el.dataset.ok === '1'); });
+  if (name === 'ops') void openOps();
   $('batch-bar').hidden = name !== 'inbox' || !selected.size;
   document.body.classList.toggle('has-batch', !$('batch-bar').hidden);
 }
