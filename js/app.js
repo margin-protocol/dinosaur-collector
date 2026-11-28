@@ -528,10 +528,28 @@ function renderGrowth() {
   const level = playerLevel(state);
   if (viewedChapter === null || viewedChapter > level) viewedChapter = level;
   const select = $('chapter-select');
-  if (select.options.length !== level) {
-    select.replaceChildren(...Array.from({ length: level }, (_, i) => new Option(`Lv.${i + 1}`, i + 1)));
+  // 等級是 XP 升的，沒做完的舊章節會留在歷程：選單標出來，目前這章上方提示還有幾章（湘 11/28 選「只改介面提示」）
+  const doneChapters = new Set((state.player.chapters || []).map(String));
+  const chapterMark = lv => {
+    if (doneChapters.has(String(lv))) return '';
+    const goals = growthGoals(lv).goals.map(g => goalProgress(state, g));
+    return goals.some(p => p.complete && !p.claimed) ? '可領' : lv < level ? '未完成' : '';
+  };
+  const marks = Array.from({ length: level }, (_, i) => chapterMark(i + 1));
+  const labels = marks.map((m, i) => `Lv.${i + 1}${m ? ` · ${m}` : ''}`);
+  if (select.options.length !== level || labels.some((t, i) => select.options[i].textContent !== t)) {
+    select.replaceChildren(...labels.map((t, i) => new Option(t, i + 1)));
   }
   select.value = viewedChapter;
+  const behind = marks.map((m, i) => ({ lv: i + 1, m })).filter(x => x.m && x.lv < level);
+  const behindBtn = $('chapter-behind');
+  behindBtn.hidden = !behind.length || viewedChapter !== level;
+  if (behind.length) {
+    const claimable = behind.filter(x => x.m === '可領').length;
+    const first = behind.find(x => x.m === '可領') || behind[0];
+    behindBtn.dataset.level = first.lv;
+    behindBtn.textContent = `📜 前面還有 ${behind.length} 章沒完成${claimable ? `（${claimable} 章可領）` : ''}・去 Lv.${first.lv} ⟶`;
+  }
   const chapter = growthGoals(viewedChapter);
   $('chapter-number').textContent = `CHAPTER ${pad(viewedChapter)}`;
   $('chapter-title').textContent = chapter.name;
@@ -1597,6 +1615,7 @@ for (const tab of ['daily', 'growth']) $(`tab-${tab}`).addEventListener('keydown
   }
 });
 $('chapter-select').addEventListener('change', () => { viewedChapter = Number($('chapter-select').value); renderGrowth(); });
+$('chapter-behind').addEventListener('click', event => { viewedChapter = Number(event.currentTarget.dataset.level) || null; renderGrowth(); $('chapter-title').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); });
 // 領取成長願望：ids 可一次多項（「領取已完成的願望」按鈕一次全領）
 async function claimGoals(ids, focusId) {
   if (claimBusy || !ids.length) return;

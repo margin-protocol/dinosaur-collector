@@ -111,3 +111,4 @@
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) :is(.title-chip:not(.is-empty),.title-pill[aria-pressed="true"]) { background:var(--t-selected); border-color:var(--t-accent); color:var(--t-accent); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .title-sheet__worn { background:var(--t-selected); border-color:var(--t-line); }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .title-sheet__worn span { color:var(--t-accent); }
+:root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .chapter-behind { background:var(--t-raised); color:var(--t-text); border-left-color:var(--t-accent); }
