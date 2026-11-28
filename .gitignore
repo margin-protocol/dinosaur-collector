@@ -3,3 +3,4 @@
 *.mp4
 *.mov
 *.wav
+!assets/video/island-pv.mp4

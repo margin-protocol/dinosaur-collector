@@ -2,13 +2,19 @@
 // - 常駐支線：一直開著（第一條「島嶼不歸檔」，縣市系列）
 // - 本週支線：每週一 00:00（台灣時間、可信時間）換一個系列；進度永久保留，輪回來可以補三星、補信物
 // 關卡 key＝`side:<線>:<關>`；進度存在 state.side.lines[線]
-// 上線前只有測試服（?test）看得到：SIDE_LIVE 改成 true 才對所有玩家開放。
+// 開放時間（湘 11/28 定 12/5）：之前只有測試服（?test）看得到；時間用 app 設的可信時間（events.eventNow），不用重新推版。
 import { CHARACTERS } from './eggs.js';
 import { ISLAND_STORY, ISLAND_KEEPSAKE_TEXT, ANIMALS_STORY, ANIMALS_KEEPSAKE_TEXT } from './side-story.js';
 import { nextStarCost, weekKey, MAX_CANDY_STARS } from './candy.js';
 
-export const SIDE_LIVE = false;
-export const sideOn = () => SIDE_LIVE || Boolean(globalThis.__SIANG_TEST__);
+export const SIDE_OPEN_AT = '2026-12-05T12:00:00+08:00';
+export const SIDE_OPEN_MS = Date.parse(SIDE_OPEN_AT);
+let sideClock = () => Date.now();
+export const setSideClock = (fn) => { sideClock = fn; };
+export const sideNowMs = () => sideClock();
+export const sideOn = () => Boolean(globalThis.__SIANG_TEST__) || sideClock() >= SIDE_OPEN_MS;
+// 動物（本週支線）要到第一週 12/14 才開：成就這些先藏著
+export const weeklyOn = () => Boolean(globalThis.__SIANG_TEST__) || sideClock() >= WEEKLY_ANCHOR;
 
 export const SIDE_UNLOCK = 'thunder-king'; // 打完第 2 章才開（建議戰力 60 起跳，新手打不動會挫折）
 

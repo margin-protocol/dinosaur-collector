@@ -1462,3 +1462,14 @@ body[data-view="incubate"] { background-image:linear-gradient(#15172240,#1517227
 .gugu-book__warn { margin:6px 0 4px; padding:8px 12px; border-left:3px solid #c0392b88; background:#c0392b12; border-radius:0 10px 10px 0; }
 .gugu-book__warn p { margin:0; font-size:12px; line-height:1.6; color:#f6e6dccc; }
 :root:is([data-theme="cream"],[data-theme="sakura"],[data-theme="daylight"],[data-theme="yanyu"]) .gugu-book__warn p { color:var(--t-muted); }
+
+/* 島嶼不歸檔預告片（湘 11/28） */
+.home-event--pv.has-art { background:linear-gradient(90deg,#f6ece2 0%,#f6ece2 50%,#f6ece2cc 60%,#f6ece200 80%), var(--key-art) 100% 18% / 52% auto no-repeat, #f6ece2; border-color:#b8862f66; }
+.home-event--pv .home-event__seal { background:#2f2226; color:#f3c75a; font-size:12px; }
+.home-event--pv .home-event__go { flex:none; margin-left:auto; padding:4px 9px; border-radius:999px; background:#2f2226e6; color:#f3c75a; font-size:12px; letter-spacing:.06em; position:relative; z-index:1; }
+.home-event--pv.has-art .home-event__when { margin-top:2px; font-size:11.5px; color:#8a2620; opacity:1; }
+.side-pv { padding:0; border:0; background:transparent; max-width:min(92vw, 420px); width:100%; overflow:visible; }
+.side-pv::backdrop { background:#000c; }
+.side-pv video { display:block; width:100%; max-height:78vh; aspect-ratio:9/16; object-fit:contain; border-radius:14px; background:#000; }
+.side-pv .close-button { position:absolute; right:-4px; top:-44px; color:#fff; }
+.side-pv__note { margin:10px 0 0; text-align:center; color:#f6ece2; font-size:13px; letter-spacing:.04em; }

@@ -113,6 +113,7 @@ let saveWarned = false;
 // 活動封存後剩下的代幣（墨玉）也在這裡 1:1 換成能量，只換一次
 const initialSave = await updateState(current => ({ homeBond: homeTick(current, residentsFor(current.dex), todayKey()), leftover: events.settleLeftovers(current, events.eventNow(structuredClone({ clock: current.clock }))) }));
 let state = initialSave.state;
+side.setSideClock(() => events.eventNow(structuredClone({ clock: state.clock }))); // 支線開放時間用伺服器校正過的時間
 // 舊存檔搬家（11/25）：存檔裡的照片縮圖搬到手機縮圖倉庫，存檔變小，才不會存不進去、備份也不會超過上限
 void offloadThumbs(state).then(moved => moved.size ? updateState(current => { stripThumbs(current, moved); }) : null).then(t => { if (t) state = t.state; }).catch(() => {});
 // 手機空間滿了存不進去時要講（以前會安靜地只存在記憶體裡，關掉遊戲進度就不見了）
@@ -3908,6 +3909,7 @@ function renderHomeEvent() {
   document.querySelectorAll('.home-event').forEach(n => n.remove());
   if (!state.seenIntro || !guide.isUnlocked(state, 'battle')) return;
   const nowMs = events.eventNow(structuredClone({ clock: state.clock })); const list = events.activeEvents(state, nowMs);
+  homeSidePv(el, nowMs);
   // 開跑前 7 天內：首頁放預告卡（湘 11/25），寫開始時間（台北時間）
   const live = list.find(x => x.sch.state === 'battle' || x.sch.state === 'shop') || list.find(x => x.sch.state === 'upcoming' && x.sch.startMs - nowMs <= 7 * 24 * 3600e3);
   if (!live) return;
@@ -3918,6 +3920,38 @@ function renderHomeEvent() {
   const txt = el('span', 'home-event__text'); txt.append(el('small', null, `${name} · ${sub}`), el('b', null, def.subtitle));
   if (soon) { btn.classList.add('is-soon'); txt.append(el('small', 'home-event__when', `${new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).format(sch.startMs)} 開始`)); } btn.append(seal, txt, el('span', 'home-event__go', '⟶')); document.querySelector('.view--home .home-actions').before(btn);
   btn.addEventListener('click', () => openEventHub(def.id));
+}
+// 島嶼不歸檔預告片（湘 11/28：12/5 中午開放，先播宣傳影片給玩家看；影片壓小放 assets/video）
+function sidePvConf() { return { src: 'assets/video/island-pv.mp4', poster: 'assets/video/island-pv-poster.jpg', line: 'island' }; } // 函式（renderAll 很早就跑，const 還沒初始化）
+function homeSidePv(el, nowMs) {
+  const SIDE_PV = sidePvConf();
+  if (nowMs >= side.SIDE_OPEN_MS + 7 * 24 * 3600e3) return; // 開放後再留一週
+  const open = nowMs >= side.SIDE_OPEN_MS; const line = side.SIDE_LINES[SIDE_PV.line];
+  const btn = el('button', 'home-event home-event--c home-event--pv has-art'); btn.type = 'button';
+  btn.style.setProperty('--key-art', `url("${new URL(SIDE_PV.poster, document.baseURI).href}")`);
+  btn.setAttribute('aria-label', `${line.name}宣傳影片`);
+  const seal = el('i', 'home-event__seal', '▶'); seal.setAttribute('aria-hidden', 'true');
+  const txt = el('span', 'home-event__text'); txt.append(el('small', null, open ? '系列支線 · 開放了' : '系列支線 · 預告片'), el('b', null, line.name));
+  txt.append(el('small', 'home-event__when', open ? '到討伐頁就能出發' : `${new Intl.DateTimeFormat('zh-TW', { timeZone: 'Asia/Taipei', month: 'numeric', day: 'numeric' }).format(side.SIDE_OPEN_MS)} 中午 12:00 開放`));
+  btn.append(seal, txt, el('span', 'home-event__go', '看預告'));
+  document.querySelector('.view--home .home-actions').before(btn);
+  btn.addEventListener('click', () => openSidePv(open));
+}
+function openSidePv(open) {
+  const SIDE_PV = sidePvConf();
+  let d = document.getElementById('side-pv');
+  if (!d) {
+    d = document.createElement('dialog'); d.id = 'side-pv'; d.className = 'side-pv'; d.setAttribute('aria-label', '島嶼不歸檔宣傳影片');
+    d.innerHTML = '<button class="close-button" type="button" aria-label="關閉影片">×</button><video playsinline controls preload="none"></video><p class="side-pv__note"></p>';
+    document.body.append(d);
+    const v = d.querySelector('video'); v.poster = SIDE_PV.poster;
+    d.querySelector('.close-button').addEventListener('click', () => d.close());
+    d.addEventListener('click', e => { if (e.target === d) d.close(); });
+    d.addEventListener('close', () => v.pause());
+  }
+  const v = d.querySelector('video'); if (!v.src) v.src = SIDE_PV.src;
+  d.querySelector('.side-pv__note').textContent = open ? '已經開放囉！到討伐頁的「系列支線」出發。' : `${side.SIDE_LINES[SIDE_PV.line].name}・12/5 中午 12:00 開放`;
+  d.showModal(); v.currentTime = 0; v.play().catch(() => {});
 }
 function renderWheelBadge() {
   const left = spinsLeft(state);

@@ -355,7 +355,7 @@ const CHARACTER_TABLE = {
   'MO-012': { no: 'MO-012', name: '此生護卿・湘與止水', rarity: 'UR', line: '止水：「站我身後。」小湘：「不要，我要站妳旁邊！」', image: 'mo-012-cisheng-huqing', series: 'mohen', worldRole: '此生護卿', quote: '不渡厄，不換命，妳情我願。' },
   // 再接再厲小湘（原名落榜小湘，11/19 玩家許願改名）：湘研究所沒上時用暗號送給大家（考上就送 089 研究所小湘）。台詞：data/characters/academic-087-dialogue.json（皮寶暫編 087，實際 090）
   // 島嶼守望・小湘（湘 11/27 畫）：系列支線「島嶼不歸檔」五關全通的獎勵，不進任何蛋池。文案暫稿（德寶），皮寶可改。
-  '118': { no: '118', name: '島嶼守望・小湘', rarity: 'SSR', line: '「這裡不是誰遺失的一頁。這裡是我們自己寫成的故事。」', image: 'siang-118-island-watch', series: 'county', sidePreview: true },
+  '118': { no: '118', name: '島嶼守望・小湘', rarity: 'SSR', line: '「這裡不是誰遺失的一頁。這裡是我們自己寫成的故事。」', image: 'siang-118-island-watch', series: 'county', sidePreview: '2026-12-05T12:00:00+08:00' },
   '119': { no: '119', name: '萬物共生・小湘', rarity: 'SSR', line: '「你不必可愛、不必聽話，也不必為誰帶來快樂。能夠好好活著，就已經很好了。」', image: 'siang-119-all-life', series: 'animals', sidePreview: true },
   '090': { no: '090', name: '再接再厲小湘', rarity: 'SR', line: "「沒關係啦……我本來就沒有很想讀……嗚嗚嗚可是我真的很想讀嘛！！」", image: 'siang-090-rejected', series: 'memorial', special: true },
   // 未完待續小湘（湘 11/19）：研究所小湘＋再接再厲小湘的隱藏配方。台詞：data/characters/recipe-088-dialogue.json（皮寶暫編 088，實際 091）
@@ -365,8 +365,9 @@ const CHARACTER_TABLE = {
 // 101 以後的編號是「整數樣子」的 key，JS 列舉物件時會把它們排到 001 前面，
 // 圖鑑、入住、許願對象等列表就會讓 101+ 跑到最前面。這裡讓 Object.keys／values／entries
 // 一律照編號由小到大列出，以後新增 117、118… 也不用再處理。
-// 支線還沒正式開（js/side.js SIDE_LIVE）前，sidePreview 的居民只在測試服（?test）存在，正式版圖鑑看不到。正式開支線時把 sidePreview 拿掉。
-if (!globalThis.__SIANG_TEST__) for (const [no, c] of Object.entries(CHARACTER_TABLE)) if (c.sidePreview) delete CHARACTER_TABLE[no];
+// 支線還沒正式開前，sidePreview 的居民只在測試服（?test）存在，正式版圖鑑看不到。
+// sidePreview 是日期字串＝那個時間（跟著支線開放）之後才出現；true＝只有測試服。載入時用手機時間判斷（只影響圖鑑顯示，拿到她要打完整條支線）
+if (!globalThis.__SIANG_TEST__) for (const [no, c] of Object.entries(CHARACTER_TABLE)) if (c.sidePreview === true || (typeof c.sidePreview === 'string' && Date.now() < Date.parse(c.sidePreview))) delete CHARACTER_TABLE[no];
 const byNo = (a, b) => (typeof a === 'string' && typeof b === 'string' ? Number(a) - Number(b) || a.localeCompare(b) : 0);
 export const CHARACTERS = new Proxy(CHARACTER_TABLE, {
   ownKeys: (t) => Reflect.ownKeys(t).sort(byNo),

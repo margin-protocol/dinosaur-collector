@@ -4,7 +4,7 @@ import { inkCount, INKS } from './studio-jh.js';
 import { siangMailCount } from './letters.js';
 import { MAIN_ISLAND } from './geo.js';
 import { guguOn, pagesOwned, shelfCleared, SHELF, GUGU_PAGES } from './gugu.js';
-import { sideOn, stageWon, lineCleared, MAIN_COUNTY, hasFeat, lineRan } from './side.js';
+import { sideOn, weeklyOn, stageWon, lineCleared, MAIN_COUNTY, hasFeat, lineRan } from './side.js';
 import { CHARACTERS as SIDE_CHARS } from './eggs.js';
 const ANIMAL_ALL = Object.keys(SIDE_CHARS).filter((no) => SIDE_CHARS[no].series === 'animals' && !SIDE_CHARS[no].sidePreview && no !== '119'); // 企劃定 14 位；通關送的 119 不算
 import { dishById, recipesFound, secretsFound } from './kitchen.js';
@@ -139,7 +139,9 @@ export const ACHIEVEMENTS = [
     { id: 'isl-5', group: '隱藏', title: '誰跟你一家親', hint: '？？？', reveal: '擊敗歸冊大將軍・一統', goal: 1, value: (s) => (stageWon(s, 'island', 'isl-5') ? 1 : 0), reward: 50, secret: true },
     { id: 'isl-unite', group: '隱藏', title: '島嶼大團結', hint: '？？？', reveal: '本島 19 縣市的小湘都在「島嶼不歸檔」出戰過', goal: 19, value: (s) => (s.side?.countyRan || []).filter((no) => MAIN_COUNTY.includes(no)).length, reward: 100, secret: true },
     { id: 'isl-all', group: '隱藏', title: '本頁拒絕裝訂', hint: '？？？', reveal: '完成整條「島嶼不歸檔」', goal: 1, value: (s) => (lineCleared(s, 'island') ? 1 : 0), reward: 100, secret: true },
-    // 萬物不標價（皮寶 11/27 企劃）
+  ] : []),
+  // 萬物不標價（皮寶 11/27 企劃）：本週支線 12/14 起
+  ...(weeklyOn() ? [
     { id: 'ani-1', group: '隱藏', title: '本生命非賣品', hint: '？？？', reveal: '擊敗標價商人・金秤', goal: 1, value: (s) => (stageWon(s, 'animals', 'ani-1') ? 1 : 0), reward: 30, secret: true },
     { id: 'ani-2', group: '隱藏', title: '愛心不是免責聲明', hint: '？？？', reveal: '擊敗施食師・善善', goal: 1, value: (s) => (stageWon(s, 'animals', 'ani-2') ? 1 : 0), reward: 30, secret: true },
     { id: 'ani-reptile', group: '隱藏', title: '原來蜥蜴也是動物', hint: '？？？', reveal: '帶著爬蟲類小湘擊敗施食師・善善', goal: 1, value: (s) => (hasFeat(s, 'ani-reptile') ? 1 : 0), reward: 50, secret: true },
