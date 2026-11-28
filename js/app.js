@@ -3879,7 +3879,7 @@ $('home-wheel').addEventListener('click', openWheel);
 // 首頁的活動鍵（湘 11/25）：活動開跑後（討伐中、墨玉閣還開著）直接點進討伐頁的活動區；名字用活動名
 // 位置：湘 11/25 選 C＝培育／今日願望上方的寬卡片
 function openEventHub(id) {
-  openErrands(); showErrandTab('battle'); battleEnemy = null; eventView = null; renderBattle();
+  openErrands(); showErrandTab('battle'); battleEnemy = null; eventView = null; $('battle-train').hidden = true; renderBattle();
   requestAnimationFrame(() => document.querySelector(`.event-hub[data-event="${id}"]`)?.scrollIntoView({ block: 'start', behavior: 'smooth' }));
 }
 function renderHomeEvent() {
@@ -4299,6 +4299,8 @@ function renderBattle() {
   { const nx = battle.nextTeamSlot(state); const hint = $('battle-slot-hint'); hint.hidden = !nx || su.used < battle.teamSlots(state); hint.textContent = nx ? `隊伍都派出去了。收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊（還差 ${nx.left} 位）。` : ''; }
   $('battle-active').classList.toggle('is-compact', b.active.length >= 4); // 4 隊以上改精簡列，手機上不把關卡地圖擠下去
   $('battle-active').replaceChildren(...b.active.map(a => battleTripRow(a, now)));
+  // 關卡畫面和特訓只能開一個：從戰報「再打一次」、通知等地方選了關卡就收起特訓（玩家 11/28 回報兩個疊在一起）
+  if (battleEnemy) $('battle-train').hidden = true;
   const inStage = Boolean(battleEnemy); const inTrain = !$('battle-train').hidden;
   if (!inStage) $('team-presets-glance').hidden = false;
   $('battle-map').hidden = inStage || inTrain; $('battle-stage').hidden = !inStage;
