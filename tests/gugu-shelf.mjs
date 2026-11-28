@@ -8,7 +8,7 @@ const base = () => { const s = { dex: Object.fromEntries(TEAM.map((n) => [n, { a
 let t0 = new Date('2026-11-28T14:00:00+08:00').getTime();
 const fight = (s, rand = () => 0) => { const now = new Date(t0 += 6 * 3600e3); const r = B.startBattle(s, 'gugu', TEAM, { now, rand }); assert.equal(typeof r, 'object', r); return B.collectBattle(s, r.id, new Date(now.getTime() + 3 * 3600e3), rand); };
 
-test('正式服：咕咕照舊、存檔不多欄位', () => {
+test('沒開放時：咕咕照舊、存檔不多欄位', { skip: G.GUGU_LIVE && '已經對所有玩家開放' }, () => {
   globalThis.__SIANG_TEST__ = false;
   const s = base(); assert.equal(B.enemyFor(s, 'gugu').power, 48); assert.equal(B.enemyFor(s, 'gugu').floor, undefined);
   const out = fight(s); assert.equal(out.gugu, undefined); assert.equal('gugu' in s.battle, false); assert.equal(s.battle.pages.length, 0);

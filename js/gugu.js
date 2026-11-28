@@ -4,7 +4,7 @@
 // 上線前只有測試服（?test）看得到：GUGU_LIVE 改成 true 才對所有玩家開放
 import { GUGU_PAGES, GUGU_BOOK } from './gugu-pages.js';
 
-export const GUGU_LIVE = false;
+export const GUGU_LIVE = true; // 湘 11/28 下午說直接上
 export const guguOn = () => GUGU_LIVE || Boolean(globalThis.__SIANG_TEST__);
 export { GUGU_PAGES, GUGU_BOOK };
 
