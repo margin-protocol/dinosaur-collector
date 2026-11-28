@@ -4280,6 +4280,15 @@ async function feedKitchen(no, dishId) {
     renderAll();
   } finally { kitchenBusy = false; renderKitchen(); }
 }
+function battleTripRow(a, now) { // 討伐中的一隊（上方清單、關卡頁共用）
+  const row = document.createElement('div'); const back = battle.isBack(a, now); row.className = `errand-trip${back ? ' is-back' : ''}`;
+  const who = document.createElement('div'); who.className = 'errand-trip__who'; who.append(enemyArt(a.enemy, 'is-mini'));
+  const text = document.createElement('div'); const t = document.createElement('b'); const sm = document.createElement('small');
+  t.textContent = `${a.night ? '🌙 連戰' : '討伐'} ${(battle.enemyFor(state, a.enemy) || battle.ENEMIES[a.enemy]).name}`; sm.textContent = back ? '回來了！看戰報' : `還要 ${battle.fmtMinutes(Date.parse(a.until) - now)} · ${a.nos.map(no => CHARACTERS[no].name).join('、')}`;
+  text.append(t, sm); row.append(who, text);
+  if (back) { const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.textContent = '戰報'; btn.addEventListener('click', () => void collectBattle(a.id)); row.append(btn); }
+  return row;
+}
 function renderBattle() {
   renderPresetGlance();
   renderAtlas($('team-bond-atlas'),state);
@@ -4289,15 +4298,7 @@ function renderBattle() {
   $('battle-slots').textContent = `隊伍 ${su.used} / ${battle.teamSlots(state)}${su.extra ? ` · 副本 ${su.sideUsed} / ${su.extra}` : ''}`;
   { const nx = battle.nextTeamSlot(state); const hint = $('battle-slot-hint'); hint.hidden = !nx || su.used < battle.teamSlots(state); hint.textContent = nx ? `隊伍都派出去了。收集 ${nx.need} 位小湘可以開第 ${nx.slots} 隊（還差 ${nx.left} 位）。` : ''; }
   $('battle-active').classList.toggle('is-compact', b.active.length >= 4); // 4 隊以上改精簡列，手機上不把關卡地圖擠下去
-  $('battle-active').replaceChildren(...b.active.map(a => {
-    const row = document.createElement('div'); const back = battle.isBack(a, now); row.className = `errand-trip${back ? ' is-back' : ''}`;
-    const who = document.createElement('div'); who.className = 'errand-trip__who'; who.append(enemyArt(a.enemy, 'is-mini'));
-    const text = document.createElement('div'); const t = document.createElement('b'); const sm = document.createElement('small');
-    t.textContent = `${a.night ? '🌙 連戰' : '討伐'} ${(battle.enemyFor(state, a.enemy) || battle.ENEMIES[a.enemy]).name}`; sm.textContent = back ? '回來了！看戰報' : `還要 ${battle.fmtMinutes(Date.parse(a.until) - now)} · ${a.nos.map(no => CHARACTERS[no].name).join('、')}`;
-    text.append(t, sm); row.append(who, text);
-    if (back) { const btn = document.createElement('button'); btn.type = 'button'; btn.className = 'btn'; btn.textContent = '戰報'; btn.addEventListener('click', () => void collectBattle(a.id)); row.append(btn); }
-    return row;
-  }));
+  $('battle-active').replaceChildren(...b.active.map(a => battleTripRow(a, now)));
   const inStage = Boolean(battleEnemy); const inTrain = !$('battle-train').hidden;
   if (!inStage) $('team-presets-glance').hidden = false;
   $('battle-map').hidden = inStage || inTrain; $('battle-stage').hidden = !inStage;
@@ -4894,6 +4895,11 @@ function renderBattleStage() {
       epilogue.play(`${base}:before`);
       void updateState(cur => { side.ensureSide(cur).seen[`${e.sideStage}:before`] ||= new Date().toISOString(); }).then(t => { state = t.state; });
     }
+  }
+  { // 湘 11/28：點進關卡也能直接收這一關的戰報（不用回最上面找）
+    const mine = (state.battle.active || []).filter(a => a.enemy === id); const now0 = Date.now();
+    const box = $('battle-stage-trips'); box.hidden = !mine.length;
+    box.replaceChildren(...mine.sort((a, b2) => Number(battle.isBack(b2, now0)) - Number(battle.isBack(a, now0))).map(a => battleTripRow(a, now0)));
   }
   $('battle-enemy-intro').textContent = e.intro;
   $('battle-gift-hint').hidden = Boolean(e.wild || e.event || (e.side && !e.skill));
