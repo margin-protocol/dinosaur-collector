@@ -330,6 +330,15 @@ export function settleLeftover(state, def, nowMs) {
   const spent = prog.tokens; prog.tokens = 0; prog.leftoverAt = iso(nowMs);
   return { tokens: spent, energy: amount };
 }
+// 開遊戲／切回遊戲時呼叫：每個已封存的活動各換一次（leftoverAt 記著，不會重複發）
+export function settleLeftovers(state, nowMs) {
+  const out = [];
+  for (const def of Object.values(EVENT_DEFS)) {
+    if (!def.leftover || !state.events?.[def.id]) continue;
+    const r = settleLeftover(state, def, nowMs); if (r) out.push({ eventId: def.id, ...r });
+  }
+  return out;
+}
 
 // ───────── 稱號：全遊戲只能戴一個，名字跟著研究者等級顯示 ─────────
 export function wornTitle(state) {

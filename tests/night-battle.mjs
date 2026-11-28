@@ -45,3 +45,23 @@ test('event stage tokens are summed then halved; daily win stays full', () => {
   assert.equal(out.event.tokens, Math.round(drop * runs * 0.5));
   assert.equal(out.event.daily, def.dailyWin);
 });
+test('every night win counts toward battle wins (achievements); first-clear stuff stays once', () => {
+  const s = base(); s.battle.stages.mochi = { stars: 1, best: 1, last: 1, clears: 1, tries: 1 }; s.battle.wins = 9; s.battle.total = 9;
+  const r = B.startBattle(s, 'mochi', ['001', '002', '003'], { now, night: true, rand: () => 0 });
+  const { runs, wins } = r.report.night; assert.equal(wins, runs, 'rand 0＝場場贏'); assert.ok(runs > 1);
+  B.collectBattle(s, r.id, new Date(now.getTime() + 8 * 3600e3 + 1));
+  assert.equal(s.battle.wins, 9 + runs, `連戰 ${runs} 勝要全部算進勝場`);
+  assert.equal(s.battle.total, 9 + runs);
+  assert.equal(s.battle.stages.mochi.clears, 2, '關卡通關次數照舊只算第一場');
+  // 擲骰有輸有贏：勝場＝戰報上的勝場數
+  let i = 0; const seq = () => [0.01, 0.99, 0.5, 0.2, 0.97, 0.3][i++ % 6];
+  const t = base(); t.battle.stages.mochi = { stars: 1, best: 1, last: 1, clears: 1, tries: 1 }; t.battle.wins = 0;
+  const r2 = B.startBattle(t, 'mochi', ['001'], { now, night: true, rand: seq });
+  B.collectBattle(t, r2.id, new Date(now.getTime() + 8 * 3600e3 + 1), seq);
+  assert.equal(t.battle.wins, r2.report.night.wins); assert.equal(t.battle.total, r2.report.night.runs);
+  // 一般討伐照舊 +1
+  const u = base(); u.battle.stages.mochi = { stars: 1, best: 1, last: 1, clears: 1, tries: 1 }; u.battle.wins = 3;
+  const r3 = B.startBattle(u, 'mochi', ['001', '002', '003'], { now, rand: () => 0 });
+  B.collectBattle(u, r3.id, new Date(now.getTime() + 3 * 3600e3));
+  assert.equal(u.battle.wins, 4); assert.equal(u.battle.total, 1);
+});

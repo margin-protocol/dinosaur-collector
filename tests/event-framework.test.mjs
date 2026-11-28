@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { EVENT_DEFS, schedule, stageLock, ensureEvents, recordEventRun, tokenDrop, buy, shopList, settleLeftover, eventNow, noteServerTime, stageKey } from '../js/events.js';
+import { EVENT_DEFS, schedule, stageLock, ensureEvents, recordEventRun, tokenDrop, buy, shopList, settleLeftover, settleLeftovers, eventNow, noteServerTime, stageKey } from '../js/events.js';
 import { forecast, startBattle, collectBattle, ensureBattle, SPEED_CAP, enemyFor } from '../js/battle.js';
 import { teamSkills } from '../js/skills.js';
 import { TEAM_BONDS, teamBond, countBondRuns } from '../js/team-bonds.js';
@@ -194,4 +194,17 @@ test('daily first win: +30 once per local day, wins only, no team bonus', () => 
   assert.equal(w3.daily, 30);
   assert.equal(s.events.mo.tokens, 2 + w1.tokens + 30 + 12 + 12 + 30);
   ensureEvents(s); assert.equal(s.events.mo.dailyWinDay, '2026-11-28');
+}));
+
+test('settleLeftovers: only after shop closes, once, nothing for empty or untouched saves', () => withStart(() => {
+  const s = { energy: 5, dex: {}, gifts: { eggs: [] } }; ensureEvents(s); s.events.mo.tokens = 73;
+  assert.deepEqual(settleLeftovers(s, h(20 * 24)), [], '商店還開著不換');
+  assert.equal(s.events.mo.tokens, 73);
+  assert.deepEqual(settleLeftovers(s, h(21 * 24) + 1), [{ eventId: 'mo', tokens: 73, energy: 73 }]);
+  assert.equal(s.energy, 78); assert.equal(s.events.mo.tokens, 0); assert.ok(s.events.mo.leftoverAt);
+  s.events.mo.tokens = 10; // 就算之後又有墨玉也不會再換第二次
+  assert.deepEqual(settleLeftovers(s, h(30 * 24)), []); assert.equal(s.energy, 78);
+  const z = { energy: 0 }; ensureEvents(z);
+  assert.deepEqual(settleLeftovers(z, h(22 * 24)), []); assert.equal(z.energy, 0);
+  const none = { energy: 0 }; assert.deepEqual(settleLeftovers(none, h(22 * 24)), []); assert.equal('events' in none, false, '沒有活動進度不新增');
 }));

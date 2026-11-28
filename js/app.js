@@ -109,7 +109,8 @@ function daysSince(iso) {
 
 let saveWarned = false;
 // 開遊戲的第一次存檔：順便結算「住在首頁的小湘每天 ♡+2」，不另外多存一次
-const initialSave = await updateState(current => ({ homeBond: homeTick(current, residentsFor(current.dex), todayKey()) }));
+// 活動封存後剩下的代幣（墨玉）也在這裡 1:1 換成能量，只換一次
+const initialSave = await updateState(current => ({ homeBond: homeTick(current, residentsFor(current.dex), todayKey()), leftover: events.settleLeftovers(current, events.eventNow(structuredClone({ clock: current.clock }))) }));
 let state = initialSave.state;
 // 舊存檔搬家（11/25）：存檔裡的照片縮圖搬到手機縮圖倉庫，存檔變小，才不會存不進去、備份也不會超過上限
 void offloadThumbs(state).then(moved => moved.size ? updateState(current => { stripThumbs(current, moved); }) : null).then(t => { if (t) state = t.state; }).catch(() => {});
@@ -4064,7 +4065,19 @@ function tickHomeBond() {
   void updateState(current => homeTick(current, residents, today)).then(t => { state = t.state; if (t.result.length) queueBondUps(t.result); });
 }
 if (initialSave.result?.homeBond?.length) setTimeout(() => queueBondUps(initialSave.result.homeBond), 1200);
-document.addEventListener('visibilitychange', () => { if (!document.hidden) tickHomeBond(); });
+// 活動商店關門後剩下的代幣換成能量（開著遊戲跨過關門時間，切回來也會換）
+function leftoverToast(list) {
+  if (!list?.length) return;
+  renderResources(); restart($('chip-energy'), 'is-bump');
+  toast(list.map(x => { const d = events.EVENT_DEFS[x.eventId]; return `${d?.name ? `「${d.name}」` : '活動'}結束：剩下的 ${x.tokens} ${d?.token?.name || '代幣'}換成 +${x.energy} 能量`; }).join('　'));
+}
+if (initialSave.result?.leftover?.length) setTimeout(() => leftoverToast(initialSave.result.leftover), 1500);
+function tickLeftover() {
+  const probe = structuredClone({ events: state.events, clock: state.clock });
+  if (!events.settleLeftovers(probe, events.eventNow(probe)).length) return;
+  void updateState(current => events.settleLeftovers(current, events.eventNow(structuredClone({ clock: current.clock })))).then(t => { state = t.state; leftoverToast(t.result); });
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { tickHomeBond(); tickLeftover(); } });
 
 // ── 討伐
 let battleEnemy = null; let battlePicked = [];
